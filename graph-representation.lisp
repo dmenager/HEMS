@@ -1,4 +1,4 @@
-(ql:quickload :alexandria)
+;;(ql:quickload :alexandria)
 (defparameter printer-special nil)
 (defparameter calls-to-cost* 0)
 ;;(setf *print-circle* nil)
@@ -8088,7 +8088,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun random-swap (top-lvl-nodes matches bindings q-first-bindings possible-candidates p q p-nodes q-nodes)
   (loop
     with neighbors and match and q-match and new-qnum and pnum-prime and match-prime and candidates
-    with pnum and queue = (alexandria:shuffle (copy-list top-lvl-nodes)) and visited-hash = (make-hash-table)
+    with pnum and queue = (shuffle (copy-list top-lvl-nodes)) and visited-hash = (make-hash-table)
     while (and p queue) do
       (setq pnum (car queue))
       (setq queue (rest queue))

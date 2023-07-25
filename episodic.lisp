@@ -1,8 +1,6 @@
-(load "package")
-(load "ep-log")
-(load "graph-representation")
-(in-package :)
-;;(load "pointer")
+;;(load "package")
+;;(load "ep-log")
+;;(load "graph-representation")
 
 #| Reference circular structures rather than print them all |#
 (setf *print-circle* t)
@@ -28,6 +26,9 @@
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
 (defstruct episode id index-episode-id parent states decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
+
+(defun test-fun ()
+  t)
 
 #| Copy edge information in state |#
 

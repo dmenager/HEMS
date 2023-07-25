@@ -7,7 +7,7 @@ Needs SBCL, but other common lisp implementations will probably work. Needs quic
 ## Install
 ```
 $ cd ~/quicklisp/local-projects
-$ git clone https://example.com/fun-project.git
+$ git clone https://github.com/dmenager/HEMS.git
 ```
 
 ## Importing HEMS in python

@@ -1,3 +1,5 @@
+(in-package :hems)
+
 ;;(load "package")
 ;;(load "ep-log")
 ;;(load "graph-representation")
@@ -1326,10 +1328,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (push-higher-lvl-episode-to-buffer intention-operator intention-active-cycles intention-executed-subskills :bic-p bic-p)
   #|
   (clear-episodic-cache (- (sclause-height (intention-operator intention)) 1)
-                        (intention-active-cycles intention))  |#)
-
-		  
-	     collect bel)))
+                        (intention-active-cycles intention)))
+  |#		  )
 
 #| Print the previous state |#
 

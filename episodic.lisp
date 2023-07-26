@@ -30,7 +30,7 @@
 (defstruct episode id index-episode-id parent states decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
 
 (defun test-fun ()
-  t)
+  (make-episode))
 
 #| Copy edge information in state |#
 

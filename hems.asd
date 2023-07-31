@@ -7,4 +7,5 @@
     :components((:file "package")
 		(:file "ep-log" :depends-on ("package"))
 		(:file "episodic" :depends-on ("graph-representation"))
+		(:file "hems-program-complier" :depends-on ("graph-representation"))
 		(:file "graph-representation" :depends-on ("package"))))

@@ -1,3 +1,4 @@
+(load "graph-representation")
 
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
@@ -19,8 +20,10 @@
 	       (value (getf node-def :value))
 	       (supported-keywords '(:value :kb-concept-id))
 	       (node-def-kwds (remove-if-not #'keywordp node-def))
-	       (unsupported (set-difference node-def-kwds supported-keywords :test #'equal)))
-	   (when unsuported
+	       (unsupported))
+	   (Format t "~%node definition:~%~S" node-def)
+	   (setq unsupported (set-difference node-def-kwds supported-keywords :test #'equal))
+	   (when unsupported
 	     (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
 	   (when (null value)
 	     (error "No value found in node definition list."))
@@ -31,27 +34,36 @@
 			 (if (equal "PERCEPT-NODE" (symbol-name (car node-def)))
 			     (setf (gethash 0 types-hash) "PERCEPT")
 			     (setf (gethash 0 types-hash) "BELIEF"))
-			 (setq type (second node-var))
+			 (setq type (second node-def))
 			 (setf (rule-based-cpd-dependent-var cpd) type)
 			 (setf (gethash 0 vars) type)
 			 (setf (rule-based-cpd-vars cpd) vars)
-			 (setq type-identifier (symbol-name (gensym type)))
+			 (setq type-identifier (symbol-name (gensym (symbol-name type))))
 			 (setf (rule-based-cpd-dependent-id cpd) type-identifier)
 			 (setf (gethash type-identifier identifiers) 0)
+			 (setf (rule-based-cpd-identifiers cpd) identifiers)
 			 (setf (rule-based-cpd-types cpd) types-hash)
 			 (cond ((or (null concept-id)
 				    (stringp concept-id))
-				(when concept-id
-				  ))
+				(if concept-id
+				    (setf (gethash 0 cids) concept-id)
+				    (setf (gethash 0 cids) "NIL"))
+				(setf (rule-based-cpd-concept-ids cpd) cids)
+				(setf (rule-based-cpd-qualified-vars cpd)
+				      (generate-cpd-vars identifiers vars cids))
+				(cond ((stringp value)
+				       cpd)
+				      (t
+				       (error "Unsupported value, ~A, for value in node definition list.~%Received type ~A. Expected string." value (type-of value)))))
 			       (t
-				(error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))))
+				(error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id)))))
 			(t
 			 (raise-identifier-type-error (second node-def)))))
 		 (t
 		  (error "Unsupported type, ~A for node definition list." (car node-def))))))
 	(t
-	 (raise-identifier-type-error (car node-def))))
-
+	 (raise-identifier-type-error (car node-def)))))
+  
 
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expoected type of non-nil symbol." recieved))
@@ -74,7 +86,7 @@
 					 (when (gethash (first ,args) ,hash)
 					   (warn "Attempting to overwrite value for identifyer ~A." (first ,args)))
 					 (setf (gethash (first ,args) ,hash)
-					       (make-bn-node (quote (third ,args)))))
+					       (make-bn-node (third ,args))))
 					(t
 					 (error "Expected assignment to list.~%Received: ~{~A~}." (subseq ,args 0 3)))))
 				 ((equal '-> (second ,args))

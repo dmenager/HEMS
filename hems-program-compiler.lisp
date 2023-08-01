@@ -1,17 +1,70 @@
-(defun make-bn-node (node-def) t)
+
+;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
+(defun make-bn-node (node-def)
+  (cond ((symbolp (car node-def))
+	 (let ((cpd (make-rule-based-cpd))
+	       (type-identifier)
+	       (identifiers (make-hash-table :test #'equal))
+	       (vars (make-hash-table))
+	       (types-hash (make-hash-table))
+	       (cids (make-hash-table))
+	       (vvbm (make-hash-table))
+	       (sva (make-hash-table))
+	       (svna (make-hash-table))
+	       (vals (make-hash-table))
+	       (cards)
+	       (steps)
+	       (type)
+	       (concept-id (getf node-def :kb-concept-id))
+	       (value (getf node-def :value))
+	       (supported-keywords '(:value :kb-concept-id))
+	       (node-def-kwds (remove-if-not #'keywordp node-def))
+	       (unsupported (set-difference node-def-kwds supported-keywords :test #'equal)))
+	   (when unsuported
+	     (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
+	   (when (null value)
+	     (error "No value found in node definition list."))
+	   (cond ((or (equal "PERCEPT-NODE" (symbol-name (car node-def)))
+		      (equal "RELATION-NODE" (symbol-name (car node-def))))
+		  (cond ((and (symbolp (second node-def))
+			      (not (null (second node-def))))
+			 (if (equal "PERCEPT-NODE" (symbol-name (car node-def)))
+			     (setf (gethash 0 types-hash) "PERCEPT")
+			     (setf (gethash 0 types-hash) "BELIEF"))
+			 (setq type (second node-var))
+			 (setf (rule-based-cpd-dependent-var cpd) type)
+			 (setf (gethash 0 vars) type)
+			 (setf (rule-based-cpd-vars cpd) vars)
+			 (setq type-identifier (symbol-name (gensym type)))
+			 (setf (rule-based-cpd-dependent-id cpd) type-identifier)
+			 (setf (gethash type-identifier identifiers) 0)
+			 (setf (rule-based-cpd-types cpd) types-hash)
+			 (cond ((or (null concept-id)
+				    (stringp concept-id))
+				(when concept-id
+				  ))
+			       (t
+				(error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))))
+			(t
+			 (raise-identifier-type-error (second node-def)))))
+		 (t
+		  (error "Unsupported type, ~A for node definition list." (car node-def))))))
+	(t
+	 (raise-identifier-type-error (car node-def))))
+
+
+(defun raise-identifier-type-error (recieved)
+  (error "Unsupported identifier ~A. Expoected type of non-nil symbol." recieved))
 
 (defun directed-edge (cpd1 cpd2))
 
 (defmacro compile-program (&body body)
-  (let ((identifiers-hash (gensym))
-	(hash (gensym))
+  (let ((hash (gensym))
 	(args (gensym))
 	(ident (gensym))
-	(i (gensym))
 	(cpd (gensym))
 	(cpd-list (gensym))
-	(new-args (gensym)))
-    (format t "~%identifiers-hash: ~A~%hash: ~A~%args: ~S~%ident: ~A~%i: ~A~%cpd: ~A~%cpd-list: ~A~%" identifiers-hash hash args ident i cpd cpd-list)
+	)
     `(labels ((compile-hems-program (,hash ,args)
 		(cond (,args
 		       (if (and (symbolp (first ,args))
@@ -34,13 +87,16 @@
 					 (directed-edge (gethash (first ,args) ,hash)
 							(gethash (third ,args) ,hash)))
 					(t
-					 (error "Unsupported identifier type ~A. Expected non-nil symbol." (type-of (third ,args)))))
+					 (raise-identifier-type-error (quote (third ,args)))
+					 ;;(error "Unsupported identifier type ~A. Expected non-nil symbol." (type-of (third ,args)))
+					 ))
 				  (when (not (gethash (third ,args) ,hash))))
 				 (t
 				  (error "Unrecognized operator. Received ~A.~%Expected assignment or directed edge." (second ,args))))
-			   (error "Unsupported identifier type ~A. Expoected non-nil symbol." (type-of (first ,args))))
-		       (setq ,new-args (nthcdr 3 ,args))
-		       (compile-hems-program ,hash ,new-args))
+			   (raise-identifier-type-error (quote (first ,args)))
+		        
+			   )
+		       (compile-hems-program ,hash (nthcdr 3 ,args)))
 		      (t
 		       (loop
 			 for ,ident being the hash-keys of ,hash
@@ -48,6 +104,4 @@
 			 collect ,cpd into ,cpd-list
 			 finally
 			    (return (make-array (hash-table-count ,hash) :initial-contents ,cpd-list)))))))
-       (setq ,identifiers-hash (make-hash-table :test #'equal))
-       (compile-hems-program ,identifiers-hash ',body)
-       )))
+       (compile-hems-program (make-hash-table :test #'equal) ',body))))

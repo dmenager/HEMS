@@ -1,3 +1,5 @@
+(in-package :hems)
+
 ;;(ql:quickload :alexandria)
 (defparameter printer-special nil)
 (defparameter calls-to-cost* 0)

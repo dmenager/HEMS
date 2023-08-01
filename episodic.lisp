@@ -1213,14 +1213,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         (insert-episode eltm* ep nil :bic-p bic-p))
       (setf (gethash 1 (getf episode-buffer* :states))
             (nreverse (cons (list ref (copy-state (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :states))))))
-      (when nil (= cycle* 33)
-        (format t "~%~S"(loop
-                          named finder
-                          for cpd being the elements of (caar (episode-states (car eltm*)))
-                          when (equal "HAND" (rule-based-cpd-dependent-var cpd))
-                            do
-                               (return-from finder cpd)))
-        (break))
       ;;(eltm-to-pdf)
       ;;(break)
       )))
@@ -1347,7 +1339,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (setq name1 (combine-symbols "EPISODE" id (rule-based-cpd-dependent-id cpd) label))
          (write-string name1 string-stream)
          (write-string "[label=" string-stream)
-         (format string-stream "~S" (rule-based-cpd-dependent-id cpd))
+         (format string-stream "~S" (rule-based-cpd-dependent-var cpd))
          (write-string ",shape=oval,color=blue]" string-stream)
          (write-line ";" string-stream))
     (loop
@@ -1419,8 +1411,5 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (format eltm-file "digraph G {~%compound=true;~%")
       (pdf-helper ep nil eltm-file)
       (format eltm-file "}~%"))
-    (sb-ext:run-program
-     "dot"
-     (list "-Tpdf" "eltm.dot" "-o" (get-output-stream-string string-stream))
-     :search t
-     :wait '())))
+    (uiop:run-program
+     `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream)))))

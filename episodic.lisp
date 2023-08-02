@@ -1,9 +1,5 @@
 (in-package :hems)
 
-;;(load "package")
-;;(load "ep-log")
-;;(load "graph-representation")
-
 #| Reference circular structures rather than print them all |#
 (setf *print-circle* t)
 

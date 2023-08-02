@@ -8337,7 +8337,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
 (defun maximum-common-subgraph (p q &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
-  (when nil (and (= cycle* 4))
+  (when nil t 
 	(format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
 		(array-dimension (car p) 0)
 		(map 'list #'rule-based-cpd-identifiers (car q))
@@ -8356,7 +8356,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq q-dim 0)
     (setq q-m 0)
     (setq q-dif 0)
-    (when nil (and (= cycle* 21))
+    (when nil t
       (format t "~%~%possible candidates:~%~S" possible-candidates)
       )
     (setq key (key-from-matches matches))
@@ -8383,7 +8383,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
          (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
        finally
-       (setq required-swaps (* (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 2)))
+       (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))
     (loop
        for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
        do
@@ -8397,7 +8397,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                         (error (c)
                           ;;(break "Going to set almost zero")
                           (/ stop-temp almost-zero))))
-    (when nil (and (= cycle* 2))
+    (when nil t
           (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
           ;;(break)
 	  )

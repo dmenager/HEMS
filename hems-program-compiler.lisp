@@ -1,5 +1,4 @@
 (in-package :hems)
-;;(load "graph-representation")
 
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
@@ -115,25 +114,34 @@
   (let (l s copy)
     (setq copy (copy-factors (make-array (length factors-list) :initial-contents factors-list)))
     (loop
-      for cpd being the elements of copy
+      for cpd in factors-list
       when (= (hash-table-count (rule-based-cpd-identifiers cpd)) 1)
 	do
 	   (setq s (cons cpd s)))
     (loop
-      while s
+      with selection
+      while (> (length s) 0)
       do
-	 (setq l (reverse (cons (car s) (reverse l))))
+	 (setq selection (car s))
+	 (setq l (reverse (cons selection (reverse l))))
 	 (setq s (rest s))
 	 (loop
 	   for cpd being the elements of copy
 	   for cpd1 in factors-list
-	   when (gethash (rule-based-cpd-dependent-id (car l))
-			 (rule-based-cpd-identifiers cpd))
+	   do
+	      (when nil (equal "AGE" (rule-based-cpd-dependent-var cpd))
+		(format t "~%~%processing used cpd:~%~S~%checking for parent:~%~S" cpd selection))
+	   when (and (not (equal (rule-based-cpd-dependent-id selection)
+				 (rule-based-cpd-dependent-id cpd)))
+		     (gethash (rule-based-cpd-dependent-id selection)
+			      (rule-based-cpd-identifiers cpd)))
 	     do
-		(remhash (rule-based-cpd-dependent-id (car l))
+		(remhash (rule-based-cpd-dependent-id selection)
 			 (rule-based-cpd-identifiers cpd))
+		(when nil (equal "AGE" (rule-based-cpd-dependent-var cpd))
+		  (format t "~%found match!~%updated used cpd:~%~S" cpd))
 		(when (= (hash-table-count (rule-based-cpd-identifiers cpd)) 1)
-		  (setq l (reverse (cons cpd1 (reverse l)))))))
+		  (setq s (reverse (cons cpd1 (reverse s)))))))
     l))
 
 (defmacro compile-program (&body body)
@@ -166,13 +174,12 @@
 					 (directed-edge (gethash (first ,args) ,hash)
 							(gethash (third ,args) ,hash)))
 					(t
-					 (raise-identifier-type-error (quote (third ,args)))
+					 (raise-identifier-type-error (third ,args))
 					 ;;(error "Unsupported identifier type ~A. Expected non-nil symbol." (type-of (third ,args)))
-					 ))
-				  (when (not (gethash (third ,args) ,hash))))
+					 )))
 				 (t
 				  (error "Unrecognized operator. Received ~A.~%Expected assignment or directed edge." (second ,args))))
-			   (raise-identifier-type-error (quote (first ,args)))
+			   (raise-identifier-type-error (first ,args))
 		        
 			   )
 		       (compile-hems-program ,hash (nthcdr 3 ,args)))
@@ -190,104 +197,133 @@
        (compile-hems-program (make-hash-table :test #'equal) ',body))))
 
 (defun test-compiler ()
-  (let (bn1 bn2)
+  (let (bn1 bn2 bn3 bn4 bn5)
     (setq bn1 (compile-program
-	       c1 = (percept-node casualty :value "CASUALTY-A" :kb-concept-id "CNPT-1")
-	       c2 = (percept-node age :value "22" :kb-concept-id "CNPT-2")
-	       c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-	       c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
-	       c5 = (percept-node hrpmin :value "145" :kb-concept-id "CNPT-5")
-	       c6 = (percept-node mmHG :value "60" :kb-concept-id "CNPT-6")
-	       c7 = (percept-node Spo2 :value "85" :kb-concept-id "CNPT-7")
-	       c8 = (percept-node RR :value "40" :kb-concept-id "CNPT-8")
-	       c9 = (percept-node pain :value "0" :kb-concept-id "CNPT-9")
-	       c1 -> c2
-	       c1 -> c3
-	       c1 -> c4
-	       c1 -> c5
-	       c1 -> c6
-	       c1 -> c7
-	       c1 -> c8
-		c1 -> c9))
+		c1 = (percept-node casualty :value "CASUALTY-A" :kb-concept-id "CNPT-1")
+		c2 = (percept-node age :value "22" :kb-concept-id "CNPT-2")
+		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+		c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+		c5 = (percept-node hrpmin :value "145" :kb-concept-id "CNPT-5")
+		c6 = (percept-node mmHG :value "60" :kb-concept-id "CNPT-6")
+		c7 = (percept-node Spo2 :value "85" :kb-concept-id "CNPT-7")
+		c8 = (percept-node RR :value "40" :kb-concept-id "CNPT-8")
+		c9 = (percept-node pain :value "0" :kb-concept-id "CNPT-9")
+		c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
+		c11 = (relation-node 2nd_degree_burn :value "T" :kb-concept-id "CNPT-11")
+		c12 = (relation-node 3rd_degree_burn :value "T" :kb-concept-id "CNPT-12")
+		c13 = (relation-node unconscious :value "T" :kb-concept-id "CNPT-13")
+		c1 -> c2
+		c1 -> c3
+		c1 -> c4
+		c1 -> c5
+		c1 -> c6
+		c1 -> c7
+		c1 -> c8
+		c1 -> c9
+		c10 -> c1
+		c11 -> c1
+		c12 -> c1
+		c13 -> c1))
+
     (setq bn2 (compile-program
-	       c10 = (percept-node casualty :value "CASUALTY-B" :kb-concept-id "CNPT-1")
-	       c11 = (percept-node age :value "25" :kb-concept-id "CNPT-2")
-	       c12 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-	       c13 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
-	       c14 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
-	       c15 = (percept-node mmHG :value "80" :kb-concept-id "CNPT-6")
-	       c16 = (percept-node Spo2 :value "98" :kb-concept-id "CNPT-7")
-	       c17 = (percept-node RR :value "18" :kb-concept-id "CNPT-8")
-	       c18 = (percept-node pain :value "6" :kb-concept-id "CNPT-9")
-	       c10 -> c11
-	       c10 -> c12
-	       c10 -> c13
-	       c10 -> c14
-	       c10 -> c15
-	       c10 -> c16
-	       c10 -> c17
-		c10 -> c18))
-    #|
-	       c19 = (percept-node casualty :value "CASUALTY-D" :kb-concept-id "CNPT-1")
-	       c20 = (percept-node age :value "40" :kb-concept-id "CNPT-2")
-	       c21 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-	       c22 = (percept-node rank :value "VIP" :kb-concept-id "CNPT-4")
-	       c23 = (percept-node hrpmin :value "105" :kb-concept-id "CNPT-5")
-	       c24 = (percept-node mmHG :value "120" :kb-concept-id "CNPT-6")
-	       c25 = (percept-node Spo2 :value "99" :kb-concept-id "CNPT-7")
-	       c26 = (percept-node RR :value "15" :kb-concept-id "CNPT-8")
-	       c27 = (percept-node pain :value "2" :kb-concept-id "CNPT-9")
-	       c19 -> c20
-	       c19 -> c21
-	       c19 -> c22
-	       c19 -> c23
-	       c19 -> c24
-	       c19 -> c25
-	       c19 -> c26
-	       c19 -> c27
-
-	       c28 = (percept-node casualty :value "casualty-E" :kb-concept-id "CNPT-1")
-	       c29 = (percept-node age :value "26" :kb-concept-id "CNPT-2")
-	       c30 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-	       c31 = (percept-node rank :value "Military" :kb-concept-id "CNPT-4")
-	       c32 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
-	       c33 = (percept-node mmHG :value "100" :kb-concept-id "CNPT-6")
-	       c34 = (percept-node Spo2 :value "95" :kb-concept-id "CNPT-7")
-	       c35 = (percept-node RR :value "15" :kb-concept-id "CNPT-8")
-	       c36 = (percept-node pain :value "10" :kb-concept-id "CNPT-9")
-	       c28 -> c29
-	       c28 -> c30
-	       c28 -> c31
-	       c28 -> c32
-	       c28 -> c33
-	       c28 -> c34
-	       c28 -> c35
-	       c28 -> c36
-
-	       c37 = (percept-node casualty :value "CASUALTY-F" :kb-concept-id "CNPT-1")
-	       c38 = (percept-node age :value "12" :kb-concept-id "CNPT-2")
-	       c39 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-	       c40 = (percept-node rank :value "CIVILIAN" :kb-concept-id "CNPT-4")
-	       c41 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
-	       c42 = (percept-node mmHG :value "30" :kb-concept-id "CNPT-6")
-	       c43 = (percept-node Spo2 :value "99" :kb-concept-id "CNPT-7")
-	       c44 = (percept-node RR :value "25" :kb-concept-id "CNPT-8")
-	       c45 = (percept-node pain :value "3" :kb-concept-id "CNPT-9")
-	       c37 -> c38
-	       c37 -> c39
-	       c37 -> c40
-	       c37 -> c41
-	       c37 -> c42
-	       c37 -> c43
-	       c37 -> c44
-	       c37 -> c45
-|#
-    (mapcar #'(lambda (bn)
-		(format t "~%bn:~%~S" bn)
-		(push-to-ep-buffer :state bn :insert-episode-p t)
-		(eltm-to-pdf)
-		(break))
-	    (list bn1 bn2))
+		c1 = (percept-node casualty :value "CASUALTY-B" :kb-concept-id "CNPT-1")
+		c2 = (percept-node age :value "25" :kb-concept-id "CNPT-2")
+		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+		c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+		c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+		c6 = (percept-node mmHG :value "80" :kb-concept-id "CNPT-6")
+		c7 = (percept-node Spo2 :value "98" :kb-concept-id "CNPT-7")
+		c8 = (percept-node RR :value "18" :kb-concept-id "CNPT-8")
+		c9 = (percept-node pain :value "6" :kb-concept-id "CNPT-9")
+		c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
+		c11 = (relation-node 2nd_degree_burn :value "T" :kb-concept-id "CNPT-11")
+		c12 = (relation-node 3rd_degree_burn :value "T" :kb-concept-id "CNPT-12")
+		c1 -> c2
+		c1 -> c3
+		c1 -> c4
+		c1 -> c5
+		c1 -> c6
+		c1 -> c7
+		c1 -> c8
+		c1 -> c9
+		c10 -> c1
+		c11 -> c1
+		c12 -> c1))
+    
+    (setq bn3 (compile-program
+		c1 = (percept-node casualty :value "CASUALTY-D" :kb-concept-id "CNPT-1")
+		c2 = (percept-node age :value "40" :kb-concept-id "CNPT-2")
+		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+		c4 = (percept-node rank :value "VIP" :kb-concept-id "CNPT-4")
+		c5 = (percept-node hrpmin :value "105" :kb-concept-id "CNPT-5")
+		c6 = (percept-node mmHG :value "120" :kb-concept-id "CNPT-6")
+		c7 = (percept-node Spo2 :value "99" :kb-concept-id "CNPT-7")
+		c8 = (percept-node RR :value "15" :kb-concept-id "CNPT-8")
+		c9 = (percept-node pain :value "2" :kb-concept-id "CNPT-9")
+		c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
+		c11 = (relation-node suborbital_ecchymosis :value "T" :kb-concept-id "CNPT-13")
+		c12 = (relation-node traumatic_hyphema :value "T" :kb-concept-id "CNPT-14")
+		c1 -> c2
+		c1 -> c3
+		c1 -> c4
+		c1 -> c5
+		c1 -> c6
+		c1 -> c7
+		c1 -> c8
+		c1 -> c9
+		c10 -> c1
+		c11 -> c1
+		c12 -> c1))
+    
+    (setq bn4 (compile-program
+		c1 = (percept-node casualty :value "CASUALTY-E" :kb-concept-id "CNPT-1")
+		c2 = (percept-node age :value "26" :kb-concept-id "CNPT-2")
+		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+		c4 = (percept-node rank :value "Military" :kb-concept-id "CNPT-4")
+		c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+		c6 = (percept-node mmHG :value "100" :kb-concept-id "CNPT-6")
+		c7 = (percept-node Spo2 :value "95" :kb-concept-id "CNPT-7")
+		c8 = (percept-node RR :value "15" :kb-concept-id "CNPT-8")
+		c9 = (percept-node pain :value "10" :kb-concept-id "CNPT-9")
+		c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
+		c1 -> c2
+		c1 -> c3
+		c1 -> c4
+		c1 -> c5
+		c1 -> c6
+		c1 -> c7
+		c1 -> c8
+		c1 -> c9
+		c10 -> c1))
+    
+    (setq bn5 (compile-program
+		c1 = (percept-node casualty :value "CASUALTY-F" :kb-concept-id "CNPT-1")
+		c2 = (percept-node age :value "12" :kb-concept-id "CNPT-2")
+		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+		c4 = (percept-node rank :value "CIVILIAN" :kb-concept-id "CNPT-4")
+		c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+		c6 = (percept-node mmHG :value "30" :kb-concept-id "CNPT-6")
+		c7 = (percept-node Spo2 :value "99" :kb-concept-id "CNPT-7")
+		c8 = (percept-node RR :value "25" :kb-concept-id "CNPT-8")
+		c9 = (percept-node pain :value "3" :kb-concept-id "CNPT-9")
+		c10 = (relation-node shrapnel_injury :value "T" :kb-concept-id "CNPT-15")
+		c11 = (relation-node difficult_breathing :value "T" :kb-concept-id "CNPT-16")
+		c1 -> c2
+		c1 -> c3
+		c1 -> c4
+		c1 -> c5
+		c1 -> c6
+		c1 -> c7
+		c1 -> c8
+		c1 -> c9
+		c10 -> c1
+		c11 -> c1))
+    
+    (map nil #'(lambda (bn)
+		 (push-to-ep-buffer :state bn :insert-episode-p t)
+		 (eltm-to-pdf)
+		 (break))
+	 (list bn1 bn2 bn3 bn4 bn5))
     ;;(eltm-to-pdf)
     ))
   

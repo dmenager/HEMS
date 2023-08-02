@@ -197,7 +197,17 @@
        (compile-hems-program (make-hash-table :test #'equal) ',body))))
 
 (defun test-compiler ()
-  (let (bn1 bn2 bn3 bn4 bn5)
+  (let (bn1 bn2 bn3 bn4 bn5 q1 q2)
+    (setq q1 (compile-program
+	      c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")))
+    
+    (setq q2 (compile-program
+	      c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+	      c2 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")))
+
+    q1
+    q2
+    
     (setq bn1 (compile-program
 		c1 = (percept-node casualty :value "CASUALTY-A" :kb-concept-id "CNPT-1")
 		c2 = (percept-node age :value "22" :kb-concept-id "CNPT-2")
@@ -279,7 +289,7 @@
 		c1 = (percept-node casualty :value "CASUALTY-E" :kb-concept-id "CNPT-1")
 		c2 = (percept-node age :value "26" :kb-concept-id "CNPT-2")
 		c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
-		c4 = (percept-node rank :value "Military" :kb-concept-id "CNPT-4")
+		c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
 		c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
 		c6 = (percept-node mmHG :value "100" :kb-concept-id "CNPT-6")
 		c7 = (percept-node Spo2 :value "95" :kb-concept-id "CNPT-7")
@@ -318,12 +328,30 @@
 		c1 -> c9
 		c10 -> c1
 		c11 -> c1))
-    
+
+    ;; insert into event memory
     (map nil #'(lambda (bn)
-		 (push-to-ep-buffer :state bn :insert-episode-p t)
-		 (eltm-to-pdf)
-		 (break))
+		 (push-to-ep-buffer :state bn :insert-episode-p t))
 	 (list bn1 bn2 bn3 bn4 bn5))
+
+    ;; remember from retrieval cue
+    (multiple-value-bind (recollection eme)
+	(remember (list (car eltm*)) (list q2) '+  1 t)
+      (declare (ignore eme))
+      (let (singletons)
+	(setq singletons (mapcan #'(lambda (cpd)
+				     (when (rule-based-cpd-singleton-p cpd)
+				       (list cpd)))
+				 recollection))
+	(loop
+	  with spread
+	  for cpd in singletons
+	  do
+	     (setq spread (- 1 (compute-cpd-concentration cpd)))
+	     (format t "~%~%singleton:~%~S~%spread: ~d" cpd spread)
+	  collect spread into spreads
+	  finally
+	  (return (values singletons (mean spreads) (stdev spreads))))))
     ;;(eltm-to-pdf)
     ))
   

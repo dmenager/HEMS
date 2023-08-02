@@ -890,6 +890,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                (when (= j (- (array-dimension copy-state 0) 1))
                  (setq j 0)))|#
        finally
+	  #|
 	  (when matt-testing* 
 	    (loop
 	      with predicate-cue
@@ -941,6 +942,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (let ((*print-circle* nil))
 		   (format t "~%predicate cue:~%~A" predicate-cue)
 		   (log-message (list "~%:observation~%~A" predicate-cue) (format nil "matt-trace/matt-trace-observability~d.txt" percentage)))))
+	  |#
           (let (edges)
             (setq edges (make-graph-edges copy-state))
             (return (cons copy-state edges))))))
@@ -1135,10 +1137,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  into grounds
                finally
                   (setq ground-marginals grounds))
-             (log-message (list "Learning_Rate,Iteration,Conflicts,Deltas,Deltas_std~%") "learning-curves.csv")
-             (log-message (list "Learning_Rate,CPD,Value,Density,Error~%") "marginal-distribution.csv")
-             (log-message (list "CPD,Value,Density~%") "ground-marginals.csv")
-             (loop
+             ;;(log-message (list "Learning_Rate,Iteration,Conflicts,Deltas,Deltas_std~%") "learning-curves.csv")
+             ;;(log-message (list "Learning_Rate,CPD,Value,Density,Error~%") "marginal-distribution.csv")
+             ;;(log-message (list "CPD,Value,Density~%") "ground-marginals.csv")
+	     #|
+	     (loop
                for ground-cpd in ground-marginals
                do
                   (loop
@@ -1153,6 +1156,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                           i
                                           (float (rule-probability idx)))
                                     "ground-marginals.csv")))
+	     |#
              (setq recollection (loopy-belief-propagation (car (episode-states eme)) evidence-table mode lr))
              #|
 	     (setq copy-grounds (copy-list ground-marginals))

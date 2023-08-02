@@ -2,6 +2,6 @@
   (:use #:cl)
   (:import-from #:alexandria
 		#:shuffle)
-  (:export #:episode-buffer* #:eltm* #:push-to-ep-buffer #:eltm-to-pdf #:test-fun #:compile-program #:test-compiler))
+  (:export #:episode-buffer* #:eltm* #:push-to-ep-buffer #:eltm-to-pdf #:test-fun #:compile-program #:test-compiler #:remember #:compute-cpd-concentration))
 
 (in-package :hems)

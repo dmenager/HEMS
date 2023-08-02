@@ -5179,7 +5179,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (when nil t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
-       (log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
+       ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
        (when nil t
@@ -5191,6 +5191,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          (cond ((eq op '+)
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
+		 ;; when (rule-based-cpd-singleton-p (aref factors i))
                   collect (compute-belief i factors edges messages)))
                ((eq op 'max)
                 (when nil

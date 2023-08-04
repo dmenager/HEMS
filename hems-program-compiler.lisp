@@ -25,7 +25,7 @@
 	   (when unsupported
 	     (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
 	   (when (null value)
-	     (error "No value field found in node definition list."))
+	     (error "No value field found in node definition list.~%Received: ~S" node-def))
 	   (cond ((or (equal "PERCEPT-NODE" (symbol-name (car node-def)))
 		      (equal "RELATION-NODE" (symbol-name (car node-def))))
 		  (cond ((and (symbolp (second node-def))
@@ -156,21 +156,21 @@
 		(cond (,args
 		       (if (and (symbolp (first ,args))
 				(not (null (first ,args))))
-			   (cond ((equal '= (second ,args))
+			   (cond ((equal (symbol-name '=) (symbol-name (second ,args)))
 				  (cond ((listp (third ,args))
 					 (when (gethash (first ,args) ,hash)
-					   (warn "Attempting to overwrite value for identifyer ~A." (first ,args)))
+					   (warn "Attempting to overwrite value for identifyer ~A in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (setf (gethash (first ,args) ,hash)
 					       (make-bn-node (third ,args))))
 					(t
-					 (error "Expected assignment to list.~%Received: ~{~A~}." (subseq ,args 0 3)))))
-				 ((equal '-> (second ,args))
+					 (error "Expected assignment to list in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
+				 ((equal (symbol-name '->) (symbol-name (second ,args)))
 				  (when (not (gethash (first ,args) ,hash))
-				    (error "Reference to ~A before assignment." (first ,args)))
+				    (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 				  (cond ((and (symbolp (third ,args))
 					      (not (null (third ,args))))
 					 (when (not  (gethash (third ,args) ,hash))
-					   (error "Reference to ~A before assignment." (third ,args)))
+					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (third ,args) (subseq ,args 0 3)))
 					 (directed-edge (gethash (first ,args) ,hash)
 							(gethash (third ,args) ,hash)))
 					(t
@@ -178,7 +178,7 @@
 					 ;;(error "Unsupported identifier type ~A. Expected non-nil symbol." (type-of (third ,args)))
 					 )))
 				 (t
-				  (error "Unrecognized operator. Received ~A.~%Expected assignment or directed edge." (second ,args))))
+				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or directed edge." (subseq ,args 0 3) (second ,args))))
 			   (raise-identifier-type-error (first ,args))
 		        
 			   )
@@ -196,14 +196,46 @@
 			    (return (cons ,factors ,edges)))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body))))
 
+
+(defun compile-program-from-file (prog-file)
+  (format t "~%prog-file: ~S~%type-of: ~S~%path: ~S~%" prog-file (type-of prog-file) (merge-pathnames prog-file))
+  (with-open-file (in (merge-pathnames prog-file) :direction :input
+						  :if-exists 
+						  :if-does-not-exist :error)
+    t)
+  t)
+#|
+(defun compile-program-from-file (prog-file)
+  (format t "~%type: ~S~%name: ~S" (type-of prog-file) prog-file)
+  (with-open-file (in (merge-pathnames prog-file) :direction :input
+				:if-does-not-exist :error)
+    (loop
+      with prog
+      for line = (read-line in nil)
+      while line
+      do
+	 (loop
+	   with len = (length line)
+	   with s and i = 0
+	   do
+	      (multiple-value-setq (s i)
+		(read-from-string line nil nil :start i))
+	      (setq prog (reverse (cons s (reverse prog))))
+	   while (< i len))
+      finally
+	 (return (eval `(compile-program ,@prog))))))
+|#
+
 (defun test-compiler ()
   (let (bn1 bn2 bn3 bn4 bn5 q1 q2)
     (setq q1 (compile-program
-	      c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")))
+	       c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+	       c2 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")))
     
     (setq q2 (compile-program
-	      c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
-	      c2 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")))
+	       c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+	       c2 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+	       c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")))
 
     q1
     q2

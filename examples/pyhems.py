@@ -11,7 +11,11 @@ lisp = cl4py.Lisp(quicklisp=True, backtrace=True)
 ql = lisp.find_package('QL')
 
 # find and load the hems package.
-ql.quickload('hems')
+ql.quickload('HEMS')
 
-# call exported test-fun() through eval() that returns an empty episode structure.
-print(lisp.eval(('hems:test-fun',)))
+#load hems and retain reference.
+hems = lisp.find_package("HEMS")
+
+#bn = lisp.eval(cl4py.List(cl4py.Symbol('compile-program-from-file'.upper(), 'HEMS'), 'examples/prog1.hems'))
+bn = hems.compile_program_from_file("examples/prog1.hems")
+

@@ -198,17 +198,8 @@
 
 
 (defun compile-program-from-file (prog-file)
-  (format t "~%prog-file: ~S~%type-of: ~S~%path: ~S~%" prog-file (type-of prog-file) (merge-pathnames prog-file))
   (with-open-file (in (merge-pathnames prog-file) :direction :input
-						  :if-exists 
 						  :if-does-not-exist :error)
-    t)
-  t)
-#|
-(defun compile-program-from-file (prog-file)
-  (format t "~%type: ~S~%name: ~S" (type-of prog-file) prog-file)
-  (with-open-file (in (merge-pathnames prog-file) :direction :input
-				:if-does-not-exist :error)
     (loop
       with prog
       for line = (read-line in nil)
@@ -224,7 +215,6 @@
 	   while (< i len))
       finally
 	 (return (eval `(compile-program ,@prog))))))
-|#
 
 (defun test-compiler ()
   (let (bn1 bn2 bn3 bn4 bn5 q1 q2)

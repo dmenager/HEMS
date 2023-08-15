@@ -372,8 +372,10 @@
 	     (setq spread (- 1 (compute-cpd-concentration cpd)))
 	     (format t "~%~%singleton:~%~S~%spread: ~d" cpd spread)
 	  collect spread into spreads
-	  finally
-	  (return (values singletons (mean spreads) (stdev spreads))))))
+	   finally
+	     (format t "~%mean spreads: ~d~%stdev: ~d" (mean spreads) (stdev spreads))
+	     ;;(return (values singletons (mean spreads) (stdev spreads)))
+	  )))
     ;;(eltm-to-pdf)
     ))
   

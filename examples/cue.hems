@@ -1,0 +1,3 @@
+c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+c2 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")

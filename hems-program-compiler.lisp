@@ -353,7 +353,7 @@
 
     ;; insert into event memory
     (map nil #'(lambda (bn)
-		 (push-to-ep-buffer :state bn :insert-episode-p t))
+		 (push-to-ep-buffer :state bn :insertp t))
 	 (list bn1 bn2 bn3 bn4 bn5))
 
     ;; remember from retrieval cue

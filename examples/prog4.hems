@@ -1,0 +1,19 @@
+c1 = (percept-node casualty :value "CASUALTY-E" :kb-concept-id "CNPT-1")
+c2 = (percept-node age :value "26" :kb-concept-id "CNPT-2")
+c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")
+c4 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+c5 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+c6 = (percept-node mmHG :value "100" :kb-concept-id "CNPT-6")
+c7 = (percept-node Spo2 :value "95" :kb-concept-id "CNPT-7")
+c8 = (percept-node RR :value "15" :kb-concept-id "CNPT-8")
+c9 = (percept-node pain :value "10" :kb-concept-id "CNPT-9")
+c10 = (relation-node IED_injury :value "T" :kb-concept-id "CNPT-10")
+c1 -> c2
+c1 -> c3
+c1 -> c4
+c1 -> c5
+c1 -> c6
+c1 -> c7
+c1 -> c8
+c1 -> c9
+c10 -> c1

@@ -25,8 +25,10 @@
 ;; count = number of times episode occured
 (defstruct episode id index-episode-id parent states decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
 
-(defun test-fun ()
-  (make-episode))
+#| Returns the episodic long-term memory structure |#
+
+(defun get-eltm ()
+  eltm*)
 
 #| Copy edge information in state |#
 
@@ -1185,7 +1187,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     |#
              (return (values recollection eme)))))))
 
-(defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insert-episode-p nil) (bic-p t) &aux ep)
+(defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
   (let (p ref empty-decomp ep-id)
     (cond (state
            (setf (gethash 0 (getf episode-buffer* :states))
@@ -1196,7 +1198,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (setq p (cons p-elements p-edges)))
            (setf (gethash 0 (getf episode-buffer* :states))
                  (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
-    (when (and (or pstm state) insert-episode-p)
+    (when (and (or pstm state) insertp)
       (format t "~%Adding new episode.")
       (setq empty-decomp (make-empty-graph))
       (setq ep-id (symbol-name (gensym "EPISODE-")))

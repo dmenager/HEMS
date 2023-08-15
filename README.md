@@ -10,7 +10,7 @@ Contributions of the work are as follows:
 
 Further details on the system's theoretical claims and technical details may be found in the /papers directory.
 
-This page is currently under development.
+This page is currently under construction.
 
 ## Requirements
 This codebase is written and testing using SBCL. Other versions of Common Lisp may work, but we provide no guarantees. This software also depends on quicklisp for installing other Common Lisp packages. A full list of external dependencies may be found in hems.asd.
@@ -60,7 +60,7 @@ c11 -> c1
 c12 -> c1
 c13 -> c1
 ```
-Arrows define connections between nodes. The only supported connection type is a directed edge. For example, `c1 -> c2` denotes an edge eminating from `c1` flowing to `c2'.
+Arrows define connections between nodes. The only supported connection type is a directed edge. For example, `c1 -> c2` denotes an edge eminating from `c1` flowing to `c2`.
 
 Lastly, passing this program to the HEMS compiler returns a Bayesian network. In Common Lisp, the program statements can be directly supplied to the compiler in the following way:
 ```
@@ -99,8 +99,38 @@ such that "prog1.hems" contains the probabilistic program.
 
 Observations encoded in this way are degenerate Bayesian networks since they are probabilistic models that can only make predictions about the observed state.
 
-### Remembering
-### Inference
+### Inserting Into, and Making Inferences from Event  Memory
+Arbitrarily many Bayesian networks may be compiled by following the above procedure. Inserting them into memory involves making a call to `push-to-ep-buffer` for each network. In Common Lisp, we can write:
+```
+(map nil #'(lambda (bn)
+	(push-to-ep-buffer :state bn :insert-episode-p t))
+     (list bn1 bn2 bn3 bn4 bn5))
+```
+to sequentially insert five Bayesian networks. 
 
-## Tests
+For Python programs, this is:
+```
+for bn in [bn1, bn2, bn3, bn4, bn5]:
+    hems.push_to_ep_buffer(state=bn, insertp=True)
+```
+Given a retrieval cue, HEMS retrieves the most similar event memory element from memory and performs probabilistic inference conditioning the inference process on the elements from the cue. The retrieval cue is specified in the same manner as the observations. For example, one possible retrieval cue might be some partial observation of the state:
+```
+(setq q1 (compile-program
+	       c1 = (percept-node rank :value "MILITARY" :kb-concept-id "CNPT-4")
+	       c2 = (percept-node hrpmin :value "120" :kb-concept-id "CNPT-5")
+	       c3 = (percept-node sex :value "M" :kb-concept-id "CNPT-3")))
+```
+Then, the sytem can call `(remember)` to perform state estimation and recover the missing information:
+```
+(multiple-value-bind (recollection eme)
+	(remember eltm* (list q1) '+  1 t))
+```
+
+where eltm* is the event memory hierarchy. `'+` denotes sum-product message passing with a learning rate of 1.
+
+In Python, this is written as:
+
+```
+(recollection, eme) = hems.remember(hems.get_eltm(), cl4py.List(cue), cl4py.Symbol('+', 'HEMS'), 1, True)
+```
 

@@ -174,9 +174,7 @@
 					 (directed-edge (gethash (first ,args) ,hash)
 							(gethash (third ,args) ,hash)))
 					(t
-					 (raise-identifier-type-error (third ,args))
-					 ;;(error "Unsupported identifier type ~A. Expected non-nil symbol." (type-of (third ,args)))
-					 )))
+					 (raise-identifier-type-error (third ,args)))))
 				 (t
 				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or directed edge." (subseq ,args 0 3) (second ,args))))
 			   (raise-identifier-type-error (first ,args))
@@ -205,13 +203,16 @@
       for line = (read-line in nil)
       while line
       do
+	 ;;(format t "~%~%processing line: ~S" line)
 	 (loop
 	   with len = (length line)
 	   with s and i = 0
 	   do
 	      (multiple-value-setq (s i)
 		(read-from-string line nil nil :start i))
+	      ;;(format t "~%processed string: ~S" s)
 	      (setq prog (reverse (cons s (reverse prog))))
+	      ;;(format t "~%program so far:~%~S" prog)
 	   while (< i len))
       finally
 	 (return (eval `(compile-program ,@prog))))))

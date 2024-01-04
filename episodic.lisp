@@ -1187,11 +1187,39 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     |#
              (return (values recollection eme)))))))
 
+(defun dummy (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
+  (format t "here1")
+  (setf (gethash 0 (getf episode-buffer* :states))
+        (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :states))))))
+  (format t "~%Adding new episode.")
+  (finish-output)
+  (setq empty-decomp (make-empty-graph))
+  (setq ep-id (symbol-name (gensym "EPISODE-")))
+  (format t "~%here2")
+  (finish-output)
+  (setq ep (make-episode :id ep-id
+                         :index-episode-id ep-id
+                         :states (mapcar #'copy-state (last (gethash 0 (getf episode-buffer* :states))))
+                         :decompositions empty-decomp
+                         :id-ref-map (make-hash-table :test #'equal)
+                         :num-decompositions 0
+                         :count 1
+                         :lvl 1))
+  (format t "~%here3")
+  (finish-output)
+  (multiple-value-setq (eltm* ref)
+    (insert-episode eltm* ep nil :bic-p bic-p)))
+
+#| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
+
+;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges
+;; cstm = relational beliefs that are true about the world
+;; pstm = sensory perceptions of the world
+;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
 (defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
-  (format t "~%here!")
   (let (p ref empty-decomp ep-id)
     (cond (state
-           (setf (gethash 0 (getf episode-buffer* :states))
+	   (setf (gethash 0 (getf episode-buffer* :states))
                  (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :states)))))))
           (t
            (multiple-value-bind (p-elements p-edges)
@@ -1199,6 +1227,51 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (setq p (cons p-elements p-edges)))
            (setf (gethash 0 (getf episode-buffer* :states))
                  (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
+    (when (and (or pstm state) insertp)
+      (format t "~%Adding new episode.")
+      (finish-output)
+      (setq empty-decomp (make-empty-graph))
+      (setq ep-id (symbol-name (gensym "EPISODE-")))
+      (setq ep (make-episode :id ep-id
+                             :index-episode-id ep-id
+                             :states (mapcar #'copy-state (last (gethash 0 (getf episode-buffer* :states))))
+                             :decompositions empty-decomp
+                             :id-ref-map (make-hash-table :test #'equal)
+                             :num-decompositions 0
+                             :count 1
+                             :lvl 1))
+      (format t "~%inserting ~A" (episode-id ep))
+      (multiple-value-setq (eltm* ref)
+        (insert-episode eltm* ep nil :bic-p bic-p))
+      (setf (gethash 1 (getf episode-buffer* :states))
+            (nreverse (cons (list ref (copy-state (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :states))))))
+      ;;(eltm-to-pdf)
+      ;;(break)
+      )))
+
+#| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
+
+;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges
+;; cstm = relational beliefs that are true about the world
+;; pstm = sensory perceptions of the world
+;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
+(defun new-push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (bic-p t) (insertp nil))
+  (let (p ref empty-decomp ep-id ep model)
+    (cond (state
+	   (setq p state)
+           (setf (gethash 0 (getf episode-buffer* :states))
+                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states)))))))
+          (t
+           (multiple-value-bind (p-elements p-edges)
+               (state-to-graph pstm cstm :executing-intention executing-intention*)
+             (setq p (cons p-elements p-edges)))
+           (setf (gethash 0 (getf episode-buffer* :states))
+                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
+    (unless insertp
+      (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
+				    (getf episode-buffer* :states)))
+      (unless model
+	(setq insertp t)))
     (when (and (or pstm state) insertp)
       (format t "~%Adding new episode.")
       (setq empty-decomp (make-empty-graph))

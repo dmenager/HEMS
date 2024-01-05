@@ -25,7 +25,7 @@ $ git clone https://github.com/dmenager/HEMS.git
 ```
 Then, in your Lisp program, or the REPL, simply run:
 ```
-(ql:quicload :hems)
+(ql:quickload :hems)
 ```
 to include the HEMS package in your code.
 

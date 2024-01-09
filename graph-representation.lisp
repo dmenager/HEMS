@@ -8234,7 +8234,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
          t)
         ((and (= (second next) (second best-solution))
-              (> (hash-table-count (third next)) (hash-table-count (third best-solution))))
+              (>= (hash-table-count (third next)) (hash-table-count (third best-solution))))
          t)))
 #| Initialize empty set of mappings |#
 

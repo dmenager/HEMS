@@ -18,10 +18,16 @@ This codebase is written and testing using SBCL. Other versions of Common Lisp m
 Python programs can use HEMS by importing cl4py into their projects. See the /examples folder for details.
 
 ## Install
+We recommend installing HEMS with the quicklisp library manager. It can be installed at https://www.quicklisp.org/beta/. Once it is installed, run the following commands in the terminal to make HEMS quicklisp installable.
 ```
 $ cd ~/quicklisp/local-projects
 $ git clone https://github.com/dmenager/HEMS.git
 ```
+Then, in your Lisp program, or the REPL, simply run:
+```
+(ql:quickload :hems)
+```
+to include the HEMS package in your code.
 
 ## Usage
 

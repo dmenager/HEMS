@@ -4602,7 +4602,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 #| Perform a marginalize operation over rules |#
 
 ;; phi = schema conditional probability distribution
-;; vars = variable to keep
+;; vars = list variables to keep
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id)
@@ -4948,7 +4948,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; keep = vars to keep
 ;; remove = variables to op out
 ;; op = operation to apply to factor (max or +)
-(defun factor-operation (phi keep remove  op)
+(defun factor-operation (phi keep remove op)
   (cond ((null remove)
 	 (operate-factor phi keep op))
 	(t

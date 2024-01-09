@@ -8,7 +8,7 @@ from cl4py import List as lst
 
 # get a handle to the lisp subprocess with quicklisp loaded.
 lisp = cl4py.Lisp(quicklisp=True, backtrace=True)
-cl = lisp.find_package('CL')
+
 # Start quicklisp and import HEMS package
 lisp.find_package('QL').quickload('HEMS')
 

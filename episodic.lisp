@@ -1188,7 +1188,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (return (values recollection eme)))))))
 
 (defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
-  (format t "~%here!")
   (let (p ref empty-decomp ep-id)
     (cond (state
            (setf (gethash 0 (getf episode-buffer* :states))

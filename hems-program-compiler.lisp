@@ -203,17 +203,17 @@
       for line = (read-line in nil)
       while line
       do
-	 ;;(format t "~%~%processing line: ~S" line)
-	 (loop
-	   with len = (length line)
-	   with s and i = 0
-	   do
-	      (multiple-value-setq (s i)
-		(read-from-string line nil nil :start i))
-	      ;;(format t "~%processed string: ~S" s)
-	      (setq prog (reverse (cons s (reverse prog))))
-	      ;;(format t "~%program so far:~%~S" prog)
-	   while (< i len))
+	 (setq line (subseq line 0 (search ";" line)))
+      when (> (length line) 0)
+	do
+	   (loop
+	     with len = (length line)
+	     with s and i = 0
+	     do
+		(multiple-value-setq (s i)
+		  (read-from-string line nil nil :start i))
+	        (setq prog (reverse (cons s (reverse prog))))
+	     while (< i len))
       finally
 	 (return (eval `(compile-program ,@prog))))))
   

@@ -5,9 +5,9 @@
 
 #| Buffer for event cognition |#
 
-;; states = state sequence in current event
+;; obs = observation sequence in current event
 ;; h-model = hierarchical modle predicting future states to come
-(defvar episode-buffer* (list ':states (make-hash-table) ':h-model nil))
+(defvar episode-buffer* (list ':obs (make-hash-table) ':h-model nil))
 
 #| Episodic Long Term Memory |#
 (defparameter eltm* nil)
@@ -17,13 +17,13 @@
 ;; id = string of gensym for episode id
 ;; index-episode-id = id of first member episode in schema
 ;; parent = pointer to parent episode
-;; states = start and end statesfor episode
-;; decompositions = ordered sequence of lower-level episodes. Sequence represented as BN
+;; observation = perceptions and inferred relations represented as a BN
+;; temporal = state-transition graph and observation  model represented as a BN
 ;; abstraction-ptrs = list of pointers to higher level abstraction branch, if it exists
 ;; id-ref-map = map binding ids to a pointer to the decomposition
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
-(defstruct episode id index-episode-id parent states decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
+(defstruct episode id index-episode-id parent observation temporal abstraction-ptrs id-ref-map num-decompositions count lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -63,7 +63,7 @@
 #| Copy episode state |#
 
 ;; state = state represented as a graph
-(defun copy-state (state &key (rule-counts nil))
+(defun copy-observation (state &key (rule-counts nil))
   (cons (copy-factors (car state) :rule-counts rule-counts) (copy-edges (cdr state))))
 
 #| Performs deep copy on episode |#
@@ -74,8 +74,8 @@
    :id (if fresh-id (symbol-name (gensym "EPISODE-")) (episode-id ep))
    :index-episode-id (episode-index-episode-id ep)
    :parent (if (episode-parent ep) (episode-parent ep))
-   :states (mapcar #'copy-state (episode-states ep))
-   :decompositions (copy-state (episode-decompositions ep))
+   :states (mapcar #'copy-observation (episode-states ep))
+   :decompositions (copy-observation (episode-decompositions ep))
    :abstraction-ptrs (copy-list (episode-abstraction-ptrs ep))
    :id-ref-map (copy-hash-table (episode-id-ref-map ep) :reference-values t)
    :num-decompositions (episode-num-decompositions ep)
@@ -868,28 +868,28 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
      collect
      (loop
        for i from 1 to remove
-       with copy-state = (copy-seq (car state))
+       with copy-observation = (copy-seq (car state))
        with index
        do
-          (setq index (random (array-dimension copy-state 0)))
-          (setq copy-state (concatenate 'vector (subseq copy-state 0 index)
-                                        (if (< (1+ index) (array-dimension copy-state 0))
-                                            (subseq copy-state (1+ index)))))
+          (setq index (random (array-dimension copy-observation 0)))
+          (setq copy-observation (concatenate 'vector (subseq copy-observation 0 index)
+                                        (if (< (1+ index) (array-dimension copy-observation 0))
+                                            (subseq copy-observation (1+ index)))))
           #|
           (loop
-            for j from saved-j to (array-dimension copy-state 0)
+            for j from saved-j to (array-dimension copy-observation 0)
             with removep
             do
                (setq removep (random 2))
                (when (= removep 1)
-                 (when (= j (- (array-dimension copy-state 0) 1))
+                 (when (= j (- (array-dimension copy-observation 0) 1))
                    (setq j 0))
                  (setq saved-j j)
-                 (setq copy-state (concatenate 'vector (subseq copy-state 0 j)
-                                               (if (< (1+ j) (array-dimension copy-state 0))
-                                                   (subseq copy-state (1+ j)))))
+                 (setq copy-observation (concatenate 'vector (subseq copy-observation 0 j)
+                                               (if (< (1+ j) (array-dimension copy-observation 0))
+                                                   (subseq copy-observation (1+ j)))))
                  (return))
-               (when (= j (- (array-dimension copy-state 0) 1))
+               (when (= j (- (array-dimension copy-observation 0) 1))
                  (setq j 0)))|#
        finally
 	  #|
@@ -899,7 +899,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	      with predicate
 	      with cur-percept
 	      ;;assumes these cpds are percepts
-	      for cpd being the elements of copy-state
+	      for cpd being the elements of copy-observation
 	      do
 		 (cond ((action-cpd-p cpd)
 		        (cond ((equal (gethash cur-percept (rule-based-cpd-identifiers cpd)) 1)
@@ -946,8 +946,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (log-message (list "~%:observation~%~A" predicate-cue) (format nil "matt-trace/matt-trace-observability~d.txt" percentage)))))
 	  |#
           (let (edges)
-            (setq edges (make-graph-edges copy-state))
-            (return (cons copy-state edges))))))
+            (setq edges (make-graph-edges copy-observation))
+            (return (cons copy-observation edges))))))
 
 #| Produce recollections from model |#
 
@@ -1189,8 +1189,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 (defun dummy (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
   (format t "here1")
-  (setf (gethash 0 (getf episode-buffer* :states))
-        (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :states))))))
+  (setf (gethash 0 (getf episode-buffer* :obs))
+        (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :obs))))))
   (format t "~%Adding new episode.")
   (finish-output)
   (setq empty-decomp (make-empty-graph))
@@ -1199,7 +1199,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (finish-output)
   (setq ep (make-episode :id ep-id
                          :index-episode-id ep-id
-                         :states (mapcar #'copy-state (last (gethash 0 (getf episode-buffer* :states))))
+                         :states (mapcar #'copy-observation (last (gethash 0 (getf episode-buffer* :obs))))
                          :decompositions empty-decomp
                          :id-ref-map (make-hash-table :test #'equal)
                          :num-decompositions 0
@@ -1219,14 +1219,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
   (let (p ref empty-decomp ep-id)
     (cond (state
-	   (setf (gethash 0 (getf episode-buffer* :states))
-                 (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :states)))))))
+	   (setf (gethash 0 (getf episode-buffer* :obs))
+                 (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :obs)))))))
           (t
            (multiple-value-bind (p-elements p-edges)
                (state-to-graph pstm cstm :executing-intention executing-intention*)
              (setq p (cons p-elements p-edges)))
-           (setf (gethash 0 (getf episode-buffer* :states))
-                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
+           (setf (gethash 0 (getf episode-buffer* :obs))
+                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs))))))))
     (when (and (or pstm state) insertp)
       (format t "~%Adding new episode.")
       (finish-output)
@@ -1234,7 +1234,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (setq ep-id (symbol-name (gensym "EPISODE-")))
       (setq ep (make-episode :id ep-id
                              :index-episode-id ep-id
-                             :states (mapcar #'copy-state (last (gethash 0 (getf episode-buffer* :states))))
+                             :states (mapcar #'copy-observation (last (gethash 0 (getf episode-buffer* :obs))))
                              :decompositions empty-decomp
                              :id-ref-map (make-hash-table :test #'equal)
                              :num-decompositions 0
@@ -1243,8 +1243,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (format t "~%inserting ~A" (episode-id ep))
       (multiple-value-setq (eltm* ref)
         (insert-episode eltm* ep nil :bic-p bic-p))
-      (setf (gethash 1 (getf episode-buffer* :states))
-            (nreverse (cons (list ref (copy-state (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :states))))))
+      (setf (gethash 1 (getf episode-buffer* :obs))
+            (nreverse (cons (list ref (copy-observation (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :obs))))))
       ;;(eltm-to-pdf)
       ;;(break)
       )))
@@ -1259,47 +1259,50 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (let (p ref empty-decomp ep-id ep model)
     (cond (state
 	   (setq p state)
-           (setf (gethash 0 (getf episode-buffer* :states))
-                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states)))))))
+           (setf (gethash 0 (getf episode-buffer* :obs))
+                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs)))))))
           (t
            (multiple-value-bind (p-elements p-edges)
                (state-to-graph pstm cstm :executing-intention executing-intention*)
              (setq p (cons p-elements p-edges)))
-           (setf (gethash 0 (getf episode-buffer* :states))
-                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
+           (setf (gethash 0 (getf episode-buffer* :obs))
+                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs))))))))
     (unless insertp
       (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
-				    (getf episode-buffer* :states)))
+				    (getf episode-buffer* :obs)))
       (unless model
 	(setq insertp t)))
     (when (and (or pstm state) insertp)
-      (format t "~%Adding new episode.")
-      (setq empty-decomp (make-empty-graph))
-      (setq ep-id (symbol-name (gensym "EPISODE-")))
-      (setq ep (make-episode :id ep-id
-                             :index-episode-id ep-id
-                             :states (mapcar #'copy-state (last (gethash 0 (getf episode-buffer* :states))))
-                             :decompositions empty-decomp
-                             :id-ref-map (make-hash-table :test #'equal)
-                             :num-decompositions 0
-                             :count 1
-                             :lvl 1))
-      (format t "~%inserting ~A" (episode-id ep))
-      (multiple-value-setq (eltm* ref)
-        (insert-episode eltm* ep nil :bic-p bic-p))
-      (setf (gethash 1 (getf episode-buffer* :states))
-            (nreverse (cons (list ref (copy-state (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :states))))))
+      (loop
+	 with refs
+	 for obs in (gethash 0 (getf episode-buffer* :obs))
+	   do
+	   (setq empty-decomp (make-empty-graph))
+	   (setq ep-id (symbol-name (gensym "EPISODE-")))
+	   (setq ep (make-episode :id ep-id
+				  :index-episode-id ep-id
+				  :observation (mapcar #'copy-observation (last (gethash 0 (getf episode-buffer* :obs))))
+				  :id-ref-map (make-hash-table :test #'equal)
+				  :num-decompositions 0
+				  :count 1
+				  :lvl 1))
+	   (format t "~%inserting ~A" (episode-id ep))
+	   (multiple-value-setq (eltm* ref)
+             (insert-episode eltm* ep nil :bic-p bic-p))
+	   (setq refs (cons ref refs)))
+      (setf (gethash 1 (getf episode-buffer* :obs))
+            (nreverse (cons (list ref (copy-observation (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :obs))))))
       ;;(eltm-to-pdf)
       ;;(break)
       )))
 
 (defun print-h-buffer ()
   (loop
-    with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :states)))
+    with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :obs)))
     for i from 2 to lvls
     do
        (format t "~%lvl ~d: " i)
-       (format t "~{~d~^ ~}" (mapcar #'(lambda (ref) (episode-id (caar ref))) (gethash i (getf episode-buffer* :states))))))
+       (format t "~{~d~^ ~}" (mapcar #'(lambda (ref) (episode-id (caar ref))) (gethash i (getf episode-buffer* :obs))))))
 
 #| Add abstracted episode to event memory |#
 
@@ -1318,15 +1321,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       for subskill in intention-executed-subskills
       do
          (setq skill-lvl (sclause-height (intention-operator subskill)))
-         (setq decomposition (car (last (gethash skill-lvl (getf episode-buffer* :states)))))
-         (setf (gethash skill-lvl (getf episode-buffer* :states)) (butlast (gethash skill-lvl (getf episode-buffer* :states))))
+         (setq decomposition (car (last (gethash skill-lvl (getf episode-buffer* :obs)))))
+         (setf (gethash skill-lvl (getf episode-buffer* :obs)) (butlast (gethash skill-lvl (getf episode-buffer* :obs))))
          (setq decompositions (cons decomposition decompositions))
       finally
          (cond ((null decompositions)
-                (setq dcmps (last (gethash 1 (getf episode-buffer* :states))
+                (setq dcmps (last (gethash 1 (getf episode-buffer* :obs))
                                   intention-active-cycles))
-                (setf (gethash 1 (getf episode-buffer* :states))
-                      (butlast (gethash 1 (getf episode-buffer* :states))
+                (setf (gethash 1 (getf episode-buffer* :obs))
+                      (butlast (gethash 1 (getf episode-buffer* :obs))
                                intention-active-cycles)))
                (t
                 (setq dcmps decompositions))))
@@ -1368,8 +1371,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (setf (episode-abstraction-ptrs (caar dcmp)) (cons ref (episode-abstraction-ptrs (caar dcmp)))))
     ;;(eltm-to-pdf)
     ;;(break)
-    (setf (gethash cur-lvl (getf episode-buffer* :states))
-          (nreverse (cons (list ref (copy-state start-state) (copy-state end-state)) (nreverse (gethash cur-lvl (getf episode-buffer* :states))))))
+    (setf (gethash cur-lvl (getf episode-buffer* :obs))
+          (nreverse (cons (list ref (copy-observation start-state) (copy-observation end-state)) (nreverse (gethash cur-lvl (getf episode-buffer* :obs))))))
     (when t
       (format t "~%h cache after insertion:")
       (print-h-buffer))))
@@ -1379,12 +1382,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; n = number of items to remove from cache
 (defun clear-episodic-cache (&optional lvl n)
   (cond ((and lvl n)
-         (setf (gethash lvl (getf episode-buffer* :states))
-               (butlast (gethash lvl (getf episode-buffer* :states)) n)))
+         (setf (gethash lvl (getf episode-buffer* :obs))
+               (butlast (gethash lvl (getf episode-buffer* :obs)) n)))
         ((and lvl (not n))
-         (setf (gethash lvl (getf episode-buffer* :states)) nil))
+         (setf (gethash lvl (getf episode-buffer* :obs)) nil))
         (t
-         (setf (getf episode-buffer* :states) (make-hash-table)))))
+         (setf (getf episode-buffer* :obs) (make-hash-table)))))
 
 #| Add a higher-level episode to event memory |#
 

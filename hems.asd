@@ -9,4 +9,5 @@
 	      (:file "episodic" :depends-on ("graph-representation"))
 	      (:file "hems-program-compiler" :depends-on ("graph-representation" "performance-stats"))
 	      (:file "performance-stats" :depends-on ("graph-representation"))
-	      (:file "graph-representation" :depends-on ("package"))))
+	      (:file "graph-representation" :depends-on ("package"))
+	      (:file "segmentation" :depends-on ("episodic"))))

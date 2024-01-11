@@ -1,3 +1,4 @@
+(in-package :hems)
 #| Write a message to the log file |#
 
 ;; message = list of format arguments

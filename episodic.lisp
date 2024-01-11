@@ -18,12 +18,14 @@
 ;; index-episode-id = id of first member episode in schema
 ;; parent = pointer to parent episode
 ;; observation = perceptions and inferred relations represented as a BN
-;; temporal = state-transition graph and observation  model represented as a BN
+;; state-transitions = state-transition graph and observation  model represented as a BN
+;; temporal-p = flag for whether the episode represents a course of events (state transitions) or state of affairs (observation)
+;; decompositions = hash table of state node cpd dependent ids to back-links pointing to lower-level observation/state transition decomposition models in the event memory
 ;; abstraction-ptrs = list of pointers to higher level abstraction branch, if it exists
 ;; id-ref-map = map binding ids to a pointer to the decomposition
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
-(defstruct episode id index-episode-id parent observation temporal abstraction-ptrs id-ref-map num-decompositions count lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -134,6 +136,8 @@
         (t
          (cons (episode-id (getf model :model)) (get-model-names-in-stack (getf model :model-parent))))))
 
+#| Incorporate contents of new episode into existing event memory content |#
+
 ;; ep1-states = states in episode1 (from event memory)
 ;; ep2-states = states in episode2 (from new episode)
 ;; mappings = matching with bindings (for each state) from ep2 nodes to ep1 nodes
@@ -193,6 +197,49 @@
     finally
        (return states)))
 
+#| Incorporate contents of new episode into existing event memory content |#
+
+;; ep1-bn = bn in episode1 (from event memory)
+;; ep2-bn = bn in episode2 (from new episode)
+;; mappings = matching with bindings from ep2 nodes to ep1 nodes
+;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
+;; bindings = bindings
+(defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings)
+  (let (p q new-nodes)
+    (setq p (copy-factors (car (ep1-bn))))
+    (setq q (copy-factors (car (ep2-bn))))
+    (loop
+      for (p-match . q-match) being the elements of mappings
+      with node and nodes and p-cpd
+      do
+	 (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
+	       (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
+         (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
+	 (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
+	       (format t "~%p-cpd after subst:~%~S" p-cpd))
+         (when nil (and (equal "TURN_RIGHTNIL" (gethash 0 (rule-based-cpd-qualified-vars (aref p p-match))))
+			(equal "ACTIONNIL" (gethash 1 (rule-based-cpd-qualified-vars (aref p p-match)))))
+               (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
+               (break))
+         (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings nodes ep1-count))
+         ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
+	 (setq new-nodes (cons node new-nodes)))
+    (loop
+         for (dummy-match . unmatched-q) in unmatched-qs
+         with dm and node
+         do
+            (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
+              (format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q)))
+	    (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
+	    (setq node (factor-merge dm (aref q unmatched-q) bindings new-nodes ep1-count))
+	    (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
+              (format t "~%node:~%~S" node)
+	      (break))
+            (setq new-nodes (cons node new-nodes)))
+    (setq new-nodes (sort new-nodes #'higher-lvl-cpd))
+    (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
+    (cons new-nodes (make-graph-edges new-nodes))))
+
 #| Update distribution over states |#
 
 ;; x = episode from event memory
@@ -237,10 +284,9 @@
 ;; ep1 = existing episode in memory
 ;; ep2 = new episode
 ;; mappings = matching with bindings (for each state) from ep2 nodes to ep1 nodes
-;; unmatched = list of lists of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
-;; bbindings = list of bindings
-;; decomp-bindings = bindings for merging decompositions
-(defun combine (ep1 ep2 mappings unmatched bbindings decomp-bindings)
+;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
+;; bindings = bindings
+(defun combine (ep1 ep2 mappings unmatched bindings)
   ;;(format t "~%schema decopositions:~%~S~%num:~%~d~%episode decopositions:~%~S~%num:~%~d~%decomp bindings:~%~S" (episode-decompositions ep1) (episode-num-decompositions ep1) (episode-decompositions ep2) (episode-num-decompositions ep2) decomp-bindings)
   (make-episode :id (episode-id ep1)
                 :index-episode-id (episode-index-episode-id ep1)
@@ -259,6 +305,41 @@
                 :num-decompositions (max (episode-num-decompositions ep1) (episode-num-decompositions ep2))
                 :states (combine-states (episode-states ep1) (episode-states ep2) (episode-count ep1) mappings unmatched bbindings)
                 :decompositions (merge-decompositions ep1 ep2 decomp-bindings)
+                :abstraction-ptrs (episode-abstraction-ptrs ep1)))
+
+
+#| Combine episodes together to make probabilistic description |#
+
+;; ep1 = existing episode in memory
+;; ep2 = new episode
+;; mappings = matching with bindings (for each state) from ep2 nodes to ep1 nodes
+;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
+;; bindings = bindings
+(defun new-combine (ep1 ep2 mappings unmatched bindings)
+  ;;(format t "~%schema decopositions:~%~S~%num:~%~d~%episode decopositions:~%~S~%num:~%~d~%decomp bindings:~%~S" (episode-decompositions ep1) (episode-num-decompositions ep1) (episode-decompositions ep2) (episode-num-decompositions ep2) decomp-bindings)
+  (make-episode :id (episode-id ep1)
+                :index-episode-id (episode-index-episode-id ep1)
+                :parent (if (episode-parent ep1) (episode-parent ep1))
+                :count (+ (episode-count ep1) (episode-count ep2))
+                :lvl (max (episode-lvl ep1) (episode-lvl ep2))
+                :id-ref-map
+                (loop
+                  with new-id-ref-map  = (copy-hash-table (episode-id-ref-map ep1) :reference-values t)
+                  for id being the hash-keys of (episode-id-ref-map ep2)
+                    using (hash-value ref)
+                  do
+                     (setf (gethash id new-id-ref-map) ref)
+                  finally
+                     (return new-id-ref-map))
+                :num-decompositions (max (episode-num-decompositions ep1) (episode-num-decompositions ep2))
+                :observation (if (episode-temporal-p ep2)
+				 (episode-observation ep1)
+				 (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
+		:observation (if (episode-temporal-p ep2)
+				 (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings)
+				 (episode-state-transitions ep1))
+		:temporal-p (or (episode-temporal-p ep1) (episode-temporal-p ep2))
+		:decompositions (episode-decompositions ep1)
                 :abstraction-ptrs (episode-abstraction-ptrs ep1)))
 
 #| Match decomposition states between episodes |#
@@ -467,6 +548,68 @@
                      (setf (car x) generalized)
                      (return (values x (reduce #'+ costs) bbindings t nil reject-list))))))))
 
+#| Merge two episodes together|#
+
+;; x = episodic memory
+;; y = episode to merge into x
+;; res = existing mapping and bindings
+;; reject-list = list of episode ids to reject when merging
+;; bic-p = flag to compute BIC
+(defun new-ep-merge (x y res reject-list bic-p &aux generalized equivalent)
+  ;;(format t "~%reject list: ~A~%root id: ~A" reject-list (if x (episode-id (car x))))
+  (cond ((null x) (values x 0 (list (make-hash-table :test #'equal)) nil nil reject-list))
+        ((reject-branch? x y reject-list :check-decomps nil)
+         (values x 0 (list (make-hash-table :test #'equal)) nil nil (cons (episode-id (car x)) reject-list)))
+        (res
+         ;; combine the graphs according to the mapping
+         (setq generalized (new-combine (car x) y (first res) (second res) (fourth res)))
+         (setq equivalent (= 0 (third res)))
+         (cond ((and equivalent (null (cdr x)))
+                (setf (car x) generalized)
+                (values x (third res) (fourth res) nil t reject-list))
+               ((and equivalent (cdr x))
+                (setf (car x) generalized)
+                (values x (third res) (fourth res) t nil reject-list))
+               ((and (not equivalent) (null (cdr x)))
+                (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
+                (push (car x) (cdr (last x)))
+                (setf (car x) generalized)
+                (setf (second x) (list (second x)))
+                (setf (episode-parent (car (second x))) x)
+                (values x (third res) (fourth res) nil nil reject-list))
+               ((and (not equivalent) (cdr x))
+                (setf (car x) generalized)
+                (values x (third res) (fourth res) t nil reject-list))))
+        (t ;; when insert starts at root
+	 (let (pattern base)
+	   (cond ((episode-temporal-p y)
+		  (setq pattern (episode-state-transitions y))
+		  (setq base (episode-state-transitions (car x))))
+		 (t
+		  (setq pattern (episode-observation y))
+		  (setq base (episode-observation (car x)))))
+	   (multiple-value-bind (sol no-matches cost bindings unweighted-cost)
+               (maximum-common-subgraph (car pattern-state-pointer) (car base-state-pointer) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
+	     (declare (ignore unweighted-cost))
+	     (setq generalized (new-combine (car x) y sol no-matches bindings))
+	     (setq equivalent (= 0 cost))
+	     (cond ((and equivalent (null (cdr x)))
+                    (setf (car x) generalized)
+                    (values x cost bindings nil t reject-list))
+                   ((and equivalent (cdr x))
+                    (setf (car x) generalized)
+                    (values x cost bindings t nil reject-list))
+                   ((and (not equivalent) (null (cdr x)))
+                    (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
+                    (push (car x) (cdr (last x)))
+                    (setf (car x) generalized)
+                    (setf (second x) (list (second x)))
+                    (setf (episode-parent (car (second x))) x)
+                    (values x cost bindings nil nil reject-list))
+                   ((and (not equivalent) (cdr x))
+                    (setf (car x) generalized)
+                    (values x cost bbindings t nil reject-list))))))))
+
 #| Rudamentary printer for showing the branching structure of eltm. |#
 
 ;; eltm = episodic long-term memory
@@ -564,6 +707,81 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (format t "~%Recursing on best child"))
            (multiple-value-bind (new-branch ref)
                (insert-episode (nth (car best-child) eltm) ep reject-list :res res :depth (+ depth 1) :bic-p bic-p)
+             (setf (nth (car best-child) eltm) new-branch)
+             (values eltm ref))))))
+
+#| Inserts episode into episodic memory
+
+tree = \lambda v b1 b2 ... bn l b. (b v b1 b2 ... bn)
+tree = \lambda v b1 b2 ....bn l b. (l v)
+|#
+
+;; eltm = episodic memory
+;; ep = episode to insert (list of (state . type-count), where state = (factors . edges)
+;; reject-list = list of episode ids to reject when merging
+;; res = optimal common subgraph between ep and eltm
+(defun new-insert-episode (eltm ep reject-list &key res (depth 0) (bic-p t) &aux best-child (best-child-cost most-positive-fixnum))
+  (multiple-value-bind (eltm p-cost p-bbindings branch absorb rejects)
+      (new-ep-merge eltm ep res reject-list bic-p)
+    ;;(break)
+    ;;(format t "~%branch-p: ~S" branch)
+    (setq reject-list rejects)
+    (when nil
+      (format t "~%~%parent episode-id ~A parent episode-states: ~d parent lvl: ~d parent decompositions: ~A parent abstraction pointers: ~S~%episode-states: ~d episode lvl: ~d episode decompositions: ~A episode abstraction pointers: ~S~%parent cost of match: ~d"
+              (ignore-errors (episode-id (car eltm))) (ignore-errors (length (episode-states (car eltm)))) (ignore-errors (episode-lvl (car eltm))) (ignore-errors (episode-num-decompositions (car eltm))) (ignore-errors (mapcar #'(lambda (abstr-ptr) (episode-id (car abstr-ptr))) (episode-abstraction-ptrs (car eltm)))) (length (episode-states ep)) (episode-lvl ep) (episode-num-decompositions ep) (ignore-errors (mapcar #'(lambda (abstr-ptr) (episode-id (car abstr-ptr))) (episode-abstraction-ptrs ep))) p-cost))
+    (when branch
+      (loop
+	with pattern and base
+        for branch in eltm
+        for i from 0
+        when (> i 0) do
+          (cond ((not (reject-branch? branch ep reject-list :check-decomps t))
+                 (when nil
+                   (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
+                           (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
+		 (cond ((episode-temporal-p ep)
+			(setq pattern (episode-state-transitions ep))
+			(setq base (episode-state-transitions (car branch))))
+		       (t
+			(setq pattern (episode-observation ep))
+			(setq base (episode-observation (car branch)))))
+		 (multiple-value-bind (sol no-matches cost bindings unweighted-cost)
+                     (maximum-common-subgraph pattern base :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
+                   ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
+                   ;;(subgraph-optimal-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
+                   (declare (ignorable unweighted-cost))
+		   (when nil
+                        (format t "~%cost of branch after matching decompositions: ~d~%size of bindings: ~d" cost (hash-table-count bindings)))
+		   (when (or (= i 1) (better-random-match? (list nil cost bindings) best-child)#|(< kost best-child-cost)|#)
+                        (setq res (list sol no-matches cost bindings))
+                        (setq best-child-cost cost)
+                        (setq best-child (list i cost bindings)))))
+                (t
+                 (setq reject-list (cons (episode-id (car branch)) reject-list))))))
+    ;;(format t "~%~%parent cost: ~d~%unweighted parent cost: ~d~%best-child cost: ~d" p-cost unweighted-p-cost best-child-cost)
+    (when nil t
+      (format t "~%~%parent cost: ~d~%size parent bindings: ~d~%best-child-weighted-cost: ~d~%size best-child bindings: ~d" p-cost (hash-table-count (car p-bbindings)) best-child-cost (if branch (hash-table-count (third best-child)) 0)))
+    (cond ((null eltm)
+           (setf eltm (list ep))
+           (when nil t
+             (format t "~%Pushed to empty memory"))
+           (values eltm eltm))
+          (absorb
+           (when nil t
+             (format t "~%Absorbed"))
+           (values eltm eltm))
+          ((or (and branch (better-random-match? (list nil p-cost (car p-bbindings)) best-child) #|(<= p-cost best-child-cost)|#)
+	       (not branch))
+           (setf (episode-parent ep) eltm)
+           (push (list ep) (cdr (last eltm)))
+           (when nil t
+             (format t "~%Added new child of parent"))
+           (values eltm (car (last eltm))))
+          (t ;;(and branch (> p-cost best-child-cost))
+           (when nil t
+             (format t "~%Recursing on best child"))
+           (multiple-value-bind (new-branch ref)
+               (new-insert-episode (nth (car best-child) eltm) ep reject-list :res res :depth (+ depth 1) :bic-p bic-p)
              (setf (nth (car best-child) eltm) new-branch)
              (values eltm ref))))))
 
@@ -1256,7 +1474,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; pstm = sensory perceptions of the world
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
 (defun new-push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (bic-p t) (insertp nil))
-  (let (p ref empty-decomp ep-id ep model)
+  (let (p model)
     (cond (state
 	   (setq p state)
            (setf (gethash 0 (getf episode-buffer* :obs))
@@ -1274,10 +1492,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(setq insertp t)))
     (when (and (or pstm state) insertp)
       (loop
-	 with refs
-	 for obs in (gethash 0 (getf episode-buffer* :obs))
-	   do
-	   (setq empty-decomp (make-empty-graph))
+	with ep and ep-id and ref
+	with cur-st and prev-st and st-bn and st-ref-hash
+	for obs in (gethash 0 (getf episode-buffer* :obs))
+	do
 	   (setq ep-id (symbol-name (gensym "EPISODE-")))
 	   (setq ep (make-episode :id ep-id
 				  :index-episode-id ep-id
@@ -1288,10 +1506,41 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  :lvl 1))
 	   (format t "~%inserting ~A" (episode-id ep))
 	   (multiple-value-setq (eltm* ref)
-             (insert-episode eltm* ep nil :bic-p bic-p))
-	   (setq refs (cons ref refs)))
+             (new-insert-episode eltm* ep nil :bic-p bic-p))
+	   (setq cur-st (gensym "STATE-"))
+	 collect ref into refs
+	 nconcing `(,cur-st = (state-node state :value "T")) into state-transitions
+	 when prev-st
+	   nconcing `(,prev-st -> ,cur-st) into state-transitions
+	 do
+	    (setq prev-st cur-st)
+	 finally
+	    ;;(setq state-transitions (concatenate 'list ,@state-transitions))
+	    (setq st-bn (eval `(compile-program ,@state-transitions)))
+	    (setq st-ref-hash (make-hash-table :test #'equal))
+	    (loop
+	      for s being the elements of (car st-bn)
+	      for r in refs
+	      do
+		 (setf (gethash (rule-based-cpd-dependent-id s) st-ref-hash) r))
+	   ;; make temporal episode from state transitions
+	   (setq ep-id (symbol-name (gensym "EPISODE-")))
+	   (setq ep (make-episode :id ep-id
+				  :index-episode-id ep-id
+				  :state-transitions st-bn
+				  :decompositions st-ref-hash
+				  :temporal-p t
+				  :id-ref-map (make-hash-table :test #'equal)
+				  :num-decompositions 0
+				  :count 1
+				  :lvl 2))
+	   (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p)))
+      ;; clear buffer
+      (clear-episodic-cache 0)
+      #|
       (setf (gethash 1 (getf episode-buffer* :obs))
             (nreverse (cons (list ref (copy-observation (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :obs))))))
+      |#
       ;;(eltm-to-pdf)
       ;;(break)
       )))
@@ -1378,6 +1627,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (print-h-buffer))))
 
 #| Clear contents of episodic cache |#
+
 ;; lvl = level to remove items from cache
 ;; n = number of items to remove from cache
 (defun clear-episodic-cache (&optional lvl n)

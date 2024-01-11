@@ -66,70 +66,108 @@
            (when t
              (format t "~%decomposing higher-level model ~A." (episode-id episode)))
            (loop
-              with calls-to-retrieve = 0
-              with decomp-refs = (infer-decompositions episode (car obs-window) observed-decomps (+ (getf model :cur-step) 1))
-              for i from (if decompose-last-p (- (array-dimension decomp-refs 0) 1) (+ (getf model :cur-step) 1)) to (- (array-dimension decomp-refs 0) 1)
-              with branch-ref and cue and decomp-model
-              while obs-window do
-		(setf (getf model :cur-step) (+ (getf model :cur-step) 1))
-		(setf (getf model :inferred-decompositions) decomp-refs)
-		(setq cue (make-episode
-                           :states (list (copy-observation (car obs-window)))
-                           :decompositions (make-empty-graph)
-                           :id-ref-map (make-hash-table :test #'equal)
-                           :num-decompositions 0
-                           :lvl (episode-lvl (getf model :model))
-                           :abstraction-ptrs (list (list (getf model :model)))))
-		(setq branch-ref (gethash (aref decomp-refs i) (episode-id-ref-map episode)))
-		(multiple-value-bind (new-model new-reject-lists remaining-states new-calls)
-                    (define-decomposition obs-window branch-ref cue reject-lists bic-p
-					  :lvl-func #'<
-					  :check-abstraction-ptrs t
-					  :parent model
-					  :auto-pass auto-pass
-					  :decompose-last-p decompose-last-p)
-                  (setq decomp-model new-model)
-                  (setq obs-window remaining-states)
-                  (setq reject-lists new-reject-lists)
-                  (setq calls-to-retrieve (+ calls-to-retrieve new-calls))
-                  (cond (decomp-model
-                         (when t
-                           (format t "~%Success. Advanced model step to ~d. Advanced model scope to ~d." (getf model :cur-step) (getf model :scope))))
-			(t
-                         (when t
-                           (format t "~%Decomposition failed. Skipping to next step.")))))
-              finally
-                (cond(decomp-model
-                      (when t
-                        (format t "~%model succeeded for all decompositions."))
-                      (return (values decomp-model obs-window reject-lists calls-to-retrieve)))
-                     (t
-                      (when t
-                        (format t "~%Failure because state transition model failed."))
-                      (return (values nil obs-window reject-lists calls-to-retrieve)))))))))
+             with calls-to-retrieve = 0
+             with decomp-refs = (infer-decompositions episode (car obs-window) observed-decomps (+ (getf model :cur-step) 1))
+             for i from (if decompose-last-p (- (array-dimension decomp-refs 0) 1) (+ (getf model :cur-step) 1)) to (- (array-dimension decomp-refs 0) 1)
+             with branch-ref and cue and decomp-model
+             while obs-window do
+	       (setf (getf model :cur-step) (+ (getf model :cur-step) 1))
+	       (setf (getf model :inferred-decompositions) decomp-refs)
+	       (setq cue (make-episode
+                          :states (list (copy-observation (car obs-window)))
+                          :decompositions (make-empty-graph)
+                          :id-ref-map (make-hash-table :test #'equal)
+                          :num-decompositions 0
+                          :lvl (episode-lvl (getf model :model))
+                          :abstraction-ptrs (list (list (getf model :model)))))
+	       (setq branch-ref (gethash (aref decomp-refs i) (episode-id-ref-map episode)))
+	       (multiple-value-bind (new-model new-reject-lists remaining-states new-calls)
+                   (define-decomposition obs-window branch-ref cue reject-lists bic-p
+		     :lvl-func #'<
+		     :check-abstraction-ptrs t
+		     :parent model
+		     :auto-pass auto-pass
+		     :decompose-last-p decompose-last-p)
+                 (setq decomp-model new-model)
+                 (setq obs-window remaining-states)
+                 (setq reject-lists new-reject-lists)
+                 (setq calls-to-retrieve (+ calls-to-retrieve new-calls))
+                 (cond (decomp-model
+                        (when t
+                          (format t "~%Success. Advanced model step to ~d. Advanced model scope to ~d." (getf model :cur-step) (getf model :scope))))
+		       (t
+                        (when t
+                          (format t "~%Decomposition failed. Skipping to next step.")))))
+             finally
+                (cond (decomp-model
+                       (when t
+                         (format t "~%model succeeded for all decompositions."))
+                       (return (values decomp-model obs-window reject-lists calls-to-retrieve)))
+                      (t
+                       (when t
+                         (format t "~%Failure because state transition model failed."))
+                       (return (values nil obs-window reject-lists calls-to-retrieve)))))))))
 
-(defun get-model ()
-  ;; make a retrieval cue from the latest observation in state window
-  ;; return the retrieved model
-  (let (cue eme bn st-ref-hash)
-    (setq bn (compile-program c0 = (state-node state :value "T")))
-    (setf (gethash (rule-based-cpd-dependent-id (aref 0 (car bn)))
-		   st-ref-hash)
-	  (list (copy-observation (car (last obs-window)))))
-    (setq cue (make-episode :state-transitions bn
-                            :decompositions st-ref-hash
-			    :temporal-p t
-                            :id-ref-map (make-hash-table :test #'equal)
-                            :num-decompositions 0
-                            :lvl 1))
-    (setq eme
-	  (retrieve-episode eltm cue (car (last reject-lists)) :bic-p bic-p :lvl-func lvl-func :forbidden-types forbidden-types :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case))
-    (make-model :ep eme :model-parent nil)))
+(defun get-model (obs-window eltm reject-list)
+  (loop
+    with cue and eme and ref and st-ref-hash
+    with cur-st and prev-st and st-bn and st-ref-hash
+    for obs in (gethash 0 (getf episode-buffer* :obs))
+    do
+       (setq cue (make-episode :observation (mapcar #'copy-observation obs)
+			       :id-ref-map (make-hash-table :test #'equal)
+			       :num-decompositions 0
+			       :count 1
+			       :lvl 1))
+       (setq ref (retrieve-episode eltmi cue reject-list
+				   :bic-p bic-p
+				   :lvl-func lvl-func
+				   :forbidden-types forbidden-types
+				   :check-decomps check-decomps
+				   :check-abstraction-ptrs check-abstraction-ptrs
+				   :check-index-case check-index-case))
+       (setq cur-st (gensym "STATE-"))
+    collect ref into refs
+    nconcing `(,cur-st = (state-node state :value "T")) into state-transitions
+    when prev-st
+      nconcing `(,prev-st -> ,cur-st) into state-transitions
+    do
+       (setq prev-st cur-st)
+    finally
+       (setq st-bn (eval `(compile-program ,@state-transitions)))
+       (setq st-ref-hash (make-hash-table :test #'equal))
+       (loop
+	 for s being the elements of (car st-bn)
+	 for r in refs
+	 do
+	    (setf (gethash (rule-based-cpd-dependent-id s) st-ref-hash) r))
+       ;; make temporal episode from state transitions
+       (setq cue (make-episode :state-transitions st-bn
+			       :decompositions st-ref-hash
+			       :temporal-p t
+			       :id-ref-map (make-hash-table :test #'equal)
+			       :num-decompositions 0
+			       :count 1
+			       :lvl 2))
+       (setq eme (retrieve-episode eltm cue reject-list
+				   :bic-p bic-p
+				   :lvl-func lvl-func
+				   :forbidden-types forbidden-types
+				   :check-decomps check-decomps
+				   :check-abstraction-ptrs check-abstraction-ptrs
+				   :check-index-case check-index-case))
+       (return (make-model :ep eme :model-parent nil))))
 
-(defun event-boundary-p  (model obs-window)
-  (when (null model)
-    (setq model (get-model)))
-  (multiple-value-bind (new-model remaining-states rejects calls-to-retrieve)
-      (good-fit-to-observations? model obs-window nil)
-    (declare (ignore rejects calls-to-retrieve))
-    new-model))
+(defun event-boundary-p  (model obs-window eltm reject-list)
+  (loop
+    do
+       (when (null (getf model :model))
+	 (setq model (get-model obs-window eltm reject-list)))
+       (multiple-value-bind (new-model remaining-states new-rejects calls-to-retrieve)
+	   (good-fit-to-observations? model obs-window reject-list)
+	 (declare (ignore calls-to-retrieve))
+	 (setq reject-list new-rejects)
+	 (setq model new-model))
+    while (and (null (getf model :model))
+	       (not (member (episode-id (car eltm)) reject-list :test #'equal))))
+  model)

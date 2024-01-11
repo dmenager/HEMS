@@ -25,7 +25,9 @@
 ;; id-ref-map = map binding ids to a pointer to the decomposition
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p decompositions abstraction-ptrs id-ref-map num-decompositions count lvl)
+;; depth = depth of episode in episodic long-term memory. Fixed at insertion
+;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p decompositions abstraction-ptrs id-ref-map num-decompositions count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -762,6 +764,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when nil t
       (format t "~%~%parent cost: ~d~%size parent bindings: ~d~%best-child-weighted-cost: ~d~%size best-child bindings: ~d" p-cost (hash-table-count (car p-bbindings)) best-child-cost (if branch (hash-table-count (third best-child)) 0)))
     (cond ((null eltm)
+	   (setf (episode-depth ep) depth)
            (setf eltm (list ep))
            (when nil t
              (format t "~%Pushed to empty memory"))
@@ -773,7 +776,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
           ((or (and branch (better-random-match? (list nil p-cost (car p-bbindings)) best-child) #|(<= p-cost best-child-cost)|#)
 	       (not branch))
            (setf (episode-parent ep) eltm)
-           (push (list ep) (cdr (last eltm)))
+	   (setf (episode-depth ep) depth)
+	   (push (list ep) (cdr (last eltm)))
            (when nil t
              (format t "~%Added new child of parent"))
            (values eltm (car (last eltm))))
@@ -1466,7 +1470,25 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(eltm-to-pdf)
       ;;(break)
       )))
+#| Find the lowest common ancestor of two episodes|#
 
+;; ep1 = episode
+;; ep2 = episode
+(defun get-common-episode-class (ep1 ep2)
+  (loop
+    while (not (= (episode-depth ep1) (episode-depth ep2)))
+    if (> (episode-depth ep1) (episode-depth ep2))
+      do
+	 (setq ep1 (car (episode-parent ep1)))
+    else
+      do
+	 (setq ep2 (car (episode-parent ep2))))
+  (loop
+    while (not (equal (episode-id ep1) (episode-id ep2)))
+    do
+       (setq ep1 (car (episode-parent ep1)))
+       (setq ep2 (car (episode-parent ep2))))
+  ep1)
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
 ;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges
@@ -1487,10 +1509,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs))))))))
     (unless insertp
       (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
-				    (getf episode-buffer* :obs)))
-      (unless model
+				    (getf episode-buffer* :obs)
+				    eltm*
+				    nil))
+      (unless (getf model :model)
 	(setq insertp t)))
-    (when (and (or pstm state) insertp)
+    (when insertp
       (loop
 	with ep and ep-id and ref
 	with cur-st and prev-st and st-bn and st-ref-hash
@@ -1499,11 +1523,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq ep-id (symbol-name (gensym "EPISODE-")))
 	   (setq ep (make-episode :id ep-id
 				  :index-episode-id ep-id
-				  :observation (mapcar #'copy-observation (last (gethash 0 (getf episode-buffer* :obs))))
+				  :observation (mapcar #'copy-observation obs)
 				  :id-ref-map (make-hash-table :test #'equal)
 				  :num-decompositions 0
 				  :count 1
 				  :lvl 1))
+
+	   
 	   (format t "~%inserting ~A" (episode-id ep))
 	   (multiple-value-setq (eltm* ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))

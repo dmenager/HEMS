@@ -111,9 +111,14 @@
 (defun get-model ()
   ;; make a retrieval cue from the latest observation in state window
   ;; return the retrieved model
-  (let (cue eme)
-    (setq cue (make-episode :states (list (copy-observation (car (last obs-window))))
-                            :decompositions (make-empty-graph)
+  (let (cue eme bn st-ref-hash)
+    (setq bn (compile-program c0 = (state-node state :value "T")))
+    (setf (gethash (rule-based-cpd-dependent-id (aref 0 (car bn)))
+		   st-ref-hash)
+	  (list (copy-observation (car (last obs-window)))))
+    (setq cue (make-episode :state-transitions bn
+                            :decompositions st-ref-hash
+			    :temporal-p t
                             :id-ref-map (make-hash-table :test #'equal)
                             :num-decompositions 0
                             :lvl 1))

@@ -20,14 +20,14 @@
 ;; observation = perceptions and inferred relations represented as a BN
 ;; state-transitions = state-transition graph and observation  model represented as a BN
 ;; temporal-p = flag for whether the episode represents a course of events (state transitions) or state of affairs (observation)
-;; decompositions = hash table of state node cpd dependent ids to back-links pointing to lower-level observation/state transition decomposition models in the event memory
+;; backlinks = hash table of state node cpd dependent ids to back-links pointing to lower-level observation/state transition decomposition models in the event memory
 ;; abstraction-ptrs = list of pointers to higher level abstraction branch, if it exists
 ;; id-ref-map = map binding ids to a pointer to the decomposition
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p decompositions abstraction-ptrs id-ref-map num-decompositions count depth lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs id-ref-map num-decompositions count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -591,7 +591,7 @@
 		  (setq pattern (episode-observation y))
 		  (setq base (episode-observation (car x)))))
 	   (multiple-value-bind (sol no-matches cost bindings unweighted-cost)
-               (maximum-common-subgraph (car pattern-state-pointer) (car base-state-pointer) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
+               (maximum-common-subgraph pattern base :cost-of-nil (episode-count (car x)) :bic-p bic-p :)
 	     (declare (ignore unweighted-cost))
 	     (setq generalized (new-combine (car x) y sol no-matches bindings))
 	     (setq equivalent (= 0 cost))
@@ -733,7 +733,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
               (ignore-errors (episode-id (car eltm))) (ignore-errors (length (episode-states (car eltm)))) (ignore-errors (episode-lvl (car eltm))) (ignore-errors (episode-num-decompositions (car eltm))) (ignore-errors (mapcar #'(lambda (abstr-ptr) (episode-id (car abstr-ptr))) (episode-abstraction-ptrs (car eltm)))) (length (episode-states ep)) (episode-lvl ep) (episode-num-decompositions ep) (ignore-errors (mapcar #'(lambda (abstr-ptr) (episode-id (car abstr-ptr))) (episode-abstraction-ptrs ep))) p-cost))
     (when branch
       (loop
-	with pattern and base
+	with pattern and base and pattern-backlinks and base-backlinks
         for branch in eltm
         for i from 0
         when (> i 0) do
@@ -743,12 +743,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                            (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
 		 (cond ((episode-temporal-p ep)
 			(setq pattern (episode-state-transitions ep))
-			(setq base (episode-state-transitions (car branch))))
+			(setq base (episode-state-transitions (car branch)))
+			(setq pattern-backlinks (episode-backlinks ep))
+			(setq base-backlinks (episode-backlinks (car branch))))
 		       (t
 			(setq pattern (episode-observation ep))
-			(setq base (episode-observation (car branch)))))
+			(setq base (episode-observation (car branch)))
+			(setq pattern-backlinks nil
+			(setq base-backlinks nil))
 		 (multiple-value-bind (sol no-matches cost bindings unweighted-cost)
-                     (maximum-common-subgraph pattern base :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
+                     (maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-optimal-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    (declare (ignorable unweighted-cost))
@@ -1554,7 +1558,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq ep (make-episode :id ep-id
 				  :index-episode-id ep-id
 				  :state-transitions st-bn
-				  :decompositions st-ref-hash
+				  :backlinks st-ref-hash
 				  :temporal-p t
 				  :id-ref-map (make-hash-table :test #'equal)
 				  :num-decompositions 0

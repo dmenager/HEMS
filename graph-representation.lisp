@@ -7980,6 +7980,39 @@ Roughly based on (Koller and Friedman, 2009) |#
              (setf (gethash key sol-cost-map) weighted-cost))
            (values solution weighted-cost bindings q-first-bindings cost)))))
 
+#| Compute the cost of a solution |#
+
+;; solution = structure mapping from pattern to base graph
+;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
+;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
+;; bindings = array of variable bindings
+;; q-first-bindings = bindings hash table where elements of q are the keys
+;; p-nodes = nodes in p in list form
+;; q-nodes = nodes in q in list form
+;; q-dif = difference between number of free variables (nodes with no parents) in q that p doesn't have
+;; q-m = number of summarized in q
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = whether to compute bic or likelihood
+(defun new-get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
+  (let (cost weighted-cost key previous-cost)
+    (setq key (key-from-matches solution))
+    (when sol-cost-map
+      (setq previous-cost (gethash key sol-cost-map)))
+    (cond (previous-cost
+           (values solution previous-cost bindings q-first-bindings cost))
+          (t
+           (setq cost (g (coerce solution 'list)
+                         bindings
+                         q-first-bindings
+                         p q q-dif q-m
+                         :cost-of-nil cost-of-nil
+                         :bic-p bic-p
+                         :forbidden-types forbidden-types))
+	   (setq weighted-cost cost)
+           (when sol-cost-map
+             (setf (gethash key sol-cost-map) weighted-cost))
+           (values solution weighted-cost bindings q-first-bindings cost)))))
+
 #| Find largest common subgraph between two graphs |#
 
 ;; p = pattern graph
@@ -8315,6 +8348,61 @@ Roughly based on (Koller and Friedman, 2009) |#
               (nil t
                (setq current (prob-select current next (ignore-errors (exp (/ (- delta-e) big-t))))))))))
 
+#| Optimize structure mapping between two graphs |#
+
+;; p = pattern graph
+;; q = base graph
+;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
+;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
+;; current = best current match
+;; possible-candidates = list of potential candidate nodes in base graph
+;; sol-cost-map = map of previous solutions
+;; start-temp = initial temperature
+;; end-temp = stopping temperature
+;; alpha = discount for cooling schedule
+;; p-nodes = list of nodes in p
+;; q-nodes = list of nodes in q
+;; q-dif = difference between number of free variables (nodes with no parents) in q that p doesn't have
+;; q-m = number of summarized in q
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = whether to compute bic or likelihood
+(defun new-simulated-annealing (p q current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+  (loop
+    named looper
+    with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
+    with best-solution = current
+    for time from 0 do
+      (setq big-t (cooling-schedule time start-temp alpha))
+    when (<= big-t smallest-float) do
+      ;;(break)
+      (when nil (and (= cycle* 4))
+            (format t "~%time: ~d ~%total cycles: ~d~%stop temperature: ~d~%bindings:~%~S~%cost: ~d" time (/ time (length top-lvl-nodes)) big-t (third best-solution) (second best-solution))
+            (break)
+	    )
+      (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution)))
+    else do
+      (when nil (and (= cycle* 4))
+            (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d" time big-t (first current) (third current) (fourth current) (second current)))
+      (multiple-value-bind (solution bindings q-first-bindings)
+	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
+	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
+        (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)
+            (new-get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
+          (setq next (list new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)))
+        (setq delta-e (- (second next) (second current)))
+        (when nil (and (= cycle* 4))
+              (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
+        (when (better-random-match? next best-solution)
+          (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next)))
+          (when nil (and (= cycle* 4))
+		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
+        (cond ((< delta-e 0)
+               (when nil (and (= cycle* 4))
+                     (format t "~%found better match!"))
+               (setq current best-solution))
+              (nil t
+		   (setq current (prob-select current next (ignore-errors (exp (/ (- delta-e) big-t))))))))))
+
 #| Get the expected number of trials needed to observe all outcomes of the variable |#
 
 ;; values = domain for variable assignment
@@ -8404,6 +8492,85 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  )
     (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
         (simulated-annealing p q current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+      (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
+      (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
+    (values (first current) (second current) (third current) (fourth current) (fifth current))))
+
+#| Find largest common subgraph between two graphs |#
+
+;; p = pattern graph
+;; q = base graph
+;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
+;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = flag to compute BIC
+(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
+  (when nil t 
+	(format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
+		(array-dimension (car p) 0)
+		(map 'list #'rule-based-cpd-identifiers (car q))
+		(array-dimension (car q) 0))
+	(break)
+	)
+  (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif)
+    (setq sol-cost-map (make-hash-table :test #'equal))
+    (setq matches (make-nil-mappings p))
+    (setq cost most-positive-fixnum)
+    (setq bindings (make-hash-table :test #'equal))
+    (setq q-first-bindings (make-hash-table :test #'equal))
+    (setq possible-candidates (get-possible-candidates p q))
+    (setq p-dim 0)
+    (setq p-m 0)
+    (setq q-dim 0)
+    (setq q-m 0)
+    (setq q-dif 0)
+    (when nil t
+      (format t "~%~%possible candidates:~%~S" possible-candidates)
+      )
+    (setq key (key-from-matches matches))
+    (when (null (gethash key sol-cost-map))
+      (setf (gethash key sol-cost-map) cost))
+    (setq current (list matches cost bindings q-first-bindings most-positive-fixnum))
+    (setq stop-temp (expt 10 (- 1)))
+    (setq almost-zero 1.e-39)
+    (setq alpha .999)
+    (setq p-nodes (make-hash-table :test #'equal))
+    (setq q-nodes (make-hash-table :test #'equal))
+    (loop
+       with i-options and swaps-hash = (make-hash-table :test #'equal)
+      for i from 0 to (- (if p (array-dimension (car p) 0) 0) 1)
+      do
+         (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) p-nodes) i)
+	 (setq p-m (max p-m (rule-based-cpd-count (aref (car p) i))))
+      if (= (hash-table-count (rule-based-cpd-identifiers (aref (car p) i))) 1)
+       do
+	 (setq p-dim (+ p-dim 1))
+         (setq i-options (analog-nodes i p q (gethash i possible-candidates) (make-hash-table) (make-hash-table)))
+         (when (> (array-dimension i-options 0) 1)
+           (setf (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash)
+                 (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
+         (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
+       finally
+       (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))
+    (loop
+       for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
+       do
+	 (setq q-m (max q-m (rule-based-cpd-count (aref (car q) i))))
+	 (setf (gethash (rule-based-cpd-dependent-id (aref (car q) i)) q-nodes) i)
+	 (when (= (hash-table-count (rule-based-cpd-identifiers (aref (car q) i))) 1)
+	   (setq q-dim (+ q-dim 1))))
+    (when (> q-dim p-dim)
+      (setq q-dim (- q-dim p-dim)))
+    (setq temperature (handler-case (/ stop-temp (expt alpha required-swaps))
+                        (error (c)
+                          ;;(break "Going to set almost zero")
+                          (/ stop-temp almost-zero))))
+    (when nil t
+          (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
+          ;;(break)
+	  )
+    (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
     (values (first current) (second current) (third current) (fourth current) (fifth current))))

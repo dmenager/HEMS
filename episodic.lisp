@@ -20,14 +20,13 @@
 ;; observation = perceptions and inferred relations represented as a BN
 ;; state-transitions = state-transition graph and observation  model represented as a BN
 ;; temporal-p = flag for whether the episode represents a course of events (state transitions) or state of affairs (observation)
-;; backlinks = hash table of state node cpd dependent ids to back-links pointing to lower-level observation/state transition decomposition models in the event memory
+;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; abstraction-ptrs = list of pointers to higher level abstraction branch, if it exists
-;; id-ref-map = map binding ids to a pointer to the decomposition
 ;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs id-ref-map num-decompositions count depth lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs num-decompositions count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -323,10 +322,10 @@
                 :parent (if (episode-parent ep1) (episode-parent ep1))
                 :count (+ (episode-count ep1) (episode-count ep2))
                 :lvl (max (episode-lvl ep1) (episode-lvl ep2))
-                :id-ref-map
+                :backlinks
                 (loop
-                  with new-id-ref-map  = (copy-hash-table (episode-id-ref-map ep1) :reference-values t)
-                  for id being the hash-keys of (episode-id-ref-map ep2)
+                  with new-id-ref-map  = (copy-hash-table (episode-backlinks ep1) :reference-values t)
+                  for id being the hash-keys of (episode-backlinks ep2)
                     using (hash-value ref)
                   do
                      (setf (gethash id new-id-ref-map) ref)
@@ -336,11 +335,10 @@
                 :observation (if (episode-temporal-p ep2)
                                  (episode-observation ep1)
                                  (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
-                :observation (if (episode-temporal-p ep2)
-                                 (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings)
-                                 (episode-state-transitions ep1))
+                :state-transitions (if (episode-temporal-p ep2)
+                                       (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings)
+                                       (episode-state-transitions ep1))
                 :temporal-p (or (episode-temporal-p ep1) (episode-temporal-p ep2))
-                :decompositions (episode-decompositions ep1)
                 :abstraction-ptrs (episode-abstraction-ptrs ep1)))
 
 #| Match decomposition states between episodes |#
@@ -590,7 +588,7 @@
                   (setq pattern (episode-observation y))
                   (setq base (episode-observation (car x)))))
            (multiple-value-bind (sol no-matches cost bindings unweighted-cost)
-               (maximum-common-subgraph pattern base :cost-of-nil (episode-count (car x)) :bic-p bic-p :)
+               (maximum-common-subgraph pattern base :cost-of-nil (episode-count (car x)) :bic-p bic-p)
              (declare (ignore unweighted-cost))
              (setq generalized (new-combine (car x) y sol no-matches bindings))
              (setq equivalent (= 0 cost))
@@ -1537,7 +1535,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when insertp
       (loop
         with ep and ep-id and ref
-        with cur-st and prev-st and st-bn and st-ref-hash
+        with cur-st and obs-st and cur-act, and prev-act and prev-st and st-bn and id-ref-hash = (make-hash-table :test #'equal)
         for obs in (gethash 0 (getf episode-buffer* :obs))
         do
            (setq ep-id (symbol-name (gensym "EPISODE-")))
@@ -1551,30 +1549,32 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (format t "~%inserting ~A" (episode-id ep))
            (multiple-value-setq (eltm* ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
-           (setq cur-st (gensym "STATE-"))
-        collect ref into refs
+	   (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
+	   (setq cur-st (gensym "STATE-"))
+	   (setq obs-st (gensym "OBS-"))
+	   (setq cur-act (gensym "ACT-"))
         nconcing `(,cur-st = (state-node state :value "T")) into state-transitions
+	nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
+	nconcing `(,cur-act = (percept-node action :value ,action)) into state-transitions
+	nconcing `(,cur-st -> ,obs-st) into state-transitions
+	nconcing `(,obs-st -> ,cur-act) into state-transitions
         when prev-st
           nconcing `(,prev-st -> ,cur-st) into state-transitions
-        do
+	when prev-act
+	  nconcing `(,prev-act -> ,cur-st) into state-transitions
+	do
            (setq prev-st cur-st)
+	   (setq prev-act cur-act)
         finally
            ;;(setq state-transitions (concatenate 'list ,@state-transitions))
            (setq st-bn (eval `(compile-program ,@state-transitions)))
-           (setq st-ref-hash (make-hash-table :test #'equal))
-           (loop
-             for s being the elements of (car st-bn)
-             for r in refs
-             do
-                (setf (gethash (rule-based-cpd-dependent-id s) st-ref-hash) r))
            ;; make temporal episode from state transitions
            (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :state-transitions st-bn
-                                  :backlinks st-ref-hash
+                                  :backlinks id-ref-hash
                                   :temporal-p t
-                                  :id-ref-map (make-hash-table :test #'equal)
                                   :num-decompositions 0
                                   :count 1
                                   :lvl 2))

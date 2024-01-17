@@ -7411,20 +7411,41 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p = pattern graph
 ;; q = base graph
 ;; q-dif = difference between number of free variables (nodes with no parents) in q that p doesn't have
+;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
-(defun g (n bindings q-first-bindings p q q-dif q-m &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-prefs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
   (loop
      with q-likelihood = 1
      for (p-node . qp) in n
      do
-       (setq q-likelihood (* q-likelihood
-			     (cost (aref (car p) p-node)
-				   (if qp (aref (car q) qp) nil)
-				   bindings
-				   q-first-bindings
-				   :cost-of-nil cost-of-nil
-				   :bic-p bic-p
-				   :forbidden-types forbidden-types)))
+	(cond ((equal "OBSERVATION" (gethash 0 (rule-based-cpd-types-hash p-node)))
+	       (let ((p-ref (cdar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
+		     (qp-refs (when qp
+				(mapcar #'cdar (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
+		 (loop
+		   named probber
+		   with res
+		   for qp-ref in qp-refs
+		   do
+		      (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
+		   when res
+		     do
+			(setf (gethash p-ref bindings) qp-ref)
+			(setf (gethash qp-ref q-first-bindings) p-ref)
+			(setq q-likelihood (* q-likelihood (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res))))
+			(return-from probber nil)
+		   finally
+		      (setq q-likelihood (* q-likelihood 0)))))
+	      (t
+	       (setq q-likelihood (* q-likelihood
+				     (cost (aref (car p) p-node)
+					   (if qp (aref (car q) qp) nil)
+					   bindings
+					   q-first-bindings
+					   :cost-of-nil cost-of-nil
+					   :bic-p bic-p
+					   :forbidden-types forbidden-types)))))
      finally
 	(if bic-p
 	    (return (abs (- 1 (- q-likelihood
@@ -7960,7 +7981,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-(defun get-cost (solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
+;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+(defun get-cost (solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types &key (sol-cost-map))
   (let (cost weighted-cost key previous-cost)
     (setq key (key-from-matches solution))
     (when sol-cost-map
@@ -7972,39 +7995,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                          bindings
                          q-first-bindings
                          p q q-dif q-m
-                         :cost-of-nil cost-of-nil
-                         :bic-p bic-p
-                         :forbidden-types forbidden-types))
-	   (setq weighted-cost cost)
-           (when sol-cost-map
-             (setf (gethash key sol-cost-map) weighted-cost))
-           (values solution weighted-cost bindings q-first-bindings cost)))))
-
-#| Compute the cost of a solution |#
-
-;; solution = structure mapping from pattern to base graph
-;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
-;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
-;; bindings = array of variable bindings
-;; q-first-bindings = bindings hash table where elements of q are the keys
-;; p-nodes = nodes in p in list form
-;; q-nodes = nodes in q in list form
-;; q-dif = difference between number of free variables (nodes with no parents) in q that p doesn't have
-;; q-m = number of summarized in q
-;; cost-of-nil = episode count for matching to nil
-;; bic-p = whether to compute bic or likelihood
-(defun new-get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
-  (let (cost weighted-cost key previous-cost)
-    (setq key (key-from-matches solution))
-    (when sol-cost-map
-      (setq previous-cost (gethash key sol-cost-map)))
-    (cond (previous-cost
-           (values solution previous-cost bindings q-first-bindings cost))
-          (t
-           (setq cost (g (coerce solution 'list)
-                         bindings
-                         q-first-bindings
-                         p q q-dif q-m
+			 p-refs-map qp-refs-map
                          :cost-of-nil cost-of-nil
                          :bic-p bic-p
                          :forbidden-types forbidden-types))
@@ -8280,6 +8271,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 				  collect (cons i nil) into res
 				  finally
 				     (return res))))
+
 #| Optimize structure mapping between two graphs |#
 
 ;; p = pattern graph
@@ -8317,7 +8309,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	  ;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)
-            (get-cost solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
+            (get-cost solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types :sol-cost-map sol-cost-map)
           (setq next (list new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)))
         (setq delta-e (- (second next) (second current)))
         (when nil (and (= cycle* 4))
@@ -8366,7 +8358,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-(defun new-simulated-annealing (p q current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+(defun new-simulated-annealing (p q current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types)
   (loop
     named looper
     with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
@@ -8387,7 +8381,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)
-            (new-get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types :sol-cost-map sol-cost-map)
           (setq next (list new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)))
         (setq delta-e (- (second next) (second current)))
         (when nil (and (= cycle* 4))
@@ -8491,7 +8485,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           ;;(break)
 	  )
     (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
-        (simulated-annealing p q current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+        (simulated-annealing p q current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
     (values (first current) (second current) (third current) (fourth current) (fifth current))))
@@ -8500,8 +8494,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; p = pattern graph
 ;; q = base graph
-;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
-;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
+;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
 (defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
@@ -8570,7 +8564,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           ;;(break)
 	  )
     (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
-        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-backlinks q-backlinks forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
     (values (first current) (second current) (third current) (fourth current) (fifth current))))

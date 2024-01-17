@@ -1,5 +1,34 @@
 (in-package :hems)
 
+#| Get the likelihood that model predicts state |#
+
+;; episode = element in episodic long-term memory
+;; state = state as a graph
+(defun model-predict (episode state &key (bic-p t) &aux forbidden-types)
+  (setq forbidden-types '("GOAL" "INTENTION"))
+  (multiple-value-bind (matches no-matches weighted-cost bindings cost)
+      (maximum-common-subgraph state (car (episode-states episode)) :bic-p bic-p :cost-of-nil (episode-count episode) :forbidden-types forbidden-types)
+    ;;(subgraph-greedy-monomorphism state (car (episode-states episode)) :bic-p bic-p :cost-of-nil (episode-count episode))
+    (declare (ignore weighted-cost cost no-matches))
+    (loop
+      with x-copy and y
+      with l and total = 1 and r and threshold = 1
+      for (pattern . base) being the elements of matches
+      do
+         (setq x-copy (subst-cpd (aref (car state) pattern) (when base (aref (caar (episode-states episode)) base)) bindings))
+         (setq y (if base (aref (caar (episode-states episode)) base)))
+         (multiple-value-bind (dif forbidden-likelihood)
+             (hash-difference (if y (cpd-identifiers y)) (cpd-identifiers x-copy) y forbidden-types)
+           (declare (ignore dif))
+           (setq l (local-likelihood x-copy y forbidden-likelihood))
+           (when nil (< l 1)
+                 (format t "~%state cpd:~%~S~%model cpd:~%~S~%likelihood: ~d~%forbidden-likelihood: ~A" x-copy y l forbidden-likelihood)))
+         (setq total (* total l))
+         (setq r (if y (/ 1 (aref (cpd-cardinalities y) 0)) 0))
+         (setq threshold (* threshold r))
+      finally
+         (return (values total threshold)))))
+
 #| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 
 ;; model = model for predicting state
@@ -119,7 +148,7 @@
 			       :num-decompositions 0
 			       :count 1
 			       :lvl 1))
-       (setq ref (retrieve-episode eltmi cue reject-list
+       (setq ref (new-retrieve-episode eltmi cue reject-list
 				   :bic-p bic-p
 				   :lvl-func lvl-func
 				   :forbidden-types forbidden-types

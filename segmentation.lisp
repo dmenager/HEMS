@@ -6,19 +6,19 @@
 ;; state = state as a graph
 (defun model-predict (episode state &key (bic-p t) &aux forbidden-types)
   (setq forbidden-types '("GOAL" "INTENTION"))
-  (multiple-value-bind (matches no-matches weighted-cost bindings cost)
-      (maximum-common-subgraph state (car (episode-states episode)) :bic-p bic-p :cost-of-nil (episode-count episode) :forbidden-types forbidden-types)
+  (multiple-value-bind (matches no-matches cost bindings)
+      (new-maximum-common-subgraph state (episode-observation episode) nil nil :bic-p bic-p :cost-of-nil (episode-count episode) :forbidden-types forbidden-types)
     ;;(subgraph-greedy-monomorphism state (car (episode-states episode)) :bic-p bic-p :cost-of-nil (episode-count episode))
-    (declare (ignore weighted-cost cost no-matches))
+    (declare (ignore cost no-matches))
     (loop
       with x-copy and y
       with l and total = 1 and r and threshold = 1
       for (pattern . base) being the elements of matches
       do
          (setq x-copy (subst-cpd (aref (car state) pattern) (when base (aref (caar (episode-states episode)) base)) bindings))
-         (setq y (if base (aref (caar (episode-states episode)) base)))
+         (setq y (if base (aref (episode-observation episode) base)))
          (multiple-value-bind (dif forbidden-likelihood)
-             (hash-difference (if y (cpd-identifiers y)) (cpd-identifiers x-copy) y forbidden-types)
+             (hash-difference (if y (rule-based-cpd-identifiers y)) (rule-based-cpd-identifiers x-copy) y forbidden-types)
            (declare (ignore dif))
            (setq l (local-likelihood x-copy y forbidden-likelihood))
            (when nil (< l 1)
@@ -28,6 +28,16 @@
          (setq threshold (* threshold r))
       finally
          (return (values total threshold)))))
+
+#| Return true if likelihood of observation under the model is greater than random chance |#
+
+;; likelihood = likelihood that model generates observation
+;; threshold = probability that the model generates state at random
+;; auto-pass = flag for passing prediction no matter what
+(defun pass-prediction (likelihood threshold auto-pass)
+  (cond (auto-pass t)
+        (t
+         (> likelihood threshold))))
 
 #| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 
@@ -40,7 +50,7 @@
   (let (episode decompositions observed-decomps)
     (setq episode (getf model :model))
     (when episode
-      (setq decompositions (episode-decompositions episode))
+      (setq decompositions (episode-backlinks episode))
       (loop
         with dcmps-p = (not (equalp (make-array 0) (getf model :inferred-decompositions)))
         for i from 0 to (if check-disjunction (+ (getf model :cur-step) 1) (getf model :cur-step))
@@ -56,7 +66,7 @@
            (when t
              (format t "~%Model doesn't satisfy evaluation requirements. Fail"))
            (values nil obs-window reject-lists 0))
-          ((equalp (make-empty-graph) decompositions)
+          ((not (episode-temporal-p episode))
            (when t
              (format t "~%model is ground-level model"))
            (loop
@@ -140,52 +150,51 @@
 (defun get-model (obs-window eltm reject-list)
   (loop
     with cue and eme and ref and st-ref-hash
-    with cur-st and prev-st and st-bn and st-ref-hash
-    for obs in (gethash 0 (getf episode-buffer* :obs))
+    with cur-st and prev-st and obs-st and cur-act and prev-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
+    for (obs . act-name) in (gethash 0 (getf episode-buffer* :obs))
     do
-       (setq cue (make-episode :observation (mapcar #'copy-observation obs)
-			       :id-ref-map (make-hash-table :test #'equal)
-			       :num-decompositions 0
+       (setq cue (make-episode :observation (copy-observation obs)
 			       :count 1
 			       :lvl 1))
-       (setq ref (new-retrieve-episode eltmi cue reject-list
+       (setq ref (new-retrieve-episode eltm cue reject-list
 				   :bic-p bic-p
 				   :lvl-func lvl-func
 				   :forbidden-types forbidden-types
 				   :check-decomps check-decomps
 				   :check-abstraction-ptrs check-abstraction-ptrs
 				   :check-index-case check-index-case))
+       (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
        (setq cur-st (gensym "STATE-"))
-    collect ref into refs
-    nconcing `(,cur-st = (state-node state :value "T")) into state-transitions
+       (setq obs-st (gensym "OBS-"))
+       (setq cur-act (gensym "ACT-"))
+    nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions
+    nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
+    nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
+    nconcing `(,cur-st -> ,obs-st) into state-transitions
+    nconcing `(,obs-st -> ,cur-act) into state-transitions
     when prev-st
       nconcing `(,prev-st -> ,cur-st) into state-transitions
+    when prev-act
+      nconcing `(,prev-act -> ,cur-st) into state-transitions
     do
        (setq prev-st cur-st)
+       (setq prev-act cur-act)
     finally
        (setq st-bn (eval `(compile-program ,@state-transitions)))
-       (setq st-ref-hash (make-hash-table :test #'equal))
-       (loop
-	 for s being the elements of (car st-bn)
-	 for r in refs
-	 do
-	    (setf (gethash (rule-based-cpd-dependent-id s) st-ref-hash) r))
        ;; make temporal episode from state transitions
        (setq cue (make-episode :state-transitions st-bn
-			       :decompositions st-ref-hash
+			       :backlinks id-ref-hash
 			       :temporal-p t
-			       :id-ref-map (make-hash-table :test #'equal)
-			       :num-decompositions 0
 			       :count 1
 			       :lvl 2))
-       (setq eme (retrieve-episode eltm cue reject-list
+       (setq eme (new-retrieve-episode eltm cue reject-list
 				   :bic-p bic-p
 				   :lvl-func lvl-func
 				   :forbidden-types forbidden-types
 				   :check-decomps check-decomps
 				   :check-abstraction-ptrs check-abstraction-ptrs
 				   :check-index-case check-index-case))
-       (return (make-model :ep eme :model-parent nil))))
+       (return (make-model :ep (car eme) :model-parent nil))))
 
 (defun event-boundary-p  (model obs-window eltm reject-list)
   (loop

@@ -1078,7 +1078,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (<= (second p-cost) best-child-weighted-cost)))
            (when nil t nil
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (car eltm)) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           ((and (or (eq #'= lvl-func) (eq '= lvl-func)) (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))
                 (if best-child (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl (caar best-child))) t)
 		(if best-child
@@ -1088,11 +1088,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		)
            (when nil t nil
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (car eltm)) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           ((and lvl-func (not (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))) (null (car best-child)))
            (when nil t nil
              (format t "~%Returning ~A" (if (equal (episode-id (car eltm)) (car reject-list)) nil (car eltm))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (car eltm)) (car p-cost) (third p-cost) depth (second p-cost) (episode-id (car eltm)) reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) (episode-id (car eltm)) reject-list))
           ((and (not lvl-func)
 		(or (and branch (better-random-match? (list nil (second p-cost) (car (third p-cost))) best-child))
 		    (not branch))
@@ -1100,7 +1100,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		)
            (when nil t nil
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (car eltm)) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           (t
            (when nil t nil
              (format t "~%Recursing on best child: ~A" (if (car best-child) (episode-id (caar best-child)))))
@@ -1655,22 +1655,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
-;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges
-;; cstm = relational beliefs that are true about the world
-;; pstm = sensory perceptions of the world
+;; state = dotted list where car is an array of cpds, and the cdr is a hash table of edges
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun new-push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (action nil) (state-id nil) (bic-p t) (insertp nil))
+(defun new-push-to-ep-buffer (&key (state nil) (action-name nil) (bic-p t) (insertp nil))
   (let (p model)
-    (cond (state
-           (setq p state)
-           (setf (gethash 0 (getf episode-buffer* :obs))
-                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs)))))))
-          (t
-           (multiple-value-bind (p-elements p-edges)
-               (state-to-graph pstm cstm :executing-intention executing-intention*)
-             (setq p (cons p-elements p-edges)))
-           (setf (gethash 0 (getf episode-buffer* :obs))
-                 (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :obs))))))))
+    (setq p state)
+    (setf (gethash 0 (getf episode-buffer* :obs))
+          (nreverse (cons (cons p action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (unless insertp
       (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
                                     (getf episode-buffer* :obs)
@@ -1681,15 +1672,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when insertp
       (loop
         with ep and ep-id and ref
-        with cur-st and obs-st and cur-act, and prev-act and prev-st and st-bn and id-ref-hash = (make-hash-table :test #'equal)
-        for obs in (gethash 0 (getf episode-buffer* :obs))
+        with cur-st and obs-st and cur-act and prev-act and prev-st and st-bn and id-ref-hash = (make-hash-table :test #'equal)
+        for (obs . act-name) in (gethash 0 (getf episode-buffer* :obs))
         do
            (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
-                                  :observation (mapcar #'copy-observation obs)
-                                  :id-ref-map (make-hash-table :test #'equal)
-                                  :num-decompositions 0
+                                  :observation (copy-observation obs)
                                   :count 1
                                   :lvl 1))
            (format t "~%inserting ~A" (episode-id ep))
@@ -1701,7 +1690,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq cur-act (gensym "ACT-"))
         nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions
 	nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
-	nconcing `(,cur-act = (percept-node action :value ,action)) into state-transitions
+	nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
 	nconcing `(,cur-st -> ,obs-st) into state-transitions
 	nconcing `(,obs-st -> ,cur-act) into state-transitions
         when prev-st

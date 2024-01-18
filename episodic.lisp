@@ -89,7 +89,7 @@
 
 ;; ep = episode
 ;; cur-step = index pointing to current active decomposition
-;; scope = indicates number of consecutive states in action sequence that model explains
+;; scope = indicates number of consecutive states in obs window that model explains
 ;; model parent = pointer to parent model
 (defun make-model (&key ep (cur-step -1) (scope 0) (model-parent nil))
   (let (ep-copy)
@@ -97,7 +97,7 @@
       (setq ep-copy (copy-ep ep :fresh-id nil)))
     (list ':model ep-copy
           ':cur-step cur-step
-          ':inferred-decompositions (if ep-copy (make-array (array-dimension (car (episode-decompositions ep-copy)) 0)
+          ':inferred-decompositions (if ep-copy (make-array (array-dimension (car (episode-backlinks ep-copy)) 0)
                                                             :initial-element nil))
           ':scope scope
           ':model-parent model-parent)))

@@ -104,7 +104,21 @@
           (t
            (when t
              (format t "~%decomposing higher-level model ~A." (episode-id episode)))
-           (loop
+
+	   ;; For each observation, track it by following the observation pointer in the higher-lvl observation model
+	   ;; For each possible reference in the obs model, try to see if it predicts observation. If so, advance to next observation, and repeat
+	   (loop
+	     for obs in obs-window
+	     do
+		(loop
+		  with cur-step = (getf model :cur-step)
+		  with num-past-observations = 0
+		  for cpd being the elements of (car (episode-state-transitions episode))
+		  if (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd)))
+		    do
+		       (if (< num-ast-observations cur-step)
+			   (setq num-past-observations (+ 1 num-past-observations)))))
+	   (loop
              with calls-to-retrieve = 0
              with decomp-refs = (infer-decompositions episode (car obs-window) observed-decomps (+ (getf model :cur-step) 1))
              for i from (if decompose-last-p (- (array-dimension decomp-refs 0) 1) (+ (getf model :cur-step) 1)) to (- (array-dimension decomp-refs 0) 1)
@@ -150,7 +164,7 @@
 (defun get-model (obs-window eltm reject-list)
   (loop
     with cue and eme and ref and st-ref-hash
-    with cur-st and prev-st and obs-st and cur-act and prev-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
+    with obs-st and cur-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
     for (obs . act-name) in (gethash 0 (getf episode-buffer* :obs))
     do
        (setq cue (make-episode :observation (copy-observation obs)
@@ -164,18 +178,11 @@
 				   :check-abstraction-ptrs check-abstraction-ptrs
 				   :check-index-case check-index-case))
        (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
-       (setq cur-st (gensym "STATE-"))
        (setq obs-st (gensym "OBS-"))
        (setq cur-act (gensym "ACT-"))
-    nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions
     nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
     nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
-    nconcing `(,cur-st -> ,obs-st) into state-transitions
     nconcing `(,obs-st -> ,cur-act) into state-transitions
-    when prev-st
-      nconcing `(,prev-st -> ,cur-st) into state-transitions
-    when prev-act
-      nconcing `(,prev-act -> ,cur-st) into state-transitions
     do
        (setq prev-st cur-st)
        (setq prev-act cur-act)

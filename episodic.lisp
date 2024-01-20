@@ -95,12 +95,12 @@
   (let (ep-copy)
     (when ep
       (setq ep-copy (copy-ep ep :fresh-id nil)))
-    (list ':model ep-copy
-          ':cur-step cur-step
-          ':inferred-decompositions (if ep-copy (make-array (array-dimension (car (episode-backlinks ep-copy)) 0)
-                                                            :initial-element nil))
-          ':scope scope
-          ':model-parent model-parent)))
+    `(:model ,ep-copy
+      :cur-step ,cur-step
+      :inferred-decompositions ,(make-hash-table :test #'equal)
+      :scope scope
+      :model-parent model-parent)
+    ))
 
 #| Copy hierarchical model |#
 
@@ -1207,7 +1207,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; factors = observed factors
 (defun make-observations (factors &aux (evidence (make-hash-table :test #'equal)))
   (loop
-    with idx and value
+    with idx and var
     for factor being the elements in factors do
       (loop
         named indexer
@@ -1215,10 +1215,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         when (= (rule-probability rule) 1) do
           (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
           (return-from indexer))
-      (setq value (car (rassoc idx (mapcar #'car (gethash 0 (rule-based-cpd-var-value-block-map factor))))))
+      (setq var (car (rassoc idx (mapcar #'car (gethash 0 (rule-based-cpd-var-value-block-map factor))))))
       (when (null value)
         (error "~%Can't make nil observation:~%~%factor:~%~S~%index for vvm var: ~d~%evidence:~%~S" factor idx evidence))
-      (setf (gethash (rule-based-cpd-dependent-id factor) evidence) value))
+      (setf (gethash (rule-based-cpd-dependent-id factor) evidence) var))
   evidence)
 
 #| Make partially observed retrieval cue |#

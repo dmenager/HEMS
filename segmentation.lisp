@@ -107,17 +107,75 @@
 
 	   ;; For each observation, track it by following the observation pointer in the higher-lvl observation model
 	   ;; For each possible reference in the obs model, try to see if it predicts observation. If so, advance to next observation, and repeat
+
+	   ;; initialize the belief state to the marginal distribution over the first state node in the network
+	   (let)
 	   (loop
+	     with pomdp = (car (episode-state-transitions episode))
+	     with initial-state = (marginalize-rules-keep (aref pomdp 0) (rule-based-cpd-dependent-id (aref pomdp 0)) #'+ (rule-based-cpd-dependent-id (aref pomdp 0)))
+	     with num-past-observations = 0
+	     with cpd-index = 0
 	     for obs in obs-window
 	     do
-		(loop
-		  with cur-step = (getf model :cur-step)
-		  with num-past-observations = 0
-		  for cpd being the elements of (car (episode-state-transitions episode))
-		  if (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd)))
+		;; infer distribution over the observation given state
+		;; for each possible observation that has non-zero posterior probability, check to see if it matches obs
+		;;   if yes, then set evidence for that branch to 1
+		;;   if no, then set evidence for that branch to 0
+		;; if model fails to predict observation, fail
+		;; infer distribution over the action given observation
+		;; for each possible action that has non-zeor posterior probability, check to see if it matches act
+		;;   if yes, then set evidence for that action to 1
+		;;   if no, then set evidence for that action to 0
+		;; if model fails to predict action, fail
+		;; if next state
+		;;   infer distribution over the state given observation and action
+		;;   repeat
+		;; else
+		;;   return success
+		(setq cue (make-episode :observation (copy-observation obs)
+			       :count 1
+			       :lvl 1))
+		(multiple-value-bind (pattern-ref sol bindings depth cost)
+		    (new-retrieve-episode eltm cue reject-list
+					  :bic-p bic-p
+					  :lvl-func lvl-func
+					  :forbidden-types forbidden-types
+					  :check-decomps check-decomps
+					  :check-abstraction-ptrs check-abstraction-ptrs
+					  :check-index-case check-index-case)
+		  (loop
+		    with states-hash (make-hash-table :test #'equal)
+		    with cur-step = (getf model :cur-step)
+		    with num-past-observations = 0
+		    with cpd
+		    for i from cpd-index to (array-dimension (car (episode-state-transitions episode)) 0)
 		    do
-		       (if (< num-ast-observations cur-step)
-			   (setq num-past-observations (+ 1 num-past-observations)))))
+		       (setq cpd (aref (car (episode-state-transitions episode)) i))
+		    (if (equal "STATE" (gethash 0 (rule-based-cpd-types cpd)))
+			(setf (gethash (rule-based-cpd-dependent-id cpd) states-hash) cpd))
+		    (when (and (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd)))
+			       (gethash (gethash 1 (rule-based-cpd-identifiers cpd))
+					states-hash))
+		      (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)) nil)
+		      (loop
+			with model-ref
+			for vvb in (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			do
+			   (setq model-ref (gethash (caar vvb) (episode-backlinks episode)))
+			   (cond ((get-common-episode-class (car pattern-ref) (car model-ref))
+				  (when (good-fit-to-observations? (make-model :ep (car model-ref) :model-parent model) (list obs) reject-lists)
+				    (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
+					  (cons (cons (caar vvb) 1)
+						(gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+				 (t
+				  (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
+					(cons (cons (caar vvb) 0)
+					      (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))  
+			finally
+			   (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
+				 (cons (cons "NA" 1)
+				       (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+		    )))
 	   (loop
              with calls-to-retrieve = 0
              with decomp-refs = (infer-decompositions episode (car obs-window) observed-decomps (+ (getf model :cur-step) 1))

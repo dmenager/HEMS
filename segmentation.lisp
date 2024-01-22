@@ -76,148 +76,143 @@
                 (multiple-value-bind (likelihood threshold)
                     (model-predict episode state :bic-p bic-p)
                   (cond ((pass-prediction likelihood threshold auto-pass)
-			 (when t
+                         (when t
                            (format t "~%Good fit for state with likelihood ~d and threshold ~d. Incrementing scope." likelihood threshold))
-			 (setq obs-window states)
-			 (loop
-                            with mod = model
-                            while mod
-                            do
+                         (setq obs-window states)
+                         (loop
+                           with mod = model
+                           while mod
+                           do
                               (setf (getf mod :scope) (+ (getf mod :scope) 1))
                               (setq mod (getf mod :model-parent))))
-			(t
-			 (cond ((= i 0)
-				(when t
+                        (t
+                         (cond ((= i 0)
+                                (when t
                                   (format t "~%failure with likelihood ~d and threshold ~d." likelihood threshold))
-				(return-from good-fit-to-observations? (values nil obs-window reject-lists 0)))
+                                (return-from good-fit-to-observations? (values nil obs-window reject-lists 0)))
                                (t
-				(cond ((getf model :model-parent)
+                                (cond ((getf model :model-parent)
                                        (when t
-					 (format t "~%Detected event boundary, moving to next step."))
+                                         (format t "~%Detected event boundary, moving to next step."))
                                        (return-from good-fit-to-observations? (values model obs-window reject-lists 0)))
                                       (t
                                        (when t
-					 (format t "~%Failure. Model has no parent and cannot explain remaining states."))
+                                         (format t "~%Failure. Model has no parent and cannot explain remaining states."))
                                        (return-from good-fit-to-observations? (values nil obs-window reject-lists 0)))))))))
-              finally
+             finally
                 (return (values model obs-window reject-lists 0))))
           (t
+           ;; for each possible observation that has non-zero posterior probability, check to see if it matches obs
+           ;;   if yes, then set evidence for that branch to 1
+           ;;   if no, then set evidence for that branch to 0
+           ;; if model fails to predict observation, fail
+           ;; infer distribution over the action given observation
+           ;; for each possible action that has non-zeor posterior probability, check to see if it matches act
+           ;;   if yes, then set evidence for that action to 1
+           ;;   if no, then set evidence for that action to 0
+           ;; if model fails to predict action, fail
+           ;; if next state
+           ;;   infer distribution over the state given observation and action
+           ;;   repeat
+           ;; else
+           ;;   return success
            (when t
              (format t "~%decomposing higher-level model ~A." (episode-id episode)))
-
-	   ;; For each observation, track it by following the observation pointer in the higher-lvl observation model
-	   ;; For each possible reference in the obs model, try to see if it predicts observation. If so, advance to next observation, and repeat
-
-	   ;; initialize the belief state to the marginal distribution over the first state node in the network
-	   (let)
-	   (loop
-	     with pomdp = (car (episode-state-transitions episode))
-	     with initial-state = (marginalize-rules-keep (aref pomdp 0) (rule-based-cpd-dependent-id (aref pomdp 0)) #'+ (rule-based-cpd-dependent-id (aref pomdp 0)))
-	     with num-past-observations = 0
-	     with cpd-index = 0
-	     for obs in obs-window
-	     do
-		;; infer distribution over the observation given state
-		;; for each possible observation that has non-zero posterior probability, check to see if it matches obs
-		;;   if yes, then set evidence for that branch to 1
-		;;   if no, then set evidence for that branch to 0
-		;; if model fails to predict observation, fail
-		;; infer distribution over the action given observation
-		;; for each possible action that has non-zeor posterior probability, check to see if it matches act
-		;;   if yes, then set evidence for that action to 1
-		;;   if no, then set evidence for that action to 0
-		;; if model fails to predict action, fail
-		;; if next state
-		;;   infer distribution over the state given observation and action
-		;;   repeat
-		;; else
-		;;   return success
-		(setq cue (make-episode :observation (copy-observation obs)
-			       :count 1
-			       :lvl 1))
-		(multiple-value-bind (pattern-ref sol bindings depth cost)
-		    (new-retrieve-episode eltm cue reject-list
-					  :bic-p bic-p
-					  :lvl-func lvl-func
-					  :forbidden-types forbidden-types
-					  :check-decomps check-decomps
-					  :check-abstraction-ptrs check-abstraction-ptrs
-					  :check-index-case check-index-case)
-		  (loop
-		    with states-hash (make-hash-table :test #'equal)
-		    with cur-step = (getf model :cur-step)
-		    with num-past-observations = 0
-		    with cpd
-		    for i from cpd-index to (array-dimension (car (episode-state-transitions episode)) 0)
-		    do
-		       (setq cpd (aref (car (episode-state-transitions episode)) i))
-		    (if (equal "STATE" (gethash 0 (rule-based-cpd-types cpd)))
-			(setf (gethash (rule-based-cpd-dependent-id cpd) states-hash) cpd))
-		    (when (and (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd)))
-			       (gethash (gethash 1 (rule-based-cpd-identifiers cpd))
-					states-hash))
-		      (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)) nil)
-		      (loop
-			with model-ref
-			for vvb in (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-			do
-			   (setq model-ref (gethash (caar vvb) (episode-backlinks episode)))
-			   (cond ((get-common-episode-class (car pattern-ref) (car model-ref))
-				  (when (good-fit-to-observations? (make-model :ep (car model-ref) :model-parent model) (list obs) reject-lists)
-				    (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
-					  (cons (cons (caar vvb) 1)
-						(gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
-				 (t
-				  (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
-					(cons (cons (caar vvb) 0)
-					      (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))  
-			finally
-			   (setf (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))
-				 (cons (cons "NA" 1)
-				       (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
-		    )))
-	   (loop
-             with calls-to-retrieve = 0
-             with decomp-refs = (infer-decompositions episode (car obs-window) observed-decomps (+ (getf model :cur-step) 1))
-             for i from (if decompose-last-p (- (array-dimension decomp-refs 0) 1) (+ (getf model :cur-step) 1)) to (- (array-dimension decomp-refs 0) 1)
-             with branch-ref and cue and decomp-model
-             while obs-window do
-	       (setf (getf model :cur-step) (+ (getf model :cur-step) 1))
-	       (setf (getf model :inferred-decompositions) decomp-refs)
-	       (setq cue (make-episode
-                          :states (list (copy-observation (car obs-window)))
-                          :decompositions (make-empty-graph)
-                          :id-ref-map (make-hash-table :test #'equal)
-                          :num-decompositions 0
-                          :lvl (episode-lvl (getf model :model))
-                          :abstraction-ptrs (list (list (getf model :model)))))
-	       (setq branch-ref (gethash (aref decomp-refs i) (episode-id-ref-map episode)))
-	       (multiple-value-bind (new-model new-reject-lists remaining-states new-calls)
-                   (define-decomposition obs-window branch-ref cue reject-lists bic-p
-		     :lvl-func #'<
-		     :check-abstraction-ptrs t
-		     :parent model
-		     :auto-pass auto-pass
-		     :decompose-last-p decompose-last-p)
-                 (setq decomp-model new-model)
-                 (setq obs-window remaining-states)
-                 (setq reject-lists new-reject-lists)
-                 (setq calls-to-retrieve (+ calls-to-retrieve new-calls))
-                 (cond (decomp-model
-                        (when t
-                          (format t "~%Success. Advanced model step to ~d. Advanced model scope to ~d." (getf model :cur-step) (getf model :scope))))
-		       (t
-                        (when t
-                          (format t "~%Decomposition failed. Skipping to next step.")))))
-             finally
-                (cond (decomp-model
-                       (when t
-                         (format t "~%model succeeded for all decompositions."))
-                       (return (values decomp-model obs-window reject-lists calls-to-retrieve)))
-                      (t
-                       (when t
-                         (format t "~%Failure because state transition model failed."))
-                       (return (values nil obs-window reject-lists calls-to-retrieve)))))))))
+           ;; For each observation, track it by following the observation pointer in the higher-lvl observation model
+           ;; For each possible reference in the obs model, try to see if it predicts observation. If so, advance to next observation, and repeat
+           (loop
+             with evidence = (getf model :inferred-decompositions)
+             with num-past-observations = 0
+             with cpd-index = 0
+             for (obs . act) in obs-window
+             for time-step from 0
+             do
+                ;; infer distribution over the state given previous action, and previous state
+                (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step 'state))
+                (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+                (loop
+                  for cpd in recollection
+                  when (and (rule-based-cpd-singleton-p cpd)
+                            (equal "STATE" (gethash 0 (rule-based-cpd-types cpd))))
+                    do
+                       (setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+                       (loop
+                         with cond = (rule-based-dependent-id cpd)
+                         with val
+                         for rule in (rule-based-cpd-rules cpd)
+                         do
+                            (setq val (gethash cond (rule-conditions rule)))
+                            (setf (gethash cond evidence)
+                                  (cons (cons val (rule-probability rule))
+                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+                (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step 'observation))
+                (when ground-network
+                  ;; infer distribution over the observation given state
+                  (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+                  (loop
+                    for cpd in recollection
+                    when (and (rule-based-cpd-singleton-p cpd)
+                              (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd))))
+                      do
+                         (setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+                         (loop
+                           with cond = (rule-based-dependent-id cpd)
+                           with val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+                           for rule in (rule-based-cpd-rules cpd)
+                           do
+                              (cond ((> (rule-probability rule) 0)
+                                     (setq val (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+                                     (setq model-ref (gethash val (episode-backlinks episode)))
+                                     (cond ((good-fit-to-observations? (make-model :ep (car model-ref)
+                                                                                   :model-parent model)
+                                                                       (list obs) reject-lists)
+                                            (setq failp nil)
+                                            (setf (gethash cond evidence)
+                                                  (cons (cons val 1)
+                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))
+                                           (t
+                                            (setf (gethash cond evidence)
+                                                  (cons (cons val 0)
+                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))))
+                                    (t
+                                     (setf (gethash cond evidence)
+                                           (cons (cons val (rule-probability rule))
+                                                 (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+                              (if failp
+                                  (return-from good-fit-to-observations? (values nil obs-window reject-lists 0))))))
+                (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step 'percept))
+                (when ground-network
+                  ;; infer distribution over the action given observation
+                  (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+                  (loop
+                    for cpd in recollection
+                    when (and (rule-based-cpd-singleton-p cpd)
+                              (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))))
+                      do
+                         (setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+                         (loop
+                           with cond = (rule-based-dependent-id cpd)
+                           with val and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+                           for rule in (rule-based-cpd-rules cpd)
+                           do
+                              (cond ((> (rule-probability rule) 0)
+                                     (setq val (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+                                     (cond ((equal act val)
+                                            (setq failp nil)
+                                            (setf (gethash cond evidence)
+                                                  (cons (cons val 1)
+                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))
+                                           (t
+                                            (setf (gethash cond evidence)
+                                                  (cons (cons val 0)
+                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))))
+                                    (t
+                                     (setf (gethash cond evidence)
+                                           (cons (cons val (rule-probability rule))
+                                                 (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+                              (if failp
+                                  (return-from good-fit-to-observations? (values nil obs-window reject-lists 0)))))))
+           (values model nil reject-lists 0)))))
 
 (defun get-model (obs-window eltm reject-list)
   (loop

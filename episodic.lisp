@@ -26,7 +26,7 @@
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs num-decompositions count depth lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks step-size abstraction-ptrs num-decompositions count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -88,17 +88,19 @@
 #| Make a model for tracking state |#
 
 ;; ep = episode
-;; cur-step = index pointing to current active decomposition
+;; cur-step = index pointing to current state in the stochastic process
 ;; scope = indicates number of consecutive states in obs window that model explains
 ;; model parent = pointer to parent model
-(defun make-model (&key ep (cur-step -1) (scope 0) (model-parent nil))
+(defun make-model (&key ep (cur-step -1) (scope 0) (model-parent nil) (successors nil) (evidence (make-hash-table :test #'equal)))
   (let (ep-copy)
     (when ep
       (setq ep-copy (copy-ep ep :fresh-id nil)))
     `(:model ,ep-copy
       :cur-step ,cur-step
+      :successors ,successors
       :inferred-decompositions ,(make-hash-table :test #'equal)
-      :scope scope
+      :scope ,scope
+      :evidence ,evidence
       :model-parent model-parent)
     ))
 
@@ -107,11 +109,13 @@
 ;; model = model used for tracking state
 (defun copy-model (model &key (scope-modifier 0) (step-modifier 0))
   (when model
-    (list ':model (getf model :model)
-          ':cur-step (+ (getf model :cur-step) step-modifier)
-          ':inferred-decompositions (copy-array (getf model :inferred-decompositions))
-          ':scope (+ (getf model :scope) scope-modifier)
-          ':model-parent (copy-model (getf model :model-parent)))))
+    `(:model ,(getf model :model)
+      :cur-step ,(+ (getf model :cur-step) step-modifier)
+      :successors ,(copy-list (getf model :successors))
+      :inferred-decompositions ,(copy-array (getf model :inferred-decompositions))
+      :scope ,(+ (getf model :scope) scope-modifier)
+      :evidence ,(copy-hash-table (getf model :evidence))
+      :model-parent ,(copy-model (getf model :model-parent)))))
 
 #| Print hierarchical model |#
 
@@ -1657,11 +1661,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 ;; state = dotted list where car is an array of cpds, and the cdr is a hash table of edges
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun new-push-to-ep-buffer (&key (state nil) (action-name nil) (bic-p t) (insertp nil))
-  (let (p model)
-    (setq p state)
+(defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action nil) (bic-p t) (insertp nil))
+  (let (obs st model)
+    (setq obs observation)
+    (if st
+	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
-          (nreverse (cons (cons p action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
+          (nreverse (cons (list st p action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (unless insertp
       (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
                                     (getf episode-buffer* :obs)
@@ -1673,12 +1679,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (loop
         with ep and ep-id and ref
         with cur-st and obs-st and cur-act and prev-act and prev-st and st-bn and id-ref-hash = (make-hash-table :test #'equal)
-        for (obs . act-name) in (gethash 0 (getf episode-buffer* :obs))
+        for (s o  act) in (gethash 0 (getf episode-buffer* :obs))
         do
            (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
-                                  :observation (copy-observation obs)
+                                  :observation (copy-observation o)
                                   :count 1
                                   :lvl 1))
            (format t "~%inserting ~A" (episode-id ep))
@@ -1708,7 +1714,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :state-transitions st-bn
-                                  :backlinks id-ref-hash
+				  :backlinks id-ref-hash
                                   :temporal-p t
                                   :num-decompositions 0
                                   :count 1

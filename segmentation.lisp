@@ -252,3 +252,21 @@
     while (and (null (getf model :model))
 	       (not (member (episode-id (car eltm)) reject-list :test #'equal))))
   model)
+(defun test ()
+  (labels ((integer-string-p (string)
+	     (ignore-errors (parse-integer string))))
+    
+  (ql:quickload :split-sequence)
+  (let (features data)
+    (setq data (uiop:read-file-lines "~/Code/Data/HARLEM/test_data.csv"))
+    (setq features (split-sequence:split-sequence #\, (car data)))
+    (setq data (rest data))
+    (loop
+      with processed and variables
+      for line in data
+      do
+	 (setq processed (split-sequence:split-sequence #\, line))
+	 (setq variables (mapcan #'(lambda (string)
+				     (when (integer-string-p string)
+				       (list string)))
+				 (split-sequence:split-sequence #\Space (third processed))))))))

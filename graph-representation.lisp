@@ -7414,23 +7414,29 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 (defun g (n bindings q-first-bindings p q q-dif q-m &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
   (loop
-     with q-likelihood = 1
+     with q-likelihood = 1 and kost
+     with num-local-preds = 0
      for (p-node . qp) in n
      do
-       (setq q-likelihood (* q-likelihood
-			     (cost (aref (car p) p-node)
+       (setq kost (cost (aref (car p) p-node)
 				   (if qp (aref (car q) qp) nil)
 				   bindings
 				   q-first-bindings
 				   :cost-of-nil cost-of-nil
 				   :bic-p bic-p
-				   :forbidden-types forbidden-types)))
+				   :forbidden-types forbidden-types))
+       (setq q-likelihood (* q-likelihood kost))
+     when (> kost 0)
+       do
+	  (setq num-local-preds (+ num-local-preds 1))
      finally
 	(if bic-p
-	    (return (abs (- 1 (- q-likelihood
-				 (* (/ (log q-m) 2)
-				    q-dif)))))
-	    (return (abs (- 1 q-likelihood))))))
+	    (return (values (abs (- 1 (- q-likelihood
+					 (* (/ (log q-m) 2)
+					    q-dif))))
+			    num-local-preds))
+	    (return (values (abs (- 1 q-likelihood))
+			    num-local-preds)))))
   
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
@@ -7961,24 +7967,26 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
 (defun get-cost (solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
-  (let (cost weighted-cost key previous-cost)
+  (let (cost num-local-preds key previous-cost prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
-      (setq previous-cost (gethash key sol-cost-map)))
+      (let ((res (gethash key sol-cost-map)))
+	(setq previous-cost (car res))
+	(setq prev-num-local-preds (cdr res))))
     (cond (previous-cost
-           (values solution previous-cost bindings q-first-bindings cost))
+           (values solution previous-cost bindings q-first-bindings prev-num-local-preds))
           (t
-           (setq cost (g (coerce solution 'list)
-                         bindings
-                         q-first-bindings
-                         p q q-dif q-m
-                         :cost-of-nil cost-of-nil
-                         :bic-p bic-p
-                         :forbidden-types forbidden-types))
-	   (setq weighted-cost cost)
+	   (multiple-value-setq (cost num-local-preds)
+             (g (coerce solution 'list)
+                bindings
+                q-first-bindings
+                p q q-dif q-m
+                :cost-of-nil cost-of-nil
+                :bic-p bic-p
+                :forbidden-types forbidden-types))
            (when sol-cost-map
-             (setf (gethash key sol-cost-map) weighted-cost))
-           (values solution weighted-cost bindings q-first-bindings cost)))))
+             (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
+           (values solution cost bindings q-first-bindings num-local-preds)))))
 
 #| Find largest common subgraph between two graphs |#
 
@@ -8234,8 +8242,12 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
          t)
         ((and (= (second next) (second best-solution))
-              (>= (hash-table-count (third next)) (hash-table-count (third best-solution))))
-         t)))
+              (> (hash-table-count (third next)) (hash-table-count (third best-solution))))
+         t)
+	((and (= (second next) (second best-solution))
+	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
+	      (> (fifth next) (fifth best-solution)))
+	 t)))
 #| Initialize empty set of mappings |#
 
 ;; p = pattern graph
@@ -8272,23 +8284,23 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq big-t (cooling-schedule time start-temp alpha))
     when (<= big-t smallest-float) do
       ;;(break)
-      (when nil (and (= cycle* 4))
+      (when nil 
         (format t "~%time: ~d ~%total cycles: ~d~%stop temperature: ~d~%bindings:~%~S~%cost: ~d" time (/ time (length top-lvl-nodes)) big-t (third best-solution) (second best-solution))
         (break)
 	)
       (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution)))
     else do
-      (when nil (and (= cycle* 4))
-        (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d" time big-t (first current) (third current) (fourth current) (second current)))
+      (when nil
+        (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d~%number of local matched predictions: ~d" time big-t (first current) (third current) (fourth current) (second current) (fifth current)))
       (multiple-value-bind (solution bindings q-first-bindings)
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	  ;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
-        (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)
+        (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings num-local-preds)
             (get-cost solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
-          (setq next (list new-matches new-weighted-cost new-bindings new-q-first-bindings new-cost)))
+          (setq next (list new-matches new-weighted-cost new-bindings new-q-first-bindings num-local-preds)))
         (setq delta-e (- (second next) (second current)))
-        (when nil (and (= cycle* 4))
-          (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e)
+        (when nil
+          (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d~%new num local match preds: ~d" (first next) (third next) (fourth next) (second next) delta-e (fifth next))
 	  ;;(break)
 	  #|
 	  (loop
@@ -8345,10 +8357,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(array-dimension (car q) 0))
 	(break)
 	)
-  (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif)
+  (let (matches cost num-local-preds bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif)
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))
     (setq cost most-positive-fixnum)
+    (setq num-local-preds -1)
     (setq bindings (make-hash-table :test #'equal))
     (setq q-first-bindings (make-hash-table :test #'equal))
     (setq possible-candidates (get-possible-candidates p q))
@@ -8362,8 +8375,8 @@ Roughly based on (Koller and Friedman, 2009) |#
       )
     (setq key (key-from-matches matches))
     (when (null (gethash key sol-cost-map))
-      (setf (gethash key sol-cost-map) cost))
-    (setq current (list matches cost bindings q-first-bindings most-positive-fixnum))
+      (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
+    (setq current (list matches cost bindings q-first-bindings most-positive-fixnum -1))
     (setq stop-temp (expt 10 (- 1)))
     (setq almost-zero 1.e-39)
     (setq alpha .999)
@@ -8402,11 +8415,11 @@ Roughly based on (Koller and Friedman, 2009) |#
           (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
           ;;(break)
 	  )
-    (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
+    (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
         (simulated-annealing p q current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
-    (values (first current) (second current) (third current) (fourth current) (fifth current))))
+      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds)))
+    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
 
 #| TESTS
 1) Structure mapping tests

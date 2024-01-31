@@ -36,7 +36,12 @@
 	   #:rule-based-cpd-concept-blocks
 	   #:rule-based-cpd-singleton-p
 	   #:rule-based-cpd-count
+	   #:rule-probability
+	   #:rule-conditions
 	   #:mean
-	   #:stdev))
+	   #:stdev
+	   #:get-hash
+	   #:-car
+	   #:-cdr))
 
 (in-package :hems)

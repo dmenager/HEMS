@@ -128,6 +128,14 @@
            (length x)))))
 
 
+(defun get-hash(k h)
+  (gethash k h))
+
+(defun -car(l)
+  (car l))
+
+(defun -cdr(l)
+  (cdr l))
 
 #| Access arbitrarily nested hash table |#
 

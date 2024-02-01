@@ -1,4 +1,7 @@
 (in-package :hems)
+
+(defparameter log-path* ".")
+
 #| Write a message to the log file |#
 
 ;; message = list of format arguments
@@ -11,7 +14,7 @@
 		       :if-does-not-exist :create)
     (apply #'format (cons log message))))
 
-#| Turn on logging flags |#
+#| Turn on logging flags
 
 (defun enable-logging (&key name log-insert log-generalize log-exp-equal log-explain log-rules log-intentions log-rules-final efficiency-exp)
   (when name
@@ -43,6 +46,7 @@
 (defun get-log-variables ()
   (format t "Log Insert: ~S~%Log Generalize: ~S~%Log Explanations: ~A~%Log Explanation Equality: ~A~%"
 	  log-insert* log-generalize* log-explain* log-exp-equal*))
+|#
 
 #| Delete the log file |#
 

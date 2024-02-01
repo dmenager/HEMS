@@ -6749,74 +6749,81 @@ Roughly based on (Koller and Friedman, 2009) |#
     (loop
       for i from 0 to (- (array-dimension singleton-factors 0) 1)
       with factor and offset = (- (array-dimension edges 0) (hash-table-count evidence))
-      with value and index
-      with messages = (make-hash-table) and msg
+      with value-probs and index
+      with messages = (make-hash-table)
       with rules
       do
          (setq factor (aref singleton-factors i))
-         (setq value (gethash (rule-based-cpd-dependent-id factor) evidence))
+         (setq value-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
          (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
            (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" factor value))
-         (when value
-           (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-             (format t "~%observed variable: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) value))
-           (setq value (cdar (assoc value
-				    (gethash 0 (rule-based-cpd-var-value-block-map factor))
-				    :test #'equal :key #'car)))
-	   (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-	     (format t "~%value index: ~d" value))
-	   (setq index (+ i (array-dimension factors 0)))
-           (setf (aref edges offset) (cons index index))
-           (setq offset (+ offset 1))
-           (cond (value
+         (when value-probs
+	   (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
+	   (loop
+	      with msg = factor
+	      with value and seen and rule
+	      for value-prob in value-probs
+	      for j from 0
+	      do
+		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
+		      (format t "~%observed variable: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) value))
+		(setq value (cdar (assoc (car value-prob)
+					 (gethash 0 (rule-based-cpd-var-value-block-map factor))
+					 :test #'equal :key #'car)))
+		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
+		      (format t "~%value index: ~d" value))
+		(setq index (+ i (array-dimension factors 0)))
+		(setf (aref edges offset) (cons index index))
+		(setq offset (+ offset 1))
+		(when value
+		  (setq seen (cons value seen))
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
-                  (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
-                  (loop
-                    with rule
-                    for val in (gethash 0 (rule-based-cpd-var-values factor))
-                    for i from 0
-                    when (= val value)
-                      do
-                         (setq rule (make-rule :id (gensym "RULE-")
-                                               :conditions (make-hash-table :test #'equal)
-                                               :probability 1.0
-                                               :count 1.0))
-                         (setf (gethash  (rule-based-cpd-dependent-id factor)
-					 (rule-conditions rule))
-			       val)
-                         (setf (aref rules i) rule)
-                    else
-                      do
-                         (setq rule (make-rule :id (gensym "RULE-")
-                                               :conditions (make-hash-table :test #'equal)
-                                               :probability 0.0
-                                               :count 1.0))
-                         (setf (gethash (rule-based-cpd-dependent-id factor)
-					(rule-conditions rule))
-			       val)
-                         (setf (aref rules i) rule))
-                  (setq msg (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id factor)
-                                                 :identifiers (rule-based-cpd-identifiers factor)
-                                                 :dependent-var (rule-based-cpd-dependent-var factor)
-                                                 :vars (rule-based-cpd-vars factor)
-                                                 :types (rule-based-cpd-types factor)
-                                                 :concept-ids (rule-based-cpd-concept-ids factor)
-                                                 :qualified-vars (rule-based-cpd-qualified-vars factor)
-                                                 :cardinalities (rule-based-cpd-cardinalities factor)
-                                                 :var-value-block-map (rule-based-cpd-var-value-block-map factor)
-                                                 :step-sizes (rule-based-cpd-step-sizes factor)
-                                                 :rules rules
-                                                 :singleton-p t
-                                                 :lvl (rule-based-cpd-lvl factor)))
+		  (setq rule (make-rule :id (gensym "RULE-")
+					:conditions (make-hash-table :test #'equal)
+					:probability (cdr value-prob)
+					:count 1.0))
+		  (setf (gethash  (rule-based-cpd-dependent-id factor)
+				  (rule-conditions rule))
+			val)
+		  (setf (aref rules j) rule)
+		  
+                  
 		  (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-		   (format t "~%message:~%~S" msg)
-		   (break)))
-		 (t
-                  (setq msg factor)))
-           (when (null (gethash index messages))
-             (setf (gethash index messages) (make-hash-table)))
-           (setf (gethash index (gethash index messages)) msg))
-      finally
+			(format t "~%message:~%~S" msg)
+			(break)))
+		
+	      finally
+		(when seen
+		  (loop
+		     for val in (set-difference (gethash 0 (rule-based-cpd-var-values factor))
+						seen)
+		     for k from (+ j 1)
+		     do
+		       (setq rule (make-rule :id (gensym "RULE-")
+					     :conditions (make-hash-table :test #'equal)
+					     :probability 0
+					     :count 1.0))
+		       (setf (gethash  (rule-based-cpd-dependent-id factor)
+				       (rule-conditions rule))
+			     val)
+		       (setf (aref rules k) rule))
+		  (setq msg (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id factor)
+						 :identifiers (rule-based-cpd-identifiers factor)
+						 :dependent-var (rule-based-cpd-dependent-var factor)
+						 :vars (rule-based-cpd-vars factor)
+						 :types (rule-based-cpd-types factor)
+						 :concept-ids (rule-based-cpd-concept-ids factor)
+						 :qualified-vars (rule-based-cpd-qualified-vars factor)
+						 :cardinalities (rule-based-cpd-cardinalities factor)
+						 :var-value-block-map (rule-based-cpd-var-value-block-map factor)
+						 :step-sizes (rule-based-cpd-step-sizes factor)
+						 :rules rules
+						 :singleton-p t
+						 :lvl (rule-based-cpd-lvl factor)))))
+	   (when (null (gethash index messages))
+	     (setf (gethash index messages) (make-hash-table)))
+	   (setf (gethash index (gethash index messages)) msg)
+       finally
          (setq initial-messages messages))
     (when nil
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)

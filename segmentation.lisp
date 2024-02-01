@@ -39,6 +39,11 @@
         (t
          (> likelihood threshold))))
 
+#| Generate a ground network for the current time step from which to do inference |#
+
+;; cpds = array of conditional probability distributions
+;; time-step is the index of the current state
+;; type = string enumeration on the type of node in the temporal network, be it "STATE", "OBSERVATION", or "PERCEPT"
 (defun get-ground-network (cpds time-step type)
   (loop
     with modifier = (cond ((equal "STATE" type) 0)
@@ -110,50 +115,6 @@
 		(setq new-cpds (cons simple-cpd new-cpds))
 	   finally
 	   (return (make-array (length new-cpds) :initial-contents new-cpds)))))
-
-(defun make-evidence-table (cpds evidence)
-  (loop
-    with rules and observed-factor and observed-factors and values
-    for cpd being the elements of cpds
-    do
-       (setq rules (make-array (aref (rule-based-cpd-cardinalities cpd) 0)))
-       (setq values (gethash (rule-based-dependent-id cpd) evidence))
-       (loop
-	 with rule and val and ev
-	 with max-card = (apply #'max (gethash 0 var-values))
-	 for r being the elements of (rule-based-cpd-rules cpd)
-	 for counter from 0
-	 do
-	    (setq val (gethash (rule-based-cpd-dependent-id cpd) r))
-	    (setq ev (assoc val values))
-	    (setq rule (make-rule :id (gensym "RULE-")
-                                 :conditions (make-hash-table :test #'equal)
-                                 :count 1))
-	    (cond (ev
-		   (setf (rule-probability rule) (cdr ev)))
-		  (t
-		   (if (= val 0)
-		       (setf (rule-probability rule) 1)
-		       (setf (rule-probability rule) 0))))
-            
-           (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)) (car ev))
-           (setf (aref rules counter) rule))
-       (setq lvl (rule-based-cpd-lvl cpd))
-       (setq observed-factor (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id cpd)
-						  :identifiers (rule-based-cpd-identifiers cpd)
-						  :dependent-var (rule-based-cpd-dependent-var cpd)
-						  :vars (rule-based-cpd-vars cpd)
-						  :types (rule-based-cpd-types cpd)
-						  :concept-ids (rule-based-cpd-concept-ids cpd)
-						  :qualified-vars (rule-based-cpd-qualified-vars cpd)
-						  :var-value-block-map (rule-based-cpd-var-value-block-map cpd)
-						  :var-values (rule-based-cpd-var-values cpd)
-						  :cardinalities (rule-based-cpd-cardinalities cpd)
-						  :step-sizes (rule-based-cpd-step-sizes cpd)
-						  :rules rules
-						  :singleton-p t
-						  :lvl lvl))
-    (setq observed-factors (cons observed-factor observed-factors))))
 
 #| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 

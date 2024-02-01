@@ -1660,20 +1660,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 ;; state = dotted list where car is an array of cpds, and the cdr is a hash table of edges
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action nil) (bic-p t) (insertp nil))
+(defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action nil) (bic-p t) (insertp nil) (temporal-p t))
   (let (obs st model)
     (setq obs observation)
     (if st
 	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list st p action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
-    (unless insertp
-      (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
-                                    (getf episode-buffer* :obs)
-                                    eltm*
-                                    nil))
-      (unless (getf model :model)
-        (setq insertp t)))
+    (cond (temporal-p
+	   (unless insertp
+	     (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
+					   (getf episode-buffer* :obs)
+					   eltm*
+					   nil))
+	     (unless (getf model :model)
+               (setq insertp t))))
+	  (t
+	   (setq insertp t)))
     (when insertp
       (loop
         with ep and ep-id and ref
@@ -1689,36 +1692,38 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (format t "~%inserting ~A" (episode-id ep))
            (multiple-value-setq (eltm* ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
-	   (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
-	   (setq cur-st (gensym "STATE-"))
-	   (setq obs-st (gensym "OBS-"))
-	   (setq cur-act (gensym "ACT-"))
-        nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions
-	nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
-	nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
-	nconcing `(,cur-st -> ,obs-st) into state-transitions
-	nconcing `(,obs-st -> ,cur-act) into state-transitions
-        when prev-st
-          nconcing `(,prev-st -> ,cur-st) into state-transitions
-	when prev-act
-	  nconcing `(,prev-act -> ,cur-st) into state-transitions
-	do
+	   (when temporal-p
+	     (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
+	     (setq cur-st (gensym "STATE-"))
+	     (setq obs-st (gensym "OBS-"))
+	     (setq cur-act (gensym "ACT-")))
+	 nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions 
+	 nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
+	 nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
+	 nconcing `(,cur-st -> ,obs-st) into state-transitions 
+	 nconcing `(,obs-st -> ,cur-act) into state-transitions 
+         when prev-st
+         nconcing `(,prev-st -> ,cur-st) into state-transitions 
+	 when prev-act
+	 nconcing `(,prev-act -> ,cur-st) into state-transitions
+	 do
            (setq prev-st cur-st)
 	   (setq prev-act cur-act)
-        finally
-           ;;(setq state-transitions (concatenate 'list ,@state-transitions))
-           (setq st-bn (eval `(compile-program ,@state-transitions)))
-           ;; make temporal episode from state transitions
-           (setq ep-id (symbol-name (gensym "EPISODE-")))
-           (setq ep (make-episode :id ep-id
-                                  :index-episode-id ep-id
-                                  :state-transitions st-bn
-				  :backlinks id-ref-hash
-                                  :temporal-p t
-                                  :num-decompositions 0
-                                  :count 1
-                                  :lvl 2))
-           (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p)))
+         finally
+	   (when temporal-p
+             ;;(setq state-transitions (concatenate 'list ,@state-transitions))
+             (setq st-bn (eval `(compile-program ,@state-transitions)))
+             ;; make temporal episode from state transitions
+             (setq ep-id (symbol-name (gensym "EPISODE-")))
+             (setq ep (make-episode :id ep-id
+                                    :index-episode-id ep-id
+                                    :state-transitions st-bn
+				    :backlinks id-ref-hash
+                                    :temporal-p t
+                                    :num-decompositions 0
+                                    :count 1
+                                    :lvl 2))
+             (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
       ;; clear buffer
       (clear-episodic-cache 0)
       #|

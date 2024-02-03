@@ -38,10 +38,12 @@
 	   #:rule-based-cpd-count
 	   #:rule-probability
 	   #:rule-conditions
+	   #:episode-count
 	   #:mean
 	   #:stdev
 	   #:get-hash
 	   #:-car
-	   #:-cdr))
+	   #:-cdr
+	   #:push-from-files))
 
 (in-package :hems)

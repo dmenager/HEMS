@@ -2,7 +2,6 @@
 
 ;;(ql:quickload :alexandria)
 (defparameter printer-special nil)
-(defparameter calls-to-cost* 0)
 ;;(setf *print-circle* nil)
 
 ;; dependent-id = dependent variable identifier of CPD
@@ -7312,7 +7311,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                     (cond ((rule-based-cpd-p y)
 			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
 			     (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" x y))
-                           (setq x-copy (subst-cpd-2 x y bindings))
+			   (setq x-copy (subst-cpd-2 x y bindings))
 			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
 			     (format t "~%p-cpd after subst:~%~S" x-copy))
                            (cond ((hash-intersection-p (rule-based-cpd-identifiers x-copy) (rule-based-cpd-identifiers y))
@@ -8254,7 +8253,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          t)
 	((and (= (second next) (second best-solution))
 	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
-	      (> (fifth next) (fifth best-solution)))
+	      (>= (fifth next) (fifth best-solution)))
 	 t)))
 #| Initialize empty set of mappings |#
 
@@ -8351,7 +8350,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun single-p (lst)
   (and (consp lst) (not (cdr lst))))
 
-#| Find largest common subgraph between two graphs |#
+#| Find largest common subgraph between two graphs
 
 ;; p = pattern graph
 ;; q = base graph
@@ -8365,7 +8364,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(array-dimension (car q) 0))
 	(break)
 	)
-  (let (matches cost num-local-preds bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif)
+  (let (matches cost num-local-preds bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif top-lvl-nodes)
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))
     (setq cost most-positive-fixnum)
@@ -8428,6 +8427,74 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds)))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
+|#
+
+#| Find largest common subgraph between two graphs |#
+
+;; p = pattern graph
+;; q = base graph
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = flag to compute BIC
+(defun maximum-common-subgraph (p q &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
+  (when nil t 
+	(format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
+		(array-dimension (car p) 0)
+		(map 'list #'rule-based-cpd-identifiers (car q))
+		(array-dimension (car q) 0))
+	(break)
+	)
+  (let (matches cost num-local-preds bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif top-lvl-nodes)
+    (setq sol-cost-map (make-hash-table :test #'equal))
+    (setq matches (make-nil-mappings p))
+    (setq cost most-positive-fixnum)
+    (setq num-local-preds -1)
+    (setq bindings (make-hash-table :test #'equal))
+    (setq q-first-bindings (make-hash-table :test #'equal))
+    (setq possible-candidates (get-possible-candidates p q))
+    (setq p-dim 0)
+    (setq p-m 0)
+    (setq q-dim 0)
+    (setq q-m 0)
+    (setq q-dif 0)
+    (loop
+      for p-num being the hash-keys of possible-candidates
+	using (hash-value q-nums)
+      do
+	 (setf (gethash (rule-based-cpd-dependent-id (aref (car p) p-num)) bindings)
+	       (rule-based-cpd-dependent-id (aref (car q) (car q-nums))))
+	 (setf (gethash (rule-based-cpd-dependent-id (aref (car q) (car q-nums))) q-first-bindings)
+	       (rule-based-cpd-dependent-id (aref (car p) p-num))))
+    (when nil t
+      (format t "~%~%possible candidates:~%~S~%matches:~%~S~%bindings:~%~S" possible-candidates matches bindings)
+      (break))
+    (setq p-nodes (make-hash-table :test #'equal))
+    (setq q-nodes (make-hash-table :test #'equal))
+    (loop
+       with i-options and swaps-hash = (make-hash-table :test #'equal)
+      for i from 0 to (- (if p (array-dimension (car p) 0) 0) 1)
+      do
+         (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) p-nodes) i)
+	 (setq p-m (max p-m (rule-based-cpd-count (aref (car p) i))))
+      if (= (hash-table-count (rule-based-cpd-identifiers (aref (car p) i))) 1)
+	do
+	   (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
+	   (setq p-dim (+ p-dim 1)))
+    (loop
+       for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
+       do
+	 (setq q-m (max q-m (rule-based-cpd-count (aref (car q) i))))
+	 (setf (gethash (rule-based-cpd-dependent-id (aref (car q) i)) q-nodes) i)
+	 (when (= (hash-table-count (rule-based-cpd-identifiers (aref (car q) i))) 1)
+	   (setq q-dim (+ q-dim 1))))
+    (when (> q-dim p-dim)
+      (setq q-dim (- q-dim p-dim)))
+    (multiple-value-bind (solution bindings q-first-bindings)
+	(linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
+      (multiple-value-bind (new-matches new-weighted-cost new-bindings new-q-first-bindings num-local-preds)
+          (get-cost solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
+	(setq current (list new-matches nil new-weighted-cost new-bindings new-q-first-bindings num-local-preds))))
+    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
+
 
 #| TESTS
 1) Structure mapping tests

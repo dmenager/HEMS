@@ -11,7 +11,7 @@
 
 #| Episodic Long Term Memory |#
 (defparameter eltm* nil)
-
+(defparameter calls-to-cost* 0)
 #| Episodic memory episode |#
 
 ;; id = string of gensym for episode id
@@ -404,7 +404,8 @@
         (res
          ;; combine the graphs according to the mapping
          (setq generalized (combine (car x) y (first res) (second res) (fourth res) (fifth res)))
-         (setq equivalent (= 0 (third res)))
+         (setq equivalent (or (= 0 (third res))
+			      (null (car (second res)))))
          (cond ((and equivalent (null (cdr x)))
                 (setf (car x) generalized)
                 (values x (third res) (fourth res) nil t reject-list (sixth res)))
@@ -441,13 +442,14 @@
                 (setq bbindings (cons bindings bbindings)))
               (setq pattern-state-pointer (rest pattern-state-pointer))
               (setq base-state-pointer (rest base-state-pointer))
-	    finally
+	   finally
               (multiple-value-setq (costs decomp-bindings)
                 (match-decompositions x y costs))
               (setq generalized (combine (car x) y (reverse mappings) (reverse unmatched) (nreverse bbindings) decomp-bindings))
 	      (when nil
 		(format t "~%mappings:~%~S~%costs: ~S~%bindings:~%~S" mappings costs bbindings))
-	      (setq equivalent (= 0 (reduce #'+ costs)))
+	      (setq equivalent (or (= 0 (reduce #'+ costs))
+				   (null (car unmatched))))
               ;;(break "(car x):~%~A~%(cdr x):~%~A~%equivalent: ~A" (car x) (cdr x) equivalent)
               (cond ((and equivalent (null (cdr x)))
                      (setf (car x) generalized)
@@ -1186,7 +1188,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     |#
              (return (values recollection eme)))))))
 
-(defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
+(defun push-to-ep-buffer (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bicp t) &aux ep)
   (let (p ref empty-decomp ep-id)
     (cond (state
            (setf (gethash 0 (getf episode-buffer* :states))
@@ -1198,6 +1200,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (setf (gethash 0 (getf episode-buffer* :states))
                  (nreverse (cons p (nreverse (gethash 0 (getf episode-buffer* :states))))))))
     (when (and (or pstm state) insertp)
+      (setq calls-to-cost* 0)
       (format t "~%Adding new episode.")
       (setq empty-decomp (make-empty-graph))
       (setq ep-id (symbol-name (gensym "EPISODE-")))
@@ -1211,12 +1214,26 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                              :lvl 1))
       (format t "~%inserting ~A" (episode-id ep))
       (multiple-value-setq (eltm* ref)
-        (insert-episode eltm* ep nil :bic-p bic-p))
+        (insert-episode eltm* ep nil :bic-p bicp))
+      (with-open-file (f "calls-to-cost.csv" :direction :output :if-does-not-exist :create :if-exists :append)
+	(format f "~d~%" calls-to-cost*))
       (setf (gethash 1 (getf episode-buffer* :states))
             (nreverse (cons (list ref (copy-state (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :states))))))
+      (clear-episodic-cache)
       ;;(eltm-to-pdf)
       ;;(break)
       )))
+
+(defun push-from-files(dir)
+  (loop
+    for f in (directory dir)
+    for i from 0
+    do
+       (format t "~%~%handling file ~A at index ~d" f i)
+       (push-to-ep-buffer :state (compile-program-from-file f)
+			  :insertp t)
+       ;;(format t "~%~%otop-level episode:~%~A" (caar (hems::episode-states (car hems:eltm*))))
+       (eltm-to-pdf)))
 
 (defun print-h-buffer ()
   (loop

@@ -4613,7 +4613,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id)
-  (when nil (or (equal "LEFT_OF608" (rule-based-cpd-dependent-id phi))
+  (when nil t (or (equal "LEFT_OF608" (rule-based-cpd-dependent-id phi))
 	    (equal "SELF573" (rule-based-cpd-dependent-id phi))) nil t
     (format t "~%phi:~%~S~%vars to keep:~%~S" phi vars))
   (loop
@@ -4939,7 +4939,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                             :lvl (rule-based-cpd-lvl phi)))
     marginalized))
 
-#| Marginalize out one variable from factor |#
+#| Marginalize out a set of variables from factor |#
 
 ;; phi = conditional probability density
 ;; vars = variables to keep

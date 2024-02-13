@@ -1225,11 +1225,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       )))
 
 (defun push-from-files(dir)
+  (setq eltm* nil)
   (loop
     for f in (directory dir)
     for i from 0
     do
-       (format t "~%~%handling file ~A at index ~d" f i)
+       (format t "~%handling file ~A at index ~d" f i)
        (push-to-ep-buffer :state (compile-program-from-file f)
 			  :insertp t)
        ;;(format t "~%~%otop-level episode:~%~A" (caar (hems::episode-states (car hems:eltm*))))

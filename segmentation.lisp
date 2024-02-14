@@ -150,8 +150,8 @@
              ;; else
              ;;   return success
 	     (let (obs act ground-network recollection)
-	       (setq obs (car observation))
-	       (setq act (cdr observation))
+	       (setq obs (first observation))
+	       (setq act (third observation))
 	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :episode))) (getf (car models) :cur-step) "STATE"))
                (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
                (loop
@@ -275,28 +275,27 @@
 
 (defun get-model (obs-window eltm reject-list)
   (loop
-    with cue and eme and ref and st-ref-hash
-    with obs-st and cur-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
-    for (obs . act-name) in (gethash 0 (getf episode-buffer* :obs))
+    with cue and eme and obs-ref and state-transitions
+    with cur-obs and cur-act and prev-obs and prev-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
+    for (obs state act-name) in (gethash 0 (getf episode-buffer* :obs))
     do
-       (setq cue (make-episode :observation (copy-observation obs)
+       (setq cue (make-episode :observation (copy-bn obs)
 			       :count 1
 			       :lvl 1))
-       (setq ref (new-retrieve-episode eltm cue reject-list
+       (setq obs-ref (new-retrieve-episode eltm cue reject-list
 				   :bic-p bic-p
 				   :lvl-func lvl-func
 				   :forbidden-types forbidden-types
 				   :check-decomps check-decomps
 				   :check-abstraction-ptrs check-abstraction-ptrs
 				   :check-index-case check-index-case))
-       (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
-       (setq obs-st (gensym "OBS-"))
+       (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+       (setq cur-obs (gensym "OBS-"))
        (setq cur-act (gensym "ACT-"))
-    nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
-    nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
-    nconcing `(,obs-st -> ,cur-act) into state-transitions
-    do
-       (setq prev-st cur-st)
+       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
+       (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
+       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+       (setq prev-obs cur-obs)
        (setq prev-act cur-act)
     finally
        (setq st-bn (eval `(compile-program ,@state-transitions)))
@@ -353,5 +352,5 @@
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i)) :value ,var)) into program
 	      finally
 		(setq st (eval `(compile-program ,@program)))
-		(new-push-to-ep-bufffer :state st :action-name action))
+		(new-push-to-ep-bufffer :observation st :action-name action))
 	   (break)))))

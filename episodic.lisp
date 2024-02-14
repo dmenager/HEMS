@@ -1529,29 +1529,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     |#
              (return (values recollection eme)))))))
 
-(defun dummy (&key (state nil) (cstm nil) (pstm nil) (insertp nil) (bic-p t) &aux ep)
-  (format t "here1")
-  (setf (gethash 0 (getf episode-buffer* :obs))
-        (nreverse (cons state (nreverse (gethash 0 (getf episode-buffer* :obs))))))
-  (format t "~%Adding new episode.")
-  (finish-output)
-  (setq empty-decomp (make-empty-graph))
-  (setq ep-id (symbol-name (gensym "EPISODE-")))
-  (format t "~%here2")
-  (finish-output)
-  (setq ep (make-episode :id ep-id
-                         :index-episode-id ep-id
-                         :states (mapcar #'copy-observation (last (gethash 0 (getf episode-buffer* :obs))))
-                         :decompositions empty-decomp
-                         :id-ref-map (make-hash-table :test #'equal)
-                         :num-decompositions 0
-                         :count 1
-                         :lvl 1))
-  (format t "~%here3")
-  (finish-output)
-  (multiple-value-setq (eltm* ref)
-    (insert-episode eltm* ep nil :bic-p bic-p)))
-
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
 ;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges
@@ -1640,13 +1617,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (cond (temporal-p
 	   (unless insertp
 	     (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
-					   (getf episode-buffer* :obs)
+					   (gethash 0 (getf episode-buffer* :obs))
 					   eltm*
-					   nil))
+					   nil
+					   bic-p))
+	     (when t
+	       (format t "~%retrieved model:~%~S" model))
 	     (unless (getf model :model)
-               (setq insertp t))))
+	       (setq insertp t))))
 	  (t
 	   (setq insertp t)))
+    (when t
+      (format t "~%insertp?: ~A" insertp))
     (when insertp
       (loop
 	with state-transitions = nil
@@ -1661,7 +1643,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                   :observation (copy-bn o)
                                   :count 1
                                   :lvl 1))
-           (format t "~%inserting ~A" (episode-id ep))
+           (format t "~%inserting observation, ~A" (episode-id ep))
            (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
 	   (when temporal-p
@@ -1673,7 +1655,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                       :observation (copy-bn s)
                                       :count 1
                                       :lvl 1))
-	       (format t "~%inserting ~A" (episode-id ep))
+	       (format t "~%inserting state, ~A" (episode-id ep))
                (multiple-value-setq (eltm* st-ref)
 		 (new-insert-episode eltm* ep nil :bic-p bic-p))
 	       (setf (gethash (episode-id (car st-ref)) id-ref-hash) st-ref))
@@ -1705,6 +1687,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         finally
 	   (when (and temporal-p (> i 0))
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
+	     (when t
+	       (format t "~%transition model: ~S" state-transitions))
              (setq st-bn (eval `(compile-program ,@state-transitions)))
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))
@@ -1716,6 +1700,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :num-decompositions 0
                                     :count 1
                                     :lvl 2))
+	     (format t "~%Inserting transition model, ~A" (episode-id ep))
              (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
       ;; clear buffer
       (clear-episodic-cache 0 1)
@@ -1815,7 +1800,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun clear-episodic-cache (&optional lvl n)
   (cond ((and lvl n)
          (setf (gethash lvl (getf episode-buffer* :obs))
-               (butlast (gethash lvl (getf episode-buffer* :obs)) n)))
+               (last (gethash lvl (getf episode-buffer* :obs)))))
         ((and lvl (not n))
          (setf (gethash lvl (getf episode-buffer* :obs)) nil))
 	(t
@@ -1887,11 +1872,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (let* ((ep (car eps))
          (id (subseq (episode-id ep) (+ (search "-" (episode-id ep)) 1))))
     (format stream "subgraph cluster_~d {label = ~d~%" id (combine-symbols "EPISODE" id "count" (episode-count ep)))
-    (loop
-      for state in (episode-states ep)
-      for i from 1 upto (length (episode-states ep))
-      do
-         (print-episode-state state id (concatenate 'string "State_" (write-to-string i)) stream))
+    (print-episode-state (episode-observation ep) id "Observation" stream)
+    (print-episode-state (episode-state-transitions) id "State" stream)
     ;;(format t "~%HERE!!!!")
     (format stream "~d[shape=point style=invis]~%" id)
     ;;(format stream "~d~%" id)

@@ -6785,15 +6785,15 @@ Roughly based on (Koller and Friedman, 2009) |#
     (loop
       for i from 0 to (- (array-dimension singleton-factors 0) 1)
       with factor and offset = (- (array-dimension edges 0) (hash-table-count evidence))
-      with value-probs and index
+      with var-probs and index
       with messages = (make-hash-table)
       with rules
       do
          (setq factor (aref singleton-factors i))
-         (setq value-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
+         (setq var-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
          (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
                (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" factor value))
-         (when value-probs
+         (when var-probs
 	   (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
 	   (setq index (+ i (array-dimension factors 0)))
 	   (setf (aref edges offset) (cons index index))
@@ -6801,12 +6801,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (loop
 	     with msg = factor
 	     with value and seen and rule
-	     for value-prob in value-probs
+	     for var-prob in var-probs
 	     for j from 0
 	     do
 		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 		      (format t "~%observed variable: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) value))
-		(setq value (cdar (assoc (car value-prob)
+		(setq value (cdar (assoc (car var-prob)
 					 (gethash 0 (rule-based-cpd-var-value-block-map factor))
 					 :test #'equal :key #'car)))
 		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
@@ -6816,7 +6816,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
 		  (setq rule (make-rule :id (gensym "RULE-")
 					:conditions (make-hash-table :test #'equal)
-					:probability (cdr value-prob)
+					:probability (cdr var-prob)
 					:count 1.0))
 		  (setf (gethash (rule-based-cpd-dependent-id factor)
 				 (rule-conditions rule))

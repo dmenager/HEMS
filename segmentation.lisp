@@ -1,4 +1,5 @@
 (in-package :hems)
+
 #| Get the likelihood that model predicts state |#
 
 ;; episode = element in episodic long-term memory
@@ -113,7 +114,7 @@
 						     :lvl lvl))
 		(setq new-cpds (cons simple-cpd new-cpds))
 	   finally
-	   (return (make-array (length new-cpds) :initial-contents new-cpds)))))
+	   (return (make-array (length new-cpds) :initial-contents (reverse new-cpds))))))
 
 #| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 
@@ -162,14 +163,17 @@
                       (setf (gethash (rule-based-dependent-id cpd) evidence) nil)
                       (loop
 			with cond = (rule-based-dependent-id cpd)
-			with val
+			with val and binding and var
+			with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
 			for rule in (rule-based-cpd-rules cpd)
 			do
 			   (setq val (gethash cond (rule-conditions rule)))
+			   (setq binding (car (rassoc val vvbm :key #'cdar)))
+			   (setq var (car binding))
 			   (setf (gethash cond evidence)
-				 (cons (cons val (rule-probability rule))
+				 (cons (cons var (rule-probability rule))
                                        (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
-               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step "OBSERVATION"))
+               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) (getf (car models) :cur-step) "OBSERVATION"))
                (when ground-network
 		 ;; infer distribution over the observation given state
 		 (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
@@ -181,27 +185,29 @@
 			(setf (gethash (rule-based-dependent-id cpd) evidence) nil)
 			(loop
 			  with cond = (rule-based-dependent-id cpd)
-			  with val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  with binding and var and val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
 			  for rule in (rule-based-cpd-rules cpd)
 			  do
                              (cond ((> (rule-probability rule) 0)
-                                    (setq val (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
-                                    (setq model-ref (gethash val (episode-backlinks episode)))
+				    (setq binding (car (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+				    (setq var (car binding))
+				    (setq val (cdr binding))
+				    (setq model-ref (gethash var (episode-backlinks episode)))
                                     (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
 											:model-parent model)
 									    (rest models))
                                                                       (list observation))
 					   (setq failp nil)
 					   (setf (gethash cond evidence)
-						 (cons (cons val 1)
+						 (cons (cons var 1)
                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))
 					  (t
 					   (setf (gethash cond evidence)
-						 (cons (cons val 0)
+						 (cons (cons var 0)
                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))))
 				   (t
                                     (setf (gethash cond evidence)
-					  (cons (cons val 0)
+					  (cons (cons var 0)
 						(gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
                              (if failp
 				 (return-from good-fit-to-observations? (values (rest models) observation))))))
@@ -218,23 +224,23 @@
 			(loop
 			  with new-models = (rest models)
 			  with cond = (rule-based-dependent-id cpd)
-			  with val and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  with var and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
 			  for rule in (rule-based-cpd-rules cpd)
 			  do
                              (cond ((> (rule-probability rule) 0)
-                                    (setq val (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
-                                    (cond ((equal act val)
+                                    (setq var (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+                                    (cond ((equal act var)
 					   (setq failp nil)
 					   (setf (gethash cond evidence)
-						 (cons (cons val 1)
+						 (cons (cons var 1)
                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))
 					  (t
 					   (setf (gethash cond evidence)
-						 (cons (cons val 0)
+						 (cons (cons var 0)
                                                        (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))))
 				   (t
                                     (setf (gethash cond evidence)
-					  (cons (cons val 0)
+					  (cons (cons var 0)
 						(gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
 			  finally
 			     (setq models new-models)))
@@ -273,7 +279,7 @@
             (t
 	     (good-fit-to-observations (track-observation models (car obs-window)) (rest obs-window)))))))
 
-(defun get-model (obs-window eltm reject-list)
+(defun get-model (obs-window eltm reject-list bic-p)
   (loop
     with cue and eme and obs-ref and state-transitions
     with cur-obs and cur-act and prev-obs and prev-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
@@ -282,47 +288,46 @@
        (setq cue (make-episode :observation (copy-bn obs)
 			       :count 1
 			       :lvl 1))
-       (setq obs-ref (new-retrieve-episode eltm cue reject-list
-				   :bic-p bic-p
-				   :lvl-func lvl-func
-				   :forbidden-types forbidden-types
-				   :check-decomps check-decomps
-				   :check-abstraction-ptrs check-abstraction-ptrs
-				   :check-index-case check-index-case))
-       (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-       (setq cur-obs (gensym "OBS-"))
-       (setq cur-act (gensym "ACT-"))
-       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
-       (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
-       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
-       (setq prev-obs cur-obs)
-       (setq prev-act cur-act)
+       (setq obs-ref (new-retrieve-episode eltm cue reject-list :bic-p bic-p))
+       (when obs-ref
+	 (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+	 (setq cur-obs (gensym "OBS-"))
+	 (setq cur-act (gensym "ACT-"))
+	 (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
+	 (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
+	 (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+	 (setq prev-obs cur-obs)
+	 (setq prev-act cur-act))
     finally
-       (setq st-bn (eval `(compile-program ,@state-transitions)))
-       ;; make temporal episode from state transitions
-       (setq cue (make-episode :state-transitions st-bn
-			       :backlinks id-ref-hash
-			       :temporal-p t
-			       :count 1
-			       :lvl 2))
-       (setq eme (new-retrieve-episode eltm cue reject-list
-				   :bic-p bic-p
-				   :lvl-func lvl-func
-				   :forbidden-types forbidden-types
-				   :check-decomps check-decomps
-				   :check-abstraction-ptrs check-abstraction-ptrs
-				   :check-index-case check-index-case))
-       (return (make-model :ep (car eme) :model-parent nil))))
+       (when state-transitions
+	 (setq st-bn (eval `(compile-program ,@state-transitions)))
+	 ;; make temporal episode from state transitions
+	 (setq cue (make-episode :state-transitions st-bn
+				 :backlinks id-ref-hash
+				 :temporal-p t
+				 :count 1
+				 :lvl 2))
+	 (setq eme (new-retrieve-episode eltm cue reject-list
+					 :bic-p bic-p
+					 :lvl-func lvl-func
+					 :forbidden-types forbidden-types
+					 :check-decomps check-decomps
+					 :check-abstraction-ptrs check-abstraction-ptrs
+					 :check-index-case check-index-case))
+	 (return (make-model :ep (car eme) :model-parent nil)))
+       (return (make-model))))
 
-(defun event-boundary-p  (model obs-window eltm reject-list)
+(defun event-boundary-p (model obs-window eltm reject-list bic-p)
   (loop
     do
        (when (null (getf model :model))
-	 (setq model (get-model obs-window eltm reject-list)))
-       (multiple-value-bind (new-model remaining-states new-rejects calls-to-retrieve)
-	   (good-fit-to-observations? model obs-window reject-list)
-	 (declare (ignore calls-to-retrieve))
-	 (setq reject-list new-rejects)
+	 (setq model (get-model obs-window eltm reject-list bic-p)))
+       (when (null (getf model :model))
+	 (return-from event-boundary-p (make-model)))
+       (multiple-value-bind (new-model remaining-boservations)
+	   (good-fit-to-observations? model nil obs-window)
+	 ;;(declare (ignore calls-to-retrieve))
+	 ;;(setq reject-list new-rejects)
 	 (setq model new-model))
     while (and (null (getf model :model))
 	       (not (member (episode-id (car eltm)) reject-list :test #'equal))))
@@ -350,7 +355,9 @@
 	     for var in variables
 	     for i from 0
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i)) :value ,var)) into program
-	      finally
-		(setq st (eval `(compile-program ,@program)))
-		(new-push-to-ep-bufffer :observation st :action-name action))
+	     finally
+		(when t
+		  (format t "~%~%observation: ~S~%action: ~S" program action))
+		 (setq st (eval `(compile-program ,@program)))
+		 (new-push-to-ep-buffer :observation st :action-name action))
 	   (break)))))

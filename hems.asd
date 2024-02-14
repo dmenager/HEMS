@@ -3,7 +3,7 @@
   :version "0.0.1"
   :author "David H. Menager <dhmenager@gmail.com>"
   :license "MIT"
-  :depends-on ("alexandria")
+  :depends-on ("alexandria" "split-sequence")
   :components((:file "package")
 	      (:file "ep-log" :depends-on ("package"))
 	      (:file "episodic" :depends-on ("graph-representation"))

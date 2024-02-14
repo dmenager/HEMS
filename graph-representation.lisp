@@ -557,6 +557,42 @@
                             value)))
 	 finally (return h)))))
 
+#| Copy edge information in Bayesian network |#
+
+;; edge-hash = hash table containing edge information
+(defun copy-edges (edge-hash)
+  (let ((h (make-hash-table
+            :test (hash-table-test edge-hash)
+            :rehash-size (hash-table-rehash-size edge-hash)
+            :rehash-threshold (hash-table-rehash-threshold edge-hash)
+            :size (hash-table-size edge-hash))))
+    (loop for key being each hash-key of edge-hash
+            using (hash-value hash)
+          do (setf (gethash key h) (copy-hash-table hash))
+          finally (return h))))
+
+#| Copy factors in a Bayesian network |#
+
+;; factors = array of cpds in the Bayes net
+(defun copy-factors (factors &key (shallow nil) (rule-counts nil))
+  (loop
+    with dim = (array-dimension factors 0)
+    with copy-factors = (make-array dim :fill-pointer t)
+    for i from 0 to (- dim 1)
+    do
+       (setf (aref copy-factors i)
+             (if shallow
+                 (partial-copy-rule-based-cpd (aref factors i) :rule-counts rule-counts)
+                 (copy-rule-based-cpd (aref factors i) :rule-counts rule-counts)))
+    finally
+       (return copy-factors)))
+
+#| Copies Bayesian network contents|#
+
+;; state = state represented as a graph
+(defun copy-bn (bn &key (rule-counts nil))
+  (cons (copy-factors (car bn) :rule-counts rule-counts) (copy-edges (cdr bn))))
+
 #| Copy a list and all its elements |#
 
 ;; l = list to copy
@@ -6756,15 +6792,18 @@ Roughly based on (Koller and Friedman, 2009) |#
          (setq factor (aref singleton-factors i))
          (setq value-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
          (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-           (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" factor value))
+               (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" factor value))
          (when value-probs
 	   (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
+	   (setq index (+ i (array-dimension factors 0)))
+	   (setf (aref edges offset) (cons index index))
+	   (setq offset (+ offset 1))
 	   (loop
-	      with msg = factor
-	      with value and seen and rule
-	      for value-prob in value-probs
-	      for j from 0
-	      do
+	     with msg = factor
+	     with value and seen and rule
+	     for value-prob in value-probs
+	     for j from 0
+	     do
 		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 		      (format t "~%observed variable: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) value))
 		(setq value (cdar (assoc (car value-prob)
@@ -6772,9 +6811,6 @@ Roughly based on (Koller and Friedman, 2009) |#
 					 :test #'equal :key #'car)))
 		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 		      (format t "~%value index: ~d" value))
-		(setq index (+ i (array-dimension factors 0)))
-		(setf (aref edges offset) (cons index index))
-		(setq offset (+ offset 1))
 		(when value
 		  (setq seen (cons value seen))
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
@@ -6782,9 +6818,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 					:conditions (make-hash-table :test #'equal)
 					:probability (cdr value-prob)
 					:count 1.0))
-		  (setf (gethash  (rule-based-cpd-dependent-id factor)
-				  (rule-conditions rule))
-			val)
+		  (setf (gethash (rule-based-cpd-dependent-id factor)
+				 (rule-conditions rule))
+			value)
 		  (setf (aref rules j) rule)
 		  
                   
@@ -6792,13 +6828,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 			(format t "~%message:~%~S" msg)
 			(break)))
 		
-	      finally
+	     finally
 		(when seen
 		  (loop
-		     for val in (set-difference (gethash 0 (rule-based-cpd-var-values factor))
-						seen)
-		     for k from (+ j 1)
-		     do
+		    for val in (set-difference (gethash 0 (rule-based-cpd-var-values factor))
+					       seen)
+		    for k from (+ j 1)
+		    do
 		       (setq rule (make-rule :id (gensym "RULE-")
 					     :conditions (make-hash-table :test #'equal)
 					     :probability 0
@@ -6822,8 +6858,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :lvl (rule-based-cpd-lvl factor)))))
 	   (when (null (gethash index messages))
 	     (setf (gethash index messages) (make-hash-table)))
-	   (setf (gethash index (gethash index messages)) msg)
-       finally
+	   (setf (gethash index (gethash index messages)) msg))
+      finally
          (setq initial-messages messages))
     (when nil
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
@@ -8016,7 +8052,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                          :bic-p bic-p
                          :forbidden-types forbidden-types))
            (when sol-cost-map
-             (setf (gethash key sol-cost-map) (cons cost num-local-preds))
+             (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
            (values solution cost bindings q-first-bindings num-local-preds)))))
 
 #| Find largest common subgraph between two graphs |#
@@ -8538,11 +8574,11 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq q-m 0)
     (setq q-dif 0)
     (when nil t
-      (format t "~%~%possible candidates:~%~S" possible-candidates)
-      )
+	  (format t "~%~%possible candidates:~%~S" possible-candidates)
+	  )
     (setq key (key-from-matches matches))
     (when (null (gethash key sol-cost-map))
-      (setf (gethash key sol-cost-map) (cons cost num-local-preds))
+      (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
     (setq current (list matches cost bindings q-first-bindings num-local-preds))
     (setq stop-temp (expt 10 (- 1)))
     (setq almost-zero 1.e-39)
@@ -8550,24 +8586,24 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq p-nodes (make-hash-table :test #'equal))
     (setq q-nodes (make-hash-table :test #'equal))
     (loop
-       with i-options and swaps-hash = (make-hash-table :test #'equal)
+      with i-options and swaps-hash = (make-hash-table :test #'equal)
       for i from 0 to (- (if p (array-dimension (car p) 0) 0) 1)
       do
          (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) p-nodes) i)
 	 (setq p-m (max p-m (rule-based-cpd-count (aref (car p) i))))
       if (= (hash-table-count (rule-based-cpd-identifiers (aref (car p) i))) 1)
-       do
-	 (setq p-dim (+ p-dim 1))
-         (setq i-options (analog-nodes i p q (gethash i possible-candidates) (make-hash-table) (make-hash-table)))
-         (when (> (array-dimension i-options 0) 1)
-           (setf (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash)
-                 (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
-         (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
-       finally
-       (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))
+	do
+	   (setq p-dim (+ p-dim 1))
+           (setq i-options (analog-nodes i p q (gethash i possible-candidates) (make-hash-table) (make-hash-table)))
+           (when (> (array-dimension i-options 0) 1)
+             (setf (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash)
+                   (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
+           (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
+      finally
+	 (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))
     (loop
-       for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
-       do
+      for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
+      do
 	 (setq q-m (max q-m (rule-based-cpd-count (aref (car q) i))))
 	 (setf (gethash (rule-based-cpd-dependent-id (aref (car q) i)) q-nodes) i)
 	 (when (= (hash-table-count (rule-based-cpd-identifiers (aref (car q) i))) 1)

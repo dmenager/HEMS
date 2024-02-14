@@ -26,48 +26,14 @@
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks step-size abstraction-ptrs num-decompositions count depth lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs num-decompositions count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
 (defun get-eltm ()
   eltm*)
 
-#| Copy edge information in state |#
 
-;; edge-hash = hash table containing edge information
-(defun copy-edges (edge-hash)
-  (let ((h (make-hash-table
-            :test (hash-table-test edge-hash)
-            :rehash-size (hash-table-rehash-size edge-hash)
-            :rehash-threshold (hash-table-rehash-threshold edge-hash)
-            :size (hash-table-size edge-hash))))
-    (loop for key being each hash-key of edge-hash
-            using (hash-value hash)
-          do (setf (gethash key h) (copy-hash-table hash))
-          finally (return h))))
-
-#| Copy factors in the state |#
-
-;; factors = array of cpds in the state
-(defun copy-factors (factors &key (shallow nil) (rule-counts nil))
-  (loop
-    with dim = (array-dimension factors 0)
-    with copy-factors = (make-array dim :fill-pointer t)
-    for i from 0 to (- dim 1)
-    do
-       (setf (aref copy-factors i)
-             (if shallow
-                 (partial-copy-rule-based-cpd (aref factors i) :rule-counts rule-counts)
-                 (copy-rule-based-cpd (aref factors i) :rule-counts rule-counts)))
-    finally
-       (return copy-factors)))
-
-#| Copy episode state |#
-
-;; state = state represented as a graph
-(defun copy-observation (state &key (rule-counts nil))
-  (cons (copy-factors (car state) :rule-counts rule-counts) (copy-edges (cdr state))))
 
 #| Performs deep copy on episode |#
 
@@ -77,11 +43,15 @@
    :id (if fresh-id (symbol-name (gensym "EPISODE-")) (episode-id ep))
    :index-episode-id (episode-index-episode-id ep)
    :parent (if (episode-parent ep) (episode-parent ep))
-   :states (mapcar #'copy-observation (episode-states ep))
+   :observation (copy-bn (episode-observation ep))
+   :state-transitions (copy-bn (episode-state-transitions ep))
+   :temporal-p (episode-temporal-p ep)
+   :backlinks (copy-hash-table (episode-decompositions ep) :reference-values t)
    :decompositions (copy-observation (episode-decompositions ep))
    :abstraction-ptrs (copy-list (episode-abstraction-ptrs ep))
    :id-ref-map (copy-hash-table (episode-id-ref-map ep) :reference-values t)
    :num-decompositions (episode-num-decompositions ep)
+   :depth (episode-depth ep)
    :count (episode-count ep)
    :lvl (episode-lvl ep)))
 
@@ -1660,13 +1630,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 ;; state = dotted list where car is an array of cpds, and the cdr is a hash table of edges
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action nil) (bic-p t) (insertp nil) (temporal-p t))
+(defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action-name nil) (bic-p t) (insertp nil) (temporal-p t))
   (let (obs st model)
     (setq obs observation)
     (if st
 	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
-          (nreverse (cons (list st p action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
+          (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (cond (temporal-p
 	   (unless insertp
 	     (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
@@ -1679,38 +1649,61 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq insertp t)))
     (when insertp
       (loop
-        with ep and ep-id and ref
-        with cur-st and obs-st and cur-act and prev-act and prev-st and st-bn and id-ref-hash = (make-hash-table :test #'equal)
-        for (s o  act) in (gethash 0 (getf episode-buffer* :obs))
-        do
+	with state-transitions = nil
+        with ep and ep-id and obs-ref and st-ref
+        with cur-st and cur-obs and cur-act and prev-act and prev-st and prev-obs and st-bn and id-ref-hash = (make-hash-table :test #'equal)
+        for (o s act) in (butlast (gethash 0 (getf episode-buffer* :obs)))
+	for i from 0
+	do
            (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
-                                  :observation (copy-observation o)
+                                  :observation (copy-bn o)
                                   :count 1
                                   :lvl 1))
            (format t "~%inserting ~A" (episode-id ep))
-           (multiple-value-setq (eltm* ref)
+           (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
 	   (when temporal-p
-	     (setf (gethash (episode-id (car ref)) id-ref-hash) ref)
-	     (setq cur-st (gensym "STATE-"))
-	     (setq obs-st (gensym "OBS-"))
-	     (setq cur-act (gensym "ACT-")))
-	 nconcing `(,cur-st = (state-node state :value ,state-id)) into state-transitions 
-	 nconcing `(,obs-st = (observation-node observation :value ,(episode-id (car ref)))) into state-transitions
-	 nconcing `(,cur-act = (percept-node action :value ,act-name)) into state-transitions
-	 nconcing `(,cur-st -> ,obs-st) into state-transitions 
-	 nconcing `(,obs-st -> ,cur-act) into state-transitions 
-         when prev-st
-         nconcing `(,prev-st -> ,cur-st) into state-transitions 
-	 when prev-act
-	 nconcing `(,prev-act -> ,cur-st) into state-transitions
-	 do
-           (setq prev-st cur-st)
-	   (setq prev-act cur-act)
-         finally
-	   (when temporal-p
+	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+	     (when st
+	       (setq ep-id (symbol-name (gensym "EPISODE-")))
+               (setq ep (make-episode :id ep-id
+                                      :index-episode-id ep-id
+                                      :observation (copy-bn s)
+                                      :count 1
+                                      :lvl 1))
+	       (format t "~%inserting ~A" (episode-id ep))
+               (multiple-value-setq (eltm* st-ref)
+		 (new-insert-episode eltm* ep nil :bic-p bic-p))
+	       (setf (gethash (episode-id (car st-ref)) id-ref-hash) st-ref))
+	     (when st
+	       (setq cur-st (gensym "STATE-")))
+	     (setq cur-obs (gensym "OBS-"))
+	     (setq cur-act (gensym "ACT-"))
+	     (when st
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car st-ref)))))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
+	     (when st
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st -> ,cur-obs))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+	     (cond (st
+		    (when prev-st
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-st -> ,cur-st)))))
+		   (t
+		    (when prev-obs
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-obs -> ,cur-obs))))))
+	     (when prev-act
+	       (if st
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-st)))
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-obs)))))
+	     (if st
+		 (setq prev-st cur-st)
+		 (setq prev-obs cur-obs))
+	     (setq prev-act cur-act))
+        finally
+	   (when (and temporal-p (> i 0))
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
              (setq st-bn (eval `(compile-program ,@state-transitions)))
              ;; make temporal episode from state transitions
@@ -1725,7 +1718,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :lvl 2))
              (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
       ;; clear buffer
-      (clear-episodic-cache 0)
+      (clear-episodic-cache 0 1)
       #|
       (setf (gethash 1 (getf episode-buffer* :obs))
       (nreverse (cons (list ref (copy-observation (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :obs))))))
@@ -1825,7 +1818,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                (butlast (gethash lvl (getf episode-buffer* :obs)) n)))
         ((and lvl (not n))
          (setf (gethash lvl (getf episode-buffer* :obs)) nil))
-        (t
+	(t
          (setf (getf episode-buffer* :obs) (make-hash-table)))))
 
 #| Add a higher-level episode to event memory |#

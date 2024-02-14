@@ -1,5 +1,4 @@
 (in-package :hems)
-
 #| Get the likelihood that model predicts state |#
 
 ;; episode = element in episodic long-term memory
@@ -333,13 +332,12 @@
 (defun test ()
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
-    (ql:quickload :split-sequence)
     (let (features data)
       (setq data (uiop:read-file-lines "~/Code/Data/HARLEM/test_data.csv"))
       (setq features (split-sequence:split-sequence #\, (car data)))
       (setq data (rest data))
       (loop
-	with processed and variables
+	with processed and variables and action
 	for line in data
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -347,11 +345,13 @@
 				       (when (integer-string-p string)
 					 (list string)))
 				   (split-sequence:split-sequence #\Space (third processed))))
+	   (setq action (fourth processed))
 	   (loop
 	     with st
 	     for var in variables
 	     for i from 0
-	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i) :value ,var))) into program
-	     finally
+	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i)) :value ,var)) into program
+	      finally
 		(setq st (eval `(compile-program ,@program)))
-		(new-push-to-ep-bufffer (:state st :action-name action)))))))
+		(new-push-to-ep-bufffer :state st :action-name action))
+	   (break)))))

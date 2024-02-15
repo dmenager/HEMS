@@ -22,11 +22,10 @@
 ;; temporal-p = flag for whether the episode represents a course of events (state transitions) or state of affairs (observation)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; abstraction-ptrs = list of pointers to higher level abstraction branch, if it exists
-;; num-decompositions = number of decompositions in episosde
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs num-decompositions count depth lvl)
+(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
@@ -48,7 +47,6 @@
    :temporal-p (episode-temporal-p ep)
    :backlinks (copy-hash-table (episode-backlinks ep) :reference-values t)
    :abstraction-ptrs (copy-list (episode-abstraction-ptrs ep))
-   :num-decompositions (episode-num-decompositions ep)
    :depth (episode-depth ep)
    :count (episode-count ep)
    :lvl (episode-lvl ep)))
@@ -179,8 +177,8 @@
 ;; bindings = bindings
 (defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings)
   (let (p q new-nodes)
-    (setq p (copy-factors (car (ep1-bn))))
-    (setq q (copy-factors (car (ep2-bn))))
+    (setq p (copy-factors (car ep1-bn)))
+    (setq q (copy-factors (car ep2-bn)))
     (loop
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
@@ -198,7 +196,7 @@
          ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
          (setq new-nodes (cons node new-nodes)))
     (loop
-      for (dummy-match . unmatched-q) in unmatched-qs
+      for (dummy-match . unmatched-q) in unmatched
       with dm and node
       do
          (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
@@ -299,11 +297,11 @@
                   with new-id-ref-map  = (copy-hash-table (episode-backlinks ep1) :reference-values t)
                   for id being the hash-keys of (episode-backlinks ep2)
                     using (hash-value ref)
-                  do
+		  ;; check to see if id is bound already to ancestor id in ep1? If it is, then skip id
+		  do
                      (setf (gethash id new-id-ref-map) ref)
                   finally
                      (return new-id-ref-map))
-                :num-decompositions (max (episode-num-decompositions ep1) (episode-num-decompositions ep2))
                 :observation (if (episode-temporal-p ep2)
                                  (episode-observation ep1)
                                  (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
@@ -401,15 +399,15 @@
 ;; reject-list = list of episode ids to reject and not expand/return
 (defun reject-branch? (branch ep reject-list &key (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil))
   (cond ((and check-decomps
-	      (null (episode-backlinks (car branch)))
-	      (episode-backlinks ep))
+	      (= (hash-table-count (episode-backlinks (car branch))) 0)
+	      (> (hash-table-count (episode-backlinks ep)) 0))
          (when nil
            (format t "~%rejecting ~A because backlinks don't match" (episode-id (car branch))))
          t)
         ((and check-decomps
 	      (episode-parent (car branch))
-	      (episode-backlinks (car branch))
-	      (null (episode-backlinks ep)))
+	      (> (hash-table-count (episode-backlinks (car branch))) 0)
+	      (= (hash-table-count (episode-backlinks ep)) 0))
          (when nil
            (format t "~%rejecting ~A because backlinks don't match" (episode-id (car branch))))
          t)
@@ -716,14 +714,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                            (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
                  (cond ((episode-temporal-p ep)
                         (setq pattern (episode-state-transitions ep))
-                        (setq base (episode-state-transitions (car branch)))
-                        (setq pattern-backlinks (episode-backlinks ep))
-                        (setq base-backlinks (episode-backlinks (car branch))))
+                        (setq base (episode-state-transitions (car branch))))
                        (t
                         (setq pattern (episode-observation ep))
-                        (setq base (episode-observation (car branch)))
-                        (setq pattern-backlinks nil)
-                        (setq base-backlinks nil)))
+                        (setq base (episode-observation (car branch)))))
+		 (setq pattern-backlinks (episode-backlinks ep))
+                 (setq base-backlinks (episode-backlinks (car branch)))
                  (multiple-value-bind (sol no-matches cost bindings num-local-preds)
                      (maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
@@ -1002,16 +998,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (when nil t
                        (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
                                (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
-		 (cond ((episode-temporal-p ep)
-                        (setq pattern (episode-state-transitions ep))
-                        (setq base (episode-state-transitions (car branch)))
-                        (setq pattern-backlinks (episode-backlinks ep))
-                        (setq base-backlinks (episode-backlinks (car branch))))
+		 (cond ((episode-temporal-p cue)
+                        (setq pattern (episode-state-transitions cue))
+                        (setq base (episode-state-transitions (car branch))))
                        (t
-                        (setq pattern (episode-observation ep))
-                        (setq base (episode-observation (car branch)))
-                        (setq pattern-backlinks nil)
-                        (setq base-backlinks nil)))
+                        (setq pattern (episode-observation cue))
+                        (setq base (episode-observation (car branch)))))
+		 (setq pattern-backlinks (episode-backlinks cue))
+                 (setq base-backlinks (episode-backlinks (car branch)))
 		 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                      (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p :forbidden-types forbidden-types)
 		   (declare (ignore q-first-bindings))
@@ -1642,7 +1636,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :observation (copy-bn o)
-                                  :count 1
+				  :backlinks (make-hash-table :test #'equal)
+				  :count 1
                                   :lvl 1))
            (format t "~%inserting observation, ~A" (episode-id ep))
            (multiple-value-setq (eltm* obs-ref)
@@ -1654,7 +1649,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                (setq ep (make-episode :id ep-id
                                       :index-episode-id ep-id
                                       :observation (copy-bn s)
-                                      :count 1
+				      :backlinks (make-hash-table :test #'equal)
+				      :count 1
                                       :lvl 1))
 	       (format t "~%inserting state, ~A" (episode-id ep))
                (multiple-value-setq (eltm* st-ref)
@@ -1698,7 +1694,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :state-transitions st-bn
 				    :backlinks id-ref-hash
                                     :temporal-p t
-                                    :num-decompositions 0
                                     :count 1
                                     :lvl 2))
 	     (format t "~%Inserting transition model, ~A" (episode-id ep))

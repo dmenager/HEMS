@@ -286,6 +286,7 @@
     for (obs state act-name) in (gethash 0 (getf episode-buffer* :obs))
     do
        (setq cue (make-episode :observation (copy-bn obs)
+			       :backlinks (make-hash-table :test #'equal)
 			       :count 1
 			       :lvl 1))
        (setq obs-ref (new-retrieve-episode eltm cue reject-list :bic-p bic-p))
@@ -308,12 +309,7 @@
 				 :count 1
 				 :lvl 2))
 	 (setq eme (new-retrieve-episode eltm cue reject-list
-					 :bic-p bic-p
-					 :lvl-func lvl-func
-					 :forbidden-types forbidden-types
-					 :check-decomps check-decomps
-					 :check-abstraction-ptrs check-abstraction-ptrs
-					 :check-index-case check-index-case))
+					 :bic-p bic-p))
 	 (return (make-model :ep (car eme) :model-parent nil)))
        (return (make-model))))
 

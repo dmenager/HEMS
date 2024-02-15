@@ -8045,14 +8045,15 @@ Roughly based on (Koller and Friedman, 2009) |#
     (cond (previous-cost
            (values solution previous-cost bindings q-first-bindings prev-num-local-preds))
           (t
-           (setq cost (g (coerce solution 'list)
-                         bindings
-                         q-first-bindings
-                         p q q-dif q-m
-			 p-backlinks q-backlinks
-                         :cost-of-nil cost-of-nil
-                         :bic-p bic-p
-                         :forbidden-types forbidden-types))
+	   (multiple-value-setq (cost num-local-preds)
+             (g (coerce solution 'list)
+                bindings
+                q-first-bindings
+                p q q-dif q-m
+		p-backlinks q-backlinks
+                :cost-of-nil cost-of-nil
+                :bic-p bic-p
+                :forbidden-types forbidden-types))
            (when sol-cost-map
              (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
            (values solution cost bindings q-first-bindings num-local-preds)))))

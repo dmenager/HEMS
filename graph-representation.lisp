@@ -49,7 +49,7 @@
 ;; indentifiers = hash table of instance number for each var. If A is dependent var, and B C are free parameters (A B C) is P(A | B C)
 ;; dependent-var = dependent variable of CPD
 ;; vars = hash table of variables in the conditional probability density. 
-;; types = hash table of variables taking values of percept, belief, action, intention, or goal
+;; types = hash table of variables taking values of percept, belief, action, intention, goal, state, or observation.
 ;; concept-ids = hash table of concept ids for vars
 ;; qualified-vars = hash table of fully qualified variables in conditional probability density
 ;; var-value-block map = hash table of bindings from variable value to a number and a block denoting cases where var is true
@@ -7463,7 +7463,9 @@ Roughly based on (Koller and Friedman, 2009) |#
      with num-local-preds = 0
      for (p-node . qp) in n
      do
-       (cond ((equal "OBSERVATION" (gethash 0 (rule-based-cpd-types-hash p-node)))
+	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
+		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))
+		   
 	      (let ((p-ref (cdar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
 		    (qp-refs (when qp
 			       (mapcar #'cdar (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
@@ -8033,7 +8035,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; bic-p = whether to compute bic or likelihood
 ;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-(defun get-cost (solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types &key (sol-cost-map))
+(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
   (let (cost num-local-preds key previous-cost prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
@@ -8047,7 +8049,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                          bindings
                          q-first-bindings
                          p q q-dif q-m
-			 p-refs-map qp-refs-map
+			 p-backlinks q-backlinks
                          :cost-of-nil cost-of-nil
                          :bic-p bic-p
                          :forbidden-types forbidden-types))
@@ -8433,7 +8435,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
-            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-backlinks q-backlinks forbidden-types :sol-cost-map sol-cost-map)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds)))
         (setq delta-e (- (second next) (second current)))
         (when nil (and (= cycle* 4))

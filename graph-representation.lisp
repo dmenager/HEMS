@@ -8398,8 +8398,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; p = pattern graph
 ;; q = base graph
-;; p-backlinks = hash table containing dependent id maps to backlinks in p to decompositions
-;; q-backlinks = hash table containing dependent id maps to backlinks in q to decompositions
+;; p-backlinks = hash table containing dependent id maps to backlinks in p referencing observation/state decompositions
+;; q-backlinks = hash table containing dependent id maps to backlinks in q referencing observation/state decompositions
 ;; current = best current match
 ;; possible-candidates = list of potential candidate nodes in base graph
 ;; sol-cost-map = map of previous solutions
@@ -8412,9 +8412,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-(defun new-simulated-annealing (p q current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types)
+(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
   (loop
     named looper
     with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
@@ -8435,7 +8433,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
-            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types :sol-cost-map sol-cost-map)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p p-backlinks q-backlinks forbidden-types :sol-cost-map sol-cost-map)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds)))
         (setq delta-e (- (second next) (second current)))
         (when nil (and (= cycle* 4))
@@ -8619,7 +8617,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           ;;(break)
 	  )
     (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
-        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-backlinks q-backlinks forbidden-types)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches cost bindings q-first-bindings cost num-local-preds)))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))

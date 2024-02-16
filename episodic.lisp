@@ -183,15 +183,15 @@
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
       do
-         (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
+         (when t nil
                (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
+         (when t nil
                (format t "~%p-cpd after subst:~%~S" p-cpd))
-         (when nil (and (equal "TURN_RIGHTNIL" (gethash 0 (rule-based-cpd-qualified-vars (aref p p-match))))
-                        (equal "ACTIONNIL" (gethash 1 (rule-based-cpd-qualified-vars (aref p p-match)))))
+         (when t nil
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
-               (break))
+               (break)
+	       )
          (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings nodes ep1-count))
          ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
          (setq new-nodes (cons node new-nodes)))
@@ -563,6 +563,8 @@
            (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
 	     (declare (ignore q-first-bindings))
+	     (when t
+	       (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
 	     (setq generalized (new-combine (car x) y sol no-matches bindings))
              (setq equivalent (= 0 cost))
              (cond ((and equivalent (null (cdr x)))
@@ -580,7 +582,7 @@
                     (values x cost bindings nil nil reject-list num-local-preds))
                    ((and (not equivalent) (cdr x))
                     (setf (car x) generalized)
-                    (values x cost bbindings t nil reject-list num-local-preds))))))))
+                    (values x cost bindings t nil reject-list num-local-preds))))))))
 
 #| Rudamentary printer for showing the branching structure of eltm. |#
 
@@ -694,7 +696,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; reject-list = list of episode ids to reject when merging
 ;; res = optimal common subgraph between ep and eltm
 (defun new-insert-episode (eltm ep reject-list &key res (depth 0) (bic-p t) &aux best-child (best-child-cost most-positive-fixnum))
-  (multiple-value-bind (eltm p-cost p-bbindings branch absorb rejects)
+  (multiple-value-bind (eltm p-cost p-bindings branch absorb rejects p-num-local-preds)
       (new-ep-merge eltm ep res reject-list bic-p)
     ;;(break)
     ;;(format t "~%branch-p: ~S" branch)
@@ -720,8 +722,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                         (setq base (episode-observation (car branch)))))
 		 (setq pattern-backlinks (episode-backlinks ep))
                  (setq base-backlinks (episode-backlinks (car branch)))
-                 (multiple-value-bind (sol no-matches cost bindings num-local-preds)
-                     (maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
+                 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
+                     (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-optimal-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    (when nil
@@ -734,7 +736,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (setq reject-list (cons (episode-id (car branch)) reject-list))))))
     ;;(format t "~%~%parent cost: ~d~%unweighted parent cost: ~d~%best-child cost: ~d" p-cost unweighted-p-cost best-child-cost)
     (when nil t
-          (format t "~%~%parent cost: ~d~%size parent bindings: ~d~%best-child-weighted-cost: ~d~%size best-child bindings: ~d" p-cost (hash-table-count (car p-bbindings)) best-child-cost (if branch (hash-table-count (third best-child)) 0)))
+          (format t "~%~%parent cost: ~d~%size parent bindings: ~d~%best-child-weighted-cost: ~d~%size best-child bindings: ~d" p-cost (hash-table-count p-bindings) best-child-cost (if branch (hash-table-count (third best-child)) 0)))
     (cond ((null eltm)
            (setf (episode-depth ep) depth)
            (setf eltm (list ep))
@@ -745,7 +747,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (when nil t
                  (format t "~%Absorbed"))
            (values eltm eltm))
-          ((or (and branch (better-random-match? (list nil p-cost (car p-bbindings)) best-child) #|(<= p-cost best-child-cost)|#)
+          ((or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds) best-child) #|(<= p-cost best-child-cost)|#)
                (not branch))
            (setf (episode-parent ep) eltm)
            (setf (episode-depth ep) depth)
@@ -1031,7 +1033,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                      (not (episode-temporal-p (caar best-child))))
                             (setq reject-list (cons (episode-id (caar best-child)) reject-list)))
                           (setq best-child-cost cost)
-                          (setq best-child (list branch cost bindings num-local-preds)))
+                          (setq best-child (list branch cost bindings nil num-local-preds)))
                          ((and (= (episode-count (car branch)) 1) (not (episode-temporal-p (car branch))))
                           (setq reject-list (cons (episode-id (car branch)) reject-list))))))
                 (t
@@ -1893,12 +1895,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when eltm
       (write-string (write-to-string count) string-stream))
     (write-string ".pdf" string-stream)
-    (with-open-file (eltm-file "eltm.dot"
-                               :direction :output
-                               :if-exists :supersede
-                               :if-does-not-exist :create)
-      (format eltm-file "digraph G {~%compound=true;~%")
-      (pdf-helper ep nil eltm-file)
-      (format eltm-file "}~%"))
-    (uiop:run-program
-     `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream)))))
+    (cond (ep
+	   (with-open-file (eltm-file "eltm.dot"
+				      :direction :output
+				      :if-exists :supersede
+				      :if-does-not-exist :create)
+	     (format eltm-file "digraph G {~%compound=true;~%")
+	     (pdf-helper ep nil eltm-file)
+	     (format eltm-file "}~%"))
+	   (uiop:run-program
+	    `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream))))
+	  (t
+	   (format t "~%failed to generate pdf. eltm is nil")))))
+    

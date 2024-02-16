@@ -44,11 +44,15 @@
 ;; cpds = array of conditional probability distributions
 ;; time-step is the index of the current state
 ;; type = string enumeration on the type of node in the temporal network, be it "STATE", "OBSERVATION", or "PERCEPT"
-(defun get-ground-network (cpds time-step type)
+;; hidden-state-p = flag indicating if model has a hidden state
+(defun get-ground-network (cpds time-step type hidden-state-p)
   (loop
-    with modifier = (cond ((equal "STATE" type) 0)
-			  ((equal "OBSERVATION" type) 1)
-			  ((equal "PERCEPT" type) 2))
+    with modifier = (if hidden-state-p
+			(cond ((equal "STATE" type) 0)
+			      ((equal "OBSERVATION" type) 1)
+			      ((equal "PERCEPT" type) 2))
+			(cond ((equal "OBSERVATION" type) 0)
+			      ((equal "PERCEPT" type) 1)))
     with current-cpd = (aref cpds (+ time-step modifier))
     with new-cpds = (list current-cpd)
     for cpd-id being the hash-keys of (rule-based-cpd-identifiers current-cpd)
@@ -122,7 +126,8 @@
 ;; models = list of models for predicting state
 ;; obs-window = list of states as a graph
 ;; reject-lists = list of lists of episode ids to reject and not expand/return
-(defun good-fit-to-observations? (model models obs-window &key (bic-p t) (auto-pass nil))
+;; hidden-state-p = flag denoting if model has a hidden state
+(defun good-fit-to-observations? (model models obs-window hidden-state-p &key (bic-p t) (auto-pass nil))
   (labels ((predict-observation (model observation)
 	     (multiple-value-bind (likelihood threshold)
                  (model-predict (getf model :episode) state :bic-p bic-p)
@@ -153,7 +158,7 @@
 	     (let (obs act ground-network recollection)
 	       (setq obs (first observation))
 	       (setq act (third observation))
-	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :episode))) (getf (car models) :cur-step) "STATE"))
+	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :episode))) (getf (car models) :cur-step) "STATE" hidden-state-p))
                (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
                (loop
 		 for cpd in recollection
@@ -173,7 +178,7 @@
 			   (setf (gethash cond evidence)
 				 (cons (cons var (rule-probability rule))
                                        (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
-               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) (getf (car models) :cur-step) "OBSERVATION"))
+               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) (getf (car models) :cur-step) "OBSERVATION" hidden-state-p))
                (when ground-network
 		 ;; infer distribution over the observation given state
 		 (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
@@ -211,7 +216,7 @@
 						(gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
                              (if failp
 				 (return-from good-fit-to-observations? (values (rest models) observation))))))
-               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step "PERCEPT"))
+               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step "PERCEPT" hidden-state-p))
                (when ground-network
 		 ;; infer distribution over the action given observation
 		 (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
@@ -352,8 +357,9 @@
 	     for i from 0
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i)) :value ,var)) into program
 	     finally
-		(when t
+		(when nil t
 		  (format t "~%~%observation: ~S~%action: ~S" program action))
 		 (setq st (eval `(compile-program ,@program)))
-		 (new-push-to-ep-buffer :observation st :action-name action))
+		 (new-push-to-ep-buffer :observation st :action-name action)
+		 (eltm-to-pdf))
 	   (break)))))

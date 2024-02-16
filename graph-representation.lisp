@@ -8559,7 +8559,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(array-dimension (car p) 0)
 		(map 'list #'rule-based-cpd-identifiers (car q))
 		(array-dimension (car q) 0))
-	(break)
+	;;(break)
 	)
   (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
     (setq sol-cost-map (make-hash-table :test #'equal))

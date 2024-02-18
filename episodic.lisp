@@ -177,18 +177,18 @@
 ;; bindings = bindings
 (defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings)
   (let (p q new-nodes)
-    (setq p (copy-factors (car ep1-bn)))
-    (setq q (copy-factors (car ep2-bn)))
+    (setq p (copy-factors (car ep2-bn)))
+    (setq q (copy-factors (car ep1-bn)))
     (loop
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
       do
-         (when t nil
+         (when nil
                (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when t nil
+         (when nil
                (format t "~%p-cpd after subst:~%~S" p-cpd))
-         (when t nil
+         (when nil
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                (break)
 	       )
@@ -529,44 +529,53 @@
 ;; bic-p = flag to compute BIC
 (defun new-ep-merge (x y res reject-list bic-p &aux generalized equivalent)
   ;;(format t "~%reject list: ~A~%root id: ~A" reject-list (if x (episode-id (car x))))
-  (cond ((null x) (values x 0 (list (make-hash-table :test #'equal)) nil nil reject-list -1))
-        ((reject-branch? x y reject-list :check-decomps nil)
-         (values x 0 (list (make-hash-table :test #'equal)) nil nil (cons (episode-id (car x)) reject-list -1)))
-        (res
-         ;; combine the graphs according to the mapping
-         (setq generalized (new-combine (car x) y (first res) (second res) (fourth res)))
-         (setq equivalent (= 0 (third res)))
-         (cond ((and equivalent (null (cdr x)))
-                (setf (car x) generalized)
-                (values x (third res) (fourth res) nil t reject-list (fifth res)))
-               ((and equivalent (cdr x))
-                (setf (car x) generalized)
-                (values x (third res) (fourth res) t nil reject-list (fifth res)))
-               ((and (not equivalent) (null (cdr x)))
-                (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
-                (push (car x) (cdr (last x)))
-                (setf (car x) generalized)
-                (setf (second x) (list (second x)))
-                (setf (episode-parent (car (second x))) x)
-                (values x (third res) (fourth res) nil nil reject-list (fifth res)))
-               ((and (not equivalent) (cdr x))
-                (setf (car x) generalized)
-                (values x (third res) (fourth res) t nil reject-list (fifth res)))))
-        (t ;; when insert starts at root
-         (let (pattern base)
-           (cond ((episode-temporal-p y)
-                  (setq pattern (episode-state-transitions y))
-                  (setq base (episode-state-transitions (car x))))
-                 (t
-                  (setq pattern (episode-observation y))
-                  (setq base (episode-observation (car x)))))
+  (let (pattern base)
+    (when x
+      (cond ((episode-temporal-p y)
+             (setq pattern (episode-state-transitions y))
+             (setq base (episode-state-transitions (car x))))
+            (t
+             (setq pattern (episode-observation y))
+             (setq base (episode-observation (car x))))))
+    (cond ((null x) (values x 0 (list (make-hash-table :test #'equal)) nil nil reject-list -1))
+          ((reject-branch? x y reject-list :check-decomps nil)
+           (values x 0 (list (make-hash-table :test #'equal)) nil nil (cons (episode-id (car x)) reject-list -1)))
+          (res
+           ;; combine the graphs according to the mapping
+           (setq generalized (new-combine (car x) y (first res) (second res) (fourth res)))
+           (setq equivalent (or (= 0 (third res))
+				(= (hash-table-count (fifth res))
+				   (array-dimension (car base) 0)
+				   (hash-table-count (fourth res))
+				   (array-dimension (car pattern) 0))))
+           (cond ((and equivalent (null (cdr x)))
+                  (setf (car x) generalized)
+                  (values x (third res) (fourth res) nil t reject-list (sixth res)))
+		 ((and equivalent (cdr x))
+                  (setf (car x) generalized)
+                  (values x (third res) (fourth res) t nil reject-list (sixth res)))
+		 ((and (not equivalent) (null (cdr x)))
+                  (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
+                  (push (car x) (cdr (last x)))
+                  (setf (car x) generalized)
+                  (setf (second x) (list (second x)))
+                  (setf (episode-parent (car (second x))) x)
+                  (values x (third res) (fourth res) nil nil reject-list (sixth res)))
+		 ((and (not equivalent) (cdr x))
+                  (setf (car x) generalized)
+                  (values x (third res) (fourth res) t nil reject-list (sixth res)))))
+          (t ;; when insert starts at root
            (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
 	     (declare (ignore q-first-bindings))
-	     (when t
-	       (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
+	     (when nil t
+		   (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
 	     (setq generalized (new-combine (car x) y sol no-matches bindings))
-             (setq equivalent (= 0 cost))
+             (setq equivalent (or (= 0 cost)
+				  (= (hash-table-count q-first-bindings)
+				     (array-dimension (car base) 0)
+				     (hash-table-count bindings)
+				     (array-dimension (car pattern) 0))))
              (cond ((and equivalent (null (cdr x)))
                     (setf (car x) generalized)
                     (values x cost bindings nil t reject-list num-local-preds))
@@ -729,7 +738,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                    (when nil
                      (format t "~%cost of branch after matching decompositions: ~d~%size of bindings: ~d" cost (hash-table-count bindings)))
                    (when (or (= i 1) (better-random-match? (list nil cost bindings nil num-local-preds) best-child)#|(< kost best-child-cost)|#)
-                     (setq res (list sol no-matches cost bindings num-local-preds))
+                     (setq res (list sol no-matches cost bindings q-first-bindings num-local-preds))
                      (setq best-child-cost cost)
                      (setq best-child (list i cost bindings nil num-local-preds)))))
                 (t

@@ -8316,7 +8316,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          t)
 	((and (= (second next) (second best-solution))
 	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
-	      (> (fifth next) (fifth best-solution))))))
+	      (>= (fifth next) (fifth best-solution))))))
 #| Initialize empty set of mappings |#
 
 ;; p = pattern graph
@@ -8622,7 +8622,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
         (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches cost bindings q-first-bindings cost num-local-preds)))
+      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds)))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
 
 #| TESTS

@@ -139,7 +139,132 @@
 		      (when t
                         (format t "~%failure with likelihood ~d and threshold ~d." likelihood threshold))
 		      nil))))
-	   (track-observation (models observation)
+	   (track-observation-mdp (models observation)
+	     ;; infer distribution over the observation given previous action, and previous observation
+             ;; for each possible observation that has non-zero posterior probability, check to see if it matches obs
+             ;;   if yes, then set evidence for that branch to 1
+             ;;   if no, then set evidence for that branch to 0
+             ;; if model fails to predict observation, fail
+             ;; infer distribution over the action given observation
+             ;; for each possible action that has non-zero posterior probability, check to see if it matches act
+             ;;   if yes, then set evidence for that action to 1
+             ;;   if no, then set evidence for that action to 0
+             ;; if model fails to predict action, fail
+             ;; if next observation
+             ;;   infer distribution over the observation given previous observation and action
+             ;;   repeat
+             ;; else
+             ;;   return success
+	     (let (obs act ground-network recollection)
+	       (setq obs (first observation))
+	       (setq act (third observation))
+	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :episode))) (getf (car models) :cur-step) "STATE" hidden-state-p))
+               (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+               (loop
+		 for cpd in recollection
+		 when (and (rule-based-cpd-singleton-p cpd)
+			   (equal "STATE" (gethash 0 (rule-based-cpd-types cpd))))
+		   do
+                      (setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+                      (loop
+			with cond = (rule-based-dependent-id cpd)
+			with val and binding and var
+			with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			for rule in (rule-based-cpd-rules cpd)
+			do
+			   (setq val (gethash cond (rule-conditions rule)))
+			   (setq binding (car (rassoc val vvbm :key #'cdar)))
+			   (setq var (car binding))
+			   (setf (gethash cond evidence)
+				 (cons (cons var (rule-probability rule))
+                                       (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
+               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) (getf (car models) :cur-step) "OBSERVATION" hidden-state-p))
+               (when ground-network
+		 ;; infer distribution over the observation given state
+		 (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+		 (loop
+		   for cpd in recollection
+		   when (and (rule-based-cpd-singleton-p cpd)
+                             (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd))))
+                     do
+			(setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+			(loop
+			  with cond = (rule-based-dependent-id cpd)
+			  with binding and var and val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  for rule in (rule-based-cpd-rules cpd)
+			  do
+                             (cond ((> (rule-probability rule) 0)
+				    (setq binding (car (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+				    (setq var (car binding))
+				    (setq val (cdr binding))
+				    (setq model-ref (gethash var (episode-backlinks episode)))
+                                    (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
+											:model-parent model)
+									    (rest models))
+                                                                      (list observation))
+					   (setq failp nil)
+					   (setf (gethash cond evidence)
+						 (cons (cons var 1)
+                                                       (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))
+					  (t
+					   (setf (gethash cond evidence)
+						 (cons (cons var 0)
+                                                       (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))))
+				   (t
+                                    (setf (gethash cond evidence)
+					  (cons (cons var 0)
+						(gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions))))))
+                             (if failp
+				 (return-from good-fit-to-observations? (values (rest models) observation))))))
+               (setq ground-network (get-ground-network (car (episode-state-transitions episode)) time-step "PERCEPT" hidden-state-p))
+               (when ground-network
+		 ;; infer distribution over the action given observation
+		 (setq recollection (loopy-belief-propagation ground-network evidence #'+ 1))
+		 (loop
+		   for cpd in recollection
+		   when (and (rule-based-cpd-singleton-p cpd)
+                             (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))))
+                     do
+			(setf (gethash (rule-based-dependent-id cpd) evidence) nil)
+			(loop
+			  with new-models = (rest models)
+			  with cond = (rule-based-dependent-id cpd)
+			  with var and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  for rule in (rule-based-cpd-rules cpd)
+			  do
+                             (cond ((> (rule-probability rule) 0)
+                                    (setq var (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+                                    (cond ((equal act var)
+					   (setq failp nil)
+					   (setf (gethash cond evidence)
+						 (cons (cons var 1)
+                                                       (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :inferred-decompositions)))))
+					  (t
+					   (setf (gethash cond evidence)
+						 (cons (cons var 0)
+                                                       (gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions)))))))
+				   (t
+                                    (setf (gethash cond evidence)
+					  (cons (cons var 0)
+						(gethash (rule-based-cpd-dependent-id cpd) (getf model :inferred-decompositions))))))
+			  finally
+			     (setq models new-models)))
+		 (if failp
+                     (return-from good-fit-to-observations? (values (rest models) observation)))
+		 (loop
+		   with new-models = (rest models)
+		   with act-idx = (+ (getf (car models) :cur-step) 2)
+		   for idx being the hash-keys of (gethash act-idx (cdr (episode-state-transitions (getf (car models) :model))))
+		   do
+		      (setq new-models (cons (make-model :ep (getf (car models) :model)
+							 :cur-step idx
+							 :model-parent (getf (car models) :model-parent)
+							 :evidence (copy-hash-table (getf (car models) :evidence)))
+					     new-models))
+		   finally
+		      (setq models new-models)
+		      (values models observation)))))
+	   (track-observation-pomdp (models observation)
 	     ;; infer distribution over the state given previous action, and previous state
              ;; for each possible observation that has non-zero posterior probability, check to see if it matches obs
              ;;   if yes, then set evidence for that branch to 1

@@ -44,7 +44,7 @@
 			 (setf (rule-based-cpd-dependent-var cpd) type)
 			 (setf (gethash 0 vars) type)
 			 (setf (rule-based-cpd-vars cpd) vars)
-			 (setq type-identifier (symbol-name (gensym type)))
+			 (setq type-identifier (symbol-name (gensym (concatenate 'string type "_"))))
 			 (setf (rule-based-cpd-dependent-id cpd) type-identifier)
 			 (setf (gethash type-identifier identifiers) 0)
 			 (setf (rule-based-cpd-identifiers cpd) identifiers)

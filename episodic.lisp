@@ -569,7 +569,7 @@
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
 	     (declare (ignore q-first-bindings))
 	     (when nil t
-		   (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
+	       (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
 	     (setq generalized (new-combine (car x) y sol no-matches bindings))
              (setq equivalent (or (= 0 cost)
 				  (= (hash-table-count q-first-bindings)
@@ -735,7 +735,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                      (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-optimal-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
-                   (when nil
+		   (when nil
                      (format t "~%cost of branch after matching decompositions: ~d~%size of bindings: ~d" cost (hash-table-count bindings)))
                    (when (or (= i 1) (better-random-match? (list nil cost bindings nil num-local-preds) best-child)#|(< kost best-child-cost)|#)
                      (setq res (list sol no-matches cost bindings q-first-bindings num-local-preds))

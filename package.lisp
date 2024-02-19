@@ -36,6 +36,15 @@
 	   #:rule-based-cpd-concept-blocks
 	   #:rule-based-cpd-singleton-p
 	   #:rule-based-cpd-count
+	   #:episode-id
+	   #:episode-parent
+	   #:episode-observation
+	   #:episode-state-transitions
+	   #:episode-temporal-p
+	   #:episode-backlinks
+	   #:episode-depth
+	   #:episode-count
+	   #:episoe-lvl
 	   #:mean
 	   #:stdev))
 

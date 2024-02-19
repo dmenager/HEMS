@@ -8178,7 +8178,7 @@ Roughly based on (Koller and Friedman, 2009) |#
         (setq match (aref matches pnum))
         (setq q-match (cdr match))
         (setq pnum-prime nil)
-        (when nil (and (= cycle* 4) (or (= pnum 27)
+        (when nil (and (or (= pnum 27)
 				    (= pnum 17)
 				    (= pnum 22))) nil t
           (format t "~%~%new iteration~%pnum: ~d~%~A~%qp: ~d~%~A~%"
@@ -8191,20 +8191,20 @@ Roughly based on (Koller and Friedman, 2009) |#
         (when q-match
           ;;(setq q-first-bindings (fset:less q-first-bindings (cpd-dependent-id (aref (car q) q-match))))
           (remhash (rule-based-cpd-dependent-id (aref (car q) q-match)) q-first-bindings))
-        (when nil (and (= cycle* 4) (or (= pnum 27)
+        (when nil (and (or (= pnum 27)
 				    (= pnum 17)
 				    (= pnum 22))) nil t
           (format t "~%reduced bindings: ~A~%reduced q-first-bindings: ~A" bindings q-first-bindings))
         ;;(setq candidates (analog-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings))
 	(setq candidates (candidate-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings t))
 	(setq candidates (make-array (length candidates) :initial-contents candidates))
-        (when nil (and (= cycle* 4) (or (= pnum 27)
+        (when nil (and (or (= pnum 27)
 				    (= pnum 17)
 				    (= pnum 22))) nil t
           (format t "~%pnum: ~d~%candidates: ~A" pnum candidates))
         ;; swap pnode with random candidate
         (setq new-qnum (aref candidates (random (array-dimension candidates 0))))
-        (when nil (and (= cycle* 4) (or (= pnum 27)
+        (when nil (and (or (= pnum 27)
 				    (= pnum 17)
 				    (= pnum 22))) nil t
           (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" (car match) (aref (car p) (car match)) new-qnum (if new-qnum (aref (car q) new-qnum) nil) matches bindings))
@@ -8218,7 +8218,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           (setf (gethash (rule-based-cpd-dependent-id (aref (car q) new-qnum)) q-first-bindings) (rule-based-cpd-dependent-id (aref (car p) (car match)))))
         (setf (aref matches pnum) match)
         (when pnum-prime
-          (when nil (and (= cycle* 4) (or (= pnum 27)
+          (when nil (and (or (= pnum 27)
 				    (= pnum 17)
 				    (= pnum 22))) nil t
             (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" pnum-prime (aref (car p) pnum-prime) q-match (if q-match (aref (car q) q-match) nil) matches bindings))
@@ -8424,13 +8424,13 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq big-t (cooling-schedule time start-temp alpha))
     when (<= big-t smallest-float) do
       ;;(break)
-      (when nil (and (= cycle* 4))
+      (when nil
             (format t "~%time: ~d ~%total cycles: ~d~%stop temperature: ~d~%bindings:~%~S~%cost: ~d" time (/ time (length top-lvl-nodes)) big-t (third best-solution) (second best-solution))
             (break)
 	    )
       (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution)))
     else do
-      (when nil (and (= cycle* 4))
+      (when nil
             (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d" time big-t (first current) (third current) (fourth current) (second current)))
       (multiple-value-bind (solution bindings q-first-bindings)
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
@@ -8439,14 +8439,14 @@ Roughly based on (Koller and Friedman, 2009) |#
             (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds)))
         (setq delta-e (- (second next) (second current)))
-        (when nil (and (= cycle* 4))
+        (when nil
               (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
         (when (better-random-match? next best-solution)
           (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next)))
-          (when nil (and (= cycle* 4))
+          (when nil
 		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
         (cond ((< delta-e 0)
-               (when nil (and (= cycle* 4))
+               (when nil
                      (format t "~%found better match!"))
                (setq current best-solution))
               (nil t

@@ -344,6 +344,7 @@
       (loop
 	with processed and variables and action
 	for line in data
+	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
 	   (setq variables (mapcan #'(lambda (string)
@@ -354,12 +355,12 @@
 	   (loop
 	     with st
 	     for var in variables
-	     for i from 0
+	     for i from 1
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "VAR~d" i)) :value ,var)) into program
 	     finally
 		(when nil t
 		  (format t "~%~%observation: ~S~%action: ~S" program action))
-		 (setq st (eval `(compile-program ,@program)))
-		 (new-push-to-ep-buffer :observation st :action-name action)
-		 (eltm-to-pdf))
+		(setq st (eval `(compile-program ,@program)))
+		(new-push-to-ep-buffer :observation st :action-name action)
+		(eltm-to-pdf))
 	   (break)))))

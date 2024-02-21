@@ -120,7 +120,7 @@
 	   finally
 	   (return (make-array (length new-cpds) :initial-contents (reverse new-cpds))))))
 
-#| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
+#| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#o
 
 ;; models = list of models for predicting state
 ;; obs-window = list of states as a graph
@@ -297,15 +297,19 @@
 			       :count 1
 			       :lvl 1))
        (setq obs-ref (new-retrieve-episode eltm cue reject-list :bic-p bic-p))
-       (when obs-ref
-	 (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-	 (setq cur-obs (gensym "OBS-"))
-	 (setq cur-act (gensym "ACT-"))
-	 (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
-	 (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
-	 (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
-	 (setq prev-obs cur-obs)
-	 (setq prev-act cur-act))
+       (multiple-value-bind (obs-ref sol bindings depth cost id new-rejects)
+	   (new-retrieve-episode eltm cue reject-list)
+	 (declare (ignore sol bindings depth cost id))
+	 (setq reject-list new-rejects)
+	 (when obs-ref
+	   (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+	   (setq cur-obs (gensym "OBS-"))
+	   (setq cur-act (gensym "ACT-"))
+	   (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
+	   (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
+	   (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+	   (setq prev-obs cur-obs)
+	   (setq prev-act cur-act)))
     finally
        (when state-transitions
 	 (setq st-bn (eval `(compile-program ,@state-transitions)))
@@ -315,9 +319,12 @@
 				 :temporal-p t
 				 :count 1
 				 :lvl 2))
-	 (setq eme (new-retrieve-episode eltm cue reject-list
-					 :bic-p bic-p))
-	 (return (make-model :ep (car eme) :model-parent nil)))
+	 (multiple-value-bind (eme sol bindings depth cost id new-rejects)
+	     (new-retrieve-episode eltm cue reject-list
+				   :bic-p bic-p)
+	   (declare (ignore sol bindings depth cost id))
+	   (setq reject-list new-rejects)
+	   (return (make-model :ep (car eme) :model-parent nil))))
        (return (make-model))))
 
 (defun event-boundary-p (model obs-window eltm reject-list bic-p hidden-state-p)
@@ -333,12 +340,15 @@
 	 (format t "~%obtained model" (episode-id (getf model :model)))
 	 ;;(print-model-stack model)
 	 )
-       (multiple-value-bind (new-model remaining-boservations)
+       (multiple-value-bind (new-model remaining-observations)
 	   (good-fit-to-observations? (list model) obs-window hidden-state-p)
 	 ;;(declare (ignore calls-to-retrieve))
 	 ;;(setq reject-list new-rejects)
+	 (format t "~%new model:~%~A" new-model)
+	 (when (null new-model)
+	   (setq reject-list (cons (episode-id (getf model :model)) reject-list)))
 	 (setq model new-model))
-    while (and (null (getf model :model))
+    while (and (null model)
 	       (not (member (episode-id (car eltm)) reject-list :test #'equal))))
   model)
 

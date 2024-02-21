@@ -720,7 +720,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         for branch in eltm
         for i from 0
         when (> i 0) do
-          (cond ((not (reject-branch? branch ep reject-list :check-decomps t))
+          (cond (t (not (reject-branch? branch ep reject-list :check-decomps t))
                  (when nil
                    (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
                            (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))

@@ -7457,7 +7457,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
-(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-prefs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
   (loop
      with q-likelihood = 1 and kost
      with num-local-preds = 0
@@ -7466,10 +7466,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
 		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))
 		   
-	      (let ((p-ref (cdar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
+	      (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
 		    (qp-refs (when qp
-			       (mapcar #'cdar (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
-		(loop
+			       (mapcan #'(lambda (vvbm)
+					   (when (not (equal "NA" (caar vvbm)))
+					     (list (caar vvbm))))
+				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
+	        (loop
 		   named probber
 		   with res
 		   for qp-ref in qp-refs

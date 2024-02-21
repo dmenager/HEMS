@@ -8350,7 +8350,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun single-p (lst)
   (and (consp lst) (not (cdr lst))))
 
-#| Find largest common subgraph between two graphs
+#| Find largest common subgraph between two graphs |#
 
 ;; p = pattern graph
 ;; q = base graph
@@ -8427,9 +8427,9 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds)))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
-|#
 
-#| Find largest common subgraph between two graphs |#
+
+#| Find largest common subgraph between two graphs
 
 ;; p = pattern graph
 ;; q = base graph
@@ -8494,7 +8494,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           (get-cost solution bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
 	(setq current (list new-matches nil new-weighted-cost new-bindings new-q-first-bindings num-local-preds))))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
-
+|#
 
 #| TESTS
 1) Structure mapping tests

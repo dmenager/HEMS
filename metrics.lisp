@@ -1,8 +1,9 @@
 (in-package :hems)
 
-(defparameter parents* (make-hash-table :test #'equal))
-(defparameter id-cpd-hash* (make-hash-table :test #'equal))
+;;(defparameter parents* (make-hash-table :test #'equal))
+;;(defparameter id-cpd-hash* (make-hash-table :test #'equal))
 
+#|
 ; If key is in hashtable, return the corresponding value.
 ; If it isn't, create that entry using (compute-value key var-args-lst0 var-args-lst1 ...),
 ; then return it.
@@ -12,6 +13,7 @@
     (if foundp
 	res
 	(setf res (funcall compute-value key var-args-lst)))))
+|#
 
 ;; return hash table that maps each node id of episode onto its cpd
 (defun get-cpd-from-id-aux (episode)
@@ -24,27 +26,34 @@
     finally
        (return hash)))
 
-;; return hash table that maps each cpd of episode onto a list of its parents
+;; TODO: use edges hash in network to get more efficient
 (defun get-parents-aux (episode)
   (loop
-    for cpd being the elements of (caar (episode-states episode))
+    with parents-hash = (make-hash-table :test #'equal)
+    with cpd1-ident
+    for cpd1 being the elements of (caar (episode-states episode))
     do
+       (setq cpd1-ident (rule-based-cpd-dependent-id cpd1))
        (loop
-	 named finder
-	 for parent being the hash-keys of (rule-based-cpd-identifiers cpd)
-	   using (hash-value idx)
-	 when (> idx 0)
-	   collect (gethash parent id-cpd-hash*) into parents
+	 with idx
+	 for cpd2 being the elements of (caar (episode-states episode))
+	 do
+	    (setq idx (gethash (rule-based-cpd-dependent-id cpd2)
+			       (rule-based-cpd-identifiers cpd1)))
+	 when (and idx (> idx 0))
+	   collect cpd2 into cpd1-parents
 	 finally
-	    (return parents))))
-
+	    (setf (gethash cpd1-ident parents-hash) cpd1-parents))
+    finally
+    (return parents-hash)))
+  
 ;; Given a cpd from episode, return its list of parents 
-(defun get-parents (episode cpd)
-  (gethash cpd (hash-cache parents* (episode-id episode) #'get-parents-aux)))
+;;(defun get-parents (episode cpd)
+;;  (gethash cpd (hash-cache parents* (episode-id episode) #'get-parents-aux)))
 
 ;; Given a cpd from episode, return its dependent id 
-(defun get-cpd-from-id (episode cpd-id)
-  (gethash cpd (hash-cache id-cpd-hash* (episode-id episode) #'get-cpd-from-id-aux)))
+;;(defun get-cpd-from-id (episode cpd-id)
+;;  (gethash cpd-id (hash-cache id-cpd-hash* (episode-id episode) #'get-cpd-from-id-aux)))
 
 #|Get the list of possible values dependent variable can take. renamed version of (get-values) |#
 
@@ -59,6 +68,7 @@
   (let ((rule (make-rule
 	       :conditions (make-hash-table :test #'equal))))
     (loop
+      with val
       for binding in assns
       do
 	 (setf (gethash (car binding) (rule-conditions rule)) (cdr binding)))
@@ -103,80 +113,108 @@
 ;; Which is to say, it returns all values `node` can take if it hasn't been observed, and a list
 ;; containing just the observed value if it was.
 ;; `observations` is a hash table.
-(defun valid-assignments (node observations)
-  (let ((observed (lookup-or-nil observations (rule-based-cpd-dependent-id node))))
-    (if observed
-	(list observed)
-	(get-cpd-values node))))
+(defun valid-assignments (bn node)
+  (let ((observed (lookup-or-nil (getf bn :obs) (rule-based-cpd-dependent-id node))))
+    (cond (observed
+	   (list (cdar (assoc observed (gethash 0 (rule-based-cpd-var-value-block-map node)) :test #'equal :key #'car))))
+	  (t
+	   (get-cpd-values node)))))
 
 ;; OUTPUT: same as assignment-combinations
-(defun valid-parent-assignments (episode node observations)
+(defun valid-parent-assignments (bn node)
   ;; parent-assignments: (('foo . (1 2)) ('bar . (10 20 30 40)) ('baz . (100 200 300)))
-  ;; where 'foo, 'bar, 'baz are the parents of `node`
+  ;; where 'foo, 'bar, 'baz are the parents of `node
   (let ((parent-assignments 
-          (loop for parent in (get-parents episode node)
-                collect (cons parent (valid-assignments parent observations)))))
+          (loop
+	    with parents = (gethash (rule-based-cpd-dependent-id node) (getf bn :parents))
+	    for parent in parents
+            collect (cons (rule-based-cpd-dependent-id parent) (valid-assignments bn parent)))))
     (assignment-combinations parent-assignments)))
 
 
 ;; Entropy of node given parent assignment
 ;; H_P(X_i | pa_i) is the entropy of X_i given a specific instantiation pa_i of its parents
 ;; H_P(X_i | pa_i) = -\sum_{x \in X_i} P(X_i=x | pa_i) log P(X_i=x | pa_i)
-(defun H[X!Pa=a] (X parent-assignments observations)
+(defun H[X!Pa=a] (bn X parent-assignments)
   (* -1                                                    
-     (loop for val in (valid-assignments X observations)
-           sum (let ((prob (P[X=x!Pa=a] X val parent-assignments observations)))
-                 (* prob (log prob 2))))))
-
+     (loop for val in (valid-assignments bn X)
+           sum (let ((epsilon 1e-10)
+		     (prob (P[X=x!Pa=a] X val parent-assignments)))
+		 (if (< prob epsilon)
+		     0.0
+		     (* prob (log prob 2)))))))
+  
 
 #| returns the posterior distribution of episode's bn given a set of observations |# 
-(defun infer-posterior (episode obs)
+(defun infer-posterior (cpds-hash episode obs)
   (loop
-    with bn = (car (episode-states episode))
+    with net = (car (episode-states episode))
     with cpd and val
     with evidence = (make-hash-table :test #'equal)
     for cpd-id being the hash-keys of obs
-      using (hash-value val-idx)
+      using (hash-value var)
     do
-       (setq cpd (get-cpd-from-id episode cpd-id))
-       (setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
-       (setf (gethash cpd-id evidence) val)
+       (setq cpd (gethash cpd-id cpds-hash))
+       ;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
+       (setf (gethash cpd-id evidence) var)
     finally
-       (return (loopy-belief-propagation bn evidence '+ 1))))
+       (return (mapcan #'(lambda (cpd)
+			   (when (null (rule-based-cpd-singleton-p cpd))
+			     (list cpd)))
+		       (loopy-belief-propagation net evidence '+ 1)))))
 
 
 
 ;; assns = assignments we want to know the posterior probability of 
 ;; obs = hash-table of observed assignments
-(defun P[A=a!obs] (bn assns obs-posterior)
+(defun P[A=a] (bn assns)
   (loop
-    with marginal-posterior
-    for cpd being the elements of (car obs-posterior)
-    when (assoc (rule-based-cpd-dependent-id cpd) assns :test #'equal)
-      collect (rule-based-cpd-dependent-id cpd) into nodes-to-keep
-    else
-      collect (rule-based-cpd-dependent-id cpd) into nodes-to-remove
-    finally
-       (setq marginal-posterior (factor-operation cpd nodes-to-keep nodes-to-remove '+))
+    with obs-posterior = (getf bn :net)
+    with idents
+    for cpd in obs-posterior
+    collect
        (loop
-	 with prob = 1
-	 for cpd in marginal-posterior
-	 do
-	    (setq prob (* (get-prob cpd assns) prob)))))
+	 for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+	 when (assoc ident assns :test #'equal)
+	   collect (rule-based-cpd-dependent-id cpd) into nodes-to-keep
+	 else
+	   collect ident into nodes-to-remove
+	 finally
+	    (if nodes-to-keep
+		(return (factor-operation cpd nodes-to-keep nodes-to-remove '+))
+		nil))
+      into marginal-posterior
+    finally
+       (return 
+	 (loop
+	   with prob = 1
+	   for cpd in marginal-posterior
+	   when cpd
+	     do
+		(setq prob (* (get-prob cpd assns) prob))
+	   finally
+	      (return prob)))))
 
 ; Entropy of node given parents
 ; H_P(X_i | Pa_i) = \sum_{pa_i} P(pa_i) H_P(X_i | pa_i)
-(defun H[X!Pa] (episode X observations)
-  (loop
-    with bn = (car (episode-states episode))
-    with posterior = (infer-posterior episode observations)
-    for pa in (valid-parent-assignments episode X observations)
-          sum (* (P[A=a!obs] bn pa posterior)
-                 (H[X!Pa=a] X pa observations))))
+(defun H[X!Pa] (bn X)
+  (loop 
+    for pa in (valid-parent-assignments bn X)
+    when pa
+      sum (* (P[A=a] bn pa)
+             (H[X!Pa=a] bn X pa))
+	into res
+    finally
+       (return res)))
 
 ; Entropy of bayesian net
 ; H_P(X) = \sum_i H_P(X_i | Pa_i^G)
 (defun H[bn] (episode observations)
   (loop
+    with parents = (get-parents-aux episode)
+    with cpds = (get-cpd-from-id-aux episode)
+    with net = (infer-posterior cpds episode observations)
+    ;; bn is everything that is constant for all remaining computations
+    with bn = (list :net net :cpds cpds :parents parents :obs observations) 
     for node being the elements of (get-nodes episode)
-    sum (H[X!Pa] episode node observations)))
+    sum (H[X!Pa] bn node)))

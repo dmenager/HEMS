@@ -198,6 +198,8 @@
 ; Entropy of node given parents
 ; H_P(X_i | Pa_i) = \sum_{pa_i} P(pa_i) H_P(X_i | pa_i)
 (defun H[X!Pa] (bn X)
+  (format t "~%bn:~%~A" bn)
+  (break)
   (loop 
     for pa in (valid-parent-assignments bn X)
     when pa

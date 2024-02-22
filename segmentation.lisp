@@ -120,7 +120,7 @@
 	   finally
 	   (return (make-array (length new-cpds) :initial-contents (reverse new-cpds))))))
 
-#| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#o
+#| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 
 ;; models = list of models for predicting state
 ;; obs-window = list of states as a graph
@@ -336,7 +336,7 @@
 	 (setq model (get-model obs-window eltm reject-list bic-p)))
        (when (null (getf model :model))
 	 (return-from event-boundary-p (make-model)))
-       (when t
+       (when nil
 	 (format t "~%obtained model" (episode-id (getf model :model)))
 	 ;;(print-model-stack model)
 	 )
@@ -344,7 +344,6 @@
 	   (good-fit-to-observations? (list model) obs-window hidden-state-p)
 	 ;;(declare (ignore calls-to-retrieve))
 	 ;;(setq reject-list new-rejects)
-	 (format t "~%new model:~%~A" new-model)
 	 (when (null new-model)
 	   (setq reject-list (cons (episode-id (getf model :model)) reject-list)))
 	 (setq model new-model))

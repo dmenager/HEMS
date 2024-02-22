@@ -542,17 +542,19 @@
           (res
            ;; combine the graphs according to the mapping
            (setq generalized (new-combine (car x) y (first res) (second res) (fourth res)))
-           (setq equivalent (or (= 0 (third res))
-				(= (hash-table-count (fifth res))
-				   (array-dimension (car base) 0)
-				   (hash-table-count (fourth res))
-				   (array-dimension (car pattern) 0))))
-           (cond ((and equivalent (null (cdr x)))
+	   (setq equivalent (or (= 0 (third res))
+				(and (= (hash-table-count (fifth res))
+					(hash-table-count (fourth res)))
+				     (= (array-dimension (car base) 0)
+					(array-dimension (car pattern) 0)))))
+	   (when nil
+	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%size of base: ~d~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (array-dimension (car base) 0) (array-dimension (car pattern) 0) equivalent))
+	   (cond ((and equivalent (null (cdr x)))
                   (setf (car x) generalized)
                   (values x (third res) (fourth res) nil t reject-list (sixth res)))
 		 ((and equivalent (cdr x))
                   (setf (car x) generalized)
-                  (values x (third res) (fourth res) t nil reject-list (sixth res)))
+                  (values x (third res) (fourth res) t t reject-list (sixth res)))
 		 ((and (not equivalent) (null (cdr x)))
                   (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
                   (push (car x) (cdr (last x)))
@@ -572,17 +574,19 @@
 	     (when nil t
 	       (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
 	     (setq generalized (new-combine (car x) y sol no-matches bindings))
-             (setq equivalent (or (= 0 cost)
-				  (= (hash-table-count q-first-bindings)
-				     (array-dimension (car base) 0)
-				     (hash-table-count bindings)
-				     (array-dimension (car pattern) 0))))
-             (cond ((and equivalent (null (cdr x)))
+	     (setq equivalent (or (= 0 cost)
+				  (and (= (hash-table-count q-first-bindings)
+					  (hash-table-count bindings))
+				       (= (array-dimension (car base) 0)
+					  (array-dimension (car pattern) 0)))))
+	     (when nil
+	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%size of base: ~d~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (array-dimension (car base) 0) (array-dimension (car pattern) 0) equivalent))
+	     (cond ((and equivalent (null (cdr x)))
                     (setf (car x) generalized)
                     (values x cost bindings nil t reject-list num-local-preds))
                    ((and equivalent (cdr x))
                     (setf (car x) generalized)
-                    (values x cost bindings t nil reject-list num-local-preds))
+                    (values x cost bindings t t reject-list num-local-preds))
                    ((and (not equivalent) (null (cdr x)))
                     (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
                     (push (car x) (cdr (last x)))
@@ -736,7 +740,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                      (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-greedy-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
                    ;;(subgraph-optimal-monomorphism pattern-state base-state :cost-of-nil (episode-count (car branch)) :bic-p bic-p)
-		   (when t
+		   (when nil
 		     (format t "~%cost: ~d~%num local matches: ~d" cost num-local-preds))
 		   (when nil
                      (format t "~%cost of branch after matching decompositions: ~d~%size of bindings: ~d" cost (hash-table-count bindings)))
@@ -755,12 +759,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (when nil
                  (format t "~%Pushed to empty memory"))
            (values eltm eltm))
-          (absorb
+          ((and absorb
+		(not branch))
            (when nil
                  (format t "~%Absorbed"))
            (values eltm eltm))
-          ((or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds) best-child) #|(<= p-cost best-child-cost)|#)
-               (not branch))
+          ((and (not absorb)
+		(or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds) best-child) #|(<= p-cost best-child-cost)|#)
+		    (not branch)))
            (setf (episode-parent ep) eltm)
            (setf (episode-depth ep) depth)
            (push (list ep) (cdr (last eltm)))
@@ -1706,7 +1712,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         finally
 	   (when state-transitions
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
-	     (when t
+	     (when nil
 	       (format t "~%transition model: ~S" state-transitions))
              (setq st-bn (eval `(compile-program ,@state-transitions)))
              ;; make temporal episode from state transitions

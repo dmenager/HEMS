@@ -5224,12 +5224,15 @@ Roughly based on (Koller and Friedman, 2009) |#
                (t
                 (format t "~%Reached inference limit at iteration ~d." (+ count 1)))))
        (return
-         (cond ((eq op '+)
+         (cond ((or (eq op '+)
+		    (eq op #'+))
+		
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 ;; when (rule-based-cpd-singleton-p (aref factors i))
                   collect (compute-belief i factors edges messages)))
-               ((eq op 'max)
+               ((or (eq op 'max)
+		    (eq op #'max))
                 (when nil
                   (format t "~%Computing most likely state."))
                 ;;(break)
@@ -6691,7 +6694,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
 (defun loopy-belief-propagation (state evidence op lr)
-  (when nil
+  (when t
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages estimates)
@@ -6707,7 +6710,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (setq factors-list (cons factor factors-list))
       finally
 	 (setq factors-list (reverse factors-list)))
-    (when nil 
+    (when nil t 
       (format t "~%explicit factors:~%~A~%num elements: ~d" factors-list (array-dimension (car state) 0)))
     (loop
       with singleton
@@ -6771,7 +6774,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (break))
       collect singleton into singletons
       finally (setq singleton-factors-list singletons))
-    (when nil
+    (when nil t
       (format t "~%singleton factors:~%~S:~%num elements: ~d" singleton-factors-list (length singleton-factors-list)))
     (setq all-factors-list (append factors-list singleton-factors-list))
     (setq factors (make-array (length factors-list) :initial-contents factors-list :fill-pointer t))
@@ -6855,16 +6858,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :step-sizes (rule-based-cpd-step-sizes factor)
 						 :rules rules
 						 :singleton-p t
-						 :lvl (rule-based-cpd-lvl factor)))))
-	   (when (null (gethash index messages))
-	     (setf (gethash index messages) (make-hash-table)))
-	   (setf (gethash index (gethash index messages)) msg))
+						 :lvl (rule-based-cpd-lvl factor)))
+		  (when (null (gethash index messages))
+		    (setf (gethash index messages) (make-hash-table)))
+		  (setf (gethash index (gethash index messages)) msg))))
       finally
          (setq initial-messages messages))
-    (when nil
+    (when nil t
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
       (format t "~%~%initial messages:~%~A" initial-messages)
-      (break))
+      ;;(break)
+      )
     (setq estimates (calibrate-factor-graph all-factors op edges initial-messages lr))))
 
 #| Move assignment by 1 |#

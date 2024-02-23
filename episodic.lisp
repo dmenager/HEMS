@@ -57,16 +57,15 @@
 ;; cur-step = index pointing to current state in the stochastic process
 ;; scope = indicates number of consecutive states in obs window that model explains
 ;; model parent = pointer to parent model
-(defun make-model (&key ep (cur-step 0) (scope 0) (model-parent nil) (successors nil) (evidence (make-hash-table :test #'equal)))
+(defun make-model (&key ep (cur-step 0) (scope 0) (model-parent nil) (evidence (make-hash-table :test #'equal)))
   (let (ep-copy)
     (when ep
       (setq ep-copy (copy-ep ep :fresh-id nil)))
     `(:model ,ep-copy
       :cur-step ,cur-step
-      :successors ,successors
       :scope ,scope
       :evidence ,evidence
-      :model-parent model-parent)
+      :model-parent ,model-parent)
     ))
 
 #| Copy hierarchical model |#
@@ -76,7 +75,6 @@
   (when model
     `(:model ,(getf model :model)
       :cur-step ,(+ (getf model :cur-step) step-modifier)
-      :successors ,(copy-list (getf model :successors))
       :scope ,(+ (getf model :scope) scope-modifier)
       :evidence ,(copy-hash-table (getf model :evidence))
       :model-parent ,(copy-model (getf model :model-parent)))))

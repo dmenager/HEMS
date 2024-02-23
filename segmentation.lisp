@@ -15,8 +15,8 @@
       with l and total = 1 and r and threshold = 1
       for (pattern . base) being the elements of matches
       do
-         (setq x-copy (subst-cpd (aref (car state) pattern) (when base (aref (caar (episode-states episode)) base)) bindings))
-         (setq y (if base (aref (episode-observation episode) base)))
+         (setq x-copy (subst-cpd (aref (car state) pattern) (when base (aref (car (episode-observation episode)) base)) bindings))
+         (setq y (if base (aref (car (episode-observation episode)) base)))
          (multiple-value-bind (dif forbidden-likelihood)
              (hash-difference (if y (rule-based-cpd-identifiers y)) (rule-based-cpd-identifiers x-copy) y forbidden-types)
            (declare (ignore dif))
@@ -24,7 +24,7 @@
            (when nil (< l 1)
                  (format t "~%state cpd:~%~S~%model cpd:~%~S~%likelihood: ~d~%forbidden-likelihood: ~A" x-copy y l forbidden-likelihood)))
          (setq total (* total l))
-         (setq r (if y (/ 1 (aref (cpd-cardinalities y) 0)) 0))
+         (setq r (if y (/ 1 (aref (rule-based-cpd-cardinalities y) 0)) 0))
          (setq threshold (* threshold r))
       finally
          (return (values total threshold)))))
@@ -138,14 +138,14 @@
 (defun good-fit-to-observations? (models obs-window hidden-state-p &key (bic-p t) (auto-pass nil))
   (labels ((predict-observation (model observation)
 	     (multiple-value-bind (likelihood threshold)
-                 (model-predict (getf model :episode) state :bic-p bic-p)
+                 (model-predict (getf model :model) observation :bic-p bic-p)
                (cond ((pass-prediction likelihood threshold auto-pass)
                       (when t
-                        (format t "~%Good fit for state with likelihood ~d and threshold ~d. Incrementing scope." likelihood threshold))
+                        (format t "~%Good fit for state with likelihood ~d and threshold ~d. Incrementing scope." (float likelihood) (float threshold)))
 		      model)
                      (t
 		      (when t
-                        (format t "~%failure with likelihood ~d and threshold ~d." likelihood threshold))
+                        (format t "~%failure with likelihood ~d and threshold ~d." (float likelihood) (float threshold)))
 		      nil))))
 	   (track-observation (models observation)
 	     ;; infer distribution over the state given previous action, and previous state
@@ -171,41 +171,45 @@
 		 (format t "~%predicting observation with ground network:~%~S" ground-network))
                (when ground-network
 		 ;; infer distribution over the observation given state
-		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) #'+ 1))
+		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) '+ 1))
+		 (when nil
+		   (format t "~%predicting observation with posterior ground network:~%~S" recollection))
 		 (loop
 		   with failp = t
 		   for cpd in recollection
 		   when (and (rule-based-cpd-singleton-p cpd)
                              (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd))))
                      do
-			(setf (gethash (rule-based-dependent-id cpd) (getf (car models) :evidence)) nil)
+			(setf (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :evidence)) nil)
 			(loop
-			  with cond = (rule-based-dependent-id cpd)
+			  with cond = (rule-based-cpd-dependent-id cpd)
 			  with binding and var and val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-			  for rule in (rule-based-cpd-rules cpd)
+			  for rule being the elements of (rule-based-cpd-rules cpd)
 			  do
                              (cond ((> (rule-probability rule) 0)
-				    (setq binding (car (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+				    (setq binding (car (find (gethash cond (rule-conditions rule)) vvbm :key #'cdar :test #'equal)))
 				    (setq var (car binding))
 				    (setq val (cdr binding))
-				    (setq model-ref (gethash var (episode-backlinks episode)))
-				    (when t
-				      (format t "~%candidate observation model:~%~S"(episode-id (car model-ref))))
-                                    (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
-											:model-parent model)
-									    (rest models))
-                                                                      (list observation)
-								      hidden-state-p)
-					   (when t
-					     (format t "~%Success. Candidate model explains observation."))
-					   (setq failp nil)
-					   (setf (gethash cond (getf (car models) :evidence))
-						 (cons (cons var 1)
-						       (gethash cond (getf (car models) :evidence)))))
-					  (t
-					   (setf (gethash cond (getf (car models) :evidence))
-						 (cons (cons var 0)
-						       (gethash cond (getf (car models) :evidence)))))))
+				    (when (not (equal "NA" var))
+				      (setq model-ref (gethash var (episode-backlinks (getf (car models) :model))))
+				      (when nil
+					(format t "~%candidate observation model:~%~S"(episode-id (car model-ref))))
+                                      (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
+											  :model-parent (car models)
+											  :cur-step 0)
+									      (rest models))
+									(list observation)
+									hidden-state-p)
+					     (when t
+					       (format t "~%Success. Candidate model explains observation."))
+					     (setq failp nil)
+					     (setf (gethash cond (getf (car models) :evidence))
+						   (cons (cons var 1)
+							 (gethash cond (getf (car models) :evidence)))))
+					    (t
+					     (setf (gethash cond (getf (car models) :evidence))
+						   (cons (cons var 0)
+							 (gethash cond (getf (car models) :evidence))))))))
 				   (t
                                     (setf (gethash cond (getf (car models) :evidence))
 					  (cons (cons var 0)
@@ -217,21 +221,21 @@
 			(return-from track-observation (values (rest models) nil)))))
 	       (when hidden-state-p
 		 (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "STATE" hidden-state-p))
-		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) #'+ 1))
+		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) '+ 1))
 		 (loop
 		   for cpd in recollection
 		   when (and (rule-based-cpd-singleton-p cpd)
 			     (equal "STATE" (gethash 0 (rule-based-cpd-types cpd))))
 		     do
-			(setf (gethash (rule-based-dependent-id cpd) (getf (car models) :evidence)) nil)
+			(setf (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :evidence)) nil)
 			(loop
-			  with cond = (rule-based-dependent-id cpd)
+			  with cond = (rule-based-cpd-dependent-id cpd)
 			  with val and binding and var
 			  with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-			  for rule in (rule-based-cpd-rules cpd)
+			  for rule being the elements of (rule-based-cpd-rules cpd)
 			  do
 			     (setq val (gethash cond (rule-conditions rule)))
-			     (setq binding (car (rassoc val vvbm :key #'cdar)))
+			     (setq binding (car (find val vvbm :key #'cdar :test #'equal)))
 			     (setq var (car binding))
 			     (setf (gethash cond (getf (car models) :evidence))
 				   (cons (cons var (rule-probability rule))
@@ -248,17 +252,18 @@
 		   when (and (rule-based-cpd-singleton-p cpd)
                              (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))))
                      do
-			(setf (gethash (rule-based-dependent-id cpd) (getf (car models) :evidence)) nil)
+			(setf (gethash (rule-based-cpd-dependent-id cpd) (getf (car models) :evidence)) nil)
 			(loop
-			  with cond = (rule-based-dependent-id cpd)
+			  with cond = (rule-based-cpd-dependent-id cpd)
 			  with var and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-			  for rule in (rule-based-cpd-rules cpd)
+			  for rule being the elements of (rule-based-cpd-rules cpd)
 			  do
+			     (setq var (caar (find (gethash cond (rule-conditions rule)) vvbm :key #'cdar :test #'equal)))
                              (cond ((> (rule-probability rule) 0)
-                                    (setq var (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+                                    
 				    (when t
 				      (format t "~%candidate action: ~S~%observed action: ~S" var act))
-                                    (cond ((equal act var)
+				    (cond ((equal act var)
 					   (setq failp nil)
 					   (when t
 					     (format t "~%Success. Model predicts action"))
@@ -281,8 +286,16 @@
 		 (loop
 		   with new-models = (rest models)
 		   with act-idx = (+ (getf (car models) :cur-step) (if hidden-state-p 2 1))
-		   for idx being the hash-keys of (gethash act-idx (cdr (episode-state-transitions (getf (car models) :model))))
+		   with transition-model = (car (episode-state-transitions (getf (car models) :model)))
+		   with act-ident = (rule-based-cpd-dependent-id (aref transition-model act-idx))
+		   for idx from 0
+		   for cpd being the elements of transition-model
+		   when (and (> idx act-idx)
+			     (gethash act-ident (rule-based-cpd-identifiers cpd)))
 		   do
+		      (when t
+			(format t "~%current model idx: ~d" (getf (car models) :cur-step))
+			(format t "~%successor: ~S" cpd))
 		      (setq new-models (cons (make-model :ep (getf (car models) :model)
 							 :cur-step idx
 							 :model-parent (getf (car models) :model-parent)
@@ -292,6 +305,7 @@
 		      (setq models new-models)
 		      (return (values models t)))))))
     (let* ((model (car models))
+	   (parent (getf model :model-parent))
 	   (episode (getf model :model)))
       (when t
 	(format t "~%Assessing model fit on state sequence of length ~d." (length obs-window)))
@@ -307,10 +321,16 @@
 	     (when t
 		 (format t "~%Failure. Model is empty."))
              (values nil obs-window))
-            ((not (episode-temporal-p (getf (car models) :model)))
+            ((or (not (episode-temporal-p (getf model :model)))
+		 (and parent
+		      (episode-temporal-p (getf model :model))
+		      (= (getf model :cur-step)
+			 (getf parent :cur-step))
+		      (equal (episode-id episode)
+			     (episode-id (getf parent :model)))))
              (when t
                (format t "~%model is ground-level model"))
-	     (cond ((predict-observation (getf (car models) :model) (caar obs-window))
+	     (cond ((predict-observation model (caar obs-window))
 		    (values models obs-window))
 		   (t
 		    (values nil obs-window))))

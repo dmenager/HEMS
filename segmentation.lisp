@@ -46,6 +46,8 @@
 ;; type = string enumeration on the type of node in the temporal network, be it "STATE", "OBSERVATION", or "PERCEPT"
 ;; hidden-state-p = flag indicating if model has a hidden state
 (defun get-ground-network (cpds time-step type hidden-state-p)
+  (when t
+    (format t "~%num cpds: ~d" (array-dimension cpds 0)))
   (loop
     with modifier = (if hidden-state-p
 			(cond ((equal "STATE" type) 0)
@@ -94,6 +96,10 @@
 		(setq cards (make-array 1 :initial-contents (list (aref (rule-based-cpd-cardinalities cpd) 0)) :fill-pointer t))
 		(setq steps (make-array 1 :initial-element 1 :fill-pointer t))
 		(setq rules (initialize-rule-potentials cpd (/ 1 (aref cards 0))))
+		(loop
+		  for rule being the elements of rules
+		  do
+		     (setf (rule-count rule) (aref cards 0)))
 		(setq lvl (rule-based-cpd-lvl cpd))
 		(setq simple-cpd (make-rule-based-cpd :dependent-id dep-id
 						     :identifiers id
@@ -116,9 +122,12 @@
 						     :rules rules
 						     :singleton-p nil
 						     :lvl lvl))
-		(setq new-cpds (cons simple-cpd new-cpds))
-	   finally
-	   (return (make-array (length new-cpds) :initial-contents (reverse new-cpds))))))
+		(setq new-cpds (cons simple-cpd new-cpds)))
+    finally
+       (let (cpd-arr edges)
+	 (setq cpd-arr (make-array (length new-cpds) :initial-contents new-cpds))
+	 (setq edges (make-graph-edges cpd-arr))
+	 (return (cons cpd-arr edges)))))
 
 #| Determine if episode is a good predictor for state sequence. Returns current ground-level model. |#
 
@@ -158,10 +167,13 @@
 	       (setq obs (first observation))
 	       (setq act (third observation))
 	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "OBSERVATION" hidden-state-p))
+	       (when t
+		 (format t "~%predicting observation with ground network:~%~S" ground-network))
                (when ground-network
 		 ;; infer distribution over the observation given state
 		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) #'+ 1))
 		 (loop
+		   with failp = t
 		   for cpd in recollection
 		   when (and (rule-based-cpd-singleton-p cpd)
                              (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types cpd))))
@@ -169,7 +181,7 @@
 			(setf (gethash (rule-based-dependent-id cpd) (getf (car models) :evidence)) nil)
 			(loop
 			  with cond = (rule-based-dependent-id cpd)
-			  with binding and var and val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  with binding and var and val and model-ref and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
 			  for rule in (rule-based-cpd-rules cpd)
 			  do
                              (cond ((> (rule-probability rule) 0)
@@ -177,11 +189,15 @@
 				    (setq var (car binding))
 				    (setq val (cdr binding))
 				    (setq model-ref (gethash var (episode-backlinks episode)))
+				    (when t
+				      (format t "~%candidate observation model:~%~S"(episode-id (car model-ref))))
                                     (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
 											:model-parent model)
 									    (rest models))
                                                                       (list observation)
 								      hidden-state-p)
+					   (when t
+					     (format t "~%Success. Candidate model explains observation."))
 					   (setq failp nil)
 					   (setf (gethash cond (getf (car models) :evidence))
 						 (cons (cons var 1)
@@ -193,9 +209,12 @@
 				   (t
                                     (setf (gethash cond (getf (car models) :evidence))
 					  (cons (cons var 0)
-						(gethash cond (getf (car models) :evidence))))))
-                             (if failp
-				 (return-from track-observation (values (rest models) nil))))))
+						(gethash cond (getf (car models) :evidence)))))))
+		   finally
+                      (when failp
+			(when t
+			  (format t "~%Failure. No models match current observation"))
+			(return-from track-observation (values (rest models) nil)))))
 	       (when hidden-state-p
 		 (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "STATE" hidden-state-p))
 		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) #'+ 1))
@@ -218,10 +237,13 @@
 				   (cons (cons var (rule-probability rule))
 					 (gethash cond (getf (car models) :evidence)))))))
 	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "PERCEPT" hidden-state-p))
-               (when ground-network
+	       (when t
+		 (format t "~%predicting action with ground network:~%~S" ground-network))
+	       (when ground-network
 		 ;; infer distribution over the action given observation
 		 (setq recollection (loopy-belief-propagation ground-network (getf (car models) :evidence) #'+ 1))
 		 (loop
+		   with failp = t
 		   for cpd in recollection
 		   when (and (rule-based-cpd-singleton-p cpd)
                              (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))))
@@ -229,13 +251,17 @@
 			(setf (gethash (rule-based-dependent-id cpd) (getf (car models) :evidence)) nil)
 			(loop
 			  with cond = (rule-based-dependent-id cpd)
-			  with var and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd)) and failp = t
+			  with var and vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
 			  for rule in (rule-based-cpd-rules cpd)
 			  do
                              (cond ((> (rule-probability rule) 0)
                                     (setq var (caar (rassoc (gethash cond (rule-conditions rule)) vvbm :key #'cdar)))
+				    (when t
+				      (format t "~%candidate action: ~S~%observed action: ~S" var act))
                                     (cond ((equal act var)
 					   (setq failp nil)
+					   (when t
+					     (format t "~%Success. Model predicts action"))
 					   (setf (gethash cond (getf (car models) :evidence))
 						 (cons (cons var 1)
 						       (gethash cond (getf (car models) :evidence)))))
@@ -246,9 +272,12 @@
 				   (t
                                     (setf (gethash cond (getf (car models) :evidence))
 					  (cons (cons var 0)
-						(gethash cond (getf (car models) :evidence))))))))
-		 (if failp
-                     (return-from track-observation (values (rest models) nil)))
+						(gethash cond (getf (car models) :evidence)))))))
+		   finally
+		      (when failp
+			(when t
+			  (format t "~%Failure. No models predict action"))
+			(return-from track-observation (values (rest models) nil))))
 		 (loop
 		   with new-models = (rest models)
 		   with act-idx = (+ (getf (car models) :cur-step) (if hidden-state-p 2 1))
@@ -267,10 +296,16 @@
       (when t
 	(format t "~%Assessing model fit on state sequence of length ~d." (length obs-window)))
       (cond ((null obs-window)
+	     (when t
+	       (format t "~%Success. No more observations."))
 	     (values models obs-window))
 	    ((null models)
+	     (when t
+	       (format t "~%Failure. No more models."))
 	     (values nil obs-window))
 	    ((null episode)
+	     (when t
+		 (format t "~%Failure. Model is empty."))
              (values nil obs-window))
             ((not (episode-temporal-p (getf (car models) :model)))
              (when t
@@ -280,15 +315,17 @@
 		   (t
 		    (values nil obs-window))))
             (t
+	     (when t
+	       (format t "~%model is a temporal model. Attempting to track state"))
 	     (multiple-value-bind (new-models success-p)
 		 (track-observation models (car obs-window))
 	       (if success-p
 		   (good-fit-to-observations? new-models (rest obs-window) hidden-state-p)
 		   (good-fit-to-observations? new-models obs-window hidden-state-p))))))))
     
-(defun get-model (obs-window eltm reject-list bic-p)
+(defun get-model (obs-window eltm observation-reject-list temporal-reject-list bic-p)
   (loop
-    with cue and eme and obs-ref and state-transitions
+    with cue and state-transitions
     with cur-obs and cur-act and prev-obs and prev-act and st-bn and id-ref-hash = (make-hash-table :test #'equal)
     for (obs state act-name) in (gethash 0 (getf episode-buffer* :obs))
     do
@@ -296,11 +333,12 @@
 			       :backlinks (make-hash-table :test #'equal)
 			       :count 1
 			       :lvl 1))
-       (setq obs-ref (new-retrieve-episode eltm cue reject-list :bic-p bic-p))
-       (multiple-value-bind (obs-ref sol bindings depth cost id new-rejects)
-	   (new-retrieve-episode eltm cue reject-list)
+       ;;(setq obs-ref (new-retrieve-episode eltm cue observation-reject-list :bic-p bic-p))
+       (multiple-value-bind (obs-ref sol bindings depth cost id new-obs-rejects)
+	   (new-retrieve-episode eltm cue observation-reject-list)
 	 (declare (ignore sol bindings depth cost id))
-	 (setq reject-list new-rejects)
+	 (setq observation-reject-list new-obs-rejects)
+	 ;;(break)
 	 (when obs-ref
 	   (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	   (setq cur-obs (gensym "OBS-"))
@@ -319,25 +357,26 @@
 				 :temporal-p t
 				 :count 1
 				 :lvl 2))
-	 (multiple-value-bind (eme sol bindings depth cost id new-rejects)
-	     (new-retrieve-episode eltm cue reject-list
+	 (multiple-value-bind (eme sol bindings depth cost id new-temp-rejects)
+	     (new-retrieve-episode eltm cue temporal-reject-list
 				   :bic-p bic-p)
 	   (declare (ignore sol bindings depth cost id))
-	   (setq reject-list new-rejects)
+	   (setq temporal-reject-list new-temp-rejects)
+	   ;;(break)
 	   (return (make-model :ep (car eme) :model-parent nil))))
        (return (make-model))))
 
-(defun event-boundary-p (model obs-window eltm reject-list bic-p hidden-state-p)
+(defun event-boundary-p (model obs-window eltm observation-reject-list temporal-reject-list bic-p hidden-state-p)
   (loop
     do
        (when t
 	 (format t "~%checking for event boundary"))
        (when (null (getf model :model))
-	 (setq model (get-model obs-window eltm reject-list bic-p)))
+	 (setq model (get-model obs-window eltm observation-reject-list temporal-reject-list bic-p)))
        (when (null (getf model :model))
 	 (return-from event-boundary-p (make-model)))
-       (when nil
-	 (format t "~%obtained model" (episode-id (getf model :model)))
+       (when t
+	 (format t "~%obtained model: ~A" (episode-id (getf model :model)))
 	 ;;(print-model-stack model)
 	 )
        (multiple-value-bind (new-model remaining-observations)
@@ -345,13 +384,14 @@
 	 ;;(declare (ignore calls-to-retrieve))
 	 ;;(setq reject-list new-rejects)
 	 (when (null new-model)
-	   (setq reject-list (cons (episode-id (getf model :model)) reject-list)))
+	   (setq temporal-reject-list (cons (episode-id (getf model :model)) temporal-reject-list)))
 	 (setq model new-model))
     while (and (null model)
-	       (not (member (episode-id (car eltm)) reject-list :test #'equal))))
+	       (or (not (member (episode-id (car eltm)) temporal-reject-list :test #'equal))
+		   (not (member (episode-id (car eltm)) observation-reject-list :test #'equal)))))
   model)
 
-(defun test ()
+(defun test (&key break)
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data)
@@ -380,4 +420,6 @@
 		(setq st (eval `(compile-program ,@program)))
 		(new-push-to-ep-buffer :observation st :action-name action :hidden-state-p nil)
 		(eltm-to-pdf))
-	   (break)))))
+	   (if break
+	       (break))
+	))))

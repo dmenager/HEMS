@@ -856,7 +856,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p :forbidden-types forbidden-types)
 	     (declare (ignore no-matches q-first-bindings))
-	     (when nil
+	     (when nil t
 	       (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S" sol cost bindings))
 	     (setq res (list sol cost bindings num-local-preds))
 	     (cond ((null (cdr x))
@@ -999,8 +999,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; res = optimal common subgraph between cue and eltm, with associated cost
 ;; depth = optional depth of retrieval search
 (defun new-retrieve-episode (eltm cue reject-list &key (res nil) (depth 0) (bic-p t) (lvl-func nil) (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil) (forbidden-types nil) &aux best-child (best-child-weighted-cost most-positive-fixnum) (best-child-cost most-positive-fixnum))
-  (setq best-child (list nil 1 (make-hash-table :test #'equal) nil -1))
-  (when nil
+  (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1))
+  (when nil t
     (format t "~%reject list in retrieve: ~A" reject-list))
   (when (or (null eltm) (member (episode-id (car eltm)) reject-list :test #'equal))
     (return-from new-retrieve-episode (values nil nil nil depth most-positive-fixnum most-positive-fixnum nil reject-list)))
@@ -1021,8 +1021,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          when (> i 0) do
           (cond ((not (reject-branch? branch cue reject-list :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case))
                  (when nil t
-                       (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
-                               (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
+                       (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-temporal-p: ~S~%episode num decompositions: ~d"
+                               (episode-id (car branch)) (episode-lvl (car branch)) (episode-temporal-p (car branch)) (hash-table-count (episode-backlinks (car branch)))))
 		 (cond ((episode-temporal-p cue)
                         (setq pattern (episode-state-transitions cue))
                         (setq base (episode-state-transitions (car branch))))
@@ -1033,7 +1033,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (setq base-backlinks (episode-backlinks (car branch)))
 		 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                      (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p :forbidden-types forbidden-types)
-		   (declare (ignore q-first-bindings))
+		   (declare (ignore q-first-bindings no-matches))
+		   (when nil t
+		     (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S" sol cost bindings))
 		   (cond ((or (= i 1)
 			      (and (not lvl-func)
 				   (better-random-match? (list nil cost bindings nil num-local-preds) best-child))
@@ -1056,20 +1058,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                      (not (episode-temporal-p (caar best-child))))
                             (setq reject-list (cons (episode-id (caar best-child)) reject-list)))
                           (setq best-child-cost cost)
+			  (when nil t
+			    (format t "~%branch is new best child"))
                           (setq best-child (list branch cost bindings nil num-local-preds)))
                          ((and (= (episode-count (car branch)) 1) (not (episode-temporal-p (car branch))))
 			  (setq reject-list (cons (episode-id (car branch)) reject-list))))))
                 (t
-                 (when nil
+                 (when nil t
                    (format t "~%~A is in the reject list" (episode-id (car branch))))))))
-    (when nil
+    (when nil t
       (format t "~%parent cost: ~d~%best-child: ~S~%branch-p: ~S" (second p-cost) (list 'subtree (second best-child) (third best-child)) branch))
     (cond ((and lvl-func (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))
                 (if best-child (not (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl (caar best-child)))) t)
 		(if best-child
 		    (better-random-match? (list nil (second p-cost) (third p-cost) nil (fourth p-cost)) best-child)
 		    (<= (second p-cost) best-child-weighted-cost)))
-           (when nil t nil
+           (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           ((and (or (eq #'= lvl-func) (eq '= lvl-func)) (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))
@@ -1079,11 +1083,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (<= (second p-cost) best-child-weighted-cost))
 		;;(<= (- (second p-cost) best-child-weighted-cost) 0)
 		)
-           (when nil t nil
+           (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           ((and lvl-func (not (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))) (null (car best-child)))
-           (when nil t nil
+           (when nil t
              (format t "~%Returning ~A" (if (equal (episode-id (car eltm)) (car reject-list)) nil (car eltm))))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) (episode-id (car eltm)) reject-list))
           ((and (not lvl-func)
@@ -1091,11 +1095,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (not branch))
 		;;(<= (- (second p-cost) best-child-weighted-cost) 0)
 		)
-           (when nil t nil
+           (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
           (t
-           (when nil t nil
+           (when nil t
              (format t "~%Recursing on best child: ~A" (if (car best-child) (episode-id (caar best-child)))))
            (new-retrieve-episode (car best-child) cue reject-list :res res :depth (1+ depth) :bic-p bic-p :check-decomps check-decomps :forbidden-types forbidden-types :lvl-func lvl-func :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case)))))
 
@@ -1640,10 +1644,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					   (gethash 0 (getf episode-buffer* :obs))
 					   eltm*
 					   nil
+					   nil
 					   bic-p
 					   hidden-state-p))
-	     (when t
-	       (format t "~%retrieved model:~%~S" model))
+	     (when (getf model :model)
+	       (format t "~%retrieved model:~%~S" (episode-id (getf model :model))))
 	     (unless (getf model :model)
 	       (setq insertp t))))
 	  (t

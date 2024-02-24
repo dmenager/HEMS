@@ -1,6 +1,15 @@
 (ql:quickload :hems)
 (in-package :hems)
 
+(defun state-ex ()
+  (let ((bn (compile-program
+	     c0 = (state-node state :value "T")
+	     c1 = (state-node state :value "T")
+	     c2 = (state-node state :value "T")
+	     c0 -> c1
+	     c1 -> c2)))
+    bn))
+
 (defun ex2()
   (let ((bn (compile-program
 	      c0 = (percept-node node1 :value "5")

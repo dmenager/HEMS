@@ -142,6 +142,12 @@
                (cond ((pass-prediction likelihood threshold auto-pass)
                       (when t
                         (format t "~%Good fit for state with likelihood ~d and threshold ~d. Incrementing scope." (float likelihood) (float threshold)))
+		      (loop
+			with temp-model = model
+			do
+			   (setf (getf temp-model :scope) (+ (getf temp-model :scope) 1))
+			   (setq temp-model (getf temp-model :model-parent))
+			while temp-model)
 		      model)
                      (t
 		      (when t
@@ -167,7 +173,7 @@
 	       (setq obs (first observation))
 	       (setq act (third observation))
 	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "OBSERVATION" hidden-state-p))
-	       (when t
+	       (when nil
 		 (format t "~%predicting observation with ground network:~%~S" ground-network))
                (when ground-network
 		 ;; infer distribution over the observation given state
@@ -196,11 +202,12 @@
 					(format t "~%candidate observation model:~%~S"(episode-id (car model-ref))))
                                       (cond ((good-fit-to-observations? (cons (make-model :ep (car model-ref)
 											  :model-parent (car models)
-											  :cur-step 0)
+											  :cur-step 0
+											  :scope (getf (car models) :scope))
 									      (rest models))
 									(list observation)
 									hidden-state-p)
-					     (when t
+					     (when nil
 					       (format t "~%Success. Candidate model explains observation."))
 					     (setq failp nil)
 					     (setf (gethash cond (getf (car models) :evidence))
@@ -216,7 +223,7 @@
 						(gethash cond (getf (car models) :evidence)))))))
 		   finally
                       (when failp
-			(when t
+			(when nil
 			  (format t "~%Failure. No models match current observation"))
 			(return-from track-observation (values (rest models) nil)))))
 	       (when hidden-state-p
@@ -241,7 +248,7 @@
 				   (cons (cons var (rule-probability rule))
 					 (gethash cond (getf (car models) :evidence)))))))
 	       (setq ground-network (get-ground-network (car (episode-state-transitions (getf (car models) :model))) (getf (car models) :cur-step) "PERCEPT" hidden-state-p))
-	       (when t
+	       (when nil
 		 (format t "~%predicting action with ground network:~%~S" ground-network))
 	       (when ground-network
 		 ;; infer distribution over the action given observation
@@ -261,11 +268,11 @@
 			     (setq var (caar (find (gethash cond (rule-conditions rule)) vvbm :key #'cdar :test #'equal)))
                              (cond ((> (rule-probability rule) 0)
                                     
-				    (when t
+				    (when nil
 				      (format t "~%candidate action: ~S~%observed action: ~S" var act))
 				    (cond ((equal act var)
 					   (setq failp nil)
-					   (when t
+					   (when nil
 					     (format t "~%Success. Model predicts action"))
 					   (setf (gethash cond (getf (car models) :evidence))
 						 (cons (cons var 1)
@@ -280,7 +287,7 @@
 						(gethash cond (getf (car models) :evidence)))))))
 		   finally
 		      (when failp
-			(when t
+			(when nil
 			  (format t "~%Failure. No models predict action"))
 			(return-from track-observation (values (rest models) nil))))
 		 (loop
@@ -293,11 +300,9 @@
 		   when (and (> idx act-idx)
 			     (gethash act-ident (rule-based-cpd-identifiers cpd)))
 		   do
-		      (when t
-			(format t "~%current model idx: ~d" (getf (car models) :cur-step))
-			(format t "~%successor: ~S" cpd))
 		      (setq new-models (cons (make-model :ep (getf (car models) :model)
 							 :cur-step idx
+							 :scope (getf (car models) :scope)
 							 :model-parent (getf (car models) :model-parent)
 							 :evidence (copy-hash-table (getf (car models) :evidence)))
 					     new-models))

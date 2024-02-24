@@ -1638,8 +1638,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (cond (temporal-p
 	   (unless insertp
-	     (setq model (event-boundary-p (getf (getf episode-buffer* :h-model) :model)
-					   (gethash 0 (getf episode-buffer* :obs))
+	     (setq model (getf (getf episode-buffer* :h-model) :model))
+	     (setq model (event-boundary-p model
+					   (subseq (gethash 0 (getf episode-buffer* :obs)) (if model (getf model :scope) 0))
 					   eltm*
 					   nil
 					   nil

@@ -6694,7 +6694,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
 (defun loopy-belief-propagation (state evidence op lr)
-  (when t
+  (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages estimates)

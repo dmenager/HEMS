@@ -37,6 +37,7 @@ void main() {
 	bool[][][] wc = [ [null,null], [null,null]];
 	writef( "(ql:quickload :hems)\n" ~
 		"(in-package :hems)\n\n" ~
+		"(defun example ()\n" ~
 		"(let (observations)\n" ~
 		"    (setq observations\n(list "
 	);
@@ -68,8 +69,8 @@ void main() {
     writef(
 		";; insert into event memory\n" ~
 		"(map nil #'(lambda (bn)\n" ~
-		"	 (hems:push-to-ep-buffer :state bn :insertp t))\n" ~
-		" observations))\n");
+		"	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))\n" ~
+		" observations)))\n");
 
 	writef("\n\n;; ----------------------------\n\n;; CPDs\n");
 	writef(";; P(zeus_angry=1) = %.4f\n", zc.prob);

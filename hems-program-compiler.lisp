@@ -121,6 +121,9 @@
 (defun directed-edge (cpd1 cpd2)
   (modify-cpd cpd2 cpd1))
 
+#| Sort a list of factors in topological order. Returns a list. |#
+
+;; factors-list = list of cpds
 (defun topological-sort (factors-list)
   (let (l s copy)
     (setq copy (copy-factors (make-array (length factors-list) :initial-contents factors-list)))
@@ -155,14 +158,40 @@
 		  (setq s (reverse (cons cpd1 (reverse s)))))))
     l))
 
-(defmacro compile-program (&body body)
+#| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nested hash-table of edges |#
+
+;; body = HEMS program
+;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
+;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
+(defmacro compile-program (&body body &key relational-invariants neighborhood-func)
   (let ((hash (gensym))
+	(inv-hash (gensym))
 	(args (gensym))
 	(ident (gensym))
 	(cpd (gensym))
 	(cpd-list (gensym))
+	(cpd-arr (gensym))
 	(factors (gensym))
-	(edges (gensym)))
+	(edges (gensym))
+	(i (gensym))
+	(j (gensym))
+	(cpd-i (gensym))
+	(cpd-j (gensym))
+	(var-i (gensym))
+	(var-j (gensym))
+	(neighbors (gensym))
+	(invariant (gensym))
+	(invarinant-list (gensym))
+	(invarinat-ids (gensym))
+	(new-body (gensym)))
+    (cond ((and (neighborhood-func)
+		(not (eq t relational-invariants)))
+	   (error "Relational Invariants flag must be set to t to define the neighborhood function: ~A."))
+	  ((and (not (eq t relational-invariants))
+		(not (eq nil relational-invariants)))
+	   (error "Relational Invariants flag is boolean. Must be set to t or nil. Value~%~A~% is invalid" relational-invariants))
+	  ((and neighborhood-func relational-invariants (not (function-p neighborhood-func)))
+	   (error "Invalid neighborhood function. Received~%~A~%Expected a function.")))
     `(labels ((compile-hems-program (,hash ,args)
 		(cond (,args
 		       (if (and (symbolp (first ,args))
@@ -193,16 +222,52 @@
 			   )
 		       (compile-hems-program ,hash (nthcdr 3 ,args)))
 		      (t
+		       (when ,relational-invariants
+			 (setq ,inv-hash (make-hash-table :test #'equal)))
 		       (loop
 			 with ,factors and ,edges
 			 for ,ident being the hash-keys of ,hash
 			   using (hash-value ,cpd)
 			 collect ,cpd into ,cpd-list
+			 when ,relational-invariants
+			   do
+			      (setf (gethash (rule-based-cpd-dependent-id ,cpd)) ,ident)
 			 finally
+			    (setq ,cpd-list (topological-sort ,cpd-list))
+			    (setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
+			    (when ,relational-invariants
+			      (when (null ,neighborhood-func)
+				(setq ,neighborhood-func #'default-neighborhood))
+			      (loop
+				for ,cpd-i being the elements of ,cpd-arr
+				for ,i from 0
+				do
+				   (setq ,var-i (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map ,cpd-i)))))
+				   (loop
+				     with ,cpd-j
+				     for ,j in (funcall ,neighborhood-func ,i)
+				     do
+					(setq ,cpd-j (aref ,cpd-arr ,j))
+					(setq ,var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map ,cpd-j)))))
+					(loop
+					  for ,invariant in ,invariant-list
+					  for ,invariant-id in ,invariant-ids
+					  do
+					     (when (funcall ,invariant ,var-i ,var-j)
+					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id = (relation-node ,invariant :value "T"))))
+					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id ,cpd-i)))))
+					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id ,cpd-j)))))
+					       (setq ,new-body (concatenate 'list ,new-body `(,(gethash (rule-based-cpd-dependent-id ,cpd-i)) -> ,(gethash (rule-based-cpd-dependent-id ,cpd-j))))))))
+				finally
+				   (setq ,relational-invariants nil)
+				   (setq ,neighborhood-func nil)
+				   (compile-hems-program ,hash ,new-body)))
 			    (setq ,factors (make-array (hash-table-count ,hash)
-						       :initial-contents (finalize-factors (topological-sort ,cpd-list))))
+						       :initial-contents (finalize-factors ,cpd-list)))
 			    (setq ,edges (make-graph-edges ,factors))
 			    (return (cons ,factors ,edges)))))))
+       (setq ,invariant-list (list '< '> '=))
+       (setq ,invariant-ids `(,(gensym) ,(gensym) ,(gensym)))
        (compile-hems-program (make-hash-table :test #'equal) ',body))))
 
 

@@ -198,8 +198,8 @@
 ; Entropy of node given parents
 ; H_P(X_i | Pa_i) = \sum_{pa_i} P(pa_i) H_P(X_i | pa_i)
 (defun H[X!Pa] (bn X)
-  (format t "~%bn:~%~A" bn)
-  (break)
+  ;;(format t "~%bn:~%~A" bn)
+  ;;(break)
   (loop 
     for pa in (valid-parent-assignments bn X)
     when pa
@@ -213,9 +213,10 @@
 ; H_P(X) = \sum_i H_P(X_i | Pa_i^G)
 (defun H[bn] (episode observations)
   (loop
-    with parents = (get-parents-aux episode)
-    with cpds = (get-cpd-from-id-aux episode)
-    with net = (infer-posterior cpds episode observations)
+     with parents = (get-parents-aux episode)
+     with cpds = (get-cpd-from-id-aux episode)
+     with net = (infer-posterior cpds episode observations)
+     with print = (progn (format t "~%posterior network:~%~A" net) (break))
     ;; bn is everything that is constant for all remaining computations
     with bn = (list :net net :cpds cpds :parents parents :obs observations) 
     for node being the elements of (get-nodes episode)

@@ -27,17 +27,24 @@
 	   (when (null value)
 	     (error "No value field found in node definition list.~%Received: ~S" node-def))
 	   (cond ((or (equal "PERCEPT-NODE" (symbol-name (car node-def)))
-		      (equal "RELATION-NODE" (symbol-name (car node-def))))
+		      (equal "OBSERVATION-NODE" (symbol-name (car node-def)))
+		      (equal "RELATION-NODE" (symbol-name (car node-def)))
+		      (equal "STATE-NODE" (symbol-name (car node-def))))
 		  (cond ((and (symbolp (second node-def))
 			      (not (null (second node-def))))
-			 (if (equal "PERCEPT-NODE" (symbol-name (car node-def)))
-			     (setf (gethash 0 types-hash) "PERCEPT")
-			     (setf (gethash 0 types-hash) "BELIEF"))
+			 (cond ((equal "PERCEPT-NODE" (symbol-name (car node-def)))
+				(setf (gethash 0 types-hash) "PERCEPT"))
+			       ((equal "OBSERVATION-NODE" (symbol-name (car node-def)))
+				(setf (gethash 0 types-hash) "OBSERVATION"))
+			       ((equal "RELATION-NODE" (symbol-name (car node-def)))
+				(setf (gethash 0 types-hash) "BELIEF"))
+			       ((equal "STATE-NODE" (symbol-name (car node-def)))
+				(setf (gethash 0 types-hash) "STATE")))
 			 (setq type (symbol-name (second node-def)))
 			 (setf (rule-based-cpd-dependent-var cpd) type)
 			 (setf (gethash 0 vars) type)
 			 (setf (rule-based-cpd-vars cpd) vars)
-			 (setq type-identifier (symbol-name (gensym type)))
+			 (setq type-identifier (symbol-name (gensym (concatenate 'string type "_"))))
 			 (setf (rule-based-cpd-dependent-id cpd) type-identifier)
 			 (setf (gethash type-identifier identifiers) 0)
 			 (setf (rule-based-cpd-identifiers cpd) identifiers)
@@ -61,6 +68,10 @@
 				(cond ((stringp value)
 				       (when (not (string-equal "NA" value))
 					 (cond ((equal "PERCEPT-NODE" (symbol-name (car node-def)))
+						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
+									     (list (cons value 1) (make-hash-table)))))
+					       ((or (equal "OBSERVATION-NODE" (symbol-name (car node-def)))
+						    (equal "STATE-NODE" (symbol-name (car node-def))))
 						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
 									     (list (cons value 1) (make-hash-table)))))
 					       ((equal "RELATION-NODE" (symbol-name (car node-def)))
@@ -203,17 +214,17 @@
       for line = (read-line in nil)
       while line
       do
-	 ;;(format t "~%~%processing line: ~S" line)
-	 (loop
-	   with len = (length line)
-	   with s and i = 0
-	   do
-	      (multiple-value-setq (s i)
-		(read-from-string line nil nil :start i))
-	      ;;(format t "~%processed string: ~S" s)
-	      (setq prog (reverse (cons s (reverse prog))))
-	      ;;(format t "~%program so far:~%~S" prog)
-	   while (< i len))
+	 (setq line (subseq line 0 (search ";" line)))
+      when (> (length line) 0)
+	do
+	   (loop
+	     with len = (length line)
+	     with s and i = 0
+	     do
+		(multiple-value-setq (s i)
+		  (read-from-string line nil nil :start i))
+	        (setq prog (reverse (cons s (reverse prog))))
+	     while (< i len))
       finally
 	 (return (eval `(compile-program ,@prog))))))
   

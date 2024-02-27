@@ -10,6 +10,40 @@
     when (not (= i j))
      collect j))
 
+;; i = index of interest
+;; shape = list of array dimensions
+;; radius = radius of the neighborhood
+(defun eight-pixel-neighborhood (i shape radius)
+  (labels ((idx-to-coord (idx shape)
+	     (let (coord)
+	       (loop
+		 for dim in shape
+		 do
+		    (setq coord (cons (mod idx dim) coord))
+		    (setq idx (floor (/ idx dim)))
+		 finally
+		    (return (reverse coord))))))
+    (destructuring-bind (row col)
+	(idx-to-coord i shape)
+      (let ((row-start (max 0 (- row radius)))
+	    (row-end (min (- (first shape) 1) (+ row radius)))
+	    (col-start (max 0 (- col radius)))
+	    (col-end (min (- (second shape) 1) (+ col radius))))
+	(loop
+	  with neighbors
+	  for r from row-start to row-end
+	  do
+	     (loop
+	       with ix
+	       for c from col-start to col-end
+	       do
+		  (setq ix (+ (* (first shape) r) col))
+	       when (not (= ix i))
+		 do
+		    (setq neighbors (cons ix neighbors)))
+	  finally
+	     (return (reverse neighbors)))))))
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
   (cond ((symbolp (car node-def))
@@ -226,8 +260,8 @@
 	  ((and (not (eq t relational-invariants))
 		(not (eq nil relational-invariants)))
 	   (error "Relational Invariants flag is boolean. Must be set to t or nil. Value~%~A~% is invalid" relational-invariants))
-	  ((and neighborhood-func relational-invariants (not (function-p neighborhood-func)))
-	   (error "Invalid neighborhood function. Received~%~A~%Expected a function." neighborhood-func))
+	  ;;((and neighborhood-func relational-invariants (not (functionp neighborhood-func)))
+	   ;;(error "Invalid neighborhood function. Received~%~A~%Expected a function." neighborhood-func))
 	  ((and (eq nil relational-invariants) nbr-func-args)
 	   (error "Cannot supply arguments~%~A~%when relational-invariants is nil." nbr-func-args)))
     `(labels ((compile-hems-program (,hash ,args ,invariant-list ,recurse-p)
@@ -264,7 +298,7 @@
 			 (when (and ,relational-invariants ,recurse-p)
 			   (setq ,inv-hash (make-hash-table :test #'equal)))
 			 (loop
-			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(< > =)
+			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(> =)
 			   for ,ident being the hash-keys of ,hash
 			     using (hash-value ,cpd)
 			   collect ,cpd into ,cpd-list

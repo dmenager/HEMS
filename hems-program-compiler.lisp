@@ -1,5 +1,15 @@
 (in-package :hems)
 
+#| Given index i of a sequence of variables, returns a list of all n indexes as the neighbors of i |# 
+
+;; i = index of interest
+;; n = number of variables in problem
+(defun default-neighborhood (i n)
+  (loop
+    for j from 0 to (- n 1)
+    when (not (= i j))
+     collect j))
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
   (cond ((symbolp (car node-def))
@@ -158,41 +168,69 @@
 		  (setq s (reverse (cons cpd1 (reverse s)))))))
     l))
 
+(defun add-invariants (neighborhood-func nbr-func-args cpd-arr inv-hash invariants-list)
+  (when (null neighborhood-func)
+    (setq neighborhood-func #'default-neighborhood))
+  (loop
+    with var-i and new-body
+    for cpd-i being the elements of cpd-arr
+    for i from 0
+    do
+       (setq var-i (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-i)))))
+       (loop
+	 with cpd-j and var-j
+	 for j in (eval `(funcall ,neighborhood-func ,i ,@nbr-func-args))
+	 do
+	    (setq cpd-j (aref cpd-arr j))
+	    (setq var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-j)))))
+	    (loop
+	      with num-j and num-i and invariant-id
+	      for invariant in invariants-list
+	      do
+		 (setq invariant-id (gensym))
+		 (with-input-from-string (stream-j var-j)
+		   (with-input-from-string (stream-i var-i)
+		     (setq num-j (read stream-j))
+		     (setq num-i (read stream-i))
+		     (when (funcall invariant num-i num-j)
+		       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant :value "T"))))
+		       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+		       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+		       (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash)))))))))
+    finally
+       (format t "~%new body:~%~S" new-body)
+       (return new-body)))
+
 #| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nested hash-table of edges |#
 
 ;; body = HEMS program
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
-(defmacro compile-program (&body body &key relational-invariants neighborhood-func)
+;; nbr-func-args = a list of arguments for neighborhood function
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args) &body body)
   (let ((hash (gensym))
-	(inv-hash (gensym))
 	(args (gensym))
-	(ident (gensym))
+	(inv-hash (gensym))
+        (ident (gensym))
 	(cpd (gensym))
 	(cpd-list (gensym))
 	(cpd-arr (gensym))
 	(factors (gensym))
 	(edges (gensym))
-	(i (gensym))
-	(j (gensym))
-	(cpd-i (gensym))
-	(cpd-j (gensym))
-	(var-i (gensym))
-	(var-j (gensym))
-	(neighbors (gensym))
-	(invariant (gensym))
-	(invarinant-list (gensym))
-	(invarinat-ids (gensym))
+	(recurse-p (gensym))
+	(invariant-list (gensym))
 	(new-body (gensym)))
-    (cond ((and (neighborhood-func)
+    (cond ((and neighborhood-func
 		(not (eq t relational-invariants)))
 	   (error "Relational Invariants flag must be set to t to define the neighborhood function: ~A."))
 	  ((and (not (eq t relational-invariants))
 		(not (eq nil relational-invariants)))
 	   (error "Relational Invariants flag is boolean. Must be set to t or nil. Value~%~A~% is invalid" relational-invariants))
 	  ((and neighborhood-func relational-invariants (not (function-p neighborhood-func)))
-	   (error "Invalid neighborhood function. Received~%~A~%Expected a function.")))
-    `(labels ((compile-hems-program (,hash ,args)
+	   (error "Invalid neighborhood function. Received~%~A~%Expected a function." neighborhood-func))
+	  ((and (eq nil relational-invariants) nbr-func-args)
+	   (error "Cannot supply arguments~%~A~%when relational-invariants is nil." nbr-func-args)))
+    `(labels ((compile-hems-program (,hash ,args ,invariant-list ,recurse-p)
 		(cond (,args
 		       (if (and (symbolp (first ,args))
 				(not (null (first ,args))))
@@ -220,56 +258,30 @@
 			   (raise-identifier-type-error (first ,args))
 		        
 			   )
-		       (compile-hems-program ,hash (nthcdr 3 ,args)))
+		       (compile-hems-program ,hash (nthcdr 3 ,args) ,invariant-list ,recurse-p))
 		      (t
-		       (when ,relational-invariants
-			 (setq ,inv-hash (make-hash-table :test #'equal)))
-		       (loop
-			 with ,factors and ,edges
-			 for ,ident being the hash-keys of ,hash
-			   using (hash-value ,cpd)
-			 collect ,cpd into ,cpd-list
-			 when ,relational-invariants
-			   do
-			      (setf (gethash (rule-based-cpd-dependent-id ,cpd)) ,ident)
-			 finally
-			    (setq ,cpd-list (topological-sort ,cpd-list))
-			    (setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
-			    (when ,relational-invariants
-			      (when (null ,neighborhood-func)
-				(setq ,neighborhood-func #'default-neighborhood))
-			      (loop
-				for ,cpd-i being the elements of ,cpd-arr
-				for ,i from 0
-				do
-				   (setq ,var-i (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map ,cpd-i)))))
-				   (loop
-				     with ,cpd-j
-				     for ,j in (funcall ,neighborhood-func ,i)
-				     do
-					(setq ,cpd-j (aref ,cpd-arr ,j))
-					(setq ,var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map ,cpd-j)))))
-					(loop
-					  for ,invariant in ,invariant-list
-					  for ,invariant-id in ,invariant-ids
-					  do
-					     (when (funcall ,invariant ,var-i ,var-j)
-					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id = (relation-node ,invariant :value "T"))))
-					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id ,cpd-i)))))
-					       (setq ,new-body (concatenate 'list ,new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id ,cpd-j)))))
-					       (setq ,new-body (concatenate 'list ,new-body `(,(gethash (rule-based-cpd-dependent-id ,cpd-i)) -> ,(gethash (rule-based-cpd-dependent-id ,cpd-j))))))))
-				finally
-				   (setq ,relational-invariants nil)
-				   (setq ,neighborhood-func nil)
-				   (compile-hems-program ,hash ,new-body)))
-			    (setq ,factors (make-array (hash-table-count ,hash)
-						       :initial-contents (finalize-factors ,cpd-list)))
-			    (setq ,edges (make-graph-edges ,factors))
-			    (return (cons ,factors ,edges)))))))
-       (setq ,invariant-list (list '< '> '=))
-       (setq ,invariant-ids `(,(gensym) ,(gensym) ,(gensym)))
-       (compile-hems-program (make-hash-table :test #'equal) ',body))))
-
+		       (let (,inv-hash)
+			 (when (and ,relational-invariants ,recurse-p)
+			   (setq ,inv-hash (make-hash-table :test #'equal)))
+			 (loop
+			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(< > =)
+			   for ,ident being the hash-keys of ,hash
+			     using (hash-value ,cpd)
+			   collect ,cpd into ,cpd-list
+			   when (and ,relational-invariants ,recurse-p)
+			     do
+				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
+			   finally
+			      (setq ,cpd-list (topological-sort ,cpd-list))
+			      (when (and ,relational-invariants ,recurse-p)
+				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
+				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
+				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil)))
+			      (setq ,factors (make-array (hash-table-count ,hash)
+							 :initial-contents (finalize-factors ,cpd-list)))
+			      (setq ,edges (make-graph-edges ,factors))
+			      (return (cons ,factors ,edges))))))))
+       (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t))))
 
 (defun compile-program-from-file (prog-file)
   (with-open-file (in (merge-pathnames prog-file) :direction :input

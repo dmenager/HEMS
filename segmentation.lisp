@@ -442,9 +442,10 @@
 	     finally
 		(when t
 		  (format t "~%~%observation: ~d~%action: ~S" j action))
-		(setq st (eval `(compile-program ,@program)))
+		(setq st (eval `(compile-program (:relational-invariants t :nbr-func-args (,(length variables))),@program)))
 		(new-push-to-ep-buffer :observation st :action-name action :hidden-state-p nil)
-		(eltm-to-pdf))
+		;;(eltm-to-pdf)
+	     )
 	   (if break
 	       (break))
 	))))

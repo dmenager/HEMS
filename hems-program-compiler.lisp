@@ -206,6 +206,7 @@
   (when (null neighborhood-func)
     (setq neighborhood-func #'default-neighborhood))
   (loop
+    with reflexive-hash = (make-hash-table)
     with var-i and new-body
     for cpd-i being the elements of cpd-arr
     for i from 0
@@ -218,21 +219,40 @@
 	    (setq cpd-j (aref cpd-arr j))
 	    (setq var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-j)))))
 	    (loop
+	      with invariant-alias
 	      with num-j and num-i and invariant-id
 	      for invariant in invariants-list
 	      do
 		 (setq invariant-id (gensym))
+		 (cond ((eq invariant '>)
+			(setq invariant-alias 'greater_than))
+		       ((eq invariant '<)
+			(setq invariant-alias 'less_than))
+		       ((eq 'invariant '=)
+			(setq invariant-alias 'equal_to)))
 		 (with-input-from-string (stream-j var-j)
 		   (with-input-from-string (stream-i var-i)
 		     (setq num-j (read stream-j))
 		     (setq num-i (read stream-i))
 		     (when (funcall invariant num-i num-j)
-		       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant :value "T"))))
-		       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
-		       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
-		       (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash)))))))))
+		       (cond((funcall invariant num-j num-i)
+			     (when (null (gethash invariant reflexive-hash))
+			       (setf (gethash invariant reflexive-hash) (make-hash-table)))
+			     (when (not (member num-i (gethash num-j (gethash invariant reflexive-hash))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value "T"))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       (setf (gethash num-i (gethash invariant reflexive-hash))
+				     (cons num-j (gethash num-i (gethash invariant reflexive-hash))))))
+			    (t
+			     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))))
+		       )))))
     finally
-       (format t "~%new body:~%~S" new-body)
+       ;;(format t "~%new body:~%~S" new-body)
        (return new-body)))
 
 #| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nested hash-table of edges |#
@@ -306,7 +326,9 @@
 			     do
 				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
 			   finally
+			      (format t "~%length of cpd-list: ~d" (length ,cpd-list))
 			      (setq ,cpd-list (topological-sort ,cpd-list))
+			      (format t "~%length of cpd-list: ~d" (length ,cpd-list))
 			      (when (and ,relational-invariants ,recurse-p)
 				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))

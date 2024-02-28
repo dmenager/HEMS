@@ -1864,7 +1864,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (setq name1 (combine-symbols "EPISODE" id (rule-based-cpd-dependent-id cpd) label))
          (write-string name1 string-stream)
          (write-string "[label=" string-stream)
-         (format string-stream "~S" (rule-based-cpd-dependent-var cpd))
+         ;;(format string-stream "~S" (rule-based-cpd-dependent-var cpd))
+	 (format string-stream "~S" (rule-based-cpd-dependent-id cpd))
          (write-string ",shape=oval,color=blue]" string-stream)
          (write-line ";" string-stream))
     (loop
@@ -1937,5 +1938,5 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (uiop:run-program
 	    `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream))))
 	  (t
-	   (format t "~%failed to generate pdf. eltm is nil")))))
+	   (format t "~%Did not generate pdf. eltm is nil")))))
     

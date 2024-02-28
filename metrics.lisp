@@ -18,7 +18,9 @@
 ;; return hash table that maps each node id of episode onto its cpd
 (defun get-cpd-from-id-aux (episode)
   (loop
-    with bn = (car (episode-states episode))
+    with bn = (if (episode-temporal-p episode)
+		  (episode-state-transitions episode)
+		  (episode-observation episode))
     with hash = (make-hash-table :test #'equal)
     for cpd being the elements of (car bn)
     do
@@ -31,12 +33,16 @@
   (loop
     with parents-hash = (make-hash-table :test #'equal)
     with cpd1-ident
-    for cpd1 being the elements of (caar (episode-states episode))
+    for cpd1 being the elements of (car (if (episode-temporal-p episode)
+					    (episode-state-transitions episode)
+					    (episode-observation episode)))
     do
        (setq cpd1-ident (rule-based-cpd-dependent-id cpd1))
        (loop
 	 with idx
-	 for cpd2 being the elements of (caar (episode-states episode))
+	 for cpd2 being the elements of (car (if (episode-temporal-p episode)
+						 (episode-state-transitions episode)
+						 (episode-observation episode)))
 	 do
 	    (setq idx (gethash (rule-based-cpd-dependent-id cpd2)
 			       (rule-based-cpd-identifiers cpd1)))
@@ -62,7 +68,9 @@
   (gethash 0 (rule-based-cpd-var-values cpd)))
 
 (defun get-nodes (episode)
-  (caar (episode-states episode)))
+  (car (if (episode-temporal-p episode)
+	   (episode-state-transitions episode)
+	   (episode-observation episode))))
 
 (defun get-prob (cpd assns)
   (let ((rule (make-rule
@@ -148,7 +156,9 @@
 #| returns the posterior distribution of episode's bn given a set of observations |# 
 (defun infer-posterior (cpds-hash episode obs)
   (loop
-    with net = (car (episode-states episode))
+    with net = (if (episode-temporal-p episode)
+		   (episode-state-transitions episode)
+		   (episode-observation episode)) 
     with cpd and val
     with evidence = (make-hash-table :test #'equal)
     for cpd-id being the hash-keys of obs

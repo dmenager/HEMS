@@ -1718,7 +1718,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
 	     (when nil
 	       (format t "~%transition model: ~S" state-transitions))
-             (setq st-bn (eval `(compile-program ,@state-transitions)))
+             (setq st-bn (eval `(compile-program nil ,@state-transitions)))
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))
              (setq ep (make-episode :id ep-id

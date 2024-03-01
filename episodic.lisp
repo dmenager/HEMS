@@ -203,7 +203,7 @@
                (format t "~%node:~%~S" node)
                (break))
          (setq new-nodes (cons node new-nodes)))
-    (setq new-nodes (sort new-nodes #'higher-lvl-cpd))
+    (setq new-nodes (topological-sort new-nodes)) ;;(sort new-nodes #'higher-lvl-cpd))
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
     (cons new-nodes (make-graph-edges new-nodes))))
 
@@ -1632,7 +1632,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action-name nil) (bic-p t) (insertp nil) (temporal-p t) (hidden-state-p nil))
   (let (obs st model)
     (setq obs observation)
-    (if st
+    (if state
 	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
@@ -1674,7 +1674,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
 	   (when temporal-p
-	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
 	       (setq ep-id (symbol-name (gensym "EPISODE-")))
                (setq ep (make-episode :id ep-id
@@ -1691,7 +1690,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (when st
 	       (setq cur-st (gensym "STATE-")))
 	     (setq cur-obs (gensym "OBS-"))
-	     (setq cur-act (gensym "ACT-"))
+	     (setq cur-act (gensym "ACT-"))	     
+	     ;; you have to put these hash keys in after you've done all the insertions for observations, states, and (eventually) actions. Otherwise, if you update id-ref-hash, then do further insertions, the episode id of the reference will change, making the key obsolte. Worse, the cpd vvbm will have the name of the new ref hash key, but the id ref hash will have the name of the old ref. So, look ups will fail.
+	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
 	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car st-ref)))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
@@ -1716,9 +1717,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         finally
 	   (when state-transitions
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
-	     (when nil
-	       (format t "~%transition model: ~S" state-transitions))
-             (setq st-bn (eval `(compile-program nil ,@state-transitions)))
+	     (setq st-bn (eval `(compile-program nil ,@state-transitions)))
+	     (when (> (hash-table-count (rule-based-cpd-identifiers (aref (car st-bn) 0))) 1)
+	       (format t "~%state transition model:~%~A" st-bn)
+	       (break))
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))
              (setq ep (make-episode :id ep-id
@@ -1864,7 +1866,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (setq name1 (combine-symbols "EPISODE" id (rule-based-cpd-dependent-id cpd) label))
          (write-string name1 string-stream)
          (write-string "[label=" string-stream)
-         (format string-stream "~S" (rule-based-cpd-dependent-var cpd))
+         ;;(format string-stream "~S" (rule-based-cpd-dependent-var cpd))
+	 (format string-stream "~S" (rule-based-cpd-dependent-id cpd))
          (write-string ",shape=oval,color=blue]" string-stream)
          (write-line ";" string-stream))
     (loop

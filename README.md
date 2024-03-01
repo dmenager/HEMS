@@ -18,7 +18,9 @@ This codebase is written and testing using SBCL. Other versions of Common Lisp m
 Python programs can use HEMS by importing cl4py into their projects. See the /examples folder for details.
 
 ## Install
-We recommend installing HEMS with the quicklisp library manager. It can be installed at https://www.quicklisp.org/beta/. Once it is installed, run the following commands in the terminal to make HEMS quicklisp installable.
+HEMS is written in Common Lisp. As such, it depends on SBCL in order to execute the program. On Unix system, installing SBCL can be done with the package manager, and on Windows, it can be downloaded and installed following this link: https://www.sbcl.org/platform-table.html. Note that on Unix-based systems, the package manager might have an older version of SBCL, so it may be advantageous to install the newest version from this link as well. 
+
+Once SBCL is installed, we recommend installing HEMS with the quicklisp library manager. It can be installed at https://www.quicklisp.org/beta/. Once it is installed, run the following commands in the terminal to make HEMS quicklisp installable.
 ```
 $ cd ~/quicklisp/local-projects
 $ git clone https://github.com/dmenager/HEMS.git

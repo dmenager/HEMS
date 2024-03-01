@@ -55,6 +55,9 @@
 	   #:push-from-files
 	   #:new-push-to-ep-buffer
 	   #:py-push-to-ep-buffer
-	   #:sample))
+	   #:sample
+	   #:py-sample
+	   #:load-eltm-from-file
+	   #:save-eltm-to-file))
 
 (in-package :hems)

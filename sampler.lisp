@@ -129,6 +129,9 @@
   (if (episode-temporal-p episode)
       (sample-state-transitions episode hidden-state-p :output-percepts-p output-percepts-p)
       (sample-observation episode :output-percepts-p output-percepts-p)))
+
+(defun py-sample (episode &key hiddenstatep outputperceptsp)
+  (sample episode :hidden-state-p hiddenstatep :output-percepts-p output-psercepts-p))
 #| TESTS 
 (ql:quickload :hems)
 

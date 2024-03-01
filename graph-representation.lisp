@@ -7484,11 +7484,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 					   (when (not (equal "NA" (caar vvbm)))
 					     (list (caar vvbm))))
 				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
-	        (loop
-		   named probber
-		   with res
-		   for qp-ref in qp-refs
-		   do
+		(loop
+		  named probber
+		  with res
+		  for qp-ref in qp-refs
+		  do
 		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
 		   when res
 		   do
@@ -8048,8 +8048,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 (defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
   (let (cost num-local-preds key previous-cost prev-num-local-preds)
     (setq key (key-from-matches solution))
@@ -8569,13 +8569,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
 (defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
-  (when nil t 
-	(format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
-		(array-dimension (car p) 0)
-		(map 'list #'rule-based-cpd-identifiers (car q))
-		(array-dimension (car q) 0))
-	;;(break)
-	)
+  (when nil 
+    (format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
+	    (array-dimension (car p) 0)
+	    (map 'list #'rule-based-cpd-identifiers (car q))
+	    (array-dimension (car q) 0))
+    ;;(break)
+    )
   (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))

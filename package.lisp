@@ -52,6 +52,8 @@
 	   #:get-hash
 	   #:-car
 	   #:-cdr
-	   #:push-from-files))
+	   #:push-from-files
+	   #:new-push-to-ep-buffer
+	   #:sample))
 
 (in-package :hems)

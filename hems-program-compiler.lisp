@@ -8,7 +8,22 @@
   (loop
     for j from 0 to (- n 1)
     when (not (= i j))
-     collect j))
+      collect j))
+
+#| Given an index i into a 1D array, return a list of neighboring indeces |#
+
+;; i = index of interest
+;; size = size of the array
+;; radius = radius of the neighborhood
+(defun array-neighborhood (i size radius)
+  (loop
+    with start = (max 0 (- i radius))
+    with end = (min (- size 1) (+ i radius)) 
+    for n from start to end
+    when (not (= i n))
+      collect n into neighbors
+    finally
+       (return neighbors)))
 
 ;; i = index of interest
 ;; shape = list of array dimensions
@@ -200,6 +215,18 @@
 		  (format t "~%found match!~%updated used cpd:~%~S" cpd))
 		(when (= (hash-table-count (rule-based-cpd-identifiers cpd)) 1)
 		  (setq s (reverse (cons cpd1 (reverse s)))))))
+    (loop
+      for cpd1 in (reverse l)
+      do
+	 (loop
+	   for cpd2 in l
+	   when (and (not (equal (rule-based-cpd-dependent-id cpd1)
+				 (rule-based-cpd-dependent-id cpd2)))
+		     (gethash (rule-based-cpd-dependent-id cpd1)
+			      (rule-based-cpd-identifiers cpd2)))
+	     collect (rule-based-cpd-lvl cpd2) into lvls
+	   finally
+	      (setf (rule-based-cpd-lvl cpd1) (+ (apply #'max (cons 0 lvls)) 1))))
     l))
 
 (defun add-invariants (neighborhood-func nbr-func-args cpd-arr inv-hash invariants-list)
@@ -326,9 +353,7 @@
 			     do
 				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
 			   finally
-			      (format t "~%length of cpd-list: ~d" (length ,cpd-list))
 			      (setq ,cpd-list (topological-sort ,cpd-list))
-			      (format t "~%length of cpd-list: ~d" (length ,cpd-list))
 			      (when (and ,relational-invariants ,recurse-p)
 				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))

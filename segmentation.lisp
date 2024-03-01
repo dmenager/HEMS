@@ -375,7 +375,7 @@
 	   (setq prev-act cur-act)))
     finally
        (when state-transitions
-	 (setq st-bn (eval `(compile-program ,@state-transitions)))
+	 (setq st-bn (eval `(compile-program nil ,@state-transitions)))
 	 ;; make temporal episode from state transitions
 	 (setq cue (make-episode :state-transitions st-bn
 				 :backlinks id-ref-hash
@@ -442,7 +442,10 @@
 	     finally
 		(when t
 		  (format t "~%~%observation: ~d~%action: ~S" j action))
-		(setq st (eval `(compile-program (:relational-invariants t :nbr-func-args (,(length variables))),@program)))
+		(setq st (eval `(compile-program (:relational-invariants t
+						  :neighborhood-func #'array-neighborhood
+						  :nbr-func-args (,(length variables) 1))
+				  ,@program)))
 		(new-push-to-ep-buffer :observation st :action-name action :hidden-state-p nil)
 		;;(eltm-to-pdf)
 	     )

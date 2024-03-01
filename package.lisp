@@ -54,6 +54,7 @@
 	   #:-cdr
 	   #:push-from-files
 	   #:new-push-to-ep-buffer
+	   #:py-push-to-ep-buffer
 	   #:sample))
 
 (in-package :hems)

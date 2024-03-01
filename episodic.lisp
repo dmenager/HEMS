@@ -1743,6 +1743,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(break)
       )))
 
+#| Python wrapper for pushing new experience into event memory |#
+(defun py-push-to-ep-buffer(&key (observation nil) (state nil) (actionname nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
+  (new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep))
 (defun print-h-buffer ()
   (loop
     with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :obs)))

@@ -4544,7 +4544,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           (t
            (setq new-phi (update-cpd-rules new-phi (make-array (length new-rules)
                                                                :initial-contents new-rules)))))
-    ;;(check-cpd new-phi :check-uniqueness nil)
+    (check-cpd new-phi :check-uniqueness nil)
     (when nil (and (eq op '+) (equal "NO_OP7336" (rule-based-cpd-dependent-id phi1)))
       (format t "~%final rules:~%~S" new-phi)
       ;;(break)
@@ -5182,7 +5182,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      ;; when doing sum-product message passing, normalize after getting the message
 	      (when (or (eq #'+ op) (eq '+ op))
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
-		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
+		(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
 	      (when nil t

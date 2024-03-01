@@ -364,7 +364,7 @@
 			      (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t))))
 
-(defun compile-program-from-file (prog-file)
+(defun compile-program-from-file (prog-file &key key-args)
   (with-open-file (in (merge-pathnames prog-file) :direction :input
 						  :if-does-not-exist :error)
     (loop
@@ -384,5 +384,5 @@
 	        (setq prog (reverse (cons s (reverse prog))))
 	     while (< i len))
       finally
-	 (return (eval `(compile-program ,@prog))))))
+	 (return (eval `(compile-program ,key-args ,@prog))))))
   

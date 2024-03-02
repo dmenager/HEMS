@@ -1222,17 +1222,20 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun make-observations (factors &aux (evidence (make-hash-table :test #'equal)))
   (loop
     with idx and var
-    for factor being the elements in factors do
-      (loop
+     for factor being the elements in factors
+     do
+       (setf (gethash (rule-based-cpd-dependent-id factor) evidence) nil)
+       (loop
         named indexer
         for rule being the elements of (rule-based-cpd-rules factor)
-        when (= (rule-probability rule) 1) do
-          (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
-          (return-from indexer))
-      (setq var (car (rassoc idx (mapcar #'car (gethash 0 (rule-based-cpd-var-value-block-map factor))))))
-      (when (null value)
-        (error "~%Can't make nil observation:~%~%factor:~%~S~%index for vvm var: ~d~%evidence:~%~S" factor idx evidence))
-      (setf (gethash (rule-based-cpd-dependent-id factor) evidence) var))
+          do
+            (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
+	    (setq var (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr))
+	    (when (null var)
+	      (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
+	    (setf (gethash (rule-based-cpd-dependent-id factor) evidence)
+		  (cons (cons var (rule-probability rule))
+			(gethash (rule-based-cpd-dependent-id factor) evidence)))))
   evidence)
 
 #| Make partially observed retrieval cue |#
@@ -1394,33 +1397,48 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = event memory
 ;; pstm = perceived objects in retrieval cue
 ;; cstm = given relations in the retrieval cue
-;; cue-states = retrieval cue states (list (factors . edges))
+;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-states mode lr bic-p &optional (observability 1))
-  (let (partial-states cue bindings)
-    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")
-    ;;(state-count-element-types (caar cue-states))
-    (setq partial-states (remove-observations cue-states observability))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (temporalp t) (observability 1))
+  (let (partial-states cue bindings and bn)
+    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv") 
+
+    ;; TODO: refactor remove-observations to work with new episode representation
+    ;;(setq partial-states (remove-observations cue-states observability))
+    
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
     ;;(state-count-element-types (caar partial-states))
     ;;(log-message (list "~A," (specific-cue-p (caar partial-states))) "vse.csv")
     ;;(log-message (list "~d," observability) "vse.csv")
     ;;(log-message (list "~A~%" partial-states) "cues.txt")
-    (setq cue (make-episode
-                       :states partial-states
-                       :decompositions (make-empty-graph)
-                       :id-ref-map (make-hash-table :test #'equal)
-                       :num-decompositions 0))
+    (cond (temporalp
+	   (setq cue (make-episode
+		      :observation (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state-transitions cue-bn
+		      :backlinks backlinks
+		      :temporal-p t
+		      :count 1
+		      :lvl 2)))
+	  (t
+	   (setq cue (make-episode
+		      :observation cue-bn
+		      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+		      :backlinks (make-hash-table :test #'equal)
+		      :temporal-p nil
+		      :count 1
+		      :lvl 1))))
     ;;(format t "~%original cue:~%~A~%partial-cue:~%~A" cue partial-cue)
     (multiple-value-bind (eme sol bindings depth cost)
-        (cond ((equalp (make-array 0) (caar cue-states))
+        (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
                (values (car eltm) nil nil 0 most-positive-fixnum most-positive-fixnum))
               (t
-               (retrieve-episode eltm cue nil :bic-p bic-p)))
+               (new-retrieve-episode eltm cue nil :bic-p bic-p)))
       (declare (ignore depth cost))
-      (setq bindings (car bbindings))
+      (if temporalp
+	  (setq bn (episode-state-transitions (car eme)))
+	  (setq bn (episode-observation (car eme))))
       #|
       (if (> (episode-count eme) 1)
           (log-message (list "schema,") "vse.csv")
@@ -1430,22 +1448,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(state-count-element-types (caar (episode-states eme)))
       ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
       (loop
-        for (p-match . q-match) being the elements of (car mappings)
+        for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
         with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
         do
-           (setq p-copy (copy-rule-based-cpd (aref (caar partial-states) p-match)))
-           (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (caar (episode-states eme)) q-match))
+           (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
+           (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
 					   observed-factors :key #'rule-based-cpd-dependent-id :test #'equal)))
              ;;(setq p-copy (copy-cpd p-match))
-	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (caar (episode-states eme)) q-match))) 
+	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match))) 
 	       (format t "~%~%p-cpd:~%~S~%q-cpd:~%~S~%episode id: ~S~%bindings:~%~S" (aref (caar partial-states) p-match)
-		       (aref (caar (episode-states eme)) q-match)
-		       (episode-id eme)
+		       (aref (car bn) q-match)
+		       (episode-id (car eme))
 		       bindings))
-             (setq p-copy (subst-cpd (aref (caar partial-states) p-match) (aref (caar (episode-states eme)) q-match) bindings))
-	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (caar (episode-states eme)) q-match)))
-	       (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (caar (episode-states eme)) q-match))))
+             (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
+	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match)))
+	       (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (car bn) q-match))))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
              (setq idents (make-hash-table :test #'equal))
              (setf (gethash dep-id idents) 0)
@@ -1508,7 +1526,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (let (evidence-table recollection max-card ground-marginals)
              (setq evidence-table (make-observations observed-factors))
              (setq max-card 0)
-             (loop
+	     #|
+	     (loop
 	       with msg
                for ground-cpd being the elements of (caar (episode-states eme))
                when (and (> (aref (rule-based-cpd-cardinalities ground-cpd) 0) max-card))
@@ -1522,6 +1541,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  into grounds
                finally
                   (setq ground-marginals grounds))
+	     |#
              ;;(log-message (list "Learning_Rate,Iteration,Conflicts,Deltas,Deltas_std~%") "learning-curves.csv")
              ;;(log-message (list "Learning_Rate,CPD,Value,Density,Error~%") "marginal-distribution.csv")
              ;;(log-message (list "CPD,Value,Density~%") "ground-marginals.csv")
@@ -1542,7 +1562,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                           (float (rule-probability idx)))
                                     "ground-marginals.csv")))
 	     |#
-             (setq recollection (loopy-belief-propagation (car (episode-states eme)) evidence-table mode lr))
+             (setq recollection (loopy-belief-propagation bn evidence-table mode lr))
              #|
 	     (setq copy-grounds (copy-list ground-marginals))
 	     (loop
@@ -1762,6 +1782,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(break)
       )))
 
+#| Python wrapper for pushing new experience into event memory |#
+(defun py-push-to-ep-buffer(&key (observation nil) (state nil) (actionname nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
+  (new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep))
 (defun print-h-buffer ()
   (loop
     with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :obs)))

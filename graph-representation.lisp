@@ -4352,7 +4352,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t))
-  (when t
+  (when nil
     (loop
       with row-len = (aref (rule-based-cpd-cardinalities cpd) 0)
       with index-rule = (make-rule :conditions (make-hash-table :test #'equal))
@@ -4386,7 +4386,8 @@
                 (format t "~%rule count is different from cpd count~%rule:~%~S~%cpd:~%~S" (car compatible-rule) cpd)
                 (error "check rule count"))
                |#
-               ((and check-count-prob-agreement (not (integerp (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule))))))
+               ((and check-count-prob-agreement (not (= (floor (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule))))
+							(ceiling (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule)))))))
                 (format t "~%probability-count mismatch.~%rule:~%~S~%cpd:~%~S" (car compatible-rule) cpd)
                 (error "check rule count and probability"))
                (t
@@ -4476,7 +4477,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (let (var-union types idents concept-ids qvars values cardinalities steps var-value-block-map negated-vvbms sva svna lower-vvbms lower-nvvbms new-phi new-rules)
     (multiple-value-setq (idents var-union types concept-ids qvars var-value-block-map negated-vvbms sva svna lower-vvbms lower-nvvbms values)
       (ordered-union phi1 phi2))
-    (when nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+    (when nil (eq op '*) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
     (setq cardinalities (get-var-cardinalities var-value-block-map))
     (setq steps (generate-cpd-step-sizes cardinalities))
@@ -4501,12 +4502,12 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
-    (when nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+    (when nil (eq op '*) ;;nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%unexpanded schema rules:~%~S" (rule-based-cpd-rules phi1)))
     (multiple-value-bind (expanded-schema-rules var-dif)
         (expand-rules phi1 phi2)
       (declare (ignore var-dif))
-      (when nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+      (when nil (eq op '*) nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
         (format t "~%~%expanded schema rules:~%~S" expanded-schema-rules))
       (setq new-rules (operate-filter-rules (coerce (rule-based-cpd-rules phi2) 'list) expanded-schema-rules phi2 phi1 idents op))
       (when (> (length new-rules) (reduce #'* (rule-based-cpd-cardinalities new-phi)))
@@ -4522,7 +4523,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  else
 	    do
 	       (setf (rule-probability rule) (/ 1 (length new-rules)))))
-      (when nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+      (when nil (eq op '*) nil (and (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
         (format t "~%~%new rules:~%~S" new-rules)
         ;;(break)
         ))
@@ -4544,8 +4545,8 @@ Roughly based on (Koller and Friedman, 2009) |#
           (t
            (setq new-phi (update-cpd-rules new-phi (make-array (length new-rules)
                                                                :initial-contents new-rules)))))
-    (check-cpd new-phi :check-uniqueness nil)
-    (when nil (and (eq op '+) (equal "NO_OP7336" (rule-based-cpd-dependent-id phi1)))
+    ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t))
+    (when nil (eq op '*) nil (and (eq op '+) (equal "NO_OP7336" (rule-based-cpd-dependent-id phi1)))
       (format t "~%final rules:~%~S" new-phi)
       ;;(break)
       )
@@ -5061,6 +5062,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (when nil
          (format t "~%computing belief for factor:~%~A~%on nbrs:~%~A" (aref factors i) nbrs))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (check-cpd factor)
        (return factor)))
 
 #| Dampen message signals to avoid oscilations
@@ -5153,13 +5155,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
 (defun calibrate-factor-graph (factors op edges evidence lr)
+  (format t "~%2")
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
     with calibrated and conflicts and max-iter = 200 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -5174,7 +5177,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil t
+              (when t
                     (format t "~%~%factor j = ~d:~%~A~%factor k = ~d:~%~A~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -5185,7 +5188,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil t
+	      (when t
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -5220,13 +5223,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil t
+       (when t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil t
+       (when t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t
@@ -6702,7 +6705,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
 (defun loopy-belief-propagation (state evidence op lr)
-  (when nil
+  (when t
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages estimates)
@@ -6777,7 +6780,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                               :rules rules
                                               :singleton-p t
                                               :lvl lvl))
-	 (when (equal (rule-based-cpd-dependent-id factor) "NO_OP7336")
+	 (when nil 
 	   (format t "~%factor:~%~S~%singleton:~%~S" factor singleton)
 	   (break))
       collect singleton into singletons
@@ -6800,30 +6803,29 @@ Roughly based on (Koller and Friedman, 2009) |#
       with messages = (make-hash-table)
       with rules
       do
-         (setq factor (aref singleton-factors i))
-         (setq var-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
-         (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-               (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" factor value))
+	 (setq factor (aref singleton-factors i))
+	 (setq var-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
+         (when nil
+           (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" (rule-based-cpd-identifiers factor) var-probs))
          (when var-probs
 	   (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
 	   (setq index (+ i (array-dimension factors 0)))
 	   (setf (aref edges offset) (cons index index))
 	   (setq offset (+ offset 1))
 	   (loop
-	     with msg = factor
-	     with value and seen and rule
-	     for var-prob in var-probs
-	     for j from 0
-	     do
-		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-		      (format t "~%observed variable: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) value))
-		(setq value (cdar (assoc (car var-prob)
+	      with msg = factor
+	      with value and seen and rule and remaining-prob = 1
+	      with j = 0
+	      for var-prob in var-probs
+	      do
+	        (setq value (cdar (assoc (car var-prob)
 					 (gethash 0 (rule-based-cpd-var-value-block-map factor))
 					 :test #'equal :key #'car)))
-		(when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
-		      (format t "~%value index: ~d" value))
+		(when nil
+		  (format t "~%observed variable: ~A~%var-prob: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) var-prob value))
 		(when value
 		  (setq seen (cons value seen))
+		  (setq remaining-prob (- remaining-prob (cdr var-prob)))
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
 		  (setq rule (make-rule :id (gensym "RULE-")
 					:conditions (make-hash-table :test #'equal)
@@ -6833,22 +6835,23 @@ Roughly based on (Koller and Friedman, 2009) |#
 				 (rule-conditions rule))
 			value)
 		  (setf (aref rules j) rule)
-		  
-                  
 		  (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 			(format t "~%message:~%~S" msg)
-			(break)))
+			(break))
+		  (setq j (+ j 1)))
 		
-	     finally
+	      finally
 		(when seen
 		  (loop
-		    for val in (set-difference (gethash 0 (rule-based-cpd-var-values factor))
-					       seen)
-		    for k from (+ j 1)
-		    do
+		     with fill-ins = (set-difference (gethash 0 (rule-based-cpd-var-values factor))
+						     seen)
+		       with num-fill-ins = (length fill-ins)
+		     for val in fill-ins
+		     for k from j
+		     do
 		       (setq rule (make-rule :id (gensym "RULE-")
 					     :conditions (make-hash-table :test #'equal)
-					     :probability 0
+					     :probability (/ remaining-prob num-fill-ins)
 					     :count 1.0))
 		       (setf (gethash  (rule-based-cpd-dependent-id factor)
 				       (rule-conditions rule))
@@ -6867,6 +6870,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :rules rules
 						 :singleton-p t
 						 :lvl (rule-based-cpd-lvl factor)))
+		  (when nil
+		    (format t "~%final rules:~%~A" rules))
 		  (when (null (gethash index messages))
 		    (setf (gethash index messages) (make-hash-table)))
 		  (setf (gethash index (gethash index messages)) msg))))

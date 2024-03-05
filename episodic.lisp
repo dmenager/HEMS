@@ -1230,7 +1230,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         for rule being the elements of (rule-based-cpd-rules factor)
           do
             (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
-	    (setq var (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr))
+	    (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
 	    (when (null var)
 	      (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
 	    (setf (gethash (rule-based-cpd-dependent-id factor) evidence)

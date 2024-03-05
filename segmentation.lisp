@@ -452,3 +452,59 @@
 	   (if break
 	       (break))
 	))))
+
+(defun run-execution-trace (file &key break)
+  (labels ((integer-string-p (string)
+	     (ignore-errors (parse-integer string))))
+    (let (features data)
+      (setq data (uiop:read-file-lines file))
+      (setq features (split-sequence:split-sequence #\, (car data)))
+      (setq data (rest data))
+      (loop
+	 with processed and hidden-state and observation and action
+	   with st and obs
+	for line in data
+	for j from 1
+	do
+	   (setq processed (split-sequence:split-sequence #\, line))
+	   (setq hidden-state (mapcan #'(lambda (string)
+					  (when (integer-string-p string)
+					    (list string)))
+				      (split-sequence:split-sequence #\Space (third processed))))
+	   (setq observation (mapcan #'(lambda (string)
+					 (when (integer-string-p string)
+					   (list string)))
+				     (split-sequence:split-sequence #\Space (fourth processed))))
+	   (loop
+	      for digit being the elements of (car observation)
+	      collect digit into new-obs
+	      finally
+		(setq observation new-obs))
+	   (setq action (fourth processed))
+	   (loop
+	     with obs
+	     for var in observation
+	     for i from 1
+	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
+	     finally
+		(when t
+		  (format t "~%~%observation: ~d~%action: ~S" j action))
+		(setq obs (eval `(compile-program (:relational-invariants t
+									  :neighborhood-func #'array-neighborhood
+									  :nbr-func-args (,(length variables) 1))
+						  ,@program))))
+	   (loop
+	     with st
+	     for var in hidden-state
+	     for i from 1
+	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
+	     finally
+		(when t
+		  (format t "~%~%observation: ~d~%action: ~S" j action))
+		(setq st (eval `(compile-program (:relational-invariants t
+						  :neighborhood-func #'array-neighborhood
+						  :nbr-func-args (,(length variables) 1))
+				  ,@program))))
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t)
+	   (if break
+	       (break))))))

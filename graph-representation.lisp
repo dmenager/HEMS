@@ -1,9 +1,10 @@
 (in-package :hems)
 
-;;(ql:quickload :alexandria)
 (defparameter printer-special nil)
 (defparameter calls-to-cost* 0)
-;;(setf *print-circle* nil)
+
+#| Reference circular structures rather than print them all |#
+(setf *print-circle* t)
 
 ;; dependent-id = dependent variable identifier of CPD
 ;; indentifiers = hash table of instance number for each var. If A is dependent var, and B C are free parameters (A B C) is P(A | B C)
@@ -5062,6 +5063,8 @@ Roughly based on (Koller and Friedman, 2009) |#
        (when nil
          (format t "~%computing belief for factor:~%~A~%on nbrs:~%~A" (aref factors i) nbrs))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (when nil (rule-based-cpd-singleton-p factor)
+	 (format t "~%~%posterior marginal for:~%~A~%~A" (rule-based-cpd-identifiers factor) (rule-based-cpd-rules factor)))
        (check-cpd factor)
        (return factor)))
 
@@ -5155,7 +5158,6 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
 (defun calibrate-factor-graph (factors op edges evidence lr)
-  (format t "~%2")
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
@@ -5177,18 +5179,23 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when t
+              (when (or (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors j)))
+			(equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors k))))
                     (format t "~%~%factor j = ~d:~%~A~%factor k = ~d:~%~A~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
               (setq new-message (send-message j k factors op edges messages sepset))
 	      ;; when doing sum-product message passing, normalize after getting the message
+	      (when (or (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors j)))
+			(equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors k))))
+                    (format t "~%pre-normalized message:~%~S" (print-hash-entry k new-message)) )
 	      (when (or (eq #'+ op) (eq '+ op))
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
 		(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when t
+	      (when (or (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors j)))
+			(equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var (aref factors k))))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -6712,7 +6719,9 @@ Roughly based on (Koller and Friedman, 2009) |#
     ;;(setq factors-list (coerce (car state) 'list))
     (loop
       for factor being the elements of (car state)
-      do
+       do
+	 (when (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var factor))
+	   (format t "~%~%prior probabilities for:~%~A~%rules:~%~A" (rule-based-cpd-identifiers factor) (rule-based-cpd-rules factor)))
 	 (loop
 	   for rule being the elements of (rule-based-cpd-rules factor)
 	   do

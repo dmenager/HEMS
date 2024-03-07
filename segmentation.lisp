@@ -468,21 +468,34 @@
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
 	   (setq hidden-state (mapcan #'(lambda (string)
+					  (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								(- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
 					  (when (integer-string-p string)
 					    (list string)))
 				      (split-sequence:split-sequence #\Space (third processed))))
 	   (setq observation (mapcan #'(lambda (string)
+					 (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								(- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
 					 (when (integer-string-p string)
 					   (list string)))
 				     (split-sequence:split-sequence #\Space (fourth processed))))
 	   (loop
 	      for digit being the elements of (car observation)
-	      collect digit into new-obs
+	      collect (string digit) into new-obs
 	      finally
 		(setq observation new-obs))
-	   (setq action (fourth processed))
+	   (setq action (fifth processed))
 	   (loop
-	     with obs
 	     for var in observation
 	     for i from 1
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
@@ -491,20 +504,25 @@
 		  (format t "~%~%observation: ~d~%action: ~S" j action))
 		(setq obs (eval `(compile-program (:relational-invariants t
 									  :neighborhood-func #'array-neighborhood
-									  :nbr-func-args (,(length variables) 1))
+									  :nbr-func-args (,(length observation) 1))
 						  ,@program))))
 	   (loop
-	     with st
 	     for var in hidden-state
 	     for i from 1
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
 	     finally
 		(when t
-		  (format t "~%~%observation: ~d~%action: ~S" j action))
+		  (format t "~%~%hidden state: ~d~%action: ~S" j action))
 		(setq st (eval `(compile-program (:relational-invariants t
 						  :neighborhood-func #'array-neighborhood
-						  :nbr-func-args (,(length variables) 1))
+						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
-	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t)
+	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t)
+	   (when (equal action "terminal")
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t)
+	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (if break
-	       (break))))))
+	       (break))))
+    (eltm-to-pdf)
+    (save-eltm-to-file eltm*)))

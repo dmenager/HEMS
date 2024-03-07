@@ -49,9 +49,9 @@
 
 ;; eltm = episodic long-term memory
 ;; file-name = file to contain episodic memory
-(defun save-eltm-to-file (eltm &key (path ".") (filename "eltm.txt"))
-  (setq file-name (concatenate 'string path file-name))
-  (log-message (list "~S" eltm) file-name :if-exists :supersede))
+(defun save-eltm-to-file (eltm &key (path "./") (filename "eltm.txt"))
+  (setq filename (concatenate 'string path filename))
+  (log-message (list "~S" eltm) filename :if-exists :supersede))
 
 #| Performs deep copy on episode |#
 

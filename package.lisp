@@ -58,6 +58,7 @@
 	   #:sample
 	   #:py-sample
 	   #:load-eltm-from-file
-	   #:save-eltm-to-file))
+	   #:save-eltm-to-file
+	   #:run-execution-trace))
 
 (in-package :hems)

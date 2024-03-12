@@ -53,6 +53,29 @@
   (setq filename (concatenate 'string path filename))
   (log-message (list "~S" eltm) filename :if-exists :supersede))
 
+(defun read-from-file (fname)
+  (with-open-file (s fname)
+    (read s)))
+
+(defun save-to-file(content fname)
+  (with-open-file (s fname
+		     :direction :output
+		     :if-exists :supersede
+		     :if-does-not-exist :create)
+    (format s "~S" content)))
+
+(defun generate-list()
+  (loop
+    with hash
+    with prev = nil
+    for i from 1 to 1000
+    do
+       (setq hash (make-hash-table :test #'equal))
+       (setf (gethash i hash) i)
+       (setq prev (cons (cons hash prev) prev))
+    finally
+       (return prev)))
+
 #| Performs deep copy on episode |#
 
 ;; ep = episode to copy

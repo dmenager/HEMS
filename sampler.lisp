@@ -131,7 +131,7 @@
       (sample-observation episode :output-percepts-p output-percepts-p)))
 
 (defun py-sample (episode &key hiddenstatep outputperceptsp)
-  (sample episode :hidden-state-p hiddenstatep :output-percepts-p output-percepts-p))
+  (sample episode :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
 #| TESTS 
 (ql:quickload :hems)
 

@@ -517,6 +517,7 @@
 						  :neighborhood-func #'array-neighborhood
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
+
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t)
 	   (when (equal action "terminal")

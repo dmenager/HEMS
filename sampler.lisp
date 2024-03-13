@@ -4,12 +4,17 @@
 
 ;; episode = episode in event memory
 ;; output-percepts-p = optional flag determining whether or not only percept nodes will be output or all node types
-(defun sample-observation (episode &key output-percepts-p)
+(defun sample-observation (episode &key output-percepts-p (key "OBSERVATION"))
   (let (bn)
-    (cond ((episode-temporal-p episode)
+    (cond ((equal key "OBSERVATION") ;;(> (array-dimension (car (episode-observation episode)) 0) 0)
+	   (setq bn (episode-observation episode)))
+	  ((equal key "STATE") ;;(> (array-dimension (car (episode-state episode)) 0) 0)
+	   (setq bn (episode-state episode)))
+	  ;; enable this branch when we can do hierarchical segmentation/sampling
+	  (nil (> (array-dimension (car (episode-state-transitions episode)) 0) 0)
 	   (setq bn (episode-state-transitions episode)))
 	  (t
-	   (setq bn (episode-observation episode))))
+	   (error "uh oh")))
     (loop
       with dice
       with sample-rule = (make-rule :conditions (make-hash-table :test #'equal))
@@ -48,14 +53,14 @@
 ;; episode = episode in event memory
 ;; output-percepts-p = optional flag determining whether or not only percept nodes will be output or all node types
 (defun sample-state (episode &key output-percepts-p)
-  (sample-observation episode :output-percepts-p output-percepts-p))
+  (sample-observation episode :output-percepts-p output-percepts-p :key "STATE"))
 
 #| Draw a random sample from an episode in the event memory. Returns an association list of variables and their values |# 
 
 ;; episode = episode in event memory
 ;; output-percepts-p = optional flag determining whether or not only percept nodes will be output or all node types
 (defun sample-action (episode &key output-percepts-p)
-  (sample-observation episode :output-percepts-p output-percepts-p))
+  (sample-observation episode :output-percepts-p output-percepts-p :key "ACTION"))
 
 #| Draw a random sample from an episode in the event memory. Returns a list of association lists of variables and their values |# 
 

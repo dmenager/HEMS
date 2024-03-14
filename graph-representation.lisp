@@ -7577,7 +7577,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  with res
 		  for qp-ref in qp-refs
 		  do
-		     (when t
+		     (when nil
 		       (format t "~%~%p-ref: ~S~%member?: ~S~%qp-ref: ~d~%member?: ~S" p-ref (not (null (car (gethash p-ref p-refs-map)))) qp-ref (not (null (car (gethash qp-ref qp-refs-map))))))
 		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
 		   when res

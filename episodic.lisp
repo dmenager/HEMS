@@ -1708,13 +1708,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; ep2 = base episode
 (defun get-common-episode-class (ep1 ep2)
   (when (>= (episode-depth ep1) (episode-depth ep2))
-    (when t
+    (when nil
       (format t "~%~%episode depth: ~d~%schema depth: ~d" (episode-depth ep1) (episode-depth ep2)))
     (loop
       while (not (= (episode-depth ep1) (episode-depth ep2)))
       do
          (setq ep1 (car (episode-parent ep1)))
-	 (when t
+	 (when nil
 	   (format t "~%episode id: ~A~%episode depth: ~d" (episode-id ep1) (episode-depth ep1)))
       finally
          (when (equal (episode-id ep1) (episode-id  ep2))

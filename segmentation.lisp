@@ -453,16 +453,35 @@
 	       (break))
 	))))
 
+(defun get-max-digits (file)
+  (let (features data)
+    (setq data (uiop:read-file-lines file))
+    (setq features (split-sequence:split-sequence #\, (car data)))
+    (setq data (rest data))
+    (loop
+      with processed and hidden-state and observation and action
+      with num-digits and max-digits = -1
+      for line in data
+      for j from 1
+      do
+	 (setq processed (split-sequence:split-sequence #\, line))
+	 (setq num-digits (- (array-dimension (fourth processed) 0) 2))
+	 (when (> num-digits max-digits)
+	   (setq max-digits num-digits))
+      finally
+	 (return max-digits))))
+
 (defun run-execution-trace (file &key break)
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
-    (let (features data)
+    (let (features data max-digits)
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
       (setq data (rest data))
+      (setq max-digits (get-max-digits file))
       (loop
-	 with processed and hidden-state and observation and action
-	   with st and obs
+	with processed and hidden-state and observation and action
+	with st and obs
 	for line in data
 	for j from 1
 	do
@@ -471,13 +490,23 @@
 					  (when (char= #\[ (aref string 0))
 					    (setq string (subseq string 1)))
 					  (when (char= #\] (aref string
-								(- (array-dimension string 0) 1)))
+								 (- (array-dimension string 0) 1)))
 					    (setq string
 						  (subseq string 0
 							  (- (array-dimension string 0) 1))))
 					  (when (integer-string-p string)
 					    (list string)))
 				      (split-sequence:split-sequence #\Space (third processed))))
+	   (setq observation (butlast (rest
+				       (mapcar #'string
+					       (coerce (fourth processed)
+						       'list)))))
+	   (loop
+	     with len = (length observation)
+	     for i from len to (- max-digits len)
+	     do
+		(setq observation (cons "0" observation)))
+	   #|
 	   (setq observation (mapcan #'(lambda (string)
 					 (when (char= #\[ (aref string 0))
 					    (setq string (subseq string 1)))
@@ -494,9 +523,10 @@
 	      collect (string digit) into new-obs
 	      finally
 		(setq observation new-obs))
+	|#
 	   (setq action (fifth processed))
 	   (loop
-	     for var in observation
+	     for var in (reverse observation)
 	     for i from 1
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
 	     finally

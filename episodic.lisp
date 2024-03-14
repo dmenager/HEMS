@@ -611,7 +611,8 @@
                   (setf (car x) generalized)
                   (setf (second x) (list (second x)))
                   (setf (episode-parent (car (second x))) x)
-                  (values x (third res) (fourth res) nil nil reject-list (sixth res)))
+		  (setf (episode-depth (car (second x))) (+ (episode-depth (car (second x))) 1))
+		  (values x (third res) (fourth res) nil nil reject-list (sixth res)))
 		 ((and (not equivalent) (cdr x))
                   (setf (car x) generalized)
                   (values x (third res) (fourth res) t nil reject-list (sixth res)))))
@@ -639,10 +640,11 @@
                     (values x cost bindings t t reject-list num-local-preds))
                    ((and (not equivalent) (null (cdr x)))
                     (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
-                    (push (car x) (cdr (last x)))
+		    (push (car x) (cdr (last x)))
                     (setf (car x) generalized)
                     (setf (second x) (list (second x)))
                     (setf (episode-parent (car (second x))) x)
+		    (setf (episode-depth (car (second x))) (+ (episode-depth (car (second x))) 1))
                     (values x cost bindings nil nil reject-list num-local-preds))
                    ((and (not equivalent) (cdr x))
                     (setf (car x) generalized)
@@ -823,7 +825,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds) best-child) #|(<= p-cost best-child-cost)|#)
 		    (not branch)))
            (setf (episode-parent ep) eltm)
-           (setf (episode-depth ep) depth)
+           (setf (episode-depth ep) (+ depth 1))
            (push (list ep) (cdr (last eltm)))
            (when nil
              (format t "~%Added new child of parent"))
@@ -1706,10 +1708,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; ep2 = base episode
 (defun get-common-episode-class (ep1 ep2)
   (when (>= (episode-depth ep1) (episode-depth ep2))
+    (when t
+      (format t "~%~%episode depth: ~d~%schema depth: ~d" (episode-depth ep1) (episode-depth ep2)))
     (loop
       while (not (= (episode-depth ep1) (episode-depth ep2)))
       do
          (setq ep1 (car (episode-parent ep1)))
+	 (when t
+	   (format t "~%episode id: ~A~%episode depth: ~d" (episode-id ep1) (episode-depth ep1)))
       finally
          (when (equal (episode-id ep1) (episode-id  ep2))
            ep1))))
@@ -1751,7 +1757,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         for (o s act) in (butlast (gethash 0 (getf episode-buffer* :obs)))
 	for i from 0
 	do
-           (setq ep-id (symbol-name (gensym "EPISODE-")))
+	   (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :observation (copy-bn o)
@@ -1775,8 +1781,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				      :count 1
                                       :lvl 1))
 	       (format t "~%inserting state, ~A" (episode-id ep))
-	       (format t "~%state:~%~S" (episode-state ep))
-	       (break)
 	       (multiple-value-setq (eltm* st-ref)
 		 (new-insert-episode eltm* ep nil :bic-p bic-p))
 	       (setf (gethash (episode-id (car st-ref)) id-ref-hash) st-ref))
@@ -1826,7 +1830,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :count 1
                                     :lvl 2))
 	     (format t "~%Inserting transition model, ~A" (episode-id ep))
-             (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
+	     (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
       ;; clear buffer
       (clear-episodic-cache 0 1)
       #|

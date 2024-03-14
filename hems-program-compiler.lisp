@@ -134,10 +134,12 @@
 						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
 									     (list (cons value 1) (make-hash-table)))))
 					       ((equal "RELATION-NODE" (symbol-name (car node-def)))
-						(when (not (equal "T" value))
+						(when nil (not (equal "T" value))
 						  (error "Relation node values must be \"T\" or \"NA\". ~S is unsupported." value))
+						;;(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
+						;;(list (cons "T" 1) (make-hash-table))))
 						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
-									     (list (cons "T" 1) (make-hash-table))))))
+									     (list (cons value 1) (make-hash-table))))))
 					 (setf (gethash 0 sva) (list (list 0) (list 1)))
 					 (setf (gethash 0 svna) (list (list 1) (list 0)))
 					 (setf (gethash 0 vals) (list 0 1))
@@ -246,17 +248,25 @@
 	    (setq cpd-j (aref cpd-arr j))
 	    (setq var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-j)))))
 	    (loop
-	      with invariant-alias
-	      with num-j and num-i and invariant-id
+	      with invariant-alias and invariant-role1 and invariant-role2
+	      with num-j and num-i and invariant-id and role1-id and role2-id
 	      for invariant in invariants-list
 	      do
 		 (setq invariant-id (gensym))
+		 (setq role1-id (gensym))
+		 (setq role2-id (gensym))
 		 (cond ((eq invariant '>)
-			(setq invariant-alias 'greater_than))
+			(setq invariant-alias 'greater_than)
+			(setq invariant-role1 'greater)
+			(setq invariant-role2 'lesser))
 		       ((eq invariant '<)
-			(setq invariant-alias 'less_than))
-		       ((eq 'invariant '=)
-			(setq invariant-alias 'equal_to)))
+			(setq invariant-alias 'less_than)
+			(setq invariant-role1 'lesser)
+			(setq invariant-role2 'greater))
+		       ((eq invariant '=)
+			(setq invariant-alias 'equal_to)
+			(setq invariant-role1 'equal)
+			(setq invariant-role2 'equal)))
 		 (with-input-from-string (stream-j var-j)
 		   (with-input-from-string (stream-i var-i)
 		     (setq num-j (read stream-j))
@@ -265,18 +275,29 @@
 		       (cond((funcall invariant num-j num-i)
 			     (when (null (gethash invariant reflexive-hash))
 			       (setf (gethash invariant reflexive-hash) (make-hash-table)))
-			     (when (not (member num-i (gethash num-j (gethash invariant reflexive-hash))))
-			       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value "T"))))
+			     (when (not (member num-i (gethash num-j (gethash invariant reflexive-hash))))			     
+			       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))
+			       (setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value "T"))))
+			       (setq new-body (concatenate 'list new-body `(,role2-id = (relation-node ,invariant-role2 :value "T"))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role1-id)))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role2-id)))
 			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
 			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
-			       (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,role1-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,role2-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       ;;(setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
 			       (setf (gethash num-i (gethash invariant reflexive-hash))
 				     (cons num-j (gethash num-i (gethash invariant reflexive-hash))))))
 			    (t
-			     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))
+			     (setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,role2-id = (relation-node ,invariant-role2 :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role1-id)))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role2-id)))
 			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
 			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
-			     (setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))))
+			     (setq new-body (concatenate 'list new-body `(,role1-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,role2-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))))
 		       )))))
     finally
        ;;(format t "~%new body:~%~S" new-body)
@@ -386,3 +407,8 @@
       finally
 	 (return (eval `(compile-program ,args ,@prog))))))
   
+#| TESTS
+
+(hems:compile-program (:relational-invariants t :nbr-func-args (2)) 
+c1 = (percept-node a :value "10")
+c2 = (percept-node b :value "10")) |#

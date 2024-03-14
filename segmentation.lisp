@@ -523,6 +523,7 @@
 	   (when (equal action "terminal")
 	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
+	   (eltm-to-pdf)
 	   (if break
 	       (break))))
     (eltm-to-pdf)

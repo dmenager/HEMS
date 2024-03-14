@@ -519,9 +519,9 @@
 				  ,@program))))
 
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
-	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t)
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t :bic-p nil)
 	   (when (equal action "terminal")
-	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t)
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
 	   (if break

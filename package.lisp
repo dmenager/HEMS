@@ -41,6 +41,7 @@
 	   #:episode-id
 	   #:episode-parent
 	   #:episode-observation
+	   #:episode-state
 	   #:episode-state-transitions
 	   #:episode-temporal-p
 	   #:episode-backlinks
@@ -59,6 +60,8 @@
 	   #:py-sample
 	   #:load-eltm-from-file
 	   #:save-eltm-to-file
-	   #:run-execution-trace))
+	   #:run-execution-trace
+	   #:conditional-sample
+	   #:py-conditional-sample))
 
 (in-package :hems)

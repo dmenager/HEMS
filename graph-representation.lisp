@@ -1466,7 +1466,7 @@
     do
        (format t "~a:=~d " att val)
     finally
-       (format t "; ~d, ~d>" (float (rule-probability rule)) (rule-count rule))))
+       (format t "; ~d, ~d>" (if (rule-probability rule) (float (rule-probability rule))) (rule-count rule))))
 
 #| Print key value pair from hashtable |#
 
@@ -4085,7 +4085,7 @@
 		         (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                    :conditions (copy-hash-table (rule-conditions r1))
                                                    :probability (cond ((or (eq op '*) (eq op #'*))
-								       (if (= val 0) 1 0))
+								       (if (= val 0) 0 0))
 								      (t
 								       (rule-probability r1)))
                                                    :block (make-hash-table)
@@ -4128,7 +4128,7 @@
 			    (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                       :conditions (copy-hash-table (rule-conditions r1))
                                                       :probability (cond ((or (eq op '*) (eq op #'*))
-									  (if (= val 0) 1 0))
+									  (if (= val 0) 0 0))
 									 (t
 									  (rule-probability r1)))
                                                       :block (make-hash-table)
@@ -5138,6 +5138,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  do
 		     (print-cpd-rule rule))))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (when nil
+	 (format t "~%~%belief")
+	 (print-hash-entry k factor))
        (when nil (and (rule-based-cpd-singleton-p factor)
 		  (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var factor)))
 	 (format t "~%~%posterior marginal for:~%~A~%~A" (rule-based-cpd-identifiers factor) (rule-based-cpd-rules factor)))
@@ -5240,7 +5243,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 200 and deltas
     for count from 0
     do
-       (when t
+       (when nil
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -5255,7 +5258,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when (and (= j 3) (= k 9))
+              (when nil t (and (= j 3) (= k 9))
                     (format t "~%~%factor j = ~d:~%~A~%factor k = ~d:~%~A~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -5266,7 +5269,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when (and (= j 3) (= k 9))
+	      (when nil t (and (= j 3) (= k 9))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -5301,13 +5304,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when t
+       (when nil
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when t
+       (when nil
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t
@@ -6783,7 +6786,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
 (defun loopy-belief-propagation (state evidence op lr)
-  (when t
+  (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages estimates)

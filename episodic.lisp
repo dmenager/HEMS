@@ -2043,4 +2043,3 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream))))
 	  (t
 	   (format t "~%failed to generate pdf. eltm is nil")))))
-    

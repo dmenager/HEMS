@@ -84,6 +84,15 @@
       do
 	 (setq dice (random 100))
 	 (setq compatible-rules (sort (get-compatible-rules cpd cpd sample-rule :find-all t) #'< :key #'rule-probability))
+	 (when nil
+	   (format t "~%~%distribution")
+	   (print-hash-entry i cpd)
+	   (format t "~%sample rule:")
+	   (print-cpd-rule sample-rule)
+	   (format t "~%roll: ~d~%compatible-rules:" dice)
+	   (map nil #'print-cpd-rule compatible-rules)
+	   (break))
+
 	 (if hidden-state-p
 	     (setq marker (mod i 3))
 	     (setq marker (mod i 2)))
@@ -137,6 +146,36 @@
 
 (defun py-sample (episode &key hiddenstatep outputperceptsp)
   (sample episode :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
+
+#| Condition the sampling function on observations made in the environment. |#
+
+;; eltm = episodic-long-term-memory
+;; evidence-bn = the bayesian network that represents observations made in the environment
+;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
+(defun conditional-sample (eltm evidence-bn episode-type &key hidden-state-p output-percepts-p)
+  (let (new-episode new-bn)
+  (multiple-value-bind (recollection eme)
+      (remember eltm evidence-bn '+ 1 t)
+    (loop
+      for cpd in recollection
+      when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn
+      and count cpd into len
+      finally 
+	 (setq new-bn (cons (make-array len :initial-contents bn) (make-hash-table))))
+    (setq new-episode (copy-ep (car eme)))
+    (cond ((string-equal episode-type "observation")
+	   (setf (episode-observation new-episode) new-bn))
+	  ((string-equal episode-type "state")
+	   (setf (episode-state new-episode) new-bn))
+	  ((string-equal episode-type "state-transitions")
+	   (setf (episode-state-transitions new-episode) new-bn))
+	  (t
+	   (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type))))
+  (sample new-episode :hidden-state-p hidden-state-p :output-percepts-p output-percepts-p)))
+
+(defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp)
+  (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
+
 #| TESTS 
 (ql:quickload :hems)
 
@@ -159,4 +198,10 @@
 	  :insertp t)
 (hems::sample (car (hems:get-eltm)) :hidden-state-p t)
 
+------------
+(ql:quickload :hems)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
+(hems::sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
+(conditional-sample (get-eltm) (compile-program nil
+c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
 |#

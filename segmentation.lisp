@@ -482,7 +482,7 @@
       (loop
 	with processed and hidden-state and observation and action
 	with st and obs
-	for line in data
+	for line in data ;;(subseq data 0 7)
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))

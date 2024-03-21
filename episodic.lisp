@@ -18,6 +18,7 @@
 ;; index-episode-id = id of first member episode in schema
 ;; parent = pointer to parent episode
 ;; observation = perceptions and inferred relations represented as a BN
+;; state = state variables represented as a BN
 ;; state-transitions = state-transition graph and observation  model represented as a BN
 ;; temporal-p = flag for whether the episode represents a course of events (state transitions) or state of affairs (observation)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
@@ -25,14 +26,56 @@
 ;; count = number of times episode occured
 ;; depth = depth of episode in episodic long-term memory. Fixed at insertion
 ;; lvl = abstraction level of the episode. Observations are lowest level, then, hierarchically abstracted state transition models are higher.
-(defstruct episode id index-episode-id parent observation state-transitions temporal-p backlinks abstraction-ptrs count depth lvl)
+(defstruct episode id index-episode-id parent observation state state-transitions temporal-p backlinks abstraction-ptrs count depth lvl)
 
 #| Returns the episodic long-term memory structure |#
 
 (defun get-eltm ()
   eltm*)
 
+#| Load event memory contents from file |#
 
+;; filename = string handle to file to load
+(defun load-eltm-from-file (file-name)
+  (format t "~%loading event memory...")
+  (with-open-file (eltm-stream file-name 
+                               :direction :input
+                               :if-does-not-exist nil)
+    (if eltm-stream
+        (setq eltm* (read eltm-stream))
+        (setq eltm* nil))
+    (format t "~%done!")))
+
+#| Save contents of event memory to file which can be read later |#
+
+;; eltm = episodic long-term memory
+;; file-name = file to contain episodic memory
+(defun save-eltm-to-file (eltm &key (path "./") (filename "eltm.txt"))
+  (setq filename (concatenate 'string path filename))
+  (log-message (list "~S" eltm) filename :if-exists :supersede))
+
+(defun read-from-file (fname)
+  (with-open-file (s fname)
+    (read s)))
+
+(defun save-to-file(content fname)
+  (with-open-file (s fname
+		     :direction :output
+		     :if-exists :supersede
+		     :if-does-not-exist :create)
+    (format s "~S" content)))
+
+(defun generate-list()
+  (loop
+    with hash
+    with prev = nil
+    for i from 1 to 1000
+    do
+       (setq hash (make-hash-table :test #'equal))
+       (setf (gethash i hash) i)
+       (setq prev (cons (cons hash prev) prev))
+    finally
+       (return prev)))
 
 #| Performs deep copy on episode |#
 
@@ -43,6 +86,7 @@
    :index-episode-id (episode-index-episode-id ep)
    :parent (if (episode-parent ep) (episode-parent ep))
    :observation (copy-bn (episode-observation ep))
+   :state (copy-bn (episode-state ep))
    :state-transitions (copy-bn (episode-state-transitions ep))
    :temporal-p (episode-temporal-p ep)
    :backlinks (copy-hash-table (episode-backlinks ep) :reference-values t)
@@ -203,7 +247,7 @@
                (format t "~%node:~%~S" node)
                (break))
          (setq new-nodes (cons node new-nodes)))
-    (setq new-nodes (sort new-nodes #'higher-lvl-cpd))
+    (setq new-nodes (topological-sort new-nodes)) ;;(sort new-nodes #'higher-lvl-cpd))
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
     (cons new-nodes (make-graph-edges new-nodes))))
 
@@ -298,9 +342,12 @@
                      (setf (gethash id new-id-ref-map) ref)
                   finally
                      (return new-id-ref-map))
-                :observation (if (episode-temporal-p ep2)
-                                 (episode-observation ep1)
-                                 (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
+		:observation (if (= (array-dimension (car (episode-observation ep2)) 0) 0)
+				 (episode-observation ep1)
+				 (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
+		:state (if (= (array-dimension (car (episode-state ep2)) 0) 0)
+			   (episode-state ep1)
+			   (new-combine-bns (episode-state ep1) (episode-state ep2) (episode-count ep1) mappings unmatched bindings))
                 :state-transitions (if (episode-temporal-p ep2)
                                        (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings)
                                        (episode-state-transitions ep1))
@@ -528,12 +575,17 @@
   ;;(format t "~%reject list: ~A~%root id: ~A" reject-list (if x (episode-id (car x))))
   (let (pattern base)
     (when x
-      (cond ((episode-temporal-p y)
-             (setq pattern (episode-state-transitions y))
+      (cond ((> (array-dimension (car (episode-observation y)) 0) 0)
+	     (setq pattern (episode-observation y))
+	     (setq base (episode-observation (car x))))
+	    ((> (array-dimension (car (episode-state y)) 0) 0)
+	     (setq pattern (episode-state y))
+	     (setq base (episode-state (car x))))
+	    ((> (array-dimension (car (episode-state-transitions y)) 0) 0)
+	     (setq pattern (episode-state-transitions y))
              (setq base (episode-state-transitions (car x))))
-            (t
-             (setq pattern (episode-observation y))
-             (setq base (episode-observation (car x))))))
+	    (t
+	     (error "uh oh"))))
     (cond ((null x) (values x 0 (list (make-hash-table :test #'equal)) nil nil reject-list -1))
           ((reject-branch? x y reject-list :check-decomps nil)
            (values x 0 (list (make-hash-table :test #'equal)) nil nil (cons (episode-id (car x)) reject-list -1)))
@@ -559,7 +611,8 @@
                   (setf (car x) generalized)
                   (setf (second x) (list (second x)))
                   (setf (episode-parent (car (second x))) x)
-                  (values x (third res) (fourth res) nil nil reject-list (sixth res)))
+		  (setf (episode-depth (car (second x))) (+ (episode-depth (car (second x))) 1))
+		  (values x (third res) (fourth res) nil nil reject-list (sixth res)))
 		 ((and (not equivalent) (cdr x))
                   (setf (car x) generalized)
                   (values x (third res) (fourth res) t nil reject-list (sixth res)))))
@@ -587,10 +640,11 @@
                     (values x cost bindings t t reject-list num-local-preds))
                    ((and (not equivalent) (null (cdr x)))
                     (setf (episode-id generalized) (symbol-name (gensym "EPISODE-")))
-                    (push (car x) (cdr (last x)))
+		    (push (car x) (cdr (last x)))
                     (setf (car x) generalized)
                     (setf (second x) (list (second x)))
                     (setf (episode-parent (car (second x))) x)
+		    (setf (episode-depth (car (second x))) (+ (episode-depth (car (second x))) 1))
                     (values x cost bindings nil nil reject-list num-local-preds))
                    ((and (not equivalent) (cdr x))
                     (setf (car x) generalized)
@@ -726,12 +780,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (when nil
                    (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
                            (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
-                 (cond ((episode-temporal-p ep)
-                        (setq pattern (episode-state-transitions ep))
-                        (setq base (episode-state-transitions (car branch))))
-                       (t
-                        (setq pattern (episode-observation ep))
-                        (setq base (episode-observation (car branch)))))
+		 (cond ((> (array-dimension (car (episode-observation ep)) 0) 0)
+			(setq pattern (episode-observation ep))
+			(setq base (episode-observation (car branch))))
+		       ((> (array-dimension (car (episode-state ep)) 0) 0)
+			(setq pattern (episode-state ep))
+			(setq base (episode-state (car branch))))
+		       ((> (array-dimension (car (episode-state-transitions ep)) 0) 0)
+			(setq pattern (episode-state-transitions ep))
+			(setq base (episode-state-transitions (car branch))))
+		       (t
+			(error "uh oh")))
 		 (setq pattern-backlinks (episode-backlinks ep))
                  (setq base-backlinks (episode-backlinks (car branch)))
                  (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
@@ -766,7 +825,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds) best-child) #|(<= p-cost best-child-cost)|#)
 		    (not branch)))
            (setf (episode-parent ep) eltm)
-           (setf (episode-depth ep) depth)
+           (setf (episode-depth ep) (+ depth 1))
            (push (list ep) (cdr (last eltm)))
            (when nil
              (format t "~%Added new child of parent"))
@@ -845,12 +904,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                 (values res t reject-list))))
         (t ;; when checking starts at the root
 	 (let (pattern base)
-	   (cond ((episode-temporal-p y)
-                  (setq pattern (episode-state-transitions y))
-                  (setq base (episode-state-transitions (car x))))
-                 (t
-                  (setq pattern (episode-observation y))
-                  (setq base (episode-observation (car x)))))
+	   (cond ((> (array-dimension (car (episode-observation y)) 0) 0)
+	     (setq pattern (episode-observation y))
+	     (setq base (episode-observation (car x))))
+	    ((> (array-dimension (car (episode-state y)) 0) 0)
+	     (setq pattern (episode-state y))
+	     (setq base (episode-state (car x))))
+	    ((> (array-dimension (car (episode-state-transitions y)) 0) 0)
+	     (setq pattern (episode-state-transitions y))
+             (setq base (episode-state-transitions (car x))))
+	    (t
+	     (error "uh oh")))
 	   (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p :forbidden-types forbidden-types)
 	     (declare (ignore no-matches q-first-bindings))
@@ -1021,12 +1085,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (when nil t
                        (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-temporal-p: ~S~%episode num decompositions: ~d"
                                (episode-id (car branch)) (episode-lvl (car branch)) (episode-temporal-p (car branch)) (hash-table-count (episode-backlinks (car branch)))))
-		 (cond ((episode-temporal-p cue)
-                        (setq pattern (episode-state-transitions cue))
-                        (setq base (episode-state-transitions (car branch))))
-                       (t
-                        (setq pattern (episode-observation cue))
-                        (setq base (episode-observation (car branch)))))
+		 (cond ((> (array-dimension (car (episode-observation cue)) 0) 0)
+			(setq pattern (episode-observation cue))
+			(setq base (episode-observation (car branch))))
+		       ((> (array-dimension (car (episode-state cue)) 0) 0)
+			(setq pattern (episode-state cue))
+			(setq base (episode-state (car branch))))
+		       ((> (array-dimension (car (episode-state-transitions cue)) 0) 0)
+			(setq pattern (episode-state-transitions cue))
+			(setq base (episode-state-transitions (car branch))))
+		       (t
+			(error "uh oh")))
 		 (setq pattern-backlinks (episode-backlinks cue))
                  (setq base-backlinks (episode-backlinks (car branch)))
 		 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
@@ -1203,17 +1272,20 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun make-observations (factors &aux (evidence (make-hash-table :test #'equal)))
   (loop
     with idx and var
-    for factor being the elements in factors do
-      (loop
+     for factor being the elements in factors
+     do
+       (setf (gethash (rule-based-cpd-dependent-id factor) evidence) nil)
+       (loop
         named indexer
         for rule being the elements of (rule-based-cpd-rules factor)
-        when (= (rule-probability rule) 1) do
-          (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
-          (return-from indexer))
-      (setq var (car (rassoc idx (mapcar #'car (gethash 0 (rule-based-cpd-var-value-block-map factor))))))
-      (when (null value)
-        (error "~%Can't make nil observation:~%~%factor:~%~S~%index for vvm var: ~d~%evidence:~%~S" factor idx evidence))
-      (setf (gethash (rule-based-cpd-dependent-id factor) evidence) var))
+          do
+            (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
+	    (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
+	    (when (null var)
+	      (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
+	    (setf (gethash (rule-based-cpd-dependent-id factor) evidence)
+		  (cons (cons var (rule-probability rule))
+			(gethash (rule-based-cpd-dependent-id factor) evidence)))))
   evidence)
 
 #| Make partially observed retrieval cue |#
@@ -1375,33 +1447,50 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = event memory
 ;; pstm = perceived objects in retrieval cue
 ;; cstm = given relations in the retrieval cue
-;; cue-states = retrieval cue states (list (factors . edges))
+;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-states mode lr bic-p &optional (observability 1))
-  (let (partial-states cue bindings)
-    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")
-    ;;(state-count-element-types (caar cue-states))
-    (setq partial-states (remove-observations cue-states observability))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (temporalp t) (observability 1))
+  (let (partial-states cue bindings and bn)
+    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv") 
+
+    ;; TODO: refactor remove-observations to work with new episode representation
+    ;;(setq partial-states (remove-observations cue-states observability))
+    
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
     ;;(state-count-element-types (caar partial-states))
     ;;(log-message (list "~A," (specific-cue-p (caar partial-states))) "vse.csv")
     ;;(log-message (list "~d," observability) "vse.csv")
     ;;(log-message (list "~A~%" partial-states) "cues.txt")
-    (setq cue (make-episode
-                       :states partial-states
-                       :decompositions (make-empty-graph)
-                       :id-ref-map (make-hash-table :test #'equal)
-                       :num-decompositions 0))
+    (cond (temporalp
+	   (setq cue (make-episode
+		      :observation (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state-transitions cue-bn
+		      :backlinks backlinks
+		      :temporal-p t
+		      :count 1
+		      :lvl 2)))
+	  (t
+	   (setq cue (make-episode
+		      :observation cue-bn
+		      :state (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+		      :backlinks (make-hash-table :test #'equal)
+		      :temporal-p nil
+		      :count 1
+		      :lvl 1))))
     ;;(format t "~%original cue:~%~A~%partial-cue:~%~A" cue partial-cue)
     (multiple-value-bind (eme sol bindings depth cost)
-        (cond ((equalp (make-array 0) (caar cue-states))
+        (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
                (values (car eltm) nil nil 0 most-positive-fixnum most-positive-fixnum))
               (t
-               (retrieve-episode eltm cue nil :bic-p bic-p)))
+               (new-retrieve-episode eltm cue nil :bic-p bic-p)))
       (declare (ignore depth cost))
-      (setq bindings (car bbindings))
+      (if temporalp
+	  (setq bn (episode-state-transitions (car eme)))
+	  (setq bn (episode-observation (car eme))))
       #|
       (if (> (episode-count eme) 1)
           (log-message (list "schema,") "vse.csv")
@@ -1411,22 +1500,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(state-count-element-types (caar (episode-states eme)))
       ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
       (loop
-        for (p-match . q-match) being the elements of (car mappings)
+        for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
         with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
         do
-           (setq p-copy (copy-rule-based-cpd (aref (caar partial-states) p-match)))
-           (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (caar (episode-states eme)) q-match))
+           (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
+           (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
 					   observed-factors :key #'rule-based-cpd-dependent-id :test #'equal)))
              ;;(setq p-copy (copy-cpd p-match))
-	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (caar (episode-states eme)) q-match))) 
+	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match))) 
 	       (format t "~%~%p-cpd:~%~S~%q-cpd:~%~S~%episode id: ~S~%bindings:~%~S" (aref (caar partial-states) p-match)
-		       (aref (caar (episode-states eme)) q-match)
-		       (episode-id eme)
+		       (aref (car bn) q-match)
+		       (episode-id (car eme))
 		       bindings))
-             (setq p-copy (subst-cpd (aref (caar partial-states) p-match) (aref (caar (episode-states eme)) q-match) bindings))
-	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (caar (episode-states eme)) q-match)))
-	       (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (caar (episode-states eme)) q-match))))
+             (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
+	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match)))
+	       (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (car bn) q-match))))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
              (setq idents (make-hash-table :test #'equal))
              (setf (gethash dep-id idents) 0)
@@ -1489,7 +1578,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (let (evidence-table recollection max-card ground-marginals)
              (setq evidence-table (make-observations observed-factors))
              (setq max-card 0)
-             (loop
+	     #|
+	     (loop
 	       with msg
                for ground-cpd being the elements of (caar (episode-states eme))
                when (and (> (aref (rule-based-cpd-cardinalities ground-cpd) 0) max-card))
@@ -1503,6 +1593,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  into grounds
                finally
                   (setq ground-marginals grounds))
+	     |#
              ;;(log-message (list "Learning_Rate,Iteration,Conflicts,Deltas,Deltas_std~%") "learning-curves.csv")
              ;;(log-message (list "Learning_Rate,CPD,Value,Density,Error~%") "marginal-distribution.csv")
              ;;(log-message (list "CPD,Value,Density~%") "ground-marginals.csv")
@@ -1523,7 +1614,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                           (float (rule-probability idx)))
                                     "ground-marginals.csv")))
 	     |#
-             (setq recollection (loopy-belief-propagation (car (episode-states eme)) evidence-table mode lr))
+             (setq recollection (loopy-belief-propagation bn evidence-table mode lr))
              #|
 	     (setq copy-grounds (copy-list ground-marginals))
 	     (loop
@@ -1617,10 +1708,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; ep2 = base episode
 (defun get-common-episode-class (ep1 ep2)
   (when (>= (episode-depth ep1) (episode-depth ep2))
+    (when nil
+      (format t "~%~%episode depth: ~d~%schema depth: ~d" (episode-depth ep1) (episode-depth ep2)))
     (loop
       while (not (= (episode-depth ep1) (episode-depth ep2)))
       do
          (setq ep1 (car (episode-parent ep1)))
+	 (when nil
+	   (format t "~%episode id: ~A~%episode depth: ~d" (episode-id ep1) (episode-depth ep1)))
       finally
          (when (equal (episode-id ep1) (episode-id  ep2))
            ep1))))
@@ -1632,7 +1727,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun new-push-to-ep-buffer (&key (observation nil) (state nil) (action-name nil) (bic-p t) (insertp nil) (temporal-p t) (hidden-state-p nil))
   (let (obs st model)
     (setq obs observation)
-    (if st
+    (if state
 	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
@@ -1662,36 +1757,39 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         for (o s act) in (butlast (gethash 0 (getf episode-buffer* :obs)))
 	for i from 0
 	do
-           (setq ep-id (symbol-name (gensym "EPISODE-")))
+	   (setq ep-id (symbol-name (gensym "EPISODE-")))
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :observation (copy-bn o)
+				  :state (cons (make-array 0) (make-hash-table :test #'equal))
 				  :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
 				  :backlinks (make-hash-table :test #'equal)
 				  :count 1
                                   :lvl 1))
            (format t "~%inserting observation, ~A" (episode-id ep))
-           (multiple-value-setq (eltm* obs-ref)
+	   (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p))
 	   (when temporal-p
-	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
 	       (setq ep-id (symbol-name (gensym "EPISODE-")))
                (setq ep (make-episode :id ep-id
                                       :index-episode-id ep-id
-                                      :observation (copy-bn s)
+				      :observation (cons (make-array 0) (make-hash-table :test #'equal))
+                                      :state (copy-bn s)
 				      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
 				      :backlinks (make-hash-table :test #'equal)
 				      :count 1
                                       :lvl 1))
 	       (format t "~%inserting state, ~A" (episode-id ep))
-               (multiple-value-setq (eltm* st-ref)
+	       (multiple-value-setq (eltm* st-ref)
 		 (new-insert-episode eltm* ep nil :bic-p bic-p))
 	       (setf (gethash (episode-id (car st-ref)) id-ref-hash) st-ref))
 	     (when st
 	       (setq cur-st (gensym "STATE-")))
 	     (setq cur-obs (gensym "OBS-"))
-	     (setq cur-act (gensym "ACT-"))
+	     (setq cur-act (gensym "ACT-"))	     
+	     ;; you have to put these hash keys in after you've done all the insertions for observations, states, and (eventually) actions. Otherwise, if you update id-ref-hash, then do further insertions, the episode id of the reference will change, making the key obsolte. Worse, the cpd vvbm will have the name of the new ref hash key, but the id ref hash will have the name of the old ref. So, look ups will fail.
+	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
 	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car st-ref)))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
@@ -1716,21 +1814,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         finally
 	   (when state-transitions
              ;;(setq state-transitions (concatenate 'list ,@state-transitions))
-	     (when nil
-	       (format t "~%transition model: ~S" state-transitions))
-             (setq st-bn (eval `(compile-program ,@state-transitions)))
+	     (setq st-bn (eval `(compile-program nil ,@state-transitions)))
+	     (when (> (hash-table-count (rule-based-cpd-identifiers (aref (car st-bn) 0))) 1)
+	       (format t "~%state transition model:~%~A" st-bn)
+	       (break))
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))
              (setq ep (make-episode :id ep-id
                                     :index-episode-id ep-id
 				    :observation (cons (make-array 0) (make-hash-table :test #'equal))
+				    :state (cons (make-array 0) (make-hash-table :test #'equal))
                                     :state-transitions st-bn
 				    :backlinks id-ref-hash
                                     :temporal-p t
                                     :count 1
                                     :lvl 2))
 	     (format t "~%Inserting transition model, ~A" (episode-id ep))
-             (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
+	     (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p))))
       ;; clear buffer
       (clear-episodic-cache 0 1)
       #|
@@ -1741,6 +1841,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(break)
       )))
 
+#| Python wrapper for pushing new experience into event memory |#
+(defun py-push-to-ep-buffer(&key (observation nil) (state nil) (actionname nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
+  (new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep))
 (defun print-h-buffer ()
   (loop
     with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :obs)))
@@ -1903,7 +2006,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (id (subseq (episode-id ep) (+ (search "-" (episode-id ep)) 1))))
     (format stream "subgraph cluster_~d {label = ~d~%" id (combine-symbols "EPISODE" id "count" (episode-count ep)))
     (print-episode-state (episode-observation ep) id "Observation" stream)
-    (print-episode-state (episode-state-transitions ep) id "State" stream)
+    (print-episode-state (episode-state ep) id "State" stream)
+    (print-episode-state (episode-state-transitions ep) id "Transition_Model" stream)
     ;;(format t "~%HERE!!!!")
     (format stream "~d[shape=point style=invis]~%" id)
     ;;(format stream "~d~%" id)
@@ -1938,5 +2042,4 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (uiop:run-program
 	    `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream))))
 	  (t
-	   (format t "~%Did not generate pdf. eltm is nil")))))
-    
+	   (format t "~%failed to generate pdf. eltm is nil")))))

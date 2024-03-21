@@ -41,6 +41,7 @@
 	   #:episode-id
 	   #:episode-parent
 	   #:episode-observation
+	   #:episode-state
 	   #:episode-state-transitions
 	   #:episode-temporal-p
 	   #:episode-backlinks
@@ -52,6 +53,15 @@
 	   #:get-hash
 	   #:-car
 	   #:-cdr
-	   #:push-from-files))
+	   #:push-from-files
+	   #:new-push-to-ep-buffer
+	   #:py-push-to-ep-buffer
+	   #:sample
+	   #:py-sample
+	   #:load-eltm-from-file
+	   #:save-eltm-to-file
+	   #:run-execution-trace
+	   #:conditional-sample
+	   #:py-conditional-sample))
 
 (in-package :hems)

@@ -1,5 +1,64 @@
 (in-package :hems)
 
+#| Given index i of a sequence of variables, returns a list of all n indexes as the neighbors of i |# 
+
+;; i = index of interest
+;; n = number of variables in problem
+(defun default-neighborhood (i n)
+  (loop
+    for j from 0 to (- n 1)
+    when (not (= i j))
+      collect j))
+
+#| Given an index i into a 1D array, return a list of neighboring indeces |#
+
+;; i = index of interest
+;; size = size of the array
+;; radius = radius of the neighborhood
+(defun array-neighborhood (i size radius)
+  (loop
+    with start = (max 0 (- i radius))
+    with end = (min (- size 1) (+ i radius)) 
+    for n from start to end
+    when (not (= i n))
+      collect n into neighbors
+    finally
+       (return neighbors)))
+
+;; i = index of interest
+;; shape = list of array dimensions
+;; radius = radius of the neighborhood
+(defun eight-pixel-neighborhood (i shape radius)
+  (labels ((idx-to-coord (idx shape)
+	     (let (coord)
+	       (loop
+		 for dim in shape
+		 do
+		    (setq coord (cons (mod idx dim) coord))
+		    (setq idx (floor (/ idx dim)))
+		 finally
+		    (return (reverse coord))))))
+    (destructuring-bind (row col)
+	(idx-to-coord i shape)
+      (let ((row-start (max 0 (- row radius)))
+	    (row-end (min (- (first shape) 1) (+ row radius)))
+	    (col-start (max 0 (- col radius)))
+	    (col-end (min (- (second shape) 1) (+ col radius))))
+	(loop
+	  with neighbors
+	  for r from row-start to row-end
+	  do
+	     (loop
+	       with ix
+	       for c from col-start to col-end
+	       do
+		  (setq ix (+ (* (first shape) r) col))
+	       when (not (= ix i))
+		 do
+		    (setq neighbors (cons ix neighbors)))
+	  finally
+	     (return (reverse neighbors)))))))
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
   (cond ((symbolp (car node-def))
@@ -75,10 +134,12 @@
 						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
 									     (list (cons value 1) (make-hash-table)))))
 					       ((equal "RELATION-NODE" (symbol-name (car node-def)))
-						(when (not (equal "T" value))
+						(when nil (not (equal "T" value))
 						  (error "Relation node values must be \"T\" or \"NA\". ~S is unsupported." value))
+						;;(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
+						;;(list (cons "T" 1) (make-hash-table))))
 						(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table))
-									     (list (cons "T" 1) (make-hash-table))))))
+									     (list (cons value 1) (make-hash-table))))))
 					 (setf (gethash 0 sva) (list (list 0) (list 1)))
 					 (setf (gethash 0 svna) (list (list 1) (list 0)))
 					 (setf (gethash 0 vals) (list 0 1))
@@ -121,6 +182,9 @@
 (defun directed-edge (cpd1 cpd2)
   (modify-cpd cpd2 cpd1))
 
+#| Sort a list of factors in topological order. Returns a list. |#
+
+;; factors-list = list of cpds
 (defun topological-sort (factors-list)
   (let (l s copy)
     (setq copy (copy-factors (make-array (length factors-list) :initial-contents factors-list)))
@@ -153,17 +217,122 @@
 		  (format t "~%found match!~%updated used cpd:~%~S" cpd))
 		(when (= (hash-table-count (rule-based-cpd-identifiers cpd)) 1)
 		  (setq s (reverse (cons cpd1 (reverse s)))))))
+    (loop
+      for cpd1 in (reverse l)
+      do
+	 (loop
+	   for cpd2 in l
+	   when (and (not (equal (rule-based-cpd-dependent-id cpd1)
+				 (rule-based-cpd-dependent-id cpd2)))
+		     (gethash (rule-based-cpd-dependent-id cpd1)
+			      (rule-based-cpd-identifiers cpd2)))
+	     collect (rule-based-cpd-lvl cpd2) into lvls
+	   finally
+	      (setf (rule-based-cpd-lvl cpd1) (+ (apply #'max (cons 0 lvls)) 1))))
     l))
 
-(defmacro compile-program (&body body)
+(defun add-invariants (neighborhood-func nbr-func-args cpd-arr inv-hash invariants-list)
+  (when (null neighborhood-func)
+    (setq neighborhood-func #'default-neighborhood))
+  (loop
+    with reflexive-hash = (make-hash-table)
+    with var-i and new-body
+    for cpd-i being the elements of cpd-arr
+    for i from 0
+    do
+       (setq var-i (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-i)))))
+       (loop
+	 with cpd-j and var-j
+	 for j in (eval `(funcall ,neighborhood-func ,i ,@nbr-func-args))
+	 do
+	    (setq cpd-j (aref cpd-arr j))
+	    (setq var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-j)))))
+	    (loop
+	      with invariant-alias and invariant-role1 and invariant-role2
+	      with num-j and num-i and invariant-id and role1-id and role2-id
+	      for invariant in invariants-list
+	      do
+		 (setq invariant-id (gensym))
+		 (setq role1-id (gensym))
+		 (setq role2-id (gensym))
+		 (cond ((eq invariant '>)
+			(setq invariant-alias 'greater_than)
+			(setq invariant-role1 'greater)
+			(setq invariant-role2 'lesser))
+		       ((eq invariant '<)
+			(setq invariant-alias 'less_than)
+			(setq invariant-role1 'lesser)
+			(setq invariant-role2 'greater))
+		       ((eq invariant '=)
+			(setq invariant-alias 'equal_to)
+			(setq invariant-role1 'equal)
+			(setq invariant-role2 'equal)))
+		 (with-input-from-string (stream-j var-j)
+		   (with-input-from-string (stream-i var-i)
+		     (setq num-j (read stream-j))
+		     (setq num-i (read stream-i))
+		     (when (funcall invariant num-i num-j)
+		       (cond((funcall invariant num-j num-i)
+			     (when (null (gethash invariant reflexive-hash))
+			       (setf (gethash invariant reflexive-hash) (make-hash-table)))
+			     (when (not (member num-i (gethash num-j (gethash invariant reflexive-hash))))			     
+			       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))
+			       (setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value "T"))))
+			       (setq new-body (concatenate 'list new-body `(,role2-id = (relation-node ,invariant-role2 :value "T"))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role1-id)))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role2-id)))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,role1-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			       (setq new-body (concatenate 'list new-body `(,role2-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       ;;(setq new-body (concatenate 'list new-body `(,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash) -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			       (setf (gethash num-i (gethash invariant reflexive-hash))
+				     (cons num-j (gethash num-i (gethash invariant reflexive-hash))))))
+			    (t
+			     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))
+			     (setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,role2-id = (relation-node ,invariant-role2 :value "T"))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role1-id)))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,role2-id)))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,invariant-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,role1-id -> ,(gethash (rule-based-cpd-dependent-id cpd-i) inv-hash))))
+			     (setq new-body (concatenate 'list new-body `(,role2-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))))
+		       )))))
+    finally
+       ;;(format t "~%new body:~%~S" new-body)
+       (return new-body)))
+
+#| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nested hash-table of edges |#
+
+;; body = HEMS program
+;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
+;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
+;; nbr-func-args = a list of arguments for neighborhood function
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args) &body body)
   (let ((hash (gensym))
 	(args (gensym))
-	(ident (gensym))
+	(inv-hash (gensym))
+        (ident (gensym))
 	(cpd (gensym))
 	(cpd-list (gensym))
+	(cpd-arr (gensym))
 	(factors (gensym))
-	(edges (gensym)))
-    `(labels ((compile-hems-program (,hash ,args)
+	(edges (gensym))
+	(recurse-p (gensym))
+	(invariant-list (gensym))
+	(new-body (gensym)))
+    (cond ((and neighborhood-func
+		(not (eq t relational-invariants)))
+	   (error "Relational Invariants flag must be set to t to define the neighborhood function: ~A."))
+	  ((and (not (eq t relational-invariants))
+		(not (eq nil relational-invariants)))
+	   (error "Relational Invariants flag is boolean. Must be set to t or nil. Value~%~A~% is invalid" relational-invariants))
+	  ;;((and neighborhood-func relational-invariants (not (functionp neighborhood-func)))
+	   ;;(error "Invalid neighborhood function. Received~%~A~%Expected a function." neighborhood-func))
+	  ((and (eq nil relational-invariants) nbr-func-args)
+	   (error "Cannot supply arguments~%~A~%when relational-invariants is nil." nbr-func-args)))
+    `(labels ((compile-hems-program (,hash ,args ,invariant-list ,recurse-p)
 		(cond (,args
 		       (if (and (symbolp (first ,args))
 				(not (null (first ,args))))
@@ -191,22 +360,32 @@
 			   (raise-identifier-type-error (first ,args))
 		        
 			   )
-		       (compile-hems-program ,hash (nthcdr 3 ,args)))
+		       (compile-hems-program ,hash (nthcdr 3 ,args) ,invariant-list ,recurse-p))
 		      (t
-		       (loop
-			 with ,factors and ,edges
-			 for ,ident being the hash-keys of ,hash
-			   using (hash-value ,cpd)
-			 collect ,cpd into ,cpd-list
-			 finally
-			    (setq ,factors (make-array (hash-table-count ,hash)
-						       :initial-contents (finalize-factors (topological-sort ,cpd-list))))
-			    (setq ,edges (make-graph-edges ,factors))
-			    (return (cons ,factors ,edges)))))))
-       (compile-hems-program (make-hash-table :test #'equal) ',body))))
+		       (let (,inv-hash)
+			 (when (and ,relational-invariants ,recurse-p)
+			   (setq ,inv-hash (make-hash-table :test #'equal)))
+			 (loop
+			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(> =)
+			   for ,ident being the hash-keys of ,hash
+			     using (hash-value ,cpd)
+			   collect ,cpd into ,cpd-list
+			   when (and ,relational-invariants ,recurse-p)
+			     do
+				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
+			   finally
+			      (setq ,cpd-list (topological-sort ,cpd-list))
+			      (when (and ,relational-invariants ,recurse-p)
+				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
+				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
+				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil)))
+			      (setq ,factors (make-array (hash-table-count ,hash)
+							 :initial-contents (finalize-factors ,cpd-list)))
+			      (setq ,edges (make-graph-edges ,factors))
+			      (return (cons ,factors ,edges))))))))
+       (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t))))
 
-
-(defun compile-program-from-file (prog-file)
+(defun compile-program-from-file (prog-file &key args)
   (with-open-file (in (merge-pathnames prog-file) :direction :input
 						  :if-does-not-exist :error)
     (loop
@@ -226,5 +405,10 @@
 	        (setq prog (reverse (cons s (reverse prog))))
 	     while (< i len))
       finally
-	 (return (eval `(compile-program ,@prog))))))
+	 (return (eval `(compile-program ,args ,@prog))))))
   
+#| TESTS
+
+(hems:compile-program (:relational-invariants t :nbr-func-args (2)) 
+c1 = (percept-node a :value "10")
+c2 = (percept-node b :value "10")) |#

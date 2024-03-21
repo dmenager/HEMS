@@ -375,7 +375,7 @@
 	   (setq prev-act cur-act)))
     finally
        (when state-transitions
-	 (setq st-bn (eval `(compile-program ,@state-transitions)))
+	 (setq st-bn (eval `(compile-program nil ,@state-transitions)))
 	 ;; make temporal episode from state transitions
 	 (setq cue (make-episode :state-transitions st-bn
 				 :backlinks id-ref-hash
@@ -442,9 +442,119 @@
 	     finally
 		(when t
 		  (format t "~%~%observation: ~d~%action: ~S" j action))
-		(setq st (eval `(compile-program ,@program)))
+		(setq st (eval `(compile-program (:relational-invariants t
+						  :neighborhood-func #'array-neighborhood
+						  :nbr-func-args (,(length variables) 1))
+				  ,@program)))
 		(new-push-to-ep-buffer :observation st :action-name action :hidden-state-p nil)
-		(eltm-to-pdf))
+		;;(eltm-to-pdf)
+	     )
 	   (if break
 	       (break))
 	))))
+
+(defun get-max-digits (file)
+  (let (features data)
+    (setq data (uiop:read-file-lines file))
+    (setq features (split-sequence:split-sequence #\, (car data)))
+    (setq data (rest data))
+    (loop
+      with processed and hidden-state and observation and action
+      with num-digits and max-digits = -1
+      for line in data
+      for j from 1
+      do
+	 (setq processed (split-sequence:split-sequence #\, line))
+	 (setq num-digits (- (array-dimension (fourth processed) 0) 2))
+	 (when (> num-digits max-digits)
+	   (setq max-digits num-digits))
+      finally
+	 (return max-digits))))
+
+(defun run-execution-trace (file &key break)
+  (labels ((integer-string-p (string)
+	     (ignore-errors (parse-integer string))))
+    (let (features data max-digits)
+      (setq data (uiop:read-file-lines file))
+      (setq features (split-sequence:split-sequence #\, (car data)))
+      (setq data (rest data))
+      (setq max-digits (get-max-digits file))
+      (loop
+	with processed and hidden-state and observation and action
+	with st and obs
+	for line in data ;;(subseq data 0 7)
+	for j from 1
+	do
+	   (setq processed (split-sequence:split-sequence #\, line))
+	   (setq hidden-state (mapcan #'(lambda (string)
+					  (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								 (- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
+					  (when (integer-string-p string)
+					    (list string)))
+				      (split-sequence:split-sequence #\Space (third processed))))
+	   (setq observation (butlast (rest
+				       (mapcar #'string
+					       (coerce (fourth processed)
+						       'list)))))
+	   (loop
+	     with len = (length observation)
+	     for i from len to (- max-digits len)
+	     do
+		(setq observation (cons "0" observation)))
+	   #|
+	   (setq observation (mapcan #'(lambda (string)
+					 (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								(- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
+					 (when (integer-string-p string)
+					   (list string)))
+				     (split-sequence:split-sequence #\Space (fourth processed))))
+	   (loop
+	      for digit being the elements of (car observation)
+	      collect (string digit) into new-obs
+	      finally
+		(setq observation new-obs))
+	|#
+	   (setq action (fifth processed))
+	   (loop
+	     for var in (reverse observation)
+	     for i from 1
+	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
+	     finally
+		(when t
+		  (format t "~%~%observation: ~d~%action: ~S" j action))
+		(setq obs (eval `(compile-program (:relational-invariants t
+									  :neighborhood-func #'array-neighborhood
+									  :nbr-func-args (,(length observation) 1))
+						  ,@program))))
+	   (loop
+	     for var in hidden-state
+	     for i from 1
+	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
+	     finally
+		(when t
+		  (format t "~%~%hidden state: ~d~%action: ~S" j action))
+		(setq st (eval `(compile-program (:relational-invariants t
+						  :neighborhood-func #'array-neighborhood
+						  :nbr-func-args (,(length hidden-state) 1))
+				  ,@program))))
+
+	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t :bic-p nil)
+	   (when (equal action "terminal")
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t :bic-p nil)
+	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
+	   (eltm-to-pdf)
+	   (if break
+	       (break))))
+    (eltm-to-pdf)
+    (save-eltm-to-file eltm*)))

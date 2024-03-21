@@ -11,4 +11,5 @@
 	      (:file "performance-stats" :depends-on ("graph-representation"))
 	      (:file "metrics" :depends-on ("graph-representation"))
 	      (:file "graph-representation" :depends-on ("package"))
-	      (:file "segmentation" :depends-on ("episodic"))))
+	      (:file "segmentation" :depends-on ("episodic"))
+	      (:file "sampler" :depends-on ("graph-representation"))))

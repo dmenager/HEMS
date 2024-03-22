@@ -49,6 +49,7 @@ void main() {
 
 		writef(
 			"(compile-program\n" ~
+			"       nil\n" ~
 			"	c1 = (percept-node zeus_angry :value \"%s\")\n" ~
 			"	c2 = (percept-node rain :value \"%s\")\n" ~
 			"	c3 = (percept-node sprinkler :value \"%s\")\n" ~
@@ -83,4 +84,10 @@ void main() {
 			writef(";; P(wet=1 | rain=%s, sprinkler=%s) = %.4f\n", r, s, wc[r][s].prob);
 		}
 	}
+	writef("\n")
+	writef( "#| TESTS\n" ~
+		"(load \"sprinkler-example.lisp\")\n" ~
+               	"(hems::example)\n" ~
+               	"(hems::H[bn] (car (hems::get-eltm)) (make-hash-table))\n" ~
+               	"|#")
 }

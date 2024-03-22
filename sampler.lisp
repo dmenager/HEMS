@@ -201,7 +201,7 @@
 ------------
 (ql:quickload :hems)
 (hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
-(hems::sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
-(conditional-sample (get-eltm) (compile-program nil
+(hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
+(hems:conditional-sample (hems:get-eltm) (compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
 |#

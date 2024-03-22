@@ -76,20 +76,25 @@
   (let ((rule (make-rule
 	       :conditions (make-hash-table :test #'equal))))
     (loop
-      with val
+      with val and compatible-rule
       for binding in assns
       do
-	 (setf (gethash (car binding) (rule-conditions rule)) (cdr binding)))
-    (rule-probability (car (get-compatible-rules cpd cpd rule :find-all nil)))))
+	 (setf (gethash (car binding) (rule-conditions rule)) (cdr binding))
+      finally
+	 (setq compatible-rule (car (get-compatible-rules cpd cpd rule :find-all nil)))
+	 (when t
+	   (print-cpd-rule compatible-rule))
+      (return (rule-probability compatible-rule)))))
 
 #| Look up the probability of an assignment in a given CPD |#
 
 ;; cpd = conditional probability distribution
 ;; assn = list of variable value bindings
 (defun P[X=x!Pa=a] (cpd dep-id-val parent-assns)
-  (let ((assns (cons (cons (rule-based-cpd-dependent-id cpd) dep-id-val)
-		     parent-assns)))
-    (get-prob cpd assns)))
+  (let* ((assns (cons (cons (rule-based-cpd-dependent-id cpd) dep-id-val)
+		     parent-assns))
+	 (prob (get-prob cpd assns)))
+    prob))
 
 ;; Takes a list of the parents and the possible values they can take, and outputs a list of all possible assignments, e.g.,
 ;; INPUT: (('foo . (1 2)) ('bar . (10 20 30 40)) ('baz . (100 200 300)))
@@ -161,6 +166,7 @@
 		   (episode-observation episode)) 
     with cpd and val
     with evidence = (make-hash-table :test #'equal)
+    with res
     for cpd-id being the hash-keys of obs
       using (hash-value var)
     do
@@ -168,34 +174,75 @@
        ;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
        (setf (gethash cpd-id evidence) var)
     finally
-       (return (mapcan #'(lambda (cpd)
-			   (when (null (rule-based-cpd-singleton-p cpd))
-			     (list cpd)))
-		       (loopy-belief-propagation net evidence '+ 1)))))
+       (setq res (loopy-belief-propagation net evidence '+ 1))
+       (return (loop
+		 for cpd in res
+		 when (rule-based-cpd-singleton-p cpd)
+		   collect cpd into singletons
+		 else
+		   collect cpd into net
+		 finally
+		    (return (cons net singletons))))))
 
 
 
 ;; assns = assignments we want to know the posterior probability of 
 ;; obs = hash-table of observed assignments
-(defun P[A=a] (bn assns)
+(defun P[A=a]-old (bn assns)
   (loop
     with obs-posterior = (getf bn :net)
     with idents
     for cpd in obs-posterior
     collect
-       (loop
-	 for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
-	 when (assoc ident assns :test #'equal)
-	   collect (rule-based-cpd-dependent-id cpd) into nodes-to-keep
-	 else
-	   collect ident into nodes-to-remove
-	 finally
-	    (if nodes-to-keep
-		(return (factor-operation cpd nodes-to-keep nodes-to-remove '+))
-		nil))
+    (loop
+      with marginalized-factor
+      for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+      when (and (equal ident (rule-based-cpd-dependent-id cpd))
+		(assoc ident assns :test #'equal))
+	collect ident into nodes-to-keep
+      else
+	collect ident into nodes-to-remove
+      finally
+	 (return
+	      (cond (nodes-to-keep
+		     (when nil
+		       (format t "~%~%marginalizing:~%~S~%on variables to keep:~%~S~%variables to remove:~%~S" cpd nodes-to-keep nodes-to-remove))
+		     (setq marginalized-factor (factor-operation cpd nodes-to-keep nodes-to-remove '+))
+		     (normalize-rule-probabilities marginalized-factor (rule-based-cpd-dependent-id marginalized-factor)))
+		    (t
+		     nil))))
       into marginal-posterior
     finally
-       (return 
+       (when nil
+	   (format t "~%marginal posterior:~%~S" marginal-posterior))
+       (return
+	 (let ((rule (make-rule :conditions (make-hash-table :test #'equal))))
+	   (loop
+	     for (ident . val) in assns
+	     do
+		(setf (gethash ident (rule-conditions rule)) val))
+	   (loop
+	     with prob = 1 and summed-prob
+	     with obs-posterior = (getf bn :net)
+	     with compatible-rules
+	     for cpd in marginal-posterior
+	     when (and cpd (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
+	       do
+		  (setq compatible-rules (get-compatible-rules cpd cpd rule :find-all t))
+		  (loop
+		    for rule in compatible-rules
+		    summing (rule-probability rule) into val
+		    finally
+		       (setq summed-prob val))
+		  (when t
+		    (format t "~%~%assn:")
+		    (print-cpd-rule rule)
+		    (format t "~%compatible-rules:")
+		    (map nil #'print-cpd-rule compatible-rules))
+		  (setq prob (* prob summed-prob))
+	     finally
+		(return prob)))
+	 #|
 	 (loop
 	   with prob = 1
 	   for cpd in marginal-posterior
@@ -203,19 +250,56 @@
 	     do
 		(setq prob (* (get-prob cpd assns) prob))
 	   finally
-	      (return prob)))))
+	      (return prob))
+	 |#
+	 )))
+
+;; assns = assignments we want to know the posterior probability of 
+;; obs = hash-table of observed assignments
+(defun P[A=a] (bn assns)
+  (let ((rule (make-rule :conditions (make-hash-table :test #'equal))))
+    (loop
+      for (ident . val) in assns
+      do
+	 (setf (gethash ident (rule-conditions rule)) val))
+    (loop
+      with prob = 1 and summed-prob
+      with obs-posterior = (getf bn :singletons)
+      with compatible-rules
+      for cpd in obs-posterior
+      when (and cpd (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
+	do
+	   (setq compatible-rules (get-compatible-rules cpd cpd rule :find-all t))
+	   (loop
+	     for rule in compatible-rules
+	     summing (rule-probability rule) into val
+	     finally
+		(setq summed-prob val))
+	   (when t
+	     (format t "~%~%assn:")
+	     (print-cpd-rule rule)
+	     (format t "~%compatible-rules:")
+	     (map nil #'print-cpd-rule compatible-rules))
+	   (setq prob (* prob summed-prob))
+      finally
+	 (return prob))))
 
 ; Entropy of node given parents
 ; H_P(X_i | Pa_i) = \sum_{pa_i} P(pa_i) H_P(X_i | pa_i)
 (defun H[X!Pa] (bn X)
   ;;(format t "~%bn:~%~A" bn)
   ;;(break)
-  (loop 
+  (loop
     for pa in (valid-parent-assignments bn X)
+    do
+       (format t "~%pa:~%~A~%P(A=a) = ~d" pa (P[A=a] bn pa))
     when pa
       sum (* (P[A=a] bn pa)
              (H[X!Pa=a] bn X pa))
 	into res
+    else
+      do
+	 (setq res (H[X!Pa=a] bn X pa))
     finally
        (return res)))
 
@@ -223,11 +307,14 @@
 ; H_P(X) = \sum_i H_P(X_i | Pa_i^G)
 (defun H[bn] (episode observations)
   (loop
-     with parents = (get-parents-aux episode)
-     with cpds = (get-cpd-from-id-aux episode)
-     with net = (infer-posterior cpds episode observations)
-     with print = (progn (format t "~%posterior network:~%~A" net) (break))
+    with parents = (get-parents-aux episode)
+    with cpds = (get-cpd-from-id-aux episode)
+    with res = (infer-posterior cpds episode observations)
+    with net = (car res) and singletons = (cdr res)
+    with print = (progn (format t "~%parents:~%~S~%cpds:~%~S~%posterior network:~%~A" parents cpds net))
     ;; bn is everything that is constant for all remaining computations
-    with bn = (list :net net :cpds cpds :parents parents :obs observations) 
+    with bn = (list :net net :singletons singletons :cpds cpds :parents parents :obs observations) 
     for node being the elements of (get-nodes episode)
+    do
+       (format t "~%H[~A|Pa] = ~d~%" (rule-based-cpd-dependent-id node) (H[X!Pa] bn node)) 
     sum (H[X!Pa] bn node)))

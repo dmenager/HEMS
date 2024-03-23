@@ -117,6 +117,7 @@
 
 ;; Assumes that nil is not a valid value for the hash table
 (defun lookup-or-nil (hash key)
+  (format t "~%~%evidence:~%~S~%key:~%~S~%(gethash key hash): ~S" hash key (gethash key hash))
   (multiple-value-bind (ret foundp)
       (gethash key hash)
     (declare (ignore foundp))
@@ -127,9 +128,15 @@
 ;; containing just the observed value if it was.
 ;; `observations` is a hash table.
 (defun valid-assignments (bn node)
-  (let ((observed (lookup-or-nil (getf bn :obs) (rule-based-cpd-dependent-id node))))
-    (cond (observed
-	   (list (cdar (assoc observed (gethash 0 (rule-based-cpd-var-value-block-map node)) :test #'equal :key #'car))))
+  (let ((observed-list (lookup-or-nil (getf bn :obs) (rule-based-cpd-dependent-id node))))
+    (cond (observed-list
+	   (loop
+	     for (observed . prob) in observed-list
+	     when (> prob 0)
+	       collect (cdar (assoc observed (gethash 0 (rule-based-cpd-var-value-block-map node)) :test #'equal :key #'car))
+		 into values
+	     finally
+	     (return values)))
 	  (t
 	   (get-cpd-values node)))))
 

@@ -1534,14 +1534,16 @@
 ;; input-cpdp = generalized boolean stating whether the input distribution shows values for NA or not. (CPD or nil)
 ;; output-cpdp = generalized boolean stating whether the output distribution is shows values for NA or not. (CPD or nil)
 (defun normalize-rule-probabilities (phi new-dep-id)
+  (when nil t
+    (format t "~%~%normalizing phi:~%~S" phi))
   (loop
     with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
     with rules = (rule-based-cpd-rules phi)
     with new-rules and block = 0 and new-rule
     for r1 being the elements of rules
     do
-       (when nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
-         (format t "~%~%normalizing:~%~S" r1))
+       (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+         (format t "~%normalizing rule:~%~S" r1))
          (loop
            with copy-rule = (copy-cpd-rule r1)
            with compatible-rules and compatible-rule and norm-const
@@ -1559,8 +1561,10 @@
            finally
               ;;(setq norm-const (reduce #'(lambda (rule1 rule2) (+ (rule-probability rule1) (rule-probability rule2))) row))
               (setq norm-const (apply #'+ (mapcar #'rule-probability row)))
-              (when nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
-                (format t "~%normalizing constant: ~d" norm-const))
+              (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+		    (format t "~%~%row:")
+		    (mapcar #'print-cpd-rule row)
+		    (format t "~%normalizing constant: ~d" norm-const))
                (setq new-rule (copy-cpd-rule r1))
                (setf (rule-probability new-rule) (if (> norm-const 0)
                                                      (/ (rule-probability r1) norm-const)
@@ -1568,7 +1572,7 @@
                (setf (rule-block new-rule) (make-hash-table))
                (setf (gethash block (rule-block new-rule)) block)
                (setq block (+ block 1))
-               (when nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+               (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
                      (format t "~%normalized rule:~%~S" new-rule))
                (when (or (> (rule-probability new-rule) 1)
                          (< (rule-probability new-rule) 0))
@@ -3978,7 +3982,7 @@
 			 (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                    :conditions (copy-hash-table (rule-conditions rule1))
                                                    :probability (cond ((or (eq op '*) (eq op #'*))
-								       (if (= val 0) 1 0))
+								       (if (= val 0) 0 0))
 								      (t
 								       (rule-probability rule1)))
                                                    :block (make-hash-table)
@@ -8590,6 +8594,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))
     (setq cost most-positive-fixnum)
+    (setq num-local-preds -1)
     (setq bindings (make-hash-table :test #'equal))
     (setq q-first-bindings (make-hash-table :test #'equal))
     (setq possible-candidates (get-possible-candidates p q))

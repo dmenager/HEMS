@@ -781,12 +781,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                    (format t "~%~%branch episode-id ~A branch lvl: ~d branch episode-states: ~d branch decompositions: ~A"
                            (episode-id (car branch)) (episode-lvl (car branch)) (length (episode-states (car branch))) (episode-num-decompositions (car branch))))
 		 (cond ((> (array-dimension (car (episode-observation ep)) 0) 0)
+			(when nil
+			  (format t "~%~%observation"))
 			(setq pattern (episode-observation ep))
 			(setq base (episode-observation (car branch))))
 		       ((> (array-dimension (car (episode-state ep)) 0) 0)
+			(when nil
+			  (format t "~%~%state"))
 			(setq pattern (episode-state ep))
 			(setq base (episode-state (car branch))))
 		       ((> (array-dimension (car (episode-state-transitions ep)) 0) 0)
+			(when nil
+			  (format t "~%~%state transition"))
 			(setq pattern (episode-state-transitions ep))
 			(setq base (episode-state-transitions (car branch))))
 		       (t

@@ -176,6 +176,108 @@
 (defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp)
   (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
 
+(defun filter-sample (sample &key (test #'equal))
+  (labels ((find-in-tree-aux (item tree)
+	     (cond ((funcall test item tree)                                  
+                    (return-from filter-sample tree))                          
+                   ((consp tree)
+                    (find-in-tree-aux item (car tree))                             
+                    (find-in-tree-aux item (cdr tree)))))
+	   (find-in-tree (item)
+	     (find-in-tree-aux item sample)))
+    (cond ((null sample)
+	   nil)
+	  ((find-in-tree "NA")
+	   nil)
+	  ((find-in-tree nil)
+	   nil)
+	  (t
+	   sample))))
+
+(defun sample-to-file (n-samples fname episode hidden-state-p output-percepts-p)
+  (let ((*print-pretty* nil)
+	(*print-circle* nil))
+    (with-open-file (stream fname :direction :output
+				  :if-does-not-exist :create
+				  :if-exists :supersede)
+      (loop
+	with action-counts and action and act-count
+	with i = 0
+	with s
+	while (< i n-samples)
+	do
+	   (setq s (sample episode :hidden-state-p hidden-state-p :output-percepts-p output-percepts-p))
+	   
+	when (filter-sample s)
+	  do
+	     (setq action (car (last (car s))))
+	     (setq act-count (assoc action action-counts :test #'string-equal))
+	     (if act-count
+		 (setf (cdr act-count) (+ (cdr act-count) 1))
+		 (setq action-counts (cons (cons action 1) action-counts)))
+	     (format stream "~S,~%" s)
+	     ;;(format t "~S~%" s)
+	     (setq i (+ i 1))))))
+
+(defun balance-action-samples (action-counts training-file hidden-state-p output-percepts-p)
+  (let ((max-act -1))
+    (loop
+      for (act . count) in action-counts
+      when (> count max-act)
+	do
+	   (setq max-act count))
+    (with-open-file (stream (concatenate 'string "HEMS-samples-" training-file)
+			    :direction :output
+			    :if-does-not-exist :error
+			    :if-exists :append)
+      (loop
+	with diff
+	for (act . count) in action-counts
+	do
+	   (setq diff (- max-act count))
+	   (setf count (+ count diff))
+	   (loop
+	     with s
+	     while (> diff 0)
+	     do
+		(setq s (conditional-sample eltm* (compile-program nil
+						    c1 = `(percept-node action :value ,act))
+					    "state-transitions"
+					    :hidden-state-p hidden-state-p
+					    :output-percepts-p output-percepts-p))
+	     when (filter-sample s)
+	       do
+		  (format stream "~S,~%" s)
+		  (setq diff (- diff 1)))))))
+
+(defun generate-hems-data (n-samples hidden-state-p output-percepts-p)
+  (let ((file-path "~/Code/HARLEM/ep_data_1/")
+	(training-files (list "a2c_CliffWalking-v0_data.csv"
+			      "dqn_Taxi-v3_data.csv"
+			      "a2c_FrozenLake-v1_data.csv"
+			      "ppo_CliffWalking-v0_data.csv"
+			      "a2c_Taxi-v3_data.csv"
+			      "ppo_FrozenLake-v1_data.csv"
+			      "ars_FrozenLake-v1_data.csv"
+			      "ppo_Taxi-v3_data.csv"
+			      "ars_Taxi-v3_data.csv"
+			      "qrdqn_CliffWalking-v0_data.csv"
+			      "dqn_CliffWalking-v0_data.csv"
+			      "qrdqn_FrozenLake-v1_data.csv"
+			      "dqn_FrozenLake-v1_data.csv"
+			      "qrdqn_Taxi-v3_data.csv")))
+    (loop
+      with action-counts
+      for training-file in training-files
+      do
+	 (setq eltm* nil)
+	 (format t "~%~%Loading ~A" training-file)
+	 (run-execution-trace (merge-pathnames file-path training-file) :hidden-state-p hidden-state-p)
+	 (format t "~%Generating random samples from the model.")
+	 (setq action-counts (sample-to-file n-samples (concatenate 'string "HEMS-samples-" training-file) (car eltm*) hidden-state-p output-percepts-p))
+	 (format t "~%Balancing action samples.")
+	 (balance-action-samples action-counts training-file hidden-state-p output-percepts-p))))
+
 #| TESTS 
 (ql:quickload :hems)
 
@@ -202,6 +304,7 @@
 (ql:quickload :hems)
 (hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
 (hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
-(hems:conditional-sample (hems:get-eltm) (compile-program nil
+(hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
+(hems::sample-to-file 10 (car (hems:get-eltm)) t t)
 |#

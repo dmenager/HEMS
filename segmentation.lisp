@@ -471,7 +471,7 @@
       finally
 	 (return max-digits))))
 
-(defun run-execution-trace (file &key break)
+(defun run-execution-trace (file &key (hidden-state-p t) break)
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-digits)
@@ -549,9 +549,9 @@
 				  ,@program))))
 
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
-	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p t :insertp t :bic-p nil)
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	   (when (equal action "terminal")
-	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p t :insertp t :bic-p nil)
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
 	   (if break

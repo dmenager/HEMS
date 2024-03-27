@@ -482,7 +482,8 @@
       (loop
 	with processed and hidden-state and observation and action
 	with st and obs
-	for line in data ;;(subseq data 0 7)
+	with len = (length data)
+	for line in data ;;(subseq data 0 3)
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -503,7 +504,7 @@
 						       'list)))))
 	   (loop
 	     with len = (length observation)
-	     for i from len to (- max-digits len)
+	     for i from len to (- max-digits 1)
 	     do
 		(setq observation (cons "0" observation)))
 	   #|
@@ -554,7 +555,7 @@
 	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
-	   (if break
-	       (break))))
+	   (when break
+	     (break))))
     (eltm-to-pdf)
     (save-eltm-to-file eltm*)))

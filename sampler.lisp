@@ -15,15 +15,27 @@
 	   (setq bn (episode-state-transitions episode)))
 	  (t
 	   (error "uh oh")))
+    (when nil t
+      (format t "~%~%  episode id: ~S" (episode-id episode)))
     (loop
       with dice
       with sample-rule = (make-rule :conditions (make-hash-table :test #'equal))
       with sample-list 
       with compatible-rules
       for cpd being the elements of (car bn)
+      for i from 0
       do
 	 (setq dice (random 100))
 	 (setq compatible-rules (sort (get-compatible-rules cpd cpd sample-rule :find-all t) #'< :key #'rule-probability))
+	 (when nil t
+	   (format t "~%~%   state/observation distribution")
+	   (print-hash-entry i cpd)
+	   (format t "~%   sample rule:")
+	   (print-cpd-rule sample-rule)
+	   (format t "~%  roll: ~d~%   compatible-rules:" dice)
+	   (map nil #'print-cpd-rule compatible-rules)
+	   ;;(break)
+	   )
 	 (loop
 	   named looper
 	   with low-end = 0 and high-end and value
@@ -37,6 +49,8 @@
 		(setf (gethash (rule-based-cpd-dependent-id cpd)
 			       (rule-conditions sample-rule))
 		      value)
+		(when nil t
+		  (format t "~%  sample: ~S" (cons (rule-based-cpd-dependent-id cpd) value)))
 		(when (or (not output-percepts-p)
 			  (and output-percepts-p
 			       (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd)))))
@@ -84,15 +98,15 @@
       do
 	 (setq dice (random 100))
 	 (setq compatible-rules (sort (get-compatible-rules cpd cpd sample-rule :find-all t) #'< :key #'rule-probability))
-	 (when nil
+	 (when nil t
 	   (format t "~%~%distribution")
 	   (print-hash-entry i cpd)
 	   (format t "~%sample rule:")
 	   (print-cpd-rule sample-rule)
 	   (format t "~%roll: ~d~%compatible-rules:" dice)
 	   (map nil #'print-cpd-rule compatible-rules)
-	   (break))
-
+	   ;;(break)
+	   )
 	 (if hidden-state-p
 	     (setq marker (mod i 3))
 	     (setq marker (mod i 2)))
@@ -110,6 +124,8 @@
 			       (rule-conditions sample-rule))
 		      value)
 		(setq ref (caar (nth value (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
+		(when nil t
+		  (format t "~%ref: ~S" ref))
 		(cond ((equal "NA" ref)
 		       (setq data (cons nil data)))
 		      (t
@@ -177,14 +193,14 @@
   (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
 
 (defun filter-sample (sample &key (test #'equal))
-  (labels ((find-in-tree-aux (item tree)
-	     (cond ((funcall test item tree)                                  
-                    (return-from filter-sample tree))                          
-                   ((consp tree)
-                    (find-in-tree-aux item (car tree))                             
-                    (find-in-tree-aux item (cdr tree)))))
-	   (find-in-tree (item)
-	     (find-in-tree-aux item sample)))
+  (labels ((find-in-tree (item)
+	     (labels ((find-in-tree-aux (tree)
+			(cond ((funcall test item tree)                                  
+			       (return-from find-in-tree tree))                          
+			      ((consp tree)
+			       (find-in-tree-aux  (car tree))                             
+			       (find-in-tree-aux  (cdr tree))))))
+	       (find-in-tree-aux sample))))
     (cond ((null sample)
 	   nil)
 	  ((find-in-tree "NA")
@@ -207,9 +223,10 @@
 	while (< i n-samples)
 	do
 	   (setq s (sample episode :hidden-state-p hidden-state-p :output-percepts-p output-percepts-p))
-	   
+	   (format t "~%Candidate sample:~%~S" s)
 	when (filter-sample s)
 	  do
+	     (format t "~%Success!")
 	     (setq action (car (last (car s))))
 	     (setq act-count (assoc action action-counts :test #'string-equal))
 	     (if act-count
@@ -217,7 +234,9 @@
 		 (setq action-counts (cons (cons action 1) action-counts)))
 	     (format stream "~S,~%" s)
 	     ;;(format t "~S~%" s)
-	     (setq i (+ i 1))))))
+	     (setq i (+ i 1))
+	finally
+	   (return action-counts)))))
 
 (defun balance-action-samples (action-counts training-file hidden-state-p output-percepts-p)
   (let ((max-act -1))
@@ -240,6 +259,7 @@
 	     with s
 	     while (> diff 0)
 	     do
+		(format t "~%generating ~d more samples" diff)
 		(setq s (conditional-sample eltm* (compile-program nil
 						    c1 = `(percept-node action :value ,act))
 					    "state-transitions"
@@ -247,12 +267,13 @@
 					    :output-percepts-p output-percepts-p))
 	     when (filter-sample s)
 	       do
+		  
 		  (format stream "~S,~%" s)
 		  (setq diff (- diff 1)))))))
 
 (defun generate-hems-data (n-samples hidden-state-p output-percepts-p)
   (let ((file-path "~/Code/HARLEM/ep_data_1/")
-	(training-files (list "a2c_CliffWalking-v0_data.csv"
+	(training-files (list ;;"a2c_CliffWalking-v0_data.csv"
 			      "dqn_Taxi-v3_data.csv"
 			      "a2c_FrozenLake-v1_data.csv"
 			      "ppo_CliffWalking-v0_data.csv"
@@ -273,10 +294,14 @@
 	 (setq eltm* nil)
 	 (format t "~%~%Loading ~A" training-file)
 	 (run-execution-trace (merge-pathnames file-path training-file) :hidden-state-p hidden-state-p)
+	 (eltm-to-pdf)
 	 (format t "~%Generating random samples from the model.")
 	 (setq action-counts (sample-to-file n-samples (concatenate 'string "HEMS-samples-" training-file) (car eltm*) hidden-state-p output-percepts-p))
+	 (format t "~%action counts:~%~A" action-counts)
 	 (format t "~%Balancing action samples.")
-	 (balance-action-samples action-counts training-file hidden-state-p output-percepts-p))))
+	 (balance-action-samples action-counts training-file hidden-state-p output-percepts-p)
+	 
+	 (break))))
 
 #| TESTS 
 (ql:quickload :hems)
@@ -306,5 +331,5 @@
 (hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
-(hems::sample-to-file 10 (car (hems:get-eltm)) t t)
+(hems::generate-hems-data 10 t t)
 |#

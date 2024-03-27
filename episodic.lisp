@@ -214,11 +214,14 @@
 ;; ep2-bn = bn in episode2 (from new episode)
 ;; mappings = matching with bindings from ep2 nodes to ep1 nodes
 ;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
-;; bindings = bindings
-(defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings)
+;; bindings = variable bindings from p to q
+;; q-first-bindings = variable bindings from q to p
+(defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings q-first-bindings)
   (let (p q new-nodes)
     (setq p (copy-factors (car ep2-bn)))
     (setq q (copy-factors (car ep1-bn)))
+    (when nil t
+      (format t "~%~%bindings:~%~S" bindings))
     (loop
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
@@ -226,23 +229,23 @@
          (when nil
                (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when nil
+         (when nil 
                (format t "~%p-cpd after subst:~%~S" p-cpd))
          (when nil
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                (break)
 	       )
-         (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings nodes ep1-count))
+         (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
          ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
          (setq new-nodes (cons node new-nodes)))
     (loop
       for (dummy-match . unmatched-q) in unmatched
       with dm and node
       do
-         (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
+         (when nil (and (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
                (format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
-         (setq node (factor-merge dm (aref q unmatched-q) bindings new-nodes ep1-count))
+         (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
          (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
                (format t "~%node:~%~S" node)
                (break))
@@ -324,8 +327,9 @@
 ;; ep2 = new episode
 ;; mappings = matching with bindings (for each state) from ep2 nodes to ep1 nodes
 ;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
-;; bindings = bindings
-(defun new-combine (ep1 ep2 mappings unmatched bindings)
+;; bindings = variable bindings from p to q
+;; q-first-bindings = variable bindings from q to p
+(defun new-combine (ep1 ep2 mappings unmatched bindings q-first-bindings)
   ;;(format t "~%schema decopositions:~%~S~%num:~%~d~%episode decopositions:~%~S~%num:~%~d~%decomp bindings:~%~S" (episode-decompositions ep1) (episode-num-decompositions ep1) (episode-decompositions ep2) (episode-num-decompositions ep2) decomp-bindings)
   (make-episode :id (episode-id ep1)
                 :index-episode-id (episode-index-episode-id ep1)
@@ -344,12 +348,12 @@
                      (return new-id-ref-map))
 		:observation (if (= (array-dimension (car (episode-observation ep2)) 0) 0)
 				 (episode-observation ep1)
-				 (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings))
+				 (new-combine-bns (episode-observation ep1) (episode-observation ep2) (episode-count ep1) mappings unmatched bindings q-first-bindings))
 		:state (if (= (array-dimension (car (episode-state ep2)) 0) 0)
 			   (episode-state ep1)
-			   (new-combine-bns (episode-state ep1) (episode-state ep2) (episode-count ep1) mappings unmatched bindings))
+			   (new-combine-bns (episode-state ep1) (episode-state ep2) (episode-count ep1) mappings unmatched bindings q-first-bindings))
                 :state-transitions (if (episode-temporal-p ep2)
-                                       (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings)
+                                       (new-combine-bns (episode-state-transitions ep1) (episode-state-transitions ep2) (episode-count ep1) mappings unmatched bindings q-first-bindings)
                                        (episode-state-transitions ep1))
                 :temporal-p (or (episode-temporal-p ep1) (episode-temporal-p ep2))
                 :abstraction-ptrs (episode-abstraction-ptrs ep1)
@@ -591,7 +595,7 @@
            (values x 0 (list (make-hash-table :test #'equal)) nil nil (cons (episode-id (car x)) reject-list -1)))
           (res
            ;; combine the graphs according to the mapping
-           (setq generalized (new-combine (car x) y (first res) (second res) (fourth res)))
+           (setq generalized (new-combine (car x) y (first res) (second res) (fourth res) (fifth res)))
 	   (setq equivalent (or (= 0 (third res))
 				(and (= (hash-table-count (fifth res))
 					(hash-table-count (fourth res)))
@@ -619,12 +623,11 @@
           (t ;; when insert starts at root
            (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
-	     (declare (ignore q-first-bindings))
 	     (when nil
 	       (format t "~%cost: ~d~%num local matches: ~d" cost num-local-preds))
 	     (when nil t
 	       (format t "~%matches:~%~A~%no matches:~%~A~%bindings:~%~A~%num-local-preds: ~d" sol no-matches bindings num-local-preds))
-	     (setq generalized (new-combine (car x) y sol no-matches bindings))
+	     (setq generalized (new-combine (car x) y sol no-matches bindings q-first-bindings))
 	     (setq equivalent (or (= 0 cost)
 				  (and (= (hash-table-count q-first-bindings)
 					  (hash-table-count bindings))

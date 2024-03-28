@@ -194,13 +194,13 @@
 
 (defun filter-sample (sample &key (test #'equal))
   (labels ((find-in-tree (item)
-	     (labels ((find-in-tree-aux (tree)
-			(cond ((funcall test item tree)                                  
-			       (return-from find-in-tree tree))                          
+	     (labels ((find-in-tree-aux (tree rest)
+		        (cond ((funcall test item tree)                                  
+			       (return-from find-in-tree (if rest t tree)))
 			      ((consp tree)
-			       (find-in-tree-aux  (car tree))                             
-			       (find-in-tree-aux  (cdr tree))))))
-	       (find-in-tree-aux sample))))
+			       (find-in-tree-aux  (car tree) (cdr tree))
+			       (find-in-tree-aux  (cdr tree) (cdr tree))))))
+	       (find-in-tree-aux sample (rest sample)))))
     (cond ((null sample)
 	   nil)
 	  ((find-in-tree "NA")
@@ -216,6 +216,7 @@
     (with-open-file (stream fname :direction :output
 				  :if-does-not-exist :create
 				  :if-exists :supersede)
+      (format stream "observation, action~%")
       (loop
 	with action-counts and action and act-count
 	with i = 0
@@ -223,17 +224,34 @@
 	while (< i n-samples)
 	do
 	   (setq s (sample episode :hidden-state-p hidden-state-p :output-percepts-p output-percepts-p))
-	   (format t "~%Candidate sample:~%~S" s)
 	when (filter-sample s)
 	  do
-	     (format t "~%Success!")
 	     (setq action (car (last (car s))))
 	     (setq act-count (assoc action action-counts :test #'string-equal))
 	     (if act-count
 		 (setf (cdr act-count) (+ (cdr act-count) 1))
 		 (setq action-counts (cons (cons action 1) action-counts)))
-	     (format stream "~S,~%" s)
-	     ;;(format t "~S~%" s)
+	     ;;(format stream "~S,~%" s)
+	     (loop
+	       with len = (length (second (car s)))
+	       with arr = (make-array len)
+	       with lst
+	       with obs-var
+	       for obs in (second (car s))
+	       do
+		  (setq obs-var (second (split-sequence:split-sequence #\_ (car obs))))
+		  (cond ((search "1" obs-var)
+			 (setf (aref arr (- len 1)) (parse-integer (cdr obs))))
+			((search "2" obs-var)
+			 (setf (aref arr (- len 2)) (parse-integer (cdr obs))))
+			((search "3" obs-var)
+			 (setf (aref arr (- len 3)) (parse-integer (cdr obs))))
+			((search "4" obs-var)
+			 (setf (aref arr (- len 4)) (parse-integer (cdr obs))))
+			((search "5" obs-var)
+			 (setf (aref arr (- len 5)) (parse-integer (cdr obs)))))
+	       finally
+		  (format stream "~{~d~}, ~s~%" (coerce arr 'list) (if (string-equal "terminal" action) action (parse-integer action))))
 	     (setq i (+ i 1))
 	finally
 	   (return action-counts)))))
@@ -250,7 +268,7 @@
 			    :if-does-not-exist :error
 			    :if-exists :append)
       (loop
-	with diff
+	with diff and action
 	for (act . count) in action-counts
 	do
 	   (setq diff (- max-act count))
@@ -259,7 +277,7 @@
 	     with s
 	     while (> diff 0)
 	     do
-		(format t "~%generating ~d more samples" diff)
+		(format t "~%generating ~d more samples for action ~S" diff act)
 		(setq s (conditional-sample eltm* (eval `(compile-program nil
 							   c1 = (percept-node action :value ,act)))
 					    "state-transitions"
@@ -267,26 +285,50 @@
 					    :output-percepts-p output-percepts-p))
 	     when (filter-sample s)
 	       do
-		  
-		  (format stream "~S,~%" s)
+		  (setq action (car (last (car s))))
+		  (let ((*print-pretty* nil)
+			(*print-circle* nil))
+		    ;;(format stream "~S,~%" s)
+		    (loop
+		      with len = (length (second (car s)))
+		      with arr = (make-array len)
+		      with lst
+		      with obs-var
+		      for obs in (second (car s))
+		      do
+			 (setq obs-var (second (split-sequence:split-sequence #\_ (car obs))))
+			 (cond ((search "1" obs-var)
+				(setf (aref arr (- len 1)) (parse-integer (cdr obs))))
+			       ((search "2" obs-var)
+				(setf (aref arr (- len 2)) (parse-integer (cdr obs))))
+			       ((search "3" obs-var)
+				(setf (aref arr (- len 3)) (parse-integer (cdr obs))))
+			       ((search "4" obs-var)
+				(setf (aref arr (- len 4)) (parse-integer (cdr obs))))
+			       ((search "5" obs-var) 
+				(setf (aref arr (- len 5)) (parse-integer (cdr obs)))))
+		      finally
+			 (format stream "~{~d~}, ~S~%" (coerce arr 'list) (if (string-equal "terminal" action) action (parse-integer action)))
+		      ))
 		  (setq diff (- diff 1)))))))
 
 (defun generate-hems-data (n-samples hidden-state-p output-percepts-p)
   (let ((file-path "~/Code/HARLEM/ep_data_1/")
 	(training-files (list ;;"a2c_CliffWalking-v0_data.csv"
 			      ;;"dqn_Taxi-v3_data.csv"
-			      "a2c_FrozenLake-v1_data.csv"
+			      ;;"a2c_FrozenLake-v1_data.csv"
 			      "ppo_CliffWalking-v0_data.csv"
-			      "a2c_Taxi-v3_data.csv"
+			      ;;"a2c_Taxi-v3_data.csv"
 			      "ppo_FrozenLake-v1_data.csv"
-			      "ars_FrozenLake-v1_data.csv"
+			      ;;"ars_FrozenLake-v1_data.csv"
 			      "ppo_Taxi-v3_data.csv"
-			      "ars_Taxi-v3_data.csv"
-			      "qrdqn_CliffWalking-v0_data.csv"
-			      "dqn_CliffWalking-v0_data.csv"
-			      "qrdqn_FrozenLake-v1_data.csv"
-			      "dqn_FrozenLake-v1_data.csv"
-			      "qrdqn_Taxi-v3_data.csv")))
+			      ;;"ars_Taxi-v3_data.csv"
+			      ;;"qrdqn_CliffWalking-v0_data.csv"
+			      ;;"dqn_CliffWalking-v0_data.csv"
+			      ;;"qrdqn_FrozenLake-v1_data.csv"
+			      ;;"dqn_FrozenLake-v1_data.csv"
+			      ;;"qrdqn_Taxi-v3_data.csv"
+			      )))
     (loop
       with action-counts
       for training-file in training-files
@@ -297,11 +339,11 @@
 	 (eltm-to-pdf)
 	 (format t "~%Generating random samples from the model.")
 	 (setq action-counts (sample-to-file n-samples (concatenate 'string "HEMS-samples-" training-file) (car eltm*) hidden-state-p output-percepts-p))
-	 (format t "~%action counts:~%~A" action-counts)
 	 (format t "~%Balancing action samples.")
 	 (balance-action-samples action-counts training-file hidden-state-p output-percepts-p)
 	 
-	 (break))))
+	 ;;(break)
+      )))
 
 #| TESTS 
 (ql:quickload :hems)
@@ -331,5 +373,5 @@
 (hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
-(hems::generate-hems-data 10 t t)
+(hems::generate-hems-data 2000 t t)
 |#

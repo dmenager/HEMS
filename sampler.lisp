@@ -260,8 +260,8 @@
 	     while (> diff 0)
 	     do
 		(format t "~%generating ~d more samples" diff)
-		(setq s (conditional-sample eltm* (compile-program nil
-						    c1 = `(percept-node action :value ,act))
+		(setq s (conditional-sample eltm* (eval `(compile-program nil
+							   c1 = (percept-node action :value ,act)))
 					    "state-transitions"
 					    :hidden-state-p hidden-state-p
 					    :output-percepts-p output-percepts-p))
@@ -274,7 +274,7 @@
 (defun generate-hems-data (n-samples hidden-state-p output-percepts-p)
   (let ((file-path "~/Code/HARLEM/ep_data_1/")
 	(training-files (list ;;"a2c_CliffWalking-v0_data.csv"
-			      "dqn_Taxi-v3_data.csv"
+			      ;;"dqn_Taxi-v3_data.csv"
 			      "a2c_FrozenLake-v1_data.csv"
 			      "ppo_CliffWalking-v0_data.csv"
 			      "a2c_Taxi-v3_data.csv"

@@ -1676,7 +1676,9 @@
   (loop
     with split-rules = nil
     for existing-rule in rules
-    when (compatible-rule-p rule existing-rule phi phi)
+     when (and (compatible-rule-p rule existing-rule phi phi)
+	       (not (= (rule-probability existing-rule)
+		       (rule-probability rule))))
       do
 	 (when nil (and (equal "OBSERVATION_VAR2_210" (rule-based-cpd-dependent-id phi)))
 	   (format t "~%~%existing rule is compatible with new ruel. Splitting existing rule:")
@@ -1695,7 +1697,7 @@
     else
       do
 	 (when nil (and (equal "OBSERVATION_VAR2_210" (rule-based-cpd-dependent-id phi)))
-	   (format t "~%~%existing rule is NOT compatible with new rule. Inserting existing rule:")
+	   (format t "~%~%existing rule is NOT compatible with new rule or they are compatible, but have equal probability. Inserting existing rule:")
 	   (print-cpd-rule existing-rule))
 	 (setq split-rules (cons existing-rule split-rules))
     finally

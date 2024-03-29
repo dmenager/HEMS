@@ -475,6 +475,9 @@
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-digits)
+      (setq eltm* (list (make-empty-episode)))
+      ;;(format t "~%eltm:~%~S" eltm*)
+      ;;(break)
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
       (setq data (rest data))
@@ -534,9 +537,9 @@
 		(when t
 		  (format t "~%~%observation: ~d~%action: ~S" j action))
 		(setq obs (eval `(compile-program (:relational-invariants t
-									  :neighborhood-func #'array-neighborhood
-									  :nbr-func-args (,(length observation) 1))
-						  ,@program))))
+						   :neighborhood-func #'array-neighborhood
+						   :nbr-func-args (,(length observation) 1))
+				   ,@program))))
 	   (loop
 	     for var in hidden-state
 	     for i from 1
@@ -548,7 +551,7 @@
 						  :neighborhood-func #'array-neighborhood
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
-
+	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	   (when (equal action "terminal")

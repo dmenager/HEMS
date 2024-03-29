@@ -313,15 +313,15 @@
 		  (setq diff (- diff 1)))))))
 
 (defun generate-hems-data (n-samples hidden-state-p output-percepts-p)
-  (let ((file-path "~/Code/HARLEM/ep_data_1/")
+  (let ((file-path "~/Code/HARLEM/ep_data_10/")
 	(training-files (list ;;"a2c_CliffWalking-v0_data.csv"
 			      ;;"dqn_Taxi-v3_data.csv"
 			      ;;"a2c_FrozenLake-v1_data.csv"
-			      "ppo_CliffWalking-v0_data.csv"
+			      ;;"ppo_CliffWalking-v0_data.csv"
 			      ;;"a2c_Taxi-v3_data.csv"
 			      "ppo_FrozenLake-v1_data.csv"
 			      ;;"ars_FrozenLake-v1_data.csv"
-			      "ppo_Taxi-v3_data.csv"
+			      ;;"ppo_Taxi-v3_data.csv"
 			      ;;"ars_Taxi-v3_data.csv"
 			      ;;"qrdqn_CliffWalking-v0_data.csv"
 			      ;;"dqn_CliffWalking-v0_data.csv"
@@ -370,6 +370,7 @@
 ------------
 (ql:quickload :hems)
 (hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_FrozenLake-v1_data.csv")
 (hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)

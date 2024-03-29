@@ -77,6 +77,19 @@
     finally
        (return prev)))
 
+(defun make-empty-episode ()
+  (let ((ep-id (symbol-name (gensym "EPISODE-"))))
+    (make-episode
+     :id ep-id
+     :index-episode-id ep-id
+     :observation (cons (make-array 0) (make-hash-table :test #'equal))
+     :state (cons (make-array 0) (make-hash-table :test #'equal))
+     :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+     :backlinks (make-hash-table :test #'equal)
+     :count 0
+     :depth 0
+     :lvl 0)))
+
 #| Performs deep copy on episode |#
 
 ;; ep = episode to copy

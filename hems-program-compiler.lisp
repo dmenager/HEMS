@@ -231,6 +231,9 @@
 	      (setf (rule-based-cpd-lvl cpd1) (+ (apply #'max (cons 0 lvls)) 1))))
     l))
 
+(defun divides (i j)
+  (integerp (/ i j)))
+
 (defun add-invariants (neighborhood-func nbr-func-args cpd-arr inv-hash invariants-list)
   (when (null neighborhood-func)
     (setq neighborhood-func #'default-neighborhood))
@@ -248,10 +251,11 @@
 	    (setq cpd-j (aref cpd-arr j))
 	    (setq var-j (caar (nth 1 (gethash 0 (rule-based-cpd-var-value-block-map cpd-j)))))
 	    (loop
-	      with invariant-alias and invariant-role1 and invariant-role2
+	      with invariant-alias and invariant-role1 and invariant-role2 and skip-test
 	      with num-j and num-i and invariant-id and role1-id and role2-id
 	      for invariant in invariants-list
 	      do
+		 (setq skip-test nil)
 		 (setq invariant-id (gensym))
 		 (setq role1-id (gensym))
 		 (setq role2-id (gensym))
@@ -270,18 +274,38 @@
 		       ((eq invariant '+)
 			(setq invariant-alias 'additive_number)
 			(setq invariant-role1 'augend)
-			(setq invariant-role2 'addend)))
+			(setq invariant-role2 'addend))
+		       ((eq invariant '-)
+			(setq invariant-alias 'substractive_number)
+			(setq invariant-role1 'minuend)
+			(setq invariant-role2 'substrahend))
+		       ((eq invariant 'divides)
+			(setq invariant-alias 'divides)
+			(setq invariant-role1 'dividend)
+			(setq invariant-role2 'divisor)))
 		 (with-input-from-string (stream-j var-j)
 		   (with-input-from-string (stream-i var-i)
 		     (setq num-j (read stream-j))
 		     (setq num-i (read stream-i))
-		     (when (funcall invariant num-i num-j)
-		       (cond ((funcall invariant num-j num-i)
+		     (if (and (eq invariant 'divides)
+			      (or (eq num-j 0)
+				  (eq num-i 1)))
+			 (setq skip-test t))
+		     (when (and (not skip-test) (funcall invariant num-i num-j))
+		       (if (and (eq invariant 'divides)
+				(or (eq num-i 0)
+				    (eq num-j 1)))
+			   (setq skip-test t))
+		       (cond ((and (not skip-test) (funcall invariant num-j num-i))
 			      (when (null (gethash invariant reflexive-hash))
 				(setf (gethash invariant reflexive-hash) (make-hash-table)))
 			      (when (not (member num-i (gethash num-j (gethash invariant reflexive-hash))))			     
 				(cond ((eq invariant '+)
 				       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(write-to-string (+ num-i num-j)))))))
+				      ((eq invariant '-)
+				       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(write-to-string (- num-i num-j)))))))
+				      ((eq invariant 'divides)
+				       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value "T")))))
 				      (t
 				       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))))
 				(setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value ,(rule-based-cpd-dependent-id cpd-i)))))
@@ -294,9 +318,13 @@
 				(setq new-body (concatenate 'list new-body `(,role2-id -> ,(gethash (rule-based-cpd-dependent-id cpd-j) inv-hash))))
 				(setf (gethash num-i (gethash invariant reflexive-hash))
 				      (cons num-j (gethash num-i (gethash invariant reflexive-hash))))))
-			     (t
+			     ((not skip-test)
 			      (cond ((eq invariant '+)
-				       (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(write-to-string (+ num-i num-j)))))))
+				     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(write-to-string (+ num-i num-j)))))))
+				    ((eq invariant '-)
+				     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(write-to-string (- num-i num-j)))))))
+				    ((eq invariant 'divides)
+				     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,"T")))))
 				    (t
 				     (setq new-body (concatenate 'list new-body `(,invariant-id = (relation-node ,invariant-alias :value ,(caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd-i))))))))))
 			      (setq new-body (concatenate 'list new-body `(,role1-id = (relation-node ,invariant-role1 :value ,(rule-based-cpd-dependent-id cpd-i)))))
@@ -375,7 +403,7 @@
 			 (when (and ,relational-invariants ,recurse-p)
 			   (setq ,inv-hash (make-hash-table :test #'equal)))
 			 (loop
-			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(> = +)
+			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(> = divides)
 			   for ,ident being the hash-keys of ,hash
 			     using (hash-value ,cpd)
 			   collect ,cpd into ,cpd-list

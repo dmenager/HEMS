@@ -477,10 +477,11 @@
 ;; hash2 = hash-table
 ;; cpd1 = conditional probability distribution
 ;; forbidden-types = cpd types to ignore
-(defun hash-difference (hash1 hash2 cpd1 &optional forbidden-types)
+(defun hash-difference (hash1 hash2 cpd1 &key forbidden-types output-hash-p (test #'eql))
   (when hash1
     (loop
-      with result and var-type and forbidden-p and forbidden-likelihood
+      with result = (when output-hash-p (make-hash-table :size (ceiling (+ (hash-table-count hash1) (hash-table-count hash2))) :test test))
+      with var-type and forbidden-p and forbidden-likelihood
       for k1 being the hash-keys of hash1
         using (hash-value pos)
       do
@@ -488,10 +489,13 @@
            (setq var-type (gethash pos (rule-based-cpd-types cpd1)))
            (setq forbidden-p (member var-type forbidden-types :test #'equal))
            (if forbidden-p (setq forbidden-likelihood t)))
-         (multiple-value-bind (val present-p)
+	 (multiple-value-bind (val present-p)
              (gethash k1 hash2)
            (when (and (not present-p) (not forbidden-p))
-             (setq result (cons k1 result))))
+	     (cond (output-hash-p
+		    (setf (gethash k1 result) k1))
+		   (t
+		    (setq result (cons k1 result))))))
       finally
          (return (values result forbidden-likelihood)))))
 
@@ -1676,7 +1680,11 @@
   (loop
     with split-rules = nil
     for existing-rule in rules
-     when (and (compatible-rule-p rule existing-rule phi phi))
+    when (and (compatible-rule-p rule existing-rule phi phi)
+	      (or (not (equal (rule-probability rule)
+			      (rule-probability existing-rule)))
+		  (not (equal (rule-count rule)
+			      (rule-count existing-rule)))))
       do
 	 (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi)))
 	   (format t "~%~%existing rule is compatible with new rule. Splitting existing rule:")
@@ -1795,6 +1803,8 @@
 				   ;;(break)
 				       )
                               finally
+				 (setq new-rules (remove-duplicates new-rules :test #'(lambda (r1 r2)
+									    (same-rule-p r1 r2 phi1 phi1))))
 				 (setf (rule-based-cpd-rules phi1) (make-array (length new-rules) :initial-contents new-rules)))
 			    #|
 			    (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
@@ -1862,6 +1872,8 @@
 				 (format t "~%new rules:~%~S" new-rules))
 				 (setf (rule-based-cpd-rules phi1) (make-array length :initial-contents new-rules)))
                               |#
+				 (setq new-rules (remove-duplicates new-rules :test #'(lambda (r1 r2)
+											(same-rule-p r1 r2 phi1 phi1))))
 				 (setf (rule-based-cpd-rules phi1) (make-array (length new-rules) :initial-contents new-rules)))))
                      (setf (gethash pos (rule-based-cpd-var-value-block-map phi1)) vvbm1)
                      (setf (gethash pos (rule-based-cpd-negated-vvbms phi1)) nvvbm1)
@@ -2663,35 +2675,25 @@
 ;; cond-val = candidate condition value pair to add to rule
 ;; cond-conflicts = conflicts in the block of cond-val
 ;; tog = attribute blocks for the rest of the attributes in the CPD
-(defun sink-free-conflicts-p (cond-val cond-conflicts tog print)
-  (when (and print)
-    (format t "~%~%cond-val: ~S~%conflicts:~%~S" cond-val cond-conflicts))
+(defun conflict-hardness (cond-val cond-conflicts tog certain-tog)
   (loop
-    with sinks = (copy-hash-table cond-conflicts)
+    with hardness = 0
+    for certain-ident being the hash-keys of certain-tog
+      using (hash-value certain-att-blocks)
     for ident being the hash-keys of tog
       using (hash-value att-blocks)
     when (not (equal (car cond-val) ident))
       do
 	 (loop
+	   for (cert-condition-block cert-intersection cert-conflicts cert-redundancies cert-g cert-all-conflicts cert-all-redundancies cert-all-partial-coverings) in certain-att-blocks
 	   for (condition-block intersection conflicts redundancies g all-conflicts all-redundancies all-partial-coverings) in att-blocks
-	   when (not (listp (cdar condition-block)))
+	   when (and (> (hash-table-count cert-intersection) 0)
+		     (not (listp (cdar condition-block))))
 	     do
-		(setq sinks (hash-intersection sinks conflicts :output-hash-p t))
-		#|
-		(when (= (hash-table-count sinks) 0)
-		  (return-from sink-free-conflicts-p t))
-		|#
-		(when (and print)
-		  (format t "~%condition: ~S~%conflicts:~%~S~%sinks:~%~S" (car condition-block) conflicts sinks)))
+		(when (> (hash-table-count (hash-intersection cond-conflicts conflicts :output-hash-p t)) 0)
+		  (setq hardness (+ hardness 1))))
     finally
-       (return (cond ((= (hash-table-count sinks) 0)
-		      (when (and print)
-			(format t "~% returning t"))
-		      t)
-		     (t
-		      (when (and print)
-			(format t "~%returning nil"))
-		      nil)))))
+       (return hardness)))
 #| Get next condition candidtate for new rule |#
 
 ;; certain-tog = certain T(G)
@@ -2702,9 +2704,9 @@
 ;; case-constraints = hash table of constraints that a rule must satisfy for each covered case
 (defun find-subset-with-max (certain-tog tog junk cpd case-constraints  &key (reject-conditions))
   (loop
-    with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-cert-intersection and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
+    with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
     with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
-    with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum
+    with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
     for certain-ident being the hash-keys of certain-tog
       using (hash-value certain-att-blocks)
     for ident being the hash-keys of tog
@@ -2719,15 +2721,17 @@
          with penalty-weight and penalty and cert-penalty-weight and cert-penalty
          with redundancy-weight and redundancy and cert-redundancy-weight and cert-redundancy
          with partial-coverings and partial-coverings-weight
-         with size-penalty
+         with size-penalty and hardness
          for (cert-condition-block cert-intersection cert-conflicts cert-redundancies cert-g cert-all-conflicts cert-all-redundancies cert-all-partial-coverings) in certain-att-blocks
          for (condition-block intersection conflicts redundancies g all-conflicts all-redundancies all-partial-coverings) in att-blocks
 	 when (and (> (hash-table-count cert-intersection) 0)
 		   (not (listp (cdar condition-block)))
-		   (sink-free-conflicts-p (car condition-block) conflicts tog (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd))) t))
-		   ;;(condition-satisfy-case-constraints-p (car condition-block) cert-intersection case-constraints cpd)
+		   (condition-satisfy-case-constraints-p (car condition-block) cert-intersection case-constraints cpd)
                    )
            do
+	      (if (> (hash-table-count cert-intersection) 0)
+		  (setq cert-intersection-p 0)
+		  (setq cert-intersection-p 0))
               (setq condition (car condition-block))
               (setq att-block (second condition-block))
               (setq lower-approx (second cert-condition-block))
@@ -2741,16 +2745,17 @@
               (setq cert-penalty-weight (hash-table-count conflicts))
               ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
               ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
-              
+              ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
               (setq certain-discounted-coverage (- 0 ;;(* cert-goodness-weight cert-goodness)
                                                    cert-penalty-weight
                                                    ;;(* cert-redundancy-weight cert-redundancy)
                                                    ;;(* partial-coverings-weight partial-coverings)
                                                    ))
               (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
-                (format t "~%~%B_~S = ~S~%~S = ~S~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   size: ~d"
-                        condition lower-approx
+                (format t "~%~%B_~S = ~S~%~S = ~S~%   hardness: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
+			condition lower-approx
                         condition att-block
+			hardness
                         conflicts
                         (hash-table-count conflicts)
 			cert-conflicts
@@ -2758,8 +2763,148 @@
 			cert-intersection
                         (hash-table-count cert-intersection)
 			intersection
+			(hash-table-count redundancies)
 			(hash-table-count intersection) (hash-table-count att-block)))
-              (when (or (< (hash-table-count conflicts) best-num-conflicts) 
+              (when 
+		  #|
+		  (or (> (hash-table-count cert-intersection) best-cert-intersection) 
+                        (and (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (< (hash-table-count conflicts) best-num-conflicts))
+			(and (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+                             
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))
+                  )
+		  |#
+		  
+		  (or (and (< (hash-table-count conflicts) best-num-conflicts)) 
+                  (and (= (hash-table-count conflicts) best-num-conflicts)
+                             (> (hash-table-count cert-intersection) best-cert-intersection))
+			(and (= (hash-table-count conflicts) best-num-conflicts)
+                             (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= (hash-table-count conflicts) best-num-conflicts)
+                             (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))
+                        )
+		  
+		  #|(or (> cert-intersection-p best-cert-intersection-p)
+			(and (= cert-intersection-p best-cert-intersection-p)
+			     (< hardness best-hardness))
+			(and (= cert-intersection-p best-cert-intersection-p)
+			     (= hardness best-hardness)
+			     (< (hash-table-count conflicts) best-num-conflicts))
+		        (and (= cert-intersection-p best-cert-intersection-p)
+			     (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (> (hash-table-count cert-intersection) best-cert-intersection)
+			     )
+		        (and (= cert-intersection-p best-cert-intersection-p)
+			     (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     ;;(= (hash-table-count intersection) best-intersection)
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= cert-intersection-p best-cert-intersection-p)
+			     (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     ;;(= (hash-table-count intersection) best-intersection)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))	
+                        )
+		|#
+		#|
+		(or (< hardness best-hardness)
+			(and (= hardness best-hardness)
+			     (< (hash-table-count conflicts) best-num-conflicts))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (> (hash-table-count cert-conflicts) best-cert-conflicts))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (> (hash-table-count cert-intersection) best-cert-intersection))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (< (hash-table-count intersection) best-intersection))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count intersection) best-intersection)
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count intersection) best-intersection)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))	
+                        )
+		|#
+		#|
+		  (or (< hardness best-hardness)
+			(and (= hardness best-hardness)
+			     (< (hash-table-count conflicts) best-num-conflicts))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (> (hash-table-count cert-intersection) best-cert-intersection))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (< (hash-table-count intersection) best-intersection))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count intersection) best-intersection)
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count intersection) best-intersection)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))	
+                        )
+		|#
+		#|
+		(or (< hardness best-hardness)
+			(and (= hardness best-hardness)
+			     (< (hash-table-count conflicts) best-num-conflicts))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (> (hash-table-count cert-intersection) best-cert-intersection))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (< (hash-table-count att-block) smallest-card))
+			(and (= hardness best-hardness)
+			     (= (hash-table-count conflicts) best-num-conflicts)
+			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
+			     (= (hash-table-count cert-intersection) best-cert-intersection)
+			     (= (hash-table-count att-block) smallest-card)
+			     (< (hash-table-count redundancies) best-cert-redundancies))
+                        )
+		  |#
+
+		#|
+		  (or (< (hash-table-count conflicts) best-num-conflicts) 
                         (and (= (hash-table-count conflicts) best-num-conflicts)
 			     (> (hash-table-count cert-conflicts) best-cert-conflicts))
 			(and (= (hash-table-count conflicts) best-num-conflicts)
@@ -2776,6 +2921,7 @@
 			     (< (hash-table-count redundancies) best-cert-redundancies))
 	        
                         )
+		|#
 		#|
 		(or (< (hash-table-count conflicts) best-num-conflicts) 
                         (and (= (hash-table-count conflicts) best-num-conflicts)
@@ -2804,8 +2950,10 @@
 			     ;;(= (hash-table-count redundancies) best-cert-redundancies)
 			     (< (hash-table-count att-block) smallest-card)))
 		|#
+		(setq best-hardness hardness)
 		(setq best-num-conflicts (hash-table-count conflicts))
                 (setq best-cert-intersection (hash-table-count cert-intersection))
+		(setq best-intersection (hash-table-count intersection))
 		(setq best-cert-conflicts (hash-table-count cert-conflicts))
 		(setq best-cert-redundancies (hash-table-count redundancies))
                 (setq best-condition condition)
@@ -2914,7 +3062,7 @@
 
 ;; cpd = rule-based cpd
 (defun init-case-constraints(cpd)
-  (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+  (when nil nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
         (format t "~%~%initializing case constraints"))
   (loop
     with case-constraints = (make-hash-table)
@@ -2923,7 +3071,7 @@
        (loop
          for case being the hash-keys of (rule-block rule)
          do
-            (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+            (when nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
                   (format t "~%~%case ~d:" case))
             (when (null (gethash case case-constraints))
               (setf (gethash case case-constraints) (make-hash-table :test #'equal)))
@@ -2931,18 +3079,23 @@
               with idx and rule-sva
               for att being the hash-keys of (rule-conditions rule)
                 using (hash-value val)
-              do
+	      when (= (aref (rule-based-cpd-cardinalities cpd)
+			    (gethash att (rule-based-cpd-identifiers cpd)))
+		      2)
+	      do
                  (setq idx (gethash att (rule-based-cpd-identifiers cpd)))
                  (if (listp val)
                      (setq rule-sva (nth (second val) (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))))
                      (setq rule-sva (nth val (gethash idx (rule-based-cpd-set-valued-attributes cpd)))))
-                 (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                 (when nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
                        (format t "~%~%attribute in rule: ~S" att)
                        (format t "~%rule sva: ~S" rule-sva))
                  (loop
                    for sva in (gethash idx (rule-based-cpd-set-valued-attributes cpd))
                    for svna in (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))
                    do
+		      (when nil
+			(format t "~%sva:~%~S~%svna:~%~S" sva svna))
                       (cond ((intersection sva rule-sva)
                              (setq case-constraints (add-case-constraint case att sva case-constraints)))
                             ((intersection svna rule-sva)
@@ -2950,7 +3103,7 @@
     finally
        (return case-constraints)))
 
-#| Constrain space of possible conditions per rule |#
+#| Constrain space of possible conditions per rule
 
 ;; cpd = conditional probability distribution
 ;; rule = rule in rule-based-cpd
@@ -2997,7 +3150,8 @@
                   do
                      (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
                            (format t "~%   value-block: ~S~%   sva: ~S" value-block sva))
-                     (cond ((and (not (intersection sva rule-sva))
+		     ;; can I add a condition in the cond that would check to see if block of att is in the rule block but not the certain block
+		     (cond ((and (not (intersection sva rule-sva))
                                  (gethash case (second value-block)))
                             (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
                                   (format t "~%   adding ~S constraint to ~A for case ~d" sva att case))
@@ -3017,6 +3171,92 @@
                                  (intersection svna rule-sva)
                                  (member svna (gethash att (gethash case case-constraints))))
                             (when nil (and (= cycle* 2) (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                                  (format t "~%   removing ~S constraint to ~A for case ~d" svna att case))
+                            (setq case-constraints (remove-case-constraint case att svna case-constraints)))))
+                (when (null (gethash att (gethash case case-constraints)))
+                  (remhash att (gethash case case-constraints))))
+           (when (= (hash-table-count (gethash case case-constraints)) 0)
+             (remhash case case-constraints)))
+    case-constraints))
+|#
+
+#| Constrain space of possible conditions per rule |#
+
+;; cpd = conditional probability distribution
+;; rule = rule in rule-based-cpd
+;; case-constraints = hash table of constraints that a rule must satisfy for each covered case
+(defun update-case-constraints (cpd rule case-constraints)
+  (labels ((add-case-constraint (case att sva case-constraints)
+             (setf (gethash att (gethash case case-constraints))
+                   (cons sva (gethash att (gethash case case-constraints))))
+             case-constraints)
+           (remove-case-constraint (case att sva case-constraints)
+	     (when nil t
+	       (format t "~%case: ~d case constraints before remove:~%~S~%item to remove: ~S" case (gethash att (gethash case case-constraints)) sva))
+             (setf (gethash att (gethash case case-constraints))
+                   (remove sva (gethash att (gethash case case-constraints)) :test #'equal))
+	     (when nil t
+	       (format t "~%updated case constraints:~%~S" (gethash att (gethash case case-constraints)))
+	       (break))
+             case-constraints)
+	   )
+    (when nil t (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+          (format t "~%~%Updating case constraints based on rule:~%~S~%uncertain block:~%~S" rule (hash-difference (rule-block rule) (rule-certain-block rule) nil :output-hash-p t)))
+    (loop
+      with uncertain-block = (hash-difference (rule-block rule) (rule-certain-block rule) nil :output-hash-p t)
+      for case being the hash-keys of (rule-block rule)
+      ;;when (member case (rule-certain-block rule))
+      ;;  do
+      ;;     (remhash case case-constraints)
+      ;;else when (not (member case (rule-certain-block rule)))
+        do
+           (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                 (format t "~%~%case ~d:" case))
+           (when (null (gethash case case-constraints))
+             (setf (gethash case case-constraints) (make-hash-table :test #'equal)))
+           (loop
+             with idx and rule-sva
+             for att being the hash-keys of (rule-conditions rule)
+               using (hash-value val)
+             do
+                (setq idx (gethash att (rule-based-cpd-identifiers cpd)))
+                (if (listp val)
+                    (setq rule-sva (nth (second val) (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))))
+                    (setq rule-sva (nth val (gethash idx (rule-based-cpd-set-valued-attributes cpd)))))
+                (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                      (format t "~%~%attribute in rule: ~S" att)
+                      (format t "~%rule sva: ~S" rule-sva))
+                (loop
+                  for value-block in (gethash idx (rule-based-cpd-var-value-block-map cpd))
+                  for sva in (gethash idx (rule-based-cpd-set-valued-attributes cpd))
+                  for negated-value-block in (gethash idx (rule-based-cpd-negated-vvbms cpd))
+                  for svna in (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))
+                  do
+                     (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                           (format t "~%   value-block: ~S~%   sva: ~S~%   svna: ~S" value-block sva svna))
+		     ;; can I add a condition in the cond that would check to see if block of att is in the rule block but not the certain block
+		     (cond ((and (hash-intersection uncertain-block (second value-block))
+				 (not (intersection sva rule-sva))
+                                 (gethash case (second value-block)))
+                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                                  (format t "~%   adding ~S constraint to ~A for case ~d" sva att case))
+			    (setq case-constraints (add-case-constraint case att sva case-constraints)))
+                           ((and (gethash case (rule-certain-block rule))
+                                 (intersection sva rule-sva)
+                                 (member sva (gethash att (gethash case case-constraints))))
+                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                                  (format t "~%   removing ~S constraint to ~A for case ~d" sva att case))
+                            (setq case-constraints (remove-case-constraint case att sva case-constraints))))
+                     (cond ((and (hash-intersection uncertain-block (second value-block))
+				 (not (intersection svna rule-sva))
+                                 (gethash case (second negated-value-block)))
+                            (when nil t nil(and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
+                                  (format t "~%   adding ~S constraint to ~A for case ~d" svna att case))
+                            (setq case-constraints (add-case-constraint case att svna case-constraints)))
+                           ((and (gethash case (rule-certain-block rule))
+                                 (intersection svna rule-sva)
+                                 (member svna (gethash att (gethash case case-constraints))))
+                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
                                   (format t "~%   removing ~S constraint to ~A for case ~d" svna att case))
                             (setq case-constraints (remove-case-constraint case att svna case-constraints)))))
                 (when (null (gethash att (gethash case case-constraints)))
@@ -3056,7 +3296,7 @@
                            (return-from rule-satisfy-case-constraints-p nil))))
                finally
                   (return t))))
-    (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
+    (when nil (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
       (format t "~%getting local covering for:~%~S" cpd)
       ;;(break)
       )
@@ -3067,19 +3307,22 @@
                           do
                              (setf (gethash i uni-hash) i)
                           finally (return uni-hash))
-      with case-constraints =  (make-hash-table) ;;(init-case-constraints cpd) ;;(make-hash-table)
-      with minimal-rules and case = 0 and goal and junk
+      with case-constraints = (make-hash-table) ;; (init-case-constraints cpd) ;;(make-hash-table)
+      with minimal-rules and case = 0 and goal and prev-goal and no-goal-changes = 0 and goal-changes = 0 and junk
       for probability-concept being the hash-keys of (rule-based-cpd-concept-blocks cpd)
         using (hash-value counts-hash)
       do
-         (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
-           (print-case-constraints case-constraints))
+         (when nil (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
+           (print-case-constraints case-constraints)
+	   (break)
+	   )
          (loop
            for count being the hash-keys of counts-hash
              using (hash-value concept-block)
            do
               (setq goal (copy-hash-table concept-block))
-              (setq junk nil)
+	      (setq prev-goal (make-hash-table))
+	      (setq junk nil)
               (loop
                 with new-rule and tog and certain-tog and rule-set and rule-set-block = (make-hash-table) and certain-rule-blocks and attr-lower-approxs
                 with uncertain-block
@@ -3134,11 +3377,18 @@
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
 				   (format t "~%updated rule redundancies list:~%~S" (rule-redundancies new-rule)))
+				 (setq prev-goal goal)
 				 (setq goal (hash-intersection goal (rule-block new-rule) :output-hash-p t))
+				 (if (= (hash-table-count prev-goal)
+					(hash-table-count goal))
+				     (setq no-goal-changes (+ no-goal-changes 1))
+				     (setq goal-changes (+ goal-changes 1)))
 				 (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated goal:~%~S" goal))
-				 (setq tog (get-tog cpd goal concept-block new-rule universe))
-				 (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
+				 (when t (not (= (hash-table-count prev-goal)
+						 (hash-table-count goal)))
+				   (setq tog (get-tog cpd goal concept-block new-rule universe))
+				   (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t)))
 				 (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
 				   ;;(format t "~%certain T(G)")
 				   ;;(print-tog certain-tog)
@@ -3200,8 +3450,8 @@
                                  (setf (rule-block new-rule) new-rule-block)
                                  (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                                    (format t "~%updated rule:~%~S" new-rule))))
-                          
-                          (setq case-constraints (update-case-constraints cpd new-rule case-constraints))
+                          (when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
+                            (setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
                           (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
                             (format t "~%final rule:~%~S" new-rule)
                             (print-case-constraints case-constraints)
@@ -3411,9 +3661,12 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when t nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
+	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
+	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
 	       (mapcar #'print-cpd-rule minimal-rules)
+	       (format t "~%goal changes: ~d~%no goal changes: ~d~%num parameters: ~d ~%num rules: ~d" goal-changes no-goal-changes (reduce #'* (rule-based-cpd-cardinalities cpd)) (length minimal-rules))
                ;;(break)
                )
          (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness t))
@@ -4769,6 +5022,26 @@ Roughly based on (Koller and Friedman, 2009) |#
                      (update-cpd-rules new-phi
                                        (make-array (length new-rules)
                                                    :initial-contents new-rules))))
+      #|
+      (loop
+	with idents-used
+	for rule being the elements of (rule-based-cpd-rules new-phi)
+	do
+	   (loop
+	     for ident being the hash-keys of (rule-conditions rule)
+	     do
+		(setq idents-used (cons ident idents-used)))
+	finally
+	   (setq idents-used (remove-duplicates idents-used :test #'equal))
+	   (loop
+	     for ident in idents-used
+	     when (not (gethash ident (rule-based-cpd-identifiers new-phi)))
+	       collect ident into unused
+	     finally
+		(when unused
+		  (format t "~%unused identifiers!!~%~S" unused)
+		  (break))))
+      |#
       (cond ((eq op '*)
              (setf (rule-based-cpd-rules new-phi)
                    (make-array (length new-rules) :initial-contents new-rules))
@@ -8996,4 +9269,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 (remember eltm* (list (list (make-array 0))) '+ 1 t))
 
 (equal #(1 2 2 2 2 2 2 2 2 2) #(1 1 2 2 2 2 2 2 2 2))
+
+(let (h1 h2)
+(setq h1 #H((8 . 8) (19 . 19) (32 . 32) (43 . 43) (53 . 53) (60 . 60) (66 . 66) (74 . 74) (80 . 80) (88 . 88) (95 . 95) (102 . 102)))
+(setq h2 #H((8 . 8) (19 . 19) (32 . 32) (43 . 43) (53 . 53) (66 . 66) (80 . 80) (95 . 95)))
+(hash-difference h1 h2 nil :output-hash-p t))
 |#

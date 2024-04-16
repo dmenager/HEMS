@@ -2641,8 +2641,8 @@
                do
                   (setq condition nil)
 		  (setq att-block (second value-block))
-                  (setq intersection (hash-intersection att-block new-g :output-hash-p t))
-                  (when (= (hash-table-count att-block) (hash-table-count universe))
+		  (setq intersection (hash-intersection att-block new-g :output-hash-p t))
+		  (when (= (hash-table-count att-block) (hash-table-count universe))
                     (setq intersection (make-hash-table)))
                   (if (null negate-p)
                       (setq condition (cons ident (cdar value-block)))
@@ -2755,8 +2755,8 @@
     when (not (equal (car cond-val) ident))
       do
 	 (loop
-	   for (cert-condition-block cert-intersection cert-conflicts cert-redundancies cert-g cert-all-conflicts cert-all-redundancies cert-all-partial-coverings) in certain-att-blocks
-	   for (condition-block intersection conflicts redundancies g all-conflicts all-redundancies all-partial-coverings) in att-blocks
+	   for (cert-condition-block cert-intersection) in certain-att-blocks
+	   for (condition-block intersection) in att-blocks
 	   when (and (> (hash-table-count cert-intersection) 0)
 		     (not (listp (cdar condition-block))))
 	     do
@@ -3077,14 +3077,14 @@
                       (cond (certain-p
                              (setq all-conflicts (hash-intersection (rule-certain-block rule) (rule-avoid-list rule) :output-hash-p t))
                              (setq all-redundancies (hash-intersection (rule-certain-block rule) (rule-redundancies rule) :output-hash-p t))
-                             (setq all-partial-coverings (make-hash-table))
+                             ;;(setq all-partial-coverings (make-hash-table))
                              (setq conflicts (hash-intersection att-block all-conflicts :output-hash-p t))
                              (setq redundancies (hash-intersection att-block all-redundancies :output-hash-p t))
                              )
                             (t
                              (setq all-conflicts (rule-avoid-list rule))
                              (setq all-redundancies (rule-redundancies rule))
-                             (setq all-partial-coverings (block-difference (rule-block rule) (rule-certain-block rule) :output-hash-p t))
+                             ;;(setq all-partial-coverings (block-difference (rule-block rule) (rule-certain-block rule) :output-hash-p t))
                              (setq conflicts (three-way-hash-intersection all-conflicts att-block (rule-block rule)))
                              (setq redundancies (three-way-hash-intersection all-redundancies att-block (rule-block rule)))
                              )))
@@ -3148,7 +3148,7 @@
               (setq cert-penalty-weight (hash-table-count conflicts))
             ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
             ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
-            ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
+              ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
               (setq certain-discounted-coverage (- 0 ;;(* cert-goodness-weight cert-goodness)
                                                    cert-penalty-weight
                                                    ;;(* cert-redundancy-weight cert-redundancy)
@@ -3169,21 +3169,21 @@
 			(hash-table-count redundancies)
 			(hash-table-count intersection) (hash-table-count att-block)))
               (when 
-		  #|
-		  (or (> (hash-table-count cert-intersection) best-cert-intersection) 
-                        (and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-			(and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-                             
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-                  )
-		  |#
 		  
+		  ;; this one is good -- best in terms of keeping the goal consistent for the rule
+		  (or (> (hash-table-count cert-intersection) best-cert-intersection) 
+                      (and (= (hash-table-count cert-intersection) best-cert-intersection)
+			   (< (hash-table-count conflicts) best-num-conflicts))
+		      (and (= (hash-table-count cert-intersection) best-cert-intersection)
+			   (= (hash-table-count conflicts) best-num-conflicts)
+			   (< (hash-table-count att-block) smallest-card))
+		      (and (= (hash-table-count cert-intersection) best-cert-intersection)
+			   (= (hash-table-count conflicts) best-num-conflicts)
+			   (= (hash-table-count att-block) smallest-card)
+			   (< (hash-table-count redundancies) best-cert-redundancies))
+                  )
+		  #|
+		  ;; this one is good
 		  (or (and (< (hash-table-count conflicts) best-num-conflicts)) 
                       (and (= (hash-table-count conflicts) best-num-conflicts)
                            (> (hash-table-count cert-intersection) best-cert-intersection))
@@ -3195,7 +3195,7 @@
 			   (= (hash-table-count att-block) smallest-card)
 			   (< (hash-table-count redundancies) best-cert-redundancies))
                       )
-		
+		  |#
 		  #|(or (> cert-intersection-p best-cert-intersection-p)
 			(and (= cert-intersection-p best-cert-intersection-p)
 			     (< hardness best-hardness))
@@ -3290,21 +3290,18 @@
 			     (< (hash-table-count conflicts) best-num-conflicts))
 			(and (= hardness best-hardness)
 			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
 			     (> (hash-table-count cert-intersection) best-cert-intersection))
 			(and (= hardness best-hardness)
 			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
 			     (= (hash-table-count cert-intersection) best-cert-intersection)
 			     (< (hash-table-count att-block) smallest-card))
 			(and (= hardness best-hardness)
 			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
 			     (= (hash-table-count cert-intersection) best-cert-intersection)
 			     (= (hash-table-count att-block) smallest-card)
 			     (< (hash-table-count redundancies) best-cert-redundancies))
                         )
-		  |#
+		|#  
 
 		#|
 		  (or (< (hash-table-count conflicts) best-num-conflicts) 
@@ -3754,9 +3751,8 @@
                      while (and (or (= (hash-table-count (rule-conditions new-rule)) 0)
                                     (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0)) ;;(not (subsetp (rule-block new-rule) goal))
                                     (not (rule-satisfy-case-constraints-p new-rule case-constraints))
-				    (> (hash-table-count (rule-redundancies new-rule)) 0)
-				    ;;(some #'(lambda (rule) (compatible-rule-p new-rule rule cpd cpd)) (union rule-set minimal-rules))
-                                    )
+				    ;;(> (hash-table-count (rule-redundancies new-rule)) 0)
+				    )
 				(not (= (hash-table-count tog) 0))
 				continue)
                      do
@@ -3843,7 +3839,7 @@
                                           (= (hash-table-count (block-difference new-rule-block concept-block :output-hash-p t)) 0) ;;(subsetp new-rule-block concept-block)
                                           ;;(= (hash-table-count (block-difference new-certain-block (block-difference concept-block rule-set-block :output-hash-p t) :output-hash-p t)) 0);; (subsetp new-certain-block (set-difference concept-block rule-set-block))
                                           ;;(= (hash-table-count (block-difference new-partial-coverings rule-partial-coverings :output-hash-p t)) 0)
-                                          (= (hash-table-count new-redundancies) 0)
+                                          ;;(= (hash-table-count new-redundancies) 0)
                                           #|
                                           (notany #'(lambda (rule) (compatible-rule-p new-rule rule cpd cpd :avoid attribute))
                                                   (union rule-set minimal-rules))
@@ -4072,7 +4068,7 @@
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
 	       (mapcar #'print-cpd-rule minimal-rules)
-	       (format t "~%goal changes: ~d~%no goal changes: ~d~%num parameters: ~d ~%num rules: ~d" goal-changes no-goal-changes (reduce #'* (rule-based-cpd-cardinalities cpd)) (length minimal-rules))
+	       (format t "~%goal changes: ~d~%no goal changes: ~d~%num parameters: ~d~%num prior rules: ~d~%num rules: ~d" goal-changes no-goal-changes (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0) (length minimal-rules))
                ;;(break)
                )
          (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness t))
@@ -5264,7 +5260,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t
+  (when nil
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
 				    (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -9680,4 +9676,24 @@ Roughly based on (Koller and Friedman, 2009) |#
 (setq h1 #H((8 . 8) (19 . 19) (32 . 32) (43 . 43) (53 . 53) (60 . 60) (66 . 66) (74 . 74) (80 . 80) (88 . 88) (95 . 95) (102 . 102)))
 (setq h2 #H((8 . 8) (19 . 19) (32 . 32) (43 . 43) (53 . 53) (66 . 66) (80 . 80) (95 . 95)))
 (hash-difference h1 h2 nil :output-hash-p t))
+
+(loop
+for i from 0 to 8000
+collect (random 8000) into l1
+collect (random 8000) into l2
+finally
+(return (intersection l1 l2)))
+
+(ql:quickload :hems)
+(loop
+with h1 = (make-hash-table) and h2 = (make-hash-table)
+with r
+for i from 0 to 80000
+do
+(setq r (random 80000))
+(setf (gethash r h1) r)
+(setq r (random 80000))
+(setf (gethash r h2) r)
+finally
+(return (hems::hash-intersection h1 h2 :output-hash-p t)))
 |#

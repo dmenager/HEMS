@@ -3088,7 +3088,7 @@
                              (setq conflicts (three-way-hash-intersection all-conflicts att-block (rule-block rule)))
                              (setq redundancies (three-way-hash-intersection all-redundancies att-block (rule-block rule)))
                              )))
-                     (nil t
+                     (t
                       (setq all-conflicts (block-difference universe concept-block :output-hash-p t))
                       (setq all-redundancies (block-difference concept-block new-g :output-hash-p t))
                       (setq all-partial-coverings (make-hash-table))
@@ -3120,7 +3120,9 @@
             with size-penalty and hardness
 	    with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
 	    with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
-            for (cert-condition-block cert-intersection) in certain-att-blocks
+	    with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs
+	    with best-info-gain = most-negative-fixnum
+	    for (cert-condition-block cert-intersection) in certain-att-blocks
             for (condition-block intersection) in att-blocks
 	    when (and (> (hash-table-count cert-intersection) 0)
 		      (not (listp (cdar condition-block)))
@@ -3146,8 +3148,31 @@
 	      
               (setq cert-goodness-weight (/ (hash-table-count cert-intersection) (hash-table-count att-block)))
               (setq cert-penalty-weight (hash-table-count conflicts))
-            ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
-            ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
+
+	      (cond ((> (hash-table-count (rule-conditions rule)) 0)
+		     (setq new-covered-pos (hash-table-count (hash-intersection intersection (hash-difference (rule-block rule) (rule-avoid-list rule) cpd :output-hash-p t) :output-hash-p t)))
+		     (setq new-covered-negs (hash-table-count (hash-intersection conflicts (rule-avoid-list rule) :output-hash-p t))))
+		    (t
+		     (setq new-covered-pos (hash-table-count intersection))
+		     (setq new-covered-negs (hash-table-count conflicts))))
+	      
+	      (setq covered-pos (hash-table-count (hash-difference (rule-block rule) (rule-avoid-list rule) cpd :output-hash-p t)))
+	      (setq covered-negs (hash-table-count (rule-avoid-list rule)))
+
+	      (cond ((> (hash-table-count (rule-conditions rule)) 0)
+		     (setq info-gain (- (log (/ new-covered-pos
+						(+ new-covered-pos new-covered-negs))
+					     2)
+					(log (/ covered-pos
+						(+ covered-pos covered-negs))
+					     2))))
+		    (t
+		     (setq info-gain (log (/ new-covered-pos
+					     (+ new-covered-pos new-covered-negs))
+					  2))))
+	      
+              ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
+              ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
               ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
               (setq certain-discounted-coverage (- 0 ;;(* cert-goodness-weight cert-goodness)
                                                    cert-penalty-weight
@@ -3155,10 +3180,10 @@
                                                    ;;(* partial-coverings-weight partial-coverings)
                                                    ))
               (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
-                (format t "~%~%B_~S = ~S~%~S = ~S~%   hardness: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
+                (format t "~%~%B_~S = ~S~%~S = ~S~%   info-gain: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
 			condition lower-approx
                         condition att-block
-			hardness
+			info-gain
                         conflicts
                         (hash-table-count conflicts)
 			cert-conflicts
@@ -3169,7 +3194,8 @@
 			(hash-table-count redundancies)
 			(hash-table-count intersection) (hash-table-count att-block)))
               (when 
-		  
+		  (> info-gain best-info-gain)
+		#|
 		  ;; this one is good -- best in terms of keeping the goal consistent for the rule
 		  (or (> (hash-table-count cert-intersection) best-cert-intersection) 
                       (and (= (hash-table-count cert-intersection) best-cert-intersection)
@@ -3182,6 +3208,7 @@
 			   (= (hash-table-count att-block) smallest-card)
 			   (< (hash-table-count redundancies) best-cert-redundancies))
                   )
+		|#
 		  #|
 		  ;; this one is good
 		  (or (and (< (hash-table-count conflicts) best-num-conflicts)) 
@@ -3350,6 +3377,7 @@
 			     ;;(= (hash-table-count redundancies) best-cert-redundancies)
 			     (< (hash-table-count att-block) smallest-card)))
 		|#
+		(setq best-info-gain info-gain)
 		(setq best-hardness hardness)
 		(setq best-num-conflicts (hash-table-count conflicts))
                 (setq best-cert-intersection (hash-table-count cert-intersection))

@@ -82,7 +82,7 @@
 	 (setf (gethash (car binding) (rule-conditions rule)) (cdr binding))
       finally
 	 (setq compatible-rule (car (get-compatible-rules cpd cpd rule :find-all nil)))
-	 (when t
+	 (when nil
 	   (print-cpd-rule compatible-rule))
       (return (rule-probability compatible-rule)))))
 
@@ -117,7 +117,7 @@
 
 ;; Assumes that nil is not a valid value for the hash table
 (defun lookup-or-nil (hash key)
-  (format t "~%~%evidence:~%~S~%key:~%~S~%(gethash key hash): ~S" hash key (gethash key hash))
+  ;;(format t "~%~%evidence:~%~S~%key:~%~S~%(gethash key hash): ~S" hash key (gethash key hash))
   (multiple-value-bind (ret foundp)
       (gethash key hash)
     (declare (ignore foundp))
@@ -195,7 +195,7 @@
 
 ;; assns = assignments we want to know the posterior probability of 
 ;; obs = hash-table of observed assignments
-(defun P[A=a]-old (bn assns)
+(defun P[A=a] (bn assns)
   (loop
     with obs-posterior = (getf bn :net)
     with idents
@@ -221,7 +221,7 @@
       into marginal-posterior
     finally
        (when nil
-	   (format t "~%marginal posterior:~%~S" marginal-posterior))
+	   (format t "~%~%marginal posterior:~%~S" marginal-posterior))
        (return
 	 (let ((rule (make-rule :conditions (make-hash-table :test #'equal))))
 	   (loop
@@ -241,11 +241,12 @@
 		    summing (rule-probability rule) into val
 		    finally
 		       (setq summed-prob val))
-		  (when t
-		    (format t "~%~%assn:")
+		  (when nil
+		    (format t "~%assn:")
 		    (print-cpd-rule rule)
 		    (format t "~%compatible-rules:")
-		    (map nil #'print-cpd-rule compatible-rules))
+		    (map nil #'print-cpd-rule compatible-rules)
+		    (break))
 		  (setq prob (* prob summed-prob))
 	     finally
 		(return prob)))
@@ -261,36 +262,6 @@
 	 |#
 	 )))
 
-;; assns = assignments we want to know the posterior probability of 
-;; obs = hash-table of observed assignments
-(defun P[A=a] (bn assns)
-  (let ((rule (make-rule :conditions (make-hash-table :test #'equal))))
-    (loop
-      for (ident . val) in assns
-      do
-	 (setf (gethash ident (rule-conditions rule)) val))
-    (loop
-      with prob = 1 and summed-prob
-      with obs-posterior = (getf bn :singletons)
-      with compatible-rules
-      for cpd in obs-posterior
-      when (and cpd (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
-	do
-	   (setq compatible-rules (get-compatible-rules cpd cpd rule :find-all t))
-	   (loop
-	     for rule in compatible-rules
-	     summing (rule-probability rule) into val
-	     finally
-		(setq summed-prob val))
-	   (when t
-	     (format t "~%~%assn:")
-	     (print-cpd-rule rule)
-	     (format t "~%compatible-rules:")
-	     (map nil #'print-cpd-rule compatible-rules))
-	   (setq prob (* prob summed-prob))
-      finally
-	 (return prob))))
-
 ; Entropy of node given parents
 ; H_P(X_i | Pa_i) = \sum_{pa_i} P(pa_i) H_P(X_i | pa_i)
 (defun H[X!Pa] (bn X)
@@ -299,7 +270,8 @@
   (loop
     for pa in (valid-parent-assignments bn X)
     do
-       (format t "~%pa:~%~A~%P(A=a) = ~d" pa (P[A=a] bn pa))
+       (when nil
+	 (format t "~%pa:~%~A~%P(A=a) = ~d" pa (P[A=a] bn pa)))
     when pa
       sum (* (P[A=a] bn pa)
              (H[X!Pa=a] bn X pa))
@@ -318,10 +290,14 @@
     with cpds = (get-cpd-from-id-aux episode)
     with res = (infer-posterior cpds episode observations)
     with net = (car res) and singletons = (cdr res)
-    with print = (progn (format t "~%parents:~%~S~%cpds:~%~S~%posterior network:~%~A" parents cpds net))
     ;; bn is everything that is constant for all remaining computations
     with bn = (list :net net :singletons singletons :cpds cpds :parents parents :obs observations) 
     for node being the elements of (get-nodes episode)
-    do
-       (format t "~%H[~A|Pa] = ~d~%" (rule-based-cpd-dependent-id node) (H[X!Pa] bn node)) 
-    sum (H[X!Pa] bn node)))
+    ;;do
+    ;;   (format t "~%H[~A|Pa] = ~d~%" (rule-based-cpd-dependent-id node) (H[X!Pa] bn node)) 
+    sum (H[X!Pa] bn node) into entropy
+    finally
+    (return (values net entropy))))
+
+(defun get-entropy (episode observations)
+  (H[bn] episode observations))

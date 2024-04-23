@@ -62,6 +62,8 @@
 	   #:save-eltm-to-file
 	   #:run-execution-trace
 	   #:conditional-sample
-	   #:py-conditional-sample))
+	   #:py-conditional-sample
+	   #:get-entropy
+	   #:compute-network-concentration))
 
 (in-package :hems)

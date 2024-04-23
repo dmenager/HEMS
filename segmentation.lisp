@@ -475,9 +475,7 @@
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-digits)
-      (setq eltm* (list (make-empty-episode)))
-      ;;(format t "~%eltm:~%~S" eltm*)
-      ;;(break)
+      ;;(setq eltm* (list (make-empty-episode)))
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
       (setq data (rest data))
@@ -552,12 +550,23 @@
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
+	   (when (= j 14)
+	     (setq print-special* nil))
+	   (when (not (= j 14))
+	     (setq print-special* nil))
+	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	   (when (equal action "terminal")
 	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
+	   (when nil
+	     (when (car eltm*)
+	       (format t "~%~%Episode State Transitions:~%~S~%Episode State:~%~S~%Episode Observation:~%~S"
+		       (episode-state-transitions (car eltm*))
+		       (episode-state (car eltm*))
+		       (episode-observation (car eltm*)))))
 	   (when break
 	     (break))))
     (eltm-to-pdf)

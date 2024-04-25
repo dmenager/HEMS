@@ -571,3 +571,9 @@
 	     (break))))
     (eltm-to-pdf)
     (save-eltm-to-file eltm*)))
+
+#|
+(ql:quickload :hems)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_FrozenLake-v1_data.csv")
+|#

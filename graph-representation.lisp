@@ -3158,7 +3158,8 @@
 	      
 	      (setq covered-pos (hash-table-count (hash-difference (rule-block rule) (rule-avoid-list rule) cpd :output-hash-p t)))
 	      (setq covered-negs (hash-table-count (rule-avoid-list rule)))
-	      (format t "~%condition: ~S~%certain intersection with goal:~%~S~%intersection with goal:~%~S~%conflicts:~%~S~%new covered positives: ~d~%new covered negatives: ~d" condition cert-intersection intersection conflicts new-covered-pos new-covered-negs)
+	      (when nil
+		(format t "~%condition: ~S~%certain intersection with goal:~%~S~%intersection with goal:~%~S~%conflicts:~%~S~%new covered positives: ~d~%new covered negatives: ~d" condition cert-intersection intersection conflicts new-covered-pos new-covered-negs))
 	      (cond ((> (hash-table-count (rule-conditions rule)) 0)
 		     (setq info-gain (- (log (/ new-covered-pos
 						(+ new-covered-pos new-covered-negs))
@@ -3179,7 +3180,7 @@
                                                    ;;(* cert-redundancy-weight cert-redundancy)
                                                    ;;(* partial-coverings-weight partial-coverings)
                                                    ))
-              (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
+              (when nil (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
                 (format t "~%~%B_~S = ~S~%~S = ~S~%   info-gain: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
 			condition lower-approx
                         condition att-block
@@ -3394,9 +3395,9 @@
                 (setq smallest-card (hash-table-count att-block))))
        finally
 	 (when nil (and (equal "HAND" (rule-based-cpd-dependent-var cpd)))
-         (format t "~%~%returning best condition:~%~S~%" best-condition)
-         (when (null best-condition)
-           (break))
+               (format t "~%~%returning best condition:~%~S~%" best-condition)
+               (when (null best-condition)
+		 (break))
          )
 	 (return (values best-condition best-block best-lower-approx best-conflicts best-redundancies)))))
 
@@ -4090,7 +4091,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when t nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -9336,7 +9337,11 @@ Roughly based on (Koller and Friedman, 2009) |#
          t)
 	((and (= (second next) (second best-solution))
 	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
-	      (>= (fifth next) (fifth best-solution))))))
+	      (< (sixth next) (sixth best-solution))))
+	((and (= (second next) (second best-solution))
+	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
+	      (= (sixth next) (sixth best-solution))
+	      (> (fifth next) (fifth best-solution))))))
 #| Initialize empty set of mappings |#
 
 ;; p = pattern graph
@@ -9457,12 +9462,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
             (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
-          (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds)))
+          (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
         (when nil
               (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
         (when (better-random-match? next best-solution)
-          (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next)))
+          (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next) (array-dimension (car q) 0)))
           (when nil
 		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
         (cond ((< delta-e 0)
@@ -9601,7 +9606,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq key (key-from-matches matches))
     (when (null (gethash key sol-cost-map))
       (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
-    (setq current (list matches cost bindings q-first-bindings num-local-preds))
+    (setq current (list matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0)))
     (setq stop-temp (expt 10 (- 1)))
     (setq almost-zero 1.e-39)
     (setq alpha .999)
@@ -9643,7 +9648,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
         (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds)))
+      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
 
 #| TESTS

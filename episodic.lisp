@@ -233,20 +233,20 @@
   (let (p q new-nodes)
     (setq p (copy-factors (car ep2-bn)))
     (setq q (copy-factors (car ep1-bn)))
-    (when nil t
+    (when nil
       (format t "~%~%bindings:~%~S" bindings))
     (loop
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
       do
-         (when nil
+         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
                (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when nil 
+         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
                (format t "~%p-cpd after subst:~%~S" p-cpd))
-         (when nil
+         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
-               ;;(break)
+               (break)
 	       )
          (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
          ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)

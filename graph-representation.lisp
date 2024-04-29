@@ -326,7 +326,7 @@
 ;; cpd2 = conditional probability distribution
 ;; bindings = variable bindings for matches
 (defun subst-var-value-block-map (cpd cpd2 bindings)
-  (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+  (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
     (format t "~%cpd:~%~S~%cpd2:~%~S~%bindings:~%~S" cpd cpd2 bindings))
   (loop
     with var-val-mappings = (make-hash-table :test #'equal) and domain and domain2
@@ -339,7 +339,7 @@
        (when cpd2
 	 (setq domain2 (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
 				(rule-based-cpd-var-value-block-map cpd2))))
-       (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+       (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
 	 (format t "~%~%domain:~%~S~%domain2:~%~S" domain domain2))
        (loop
 	 with last-idx = (length domain2) and q-match-binding
@@ -347,7 +347,7 @@
          with val and new-binding
          do
 	    (setq q-match-binding (gethash (car binding) bindings))
-	    (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+	    (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
 	      (format t "~%vvm:~%~S~%bindings:~%~S~%q-match-binding: ~S" binding bindings q-match-binding))
             (cond ((and cpd2 (gethash ident (rule-based-cpd-identifiers cpd2)))
 		   (when (or (equal (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
@@ -357,16 +357,21 @@
 		     (when (gethash (car binding) bindings)
 		       (setq binding (cons (gethash (car binding) bindings) (cdr binding)))))
 		   (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
-		   (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+		   (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
 		     (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val))
 		   (when (not val)
 		     (setq q-match-binding (car binding))
 		     (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
-		     (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
-		     (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val))
-		     (when (not val)
-		       (setq val last-idx)
-		       (setq last-idx (+ 1 last-idx))))
+		     (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
+		       (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val)))
+		   (when (not val)
+		     (if (gethash (car binding) bindings)
+			 (setq q-match-binding (gethash (car binding) bindings))
+			 (setq q-match-binding (car binding)))
+		     (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
+		       (format t "~%q-match binding: ~S" q-match-binding))
+		     (setq val last-idx)
+		     (setq last-idx (+ 1 last-idx)))
 		   (when (null (gethash ident var-val-mappings))
 		     (setf (gethash ident var-val-mappings) nil))
 		   (setf (gethash ident var-val-mappings)
@@ -386,7 +391,7 @@
             (setf (gethash idx (rule-based-cpd-var-value-block-map cpd)) new-domain)
 	    (setf (gethash idx (rule-based-cpd-var-values cpd)) (nreverse var-values)))
     finally
-       (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+       (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
 	      (format t "~%var-val-mappings:~%~S" var-val-mappings))
        (return var-val-mappings)))
 
@@ -1713,8 +1718,8 @@
 
 ;; phi1 = conditional probability density from base
 ;; phi2 = conditional probability density from pattern
-(defun cpd-update-schema-domain (phi1 phi2 &key (q-first-bindings (make-hash-table :test #'equal)))
-  (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+(defun cpd-update-schema-domain (phi1 phi2 new-nodes &key (q-first-bindings (make-hash-table :test #'equal)))
+  (when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%updating schema:~%~A~%with episode:~%~A" phi1 phi2))
     (loop
       for ident2 being the hash-keys of (rule-based-cpd-identifiers phi2)
@@ -1731,7 +1736,7 @@
          (setq cid2 (gethash idx (rule-based-cpd-concept-ids phi2)))
          (setq qvar2 (gethash idx (rule-based-cpd-qualified-vars phi2)))
          (setq pos (gethash ident2 (rule-based-cpd-identifiers phi1)))
-         (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+         (when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi1)))
                (format t "~%~%identifier in episode: ~A~%position of identifier in schema: ~d" ident2 pos))
          (cond (pos
 		(setq vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
@@ -1742,6 +1747,8 @@
 		(setq lower-nvvbm1 (gethash pos (rule-based-cpd-lower-approx-negated-vvbms phi1)))
 		(setq vals1 (gethash pos (rule-based-cpd-var-values phi1)))
 		(setq var2s (set-difference vvbm2 vvbm1 :key #'caar :test #'equal))
+		(when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi1)))
+		  (format t "~%schema vvbm:~%~Sepisode vvbm:~%~S" vvbm1 vvbm2))
 		(loop
 		  with var2
 		  for att-block in var2s
@@ -1750,12 +1757,12 @@
 	             (setq var2 (caar att-block))
                      ;;(setq binding (cons (caar att-block) count))
 		     (setq binding (cons  (caar att-block) (cdar att-block)))
-		     (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
-			   (format t "~%schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding:~%~S" vvbm1 vvbm2 var2s var2 binding))
-                     (setq vvbm1 (reverse (cons (list binding (make-hash-table)) (reverse vvbm1))))
+		     (setq vvbm1 (reverse (cons (list binding (make-hash-table)) (reverse vvbm1))))
                      (setq nvvbm1 (reverse (cons (list binding (make-hash-table)) (reverse nvvbm1))))
                      (setq sva1 (reverse (cons (list (cdr binding)) (reverse sva1))))
-                     (loop
+		     (when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi1)))
+		       (format t "~%updated schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding:~%~S" vvbm1 vvbm2 var2s var2 binding))
+		     (loop
                        for svna in svna1
                        for i from 0
                        collect (cons (cdr binding) svna) into new-svna
@@ -1775,7 +1782,7 @@
 				 (setf (gethash ident2 (rule-conditions new-rule)) (cdr binding))
 				 (setf (rule-probability new-rule) 0)
 				 (when (notany #'(lambda (r) (same-rule-p new-rule r phi1 phi1)) new-rules)
-				   (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+				   (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 				       (format t "~%~%binding: ~S~%new rule:~%~S~%existing rule:~%~S" binding new-rule rule))
 				   (setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
 				   (setq new-rules (cons new-rule new-rules)))
@@ -1789,14 +1796,14 @@
                                                (setq new-rule (copy-cpd-rule rule))
                                                (setf (gethash ident2 (rule-conditions new-rule)) i)
                                                (when (notany #'(lambda (r) (same-rule-p new-rule r phi1 phi1)) new-rules)
-						 (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+						 (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 						   (format t "~%new rule:~%~S~%existing rule:~%~S" new-rule rule))
 						 (setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
 						 (setq new-rules (cons new-rule new-rules)))))
                                        ((numberp rule-condition)
 					(when (notany #'(lambda (r) (same-rule-p rule r phi1 phi1)) new-rules)
 					  (setq new-rules (cons rule new-rules)))))
-				 (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+				 (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 				   (format t "~%new rules:")
 				   (map nil #'print-cpd-rule new-rules)
 				   ;;(format t "~%new rules:~%~S" new-rules)
@@ -1850,7 +1857,7 @@
                                                (setq loop-rule (copy-cpd-rule new-rule))
                                                (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions loop-rule)) j)
                                                (setf (gethash ident2 (rule-conditions loop-rule)) (cdr binding))
-					       (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+					       (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 						 (format t "~%new rule:")
 						 (print-cpd-rule loop-rule))
 					       (setq new-rules (split-compatible-rules new-rules loop-rule phi1 ident2 binding vvbm1))
@@ -1858,7 +1865,7 @@
                                        (t
 					(setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions new-rule)) 0)
 					(setf (gethash ident2 (rule-conditions new-rule)) (cdr binding))
-					(when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+					(when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 						 (format t "~%new rule:")
 						 (print-cpd-rule new-rule))
 					(setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
@@ -1884,20 +1891,46 @@
                      (setf (gethash pos (rule-based-cpd-var-values phi1)) vals1)
                      (setf (rule-based-cpd-cardinalities phi1) (get-var-cardinalities (rule-based-cpd-var-value-block-map phi1)))
                      (setf (rule-based-cpd-step-sizes phi1) (generate-cpd-step-sizes (rule-based-cpd-cardinalities phi1)))
-		     (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+		     (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 		       (format t "~%updated schema rules:")
 		       (map nil #'print-cpd-rule (rule-based-cpd-rules phi1)))
-		     (when nil (and (= cycle* 3) (equal "GO_HOLD885" (rule-based-cpd-dependent-id phi1)))
+		     (when nil (and (equal "GO_HOLD885" (rule-based-cpd-dependent-id phi1)))
 			   (format t "~%updated schema:~%~S" phi1)
 			   (break))))
 	       ((and (not pos) (gethash ident2 q-first-bindings))
-		(when nil (and (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id phi1)))
+	        (when t nil (and (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id phi1)))
 		  (format t "~%~%~S is not in cpd: ~S, but is already a schema node:~%~S" ident2 (rule-based-cpd-identifiers phi1) q-first-bindings))
+		(setf (gethash ident2 (rule-based-cpd-identifiers phi1))
+		      (hash-table-count (rule-based-cpd-identifiers phi1)))
+		;; look up attribute vvbms
+		(let ((parent-cpd (get-cpd-by-id ident2 new-nodes)))
+		  (loop
+		    with idx = (hash-table-count (rule-based-cpd-identifiers phi1))
+		    with bind
+		    for vvb in (gethash 0 (rule-based-cpd-var-value-block-map parent-cpd))
+		    do
+		       (setq bind (cons (caar vvb) (cdar vvb)))
+		       (when (null (gethash (rule-based-cpd-var-value-block-map parent-cpd)))
+			 (setf (gethash idx (rule-based-cpd-var-value-block-map parent-cpd)) nil))
+		       (setf (gethash idx (rule-based-cpd-var-value-block-map parent-cpd))
+			     (reverse (cons (cons bind (make-hash-table))
+					    (reverse (gethash idx (rule-based-cpd-var-value-block-map parent-cpd))))))
+		    finally
+		       (setf (gethash idx (rule-based-cpd-set-valued-attributes phi1))
+			     (gethash 0 (rule-based-cpd-set-valued-attributes parent-cpd)))
+		       (setf (gethash idx (rule-based-cpd-set-valued-negated attributes phi1))
+			     (gethash 0 (rule-based-cpd-set-valued-negated-attributes parent-cpd)))
+		       (setf (gethash idx (rule-based-cpd-var-values phi1))
+			     (gethash 0 (rule-based-cpd-var-values parent-cpd)))))
+		(when t
+		  (format t "~%updated cpd variables:~%~S" phi1)
+		  (break))
+		;;update necesarry book-kepping fields.
 		(loop
 		  with new-rules and num-new-rules = 0
 		  for rule being the elements of (rule-based-cpd-rules phi1)
 		  do
-		     (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+		     (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 		       (format t "~%~%updating rule:")
 		       (print-cpd-rule rule))
 		     (loop
@@ -1906,13 +1939,13 @@
 		       do
 			  (setq new-rule (copy-cpd-rule rule))
 			  (setf (gethash ident2 (rule-conditions new-rule)) (cdr binding))
-			  (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+			  (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 			    (format t "~%binding: ~S~%updated rule:" binding)
 			    (print-cpd-rule new-rule))
 			  (setq new-rules (cons new-rule new-rules))
 			  (setq num-new-rules (+ 1 num-new-rules)))
 		  finally
-		     (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi1)))
+		     (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
 		       (format t "~%~%new rules:")
 		       (mapcar #'print-cpd-rule new-rules))
 		  (setf (rule-based-cpd-rules phi1) (make-array num-new-rules :initial-contents (reverse new-rules))))))
@@ -2261,13 +2294,13 @@
          ;;(maphash #'print-hash-entry (cpd-assignments p-cpd))
          ;;(format t "~%marginalized p-cpd counts:")
          ;;(maphash #'print-hash-entry (cpd-counts p-cpd))
-	 (when nil (and (= cycle* cycle*) (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
 	   (format t "~%updating schema vvm.~%schema before update:~%~S~%trunc parent cpd:~%~S" cpd trunc-p-cpd))
 	 (setq cpd-copy (subst-cpd cpd trunc-p-cpd bindings))
-	 (when nil (and (= cycle* cycle*) (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
 	   (format t "~%schema after update:~%~S" cpd-copy))
 	   
-	 (setq cpd (cpd-update-schema-domain cpd-copy trunc-p-cpd))
+	 (setq cpd (cpd-update-schema-domain cpd-copy trunc-p-cpd new-nodes))
 	 (when nil (and (= cycle* cycle*) (equal "TURN_LEFT12794" (rule-based-cpd-dependent-id cpd)))
 	   (format t "~%~S~%done." cpd)
 	   (break))
@@ -2506,7 +2539,6 @@
   (when (= (hash-table-count (rule-based-cpd-concept-blocks cpd)) 0)
     (format t "~%check concept blocks:~%~S" cpd)
     (error "check concept blocks:~%~S" cpd))
-  ;;(cpd-add-characteristic-sets cpd)
   (cpd-add-lower-approximations (cpd-add-lower-approximations cpd "VVBM")
 				"NEGATED")
   cpd)
@@ -4091,7 +4123,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -5557,27 +5589,28 @@ Roughly based on (Koller and Friedman, 2009) |#
                       )
                 (return merged))))
         (t
-         (when nil (and (equal "STATE_VAR2_269" (rule-based-cpd-dependent-id phi2)))
-           (format t "~%~%episode before update:~%~S~%schema before update:~%~S" phi1 phi2)
+         (when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi2)))
+           (format t "~%~%episode before update:~%~S~%schema before update:~%~S~%bindings:~%~S" phi1 phi2 bindings)
            ;;(format t "~%updating episode with schema")
            )
          (setq phi2 (cpd-update-existing-vvms phi2 bindings new-nodes))
-         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
-           (format t "~%intermediate schema:~%~S" phi2))
+         (when (and print-special* (equal "STATE_VAR1_289" (rule-based-cpd-dependent-id phi2)))
+           (format t "~%intermediate schema:~%~S" phi2)
+	   (break))
          (check-cpd phi2 :check-uniqueness nil)
-	 (setq phi2 (cpd-update-schema-domain phi2 phi1 :q-first-bindings q-first-bindings))
+	 (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
          (check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
+         (when nil (and print-special* (equal "GREATER_230" (rule-based-cpd-dependent-id phi2)))
            (format t "~%intermediate schema2:~%~S" phi2))
 	 (setq phi1 (subst-cpd phi1 phi2 bindings))
-	 (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
+	 (when nil (and print-special* (equal "GREATER_230" (rule-based-cpd-dependent-id phi2)))
 	   (format t "~%intermediate episode:~%~S" phi1)
-	   ;;(break)
+	   (break)
 	   )
 	 (setq phi1 (cpd-transform-episode-domain phi1 phi2))
          (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
            (format t "~%episode after update:~%~S~%schema after update:~%~S" phi1 phi2)
-           ;;(break)
+           (break)
 	   )
 	 (when nil (and (gethash "ACTION7357" (rule-based-cpd-identifiers phi2))
 		    (= (cdar (assoc "NO_OP7356"

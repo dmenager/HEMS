@@ -550,9 +550,9 @@
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
-	   (when (= j 14)
-	     (setq print-special* nil))
-	   (when (not (= j 14))
+	   (when (= j 6)
+	     (setq print-special* t))
+	   (when (not (= j 6))
 	     (setq print-special* nil))
 	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)

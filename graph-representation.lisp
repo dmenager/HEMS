@@ -4173,7 +4173,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when nil(and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))

@@ -239,18 +239,20 @@
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
       do
-         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
-               (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
+         (when nil (and print-special* q-match (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id (aref q q-match))))
+               (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S~%bindings:~%~S" (aref p p-match) (if q-match (aref q q-match)) bindings))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
+         (when nil (and print-special* q-match (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id (aref q q-match))))
                (format t "~%p-cpd after subst:~%~S" p-cpd))
-         (when (and nil print-special* q-match (equal "GREATER_230" (rule-based-cpd-dependent-id (aref q q-match))))
+         (when nil (and print-special* q-match (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id (aref q q-match))))
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                (break)
 	       )
          (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
-         ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
-         (setq new-nodes (cons node new-nodes)))
+	 ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
+	 (setq nodes (nreverse (cons node (nreverse nodes))))
+	 finally
+            (setq new-nodes nodes))
     (loop
       for (dummy-match . unmatched-q) in unmatched
       with dm and node
@@ -259,10 +261,10 @@
                (format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
          (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
-         (when nil (and (= cycle* cycle*) (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
+         (when nil (and (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
                (format t "~%node:~%~S" node)
                (break))
-         (setq new-nodes (cons node new-nodes)))
+         (setq new-nodes (nreverse (cons node (nreverse new-nodes)))))
     (setq new-nodes (topological-sort new-nodes)) ;;(sort new-nodes #'higher-lvl-cpd))
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
     (cons new-nodes (make-graph-edges new-nodes))))

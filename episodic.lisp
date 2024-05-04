@@ -1087,7 +1087,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; res = optimal common subgraph between cue and eltm, with associated cost
 ;; depth = optional depth of retrieval search
 (defun new-retrieve-episode (eltm cue reject-list &key (res nil) (depth 0) (bic-p t) (lvl-func nil) (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil) (forbidden-types nil) &aux best-child (best-child-weighted-cost most-positive-fixnum) (best-child-cost most-positive-fixnum))
-  (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1))
+  (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1 0))
   (when nil t
     (format t "~%reject list in retrieve: ~A" reject-list))
   (when (or (null eltm) (member (episode-id (car eltm)) reject-list :test #'equal))
@@ -1160,7 +1160,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                           (setq best-child-cost cost)
 			  (when nil t
 			    (format t "~%branch is new best child"))
-                          (setq best-child (list branch cost bindings nil num-local-preds)))
+                          (setq best-child (list branch cost bindings nil num-local-preds (array-dimension (car base) 0))))
                          ((and (= (episode-count (car branch)) 1) (not (episode-temporal-p (car branch))))
 			  (setq reject-list (cons (episode-id (car branch)) reject-list))))))
                 (t

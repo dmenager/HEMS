@@ -478,6 +478,7 @@
       ;;(setq eltm* (list (make-empty-episode)))
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
+      ;;(setq data (alexandria:shuffle (rest data)))
       (setq data (rest data))
       (setq max-digits (get-max-digits file))
       (loop
@@ -550,9 +551,9 @@
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
-	   (when (= j 6)
+	   (when (= j 4)
 	     (setq print-special* nil))
-	   (when (not (= j 6))
+	   (when (not (= j 4))
 	     (setq print-special* nil))
 	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)

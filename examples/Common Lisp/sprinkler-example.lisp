@@ -3017,7 +3017,7 @@
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
-	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
+	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil :bic-p nil))
  observations)))
 
 

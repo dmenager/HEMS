@@ -4197,7 +4197,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -5489,17 +5489,17 @@ Roughly based on (Koller and Friedman, 2009) |#
                         with split-rules
                         for rule being the elements of (rule-based-cpd-rules cpd1)
                         do
-                           (when nil (and (= cycle* 3) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
+                           (when nil (and (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
                                  (format t "~%~%rule:~%~S" rule)
                                  (break))
 			   (setq split-rules (rule-split rule (make-hash-table :test #'equal) cpd1 cpd2 var-dif
                                                          :enforce-compatible (not (null op))
                                                          :avoid-hash (copy-hash-table var-dif)))
-                           (when nil (and (= cycle* 3) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
+                           (when nil (and (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
                                  (format t "~%split rules:~%~S" split-rules))
                            (setf (cdr (last split-rules)) expanded-rules)
                            (setq expanded-rules split-rules)
-                           (when nil (and (= cycle* 3) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
+                           (when nil (and (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
                                  (format t "~%expansion:~%~S" expanded-rules)
                                  (break))))
                      (t

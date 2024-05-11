@@ -481,6 +481,7 @@
       ;;(setq data (alexandria:shuffle (rest data)))
       (setq data (rest data))
       (setq max-digits (get-max-digits file))
+      (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
       (loop
 	with processed and hidden-state and observation and action
 	with st and obs
@@ -562,12 +563,14 @@
 	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
-	   (when nil
-	     (when (car eltm*)
-	       (format t "~%~%Episode State Transitions:~%~S~%Episode State:~%~S~%Episode Observation:~%~S"
-		       (episode-state-transitions (car eltm*))
-		       (episode-state (car eltm*))
-		       (episode-observation (car eltm*)))))
+	   (loop
+	      for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
+	      for ep-type in (list "Observation" "State" "Temporal")
+	      when eltm* do
+		(loop
+		  for cpd being the elements of (car (funcall type (car eltm*)))
+		  do
+		     (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
 	   (when break
 	     (break))))
     (eltm-to-pdf)

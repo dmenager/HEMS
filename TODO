@@ -1,0 +1,79 @@
+Goal is for each node to have an html page as such:
+
+       
+           ______
+           |PAR  |
+           |_____|
+              |
+              |
+     +--------+-------+
+     |        |       |
+  siblings ---+--- siblings
+           |NODE |
+           |_____|
+              |
+      +-------+-------+
+      |       |       |
+   ---+--- ---+--- ---+---
+   | CH0 | | CH1 | | CH2 |
+   |_____| |_____| |_____|
+     |        |       |
+   children  chldr  chldr
+
+
+lowercase are small empty boxes
+
+
+struct Drawing_Box {
+	int width, height
+	Point anchor_root // The parent connects to (x,y) + anchor_root
+
+	draw(int x, int y) // fills in the rectangle defined by x,y,width,height.
+	//Nothing other than this may be drawn inside the rectangle defined by (x,y) and (width,height). width goes right. height goes up
+}
+
+Drawing_Box draw_children(Drawing_Box[] children) {
+	"draw" each child, moving to the right ("draw" means "create a Drawing_Box")
+	draw a vertical line from the center of each child to the top (length of line is larger if any child is big)
+	draw a horizontal line from the leftmost to the rightmost vertical line
+}
+
+Drawing_Box define_tree(root) {
+	node = draw_node(root)
+	foreach (child; root.children) {
+		children ~= define_tree(child)
+	}
+	children_width = ...
+	width = max(node.width, children_width)
+}
+
+
+//node.big indicates whether it's one of the expanded nodes
+//svg.width and svg.height exist, as does something that lets it be drawn
+svg = get_drawing(node) {
+	
+}
+
+// all nodes are small
+// node should already include all necessary padding
+width = draw_tree(node, long x, long y) {
+	start_x = x
+	foreach (child; node.children) {
+		w = draw_tree(child, x, y + (node.big ? node.height : SMALLBOX_HEIGHT))
+		x += w
+	}
+	//TODO: if node.width > children.width, we need to shift the children drawing to the right a bit.
+	width = max(node.width, x - start_x)
+	center_x = start_x + width / 2
+	node.draw(center_x - node.width / 2, y)
+	//TODO: draw edges
+	return max(node.width, children_width)
+}
+
+// node is a child of NODE. x,y are top-left
+width, svg = draw_child_tree(node, x, y) {
+	foreach (child; node.children) {
+		width = draw_small_tree(width)
+		total_width += width
+	}
+}

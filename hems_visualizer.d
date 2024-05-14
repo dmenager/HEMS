@@ -8,7 +8,8 @@ immutable int
 	PADDING_TRIANGLE = 4,
 	TRIANGLE_SIZE = 80,
 	FONTSIZE = 14,//TODO: This isn't really used fully
-	VLINE_LENGTH = 25,
+	VLINE_SHORT = 25,
+	VLINE_LONG = 70,
 	TEXTALIGN_HACK = 3
 ;
 immutable double TEXTSCALE_HACK = 2;
@@ -73,7 +74,8 @@ class BigNode : Box {
 		auto box_w = width - 2 * PADDING_BIGBOX;
 		auto box_h = height - 2 * PADDING_BIGBOX;
 		auto color = (Type.SELF == node.type) ? "rgb(128,0,255)" : "rgb(0,0,255)";
-		svg_text ~= `<rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:2;stroke:%s" />`.format(box_w, box_h, x + PADDING_BIGBOX, y + PADDING_BIGBOX, r, r, color);
+		auto weight = (Type.SELF == node.type) ? 6 : 2;
+		svg_text ~= `<rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:%s;stroke:%s" />`.format(box_w, box_h, x + PADDING_BIGBOX, y + PADDING_BIGBOX, r, r, weight, color);
 		//TODO: embed the rest of the original svg
 	}
 }
@@ -124,6 +126,7 @@ class TreeBox {
 	Box nodebox;
 	TreeBox[] children;
 	uint width, height;
+	uint vline_length;
 
 	this(Node *root) {
 		this.root = root;
@@ -135,9 +138,10 @@ class TreeBox {
 			nodebox = is_big(root) ? new BigNode(root) : new SmallNode(root);
 			children = root.children.map!(a => new TreeBox(a)).array;
 		}
+		vline_length = is_big(root) ? VLINE_LONG : VLINE_SHORT;
 
 		width = max(nodebox.width, children.map!(a => a.width).sum) + PADDING_TREE * 2;
-		height = nodebox.height + 2 * VLINE_LENGTH;
+		height = nodebox.height + 2 * vline_length;
 		if (children.length) height += children.map!(a => a.height).maxElement;
 		//TODO: maybe use longer vertical lines if bigboxes are involved
 	}
@@ -151,23 +155,23 @@ class TreeBox {
 		nodebox.draw(nodex, y);
 		if (!children) return;
 
-		y += nodebox.height + VLINE_LENGTH;
+		y += nodebox.height + vline_length;
 		int minx = childx + children[0].width / 2;
 		foreach (child; children) {
 			if (children.length > 1) {
 				//the lines below the horizontal line
 				auto center = childx + child.width / 2;
-				auto y1 = y + VLINE_LENGTH + (is_big(child.root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
+				auto y1 = y + vline_length + (is_big(child.root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
 				drawline(center, y, center, y1);
 			}
-			child.draw(childx, y + VLINE_LENGTH);
+			child.draw(childx, y + vline_length);
 			childx += child.width;
 		}
 		int maxx = childx - children[$-1].width / 2;
 
-		auto y0 = y - VLINE_LENGTH - (is_big(root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
+		auto y0 = y - vline_length - (is_big(root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
 		if (1 == children.length) {//single vertical edge
-			auto y1 = y + VLINE_LENGTH;
+			auto y1 = y + vline_length;
 			drawline(minx, y0, minx, y1);
 		}
 		else {//upper vertical line (lower vertical lines already drawn), horizontal line
@@ -230,8 +234,7 @@ void focus(Node *target) {
 auto create_graph(uint nlayers) {
 	uint node_idx = 0;
 	Node* create_node(uint layer) {
-		auto nchildren = uniform!"[]"(1,4);
-		nchildren = 4;//TODO: remove
+		auto nchildren = uniform!"[]"(1,10);
 		auto name = "%s".format(node_idx++);
 		auto children = (nlayers == layer + 1) ? null : iota(0, nchildren).map!(a => create_node(layer + 1)).array;
 		auto svg = null;//TODO: something else

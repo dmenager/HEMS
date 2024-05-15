@@ -486,7 +486,7 @@
 	with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
-	for line in data ;;(subseq data 0 3)
+	for line in (subseq data 0 3) ;;data
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))

@@ -33,38 +33,6 @@
 (defun get-eltm ()
   eltm*)
 
-#| Load event memory contents from file |#
-
-;; filename = string handle to file to load
-(defun load-eltm-from-file (file-name)
-  (format t "~%loading event memory...")
-  (with-open-file (eltm-stream file-name 
-                               :direction :input
-                               :if-does-not-exist nil)
-    (if eltm-stream
-        (setq eltm* (read eltm-stream))
-        (setq eltm* nil))
-    (format t "~%done!")))
-
-#| Save contents of event memory to file which can be read later |#
-
-;; eltm = episodic long-term memory
-;; file-name = file to contain episodic memory
-(defun save-eltm-to-file (eltm &key (path "./") (filename "eltm.txt"))
-  (setq filename (concatenate 'string path filename))
-  (log-message (list "~S" eltm) filename :if-exists :supersede))
-
-(defun read-from-file (fname)
-  (with-open-file (s fname)
-    (read s)))
-
-(defun save-to-file(content fname)
-  (with-open-file (s fname
-		     :direction :output
-		     :if-exists :supersede
-		     :if-does-not-exist :create)
-    (format s "~S" content)))
-
 (defun generate-list()
   (loop
     with hash

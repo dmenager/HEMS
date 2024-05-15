@@ -3,14 +3,14 @@ import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.
 immutable int
 	PADDING_BIGBOX = 8,
 	PADDING_SMALLBOX = 2,
-	PADDING_TEXT = 2,
+	PADDING_TEXT = 3,
 	PADDING_TREE = 4,
 	PADDING_TRIANGLE = 4,
 	TRIANGLE_SIZE = 80,
-	FONTSIZE = 14,//TODO: This isn't really used fully
+	FONTSIZE = 14,
 	VLINE_SHORT = 25,
 	VLINE_LONG = 70,
-	TEXTALIGN_HACK = 3
+	TEXTALIGN_HACK = 4
 ;
 immutable double TEXTSCALE_HACK = 2;
 
@@ -29,6 +29,7 @@ Node *root;
 
 //contains everything needed to draw the contents, given the x,y of its top-left.
 class Box {
+	Node *node;
 	uint width, height;
 	string name;
 	abstract void draw(int x, int y);
@@ -37,7 +38,6 @@ class Box {
 
 // Represents a full subtree that isn't worth drawing out even in miniature
 class TriangleNode : Box {
-	Node *node;
 	alias pad = PADDING_TRIANGLE;
 	alias sz = TRIANGLE_SIZE;
 	this(Node *root) {
@@ -48,7 +48,8 @@ class TriangleNode : Box {
 		stderr.writef("Triangle %s, %s\n", width, height);
 	}
 	override void draw(int x, int y) {
-		auto s = `<polygon points="%s,%s %s,%s %s,%s" style="fill:white;stroke:blue;stroke-width:2" />`.format(
+		auto s = `<a href="%s"><polygon points="%s,%s %s,%s %s,%s" style="fill:white;stroke:blue;stroke-width:2" /></a>`.format(
+			node.name.name2link,
 			x + pad + sz/2,  y,
 			x + pad,         y + sz, 
 			x + pad + sz,    y + sz);
@@ -60,7 +61,6 @@ class TriangleNode : Box {
 
 //subgraphs that we have a particular interest in
 class BigNode : Box {
-	Node *node;
 	this(Node *root) {
 		node = root;
 		name = node.name;
@@ -70,12 +70,12 @@ class BigNode : Box {
 	override void draw(int x, int y) {
 		//just a simple box around the name
 		auto r = 10;//curve of the corners
-		//TODO: need to define .small in svg's style tag
 		auto box_w = width - 2 * PADDING_BIGBOX;
 		auto box_h = height - 2 * PADDING_BIGBOX;
 		auto color = (Type.SELF == node.type) ? "rgb(128,0,255)" : "rgb(0,0,255)";
 		auto weight = (Type.SELF == node.type) ? 6 : 2;
-		svg_text ~= `<rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:%s;stroke:%s" />`.format(box_w, box_h, x + PADDING_BIGBOX, y + PADDING_BIGBOX, r, r, weight, color);
+		svg_text ~= `<a href="%s"><rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:%s;stroke:%s" /></a>`
+			.format(node.name.name2link, box_w, box_h, x + PADDING_BIGBOX, y + PADDING_BIGBOX, r, r, weight, color);
 		//TODO: embed the rest of the original svg
 	}
 }
@@ -84,8 +84,8 @@ class BigNode : Box {
 class SmallNode : Box {
 	uint textwidth;
 	this(Node *root) {
-		name = root.name;
-		textwidth = cast(uint)(FONTSIZE * name.length / TEXTSCALE_HACK);
+		node = root;
+		textwidth = cast(uint)(FONTSIZE * node.name.length / TEXTSCALE_HACK);
 
 		width = 2 * PADDING_SMALLBOX + 2 * PADDING_TEXT + textwidth;//TODO: this is an estimate of the text width,height.
 		height = PADDING_SMALLBOX * 2 + FONTSIZE;
@@ -100,12 +100,16 @@ class SmallNode : Box {
 		auto center_x = x + width / 2;
 		auto center_y = y + height / 2;
 		auto style="fill:rgb(255,255,255);stroke-width:1;stroke:blue";
-		svg_text ~= `<rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="%s" />`
-			.format(box_w, box_h, x + PADDING_SMALLBOX, y + PADDING_SMALLBOX, r, r, style);
-		svg_text ~= `<text x="%s" y="%s" class="smallname" text-anchor="middle" textlength="%s">%s</text>"`
-			.format(center_x, center_y + TEXTALIGN_HACK, textwidth, name);
-		//TODO: textlength is being ignored
+		svg_text ~= `<g><a href="%s"><rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="%s" />`
+			.format(node.name.name2link, box_w, box_h, x + PADDING_SMALLBOX, y + PADDING_SMALLBOX, r, r, style);
+		//svg_text ~= `<text font-size="%spx" x="%s" y="%s" class="smallname" text-anchor="middle" textLength="%s">%s</text></a></g>`
+		svg_text ~= `<text x="%s" y="%s" class="small" textLength="%spx">%s</text></a></g>`
+			.format(center_x, center_y + TEXTALIGN_HACK, textwidth, node.name);
 	}
+}
+
+string name2link(string name) {
+	return "%s.html".format(name);
 }
 
 void drawline(int x0, int y0, int x1, int y1, string color="black") {
@@ -234,20 +238,21 @@ void focus(Node *target) {
 auto create_graph(uint nlayers) {
 	uint node_idx = 0;
 	Node* create_node(uint layer) {
-		auto nchildren = uniform!"[]"(1,10);
+		auto nchildren = uniform!"[]"(1,3);
 		auto name = "%s".format(node_idx++);
 		auto children = (nlayers == layer + 1) ? null : iota(0, nchildren).map!(a => create_node(layer + 1)).array;
 		auto svg = null;//TODO: something else
 		//TODO: get width, height from svg
-		return new Node(name, uniform(600,800), uniform(400,800), children, svg);
+		//return new Node(name, uniform(600,800), uniform(400,800), children, svg);
+		return new Node(name, uniform(300,400), uniform(200,400), children, svg);
 	}
 	return create_node(0);
 }
 
 void main() {
-	root = create_graph(5);
+	root = create_graph(4);
 
-	focus(root.children[1].children[2]);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
+	focus(root.children[1].children[1]);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
 //	assert(root.type == Type.ANCESTOR, format("%s", root.type));
 
 	auto box = new TreeBox(root);
@@ -257,18 +262,27 @@ void main() {
 	uint height = cast(uint)(box.height / cast(double)box.width * width);
 	
 	auto svg_header = [
-		`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
-		`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
-		`<svg x="0" y="0" width="%spt" height="%spt" viewBox="0.00 0.00 %.2f %.2f" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`.format(width, height, box.width, box.height),
+	//	`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
+	//	`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
+		`<!DOCTYPE html>`,
+		`<html><body>`,
+		`<svg x="0" y="0" width="%spx" height="%spx" viewBox="0.00 0.00 %.2f %.2f" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`.format(width, height, box.width, box.height),
+		`<style>`,
+		`	text.small {`,
+		`		text-anchor: middle;`,
+		`		font-family: Courier, monospace;`,
+		`		font-size: %spx;`.format(FONTSIZE),
+		`	}`,
+		`</style>`,
 		`<rect width="100%" height="100%" x="0" y="0" fill="white" />`,
 	];
-	drawline(0, box.height, 2000, box.height, "red");
 
 	svg_header.each!(a => writef("%s\n", a));
 	foreach (line; svg_text) {
 		writef("%s\n", line);
 	}
 	writef("</svg>\n");
+	writef("</body></html>\n");
 	stderr.writef("Box: %s, %s\n", box.width, box.height);
 	stderr.writef(" Px: %s, %s\n", width, height);
 	//TODO: Still a bit wide. Maybe display ancestors and children as big boxes, siblings and nieces as small boxes, and cousins as either dots or just replace the entire trees with ellipses

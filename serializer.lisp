@@ -74,8 +74,26 @@
       (setf (rule-redundancies rule)
 	    (hash-to-a-list (rule-redundancies rule)))))
 
-(defun nhash-var-values ())
-(defun nunhash-var-values ())
+(defun nhash-var-values (var-values)
+  (if (listp var-values)
+      (loop
+	 with vv-hash = (make-hash-table)
+	 for (idx vals) in var-values
+	 do
+	   (setf (gethash idx vv-hash) vals)
+	 finally
+	   (return vv-hash))
+      var-values))
+
+(defun nunhash-var-values (var-values)
+  (if (hash-table-p var-values)
+      (loop
+	 for idx being the hash-keys of var-values
+	 using (hash-value vals)
+	 collect (cons idx (list vals)) into var-vals-list
+	 finally
+	   (return var-vals-list))
+      var-values))
 
 (defun vvbm-to-hash (a-list)
   (if (listp a-list)
@@ -143,11 +161,11 @@
        (setf (rule-based-cpd-characteristic-sets-values cpd)
 	     (a-list-to-hash (rule-based-cpd-characteristic-sets-values cpd)))
        (setf (rule-based-cpd-var-values cpd)
-	     (a-list-to-hash (rule-based-cpd-var-values cpd)))
+	     (nhash-var-values (rule-based-cpd-var-values cpd)))
        (loop
 	 for rule being the elements of (rule-based-cpd-rules cpd)
 	 do
-	    (unhash-rule rule))
+	    (hash-rule rule))
        (setf (rule-based-cpd-concept-blocks cpd)
 	     (a-list-to-hash (rule-based-cpd-concept-blocks cpd))))
   (setf (cdr bn)
@@ -185,7 +203,7 @@
        (setf (rule-based-cpd-characteristic-sets-values cpd)
 	     (hash-to-a-list (rule-based-cpd-characteristic-sets-values cpd)))
        (setf (rule-based-cpd-var-values cpd)
-	     (hash-to-a-list (rule-based-cpd-var-values cpd)))
+	     (nunhash-var-values (rule-based-cpd-var-values cpd)))
        (loop
 	 for rule being the elements of (rule-based-cpd-rules cpd)
 	 do

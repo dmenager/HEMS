@@ -13,6 +13,24 @@
         (setq eltm* nil))
     (format t "~%done!")))
 
+(defun a-list-to-hash (a-list)
+  (if (listp a-list)
+      (loop
+	with hash-table =
+			(if (stringp (caar a-list))
+			    (make-hash-table :test #'equal)
+			    (make-hash-table))
+	for (att . val) in a-list
+	if (listp val)
+	  do
+	     (setf (gethash att hash-table) (a-list-to-hash val))
+	else
+	  do
+	     (setf (gethash att hash-table) val)
+	finally
+	   (return hash-table))
+      a-list))
+
 (defun hash-to-a-list (hash)
   (if (hash-table-p hash)
       (loop
@@ -25,6 +43,21 @@
 	finally
 	   (return a-list))
       hash))
+
+(defun hash-rule (rule)
+  (setf (rule-conditions rule)
+	(a-list-to-hash (rule-conditions rule)))
+  (setf (rule-block rule)
+	(a-list-to-hash (rule-block rule)))
+  (if (listp (rule-certain-block rule))
+      (setf (rule-certain-block rule)
+	    (a-list-to-hash (rule-certain-block rule))))
+  (if (listp (rule-avoid-list rule))
+      (setf (rule-avoid-list rule)
+	    (a-list-to-hash (rule-avoid-list rule))))
+  (if (listp (rule-redundancies rule))
+      (setf (rule-redundancies rule)
+	    (a-list-to-hash (rule-redundancies rule)))))
 
 (defun unhash-rule (rule)
   (setf (rule-conditions rule)
@@ -40,7 +73,28 @@
   (if (hash-table-p (rule-redundancies rule))
       (setf (rule-redundancies rule)
 	    (hash-to-a-list (rule-redundancies rule)))))
-  
+
+(defun nhash-var-values ())
+(defun nunhash-var-values ())
+
+(defun vvbm-to-hash (a-list)
+  (if (listp a-list)
+      (loop
+	with hash-table = (make-hash-table)
+	for (idx vvbm) in a-list
+	do
+	   (setf (gethash idx hash-table)
+		 (loop
+		   for vvb in vvbm
+		   collect (list (car vvb)
+				 (a-list-to-hash (second vvb)))
+		     into vvb-list
+		   finally
+		      (return vvb-list)))
+	finally
+	   (return hash-table))
+      a-list))
+
 (defun vvbm-to-a-list (hash)
   (if (hash-table-p hash)
       (loop
@@ -51,11 +105,53 @@
 		    for vvb in vvbm
 		    collect (list (car vvb) (hash-to-a-list (second vvb))) into vvb-list
 		    finally
-		       (return vvb-list)))
+		       (return (list vvb-list))))
 	  into vvbm-list
 	finally
 	   (return vvbm-list))
       hash))
+
+(defun nhash-cpds (bn)
+  (loop
+    with cpd-arr = (car bn)
+    for cpd being the elements of cpd-arr
+    do
+       (setf (rule-based-cpd-identifiers cpd)
+	     (a-list-to-hash (rule-based-cpd-identifiers cpd)))
+       (setf (rule-based-cpd-vars cpd)
+	     (a-list-to-hash (rule-based-cpd-vars cpd)))
+       (setf (rule-based-cpd-types cpd)
+	     (a-list-to-hash (rule-based-cpd-types cpd)))
+       (setf (rule-based-cpd-concept-ids cpd)
+	     (a-list-to-hash (rule-based-cpd-concept-ids cpd)))
+       (setf (rule-based-cpd-qualified-vars cpd)
+	     (a-list-to-hash (rule-based-cpd-qualified-vars cpd)))
+       (setf (rule-based-cpd-var-value-block-map cpd)
+	     (vvbm-to-hash (rule-based-cpd-var-value-block-map cpd)))
+       (setf (rule-based-cpd-set-valued-attributes cpd)
+	     (vvbm-to-hash (rule-based-cpd-set-valued-attributes cpd)))
+       (setf (rule-based-cpd-set-valued-negated-attributes cpd)
+	     (vvbm-to-hash (rule-based-cpd-set-valued-negated-attributes cpd)))
+       (setf (rule-based-cpd-negated-vvbms cpd)
+	     (vvbm-to-hash (rule-based-cpd-negated-vvbms cpd)))
+       (setf (rule-based-cpd-lower-approx-var-value-block-map cpd)
+	     (vvbm-to-hash (rule-based-cpd-lower-approx-var-value-block-map cpd)))
+       (setf (rule-based-cpd-lower-approx-negated-vvbms cpd)
+	     (vvbm-to-hash (rule-based-cpd-lower-approx-negated-vvbms cpd)))
+       (setf (rule-based-cpd-characteristic-sets cpd)
+	     (vvbm-to-hash (rule-based-cpd-characteristic-sets cpd)))
+       (setf (rule-based-cpd-characteristic-sets-values cpd)
+	     (a-list-to-hash (rule-based-cpd-characteristic-sets-values cpd)))
+       (setf (rule-based-cpd-var-values cpd)
+	     (a-list-to-hash (rule-based-cpd-var-values cpd)))
+       (loop
+	 for rule being the elements of (rule-based-cpd-rules cpd)
+	 do
+	    (unhash-rule rule))
+       (setf (rule-based-cpd-concept-blocks cpd)
+	     (a-list-to-hash (rule-based-cpd-concept-blocks cpd))))
+  (setf (cdr bn)
+	(a-list-to-hash (cdr bn))))
 
 (defun nunhash-cpds (bn)
   (loop
@@ -99,7 +195,30 @@
   (setf (cdr bn)
 	(hash-to-a-list (cdr bn))))
 
-(defun hash-eltm (eltm))
+(defun hash-eltm (eltm)
+  (loop
+    with branch and episode and visited
+    with stack = (list eltm)
+    while stack
+    do
+       (setq branch (car stack))
+       (setq episode (car branch))
+       (setq stack (rest stack))
+       (setf (episode-backlinks episode) (a-list-to-hash (episode-backlinks episode)))
+       ;;(format t "~%visiting: ~S" (episode-id episode))
+       (loop
+	 for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
+	 do
+	    (nhash-cpds (funcall slot episode)))
+       ;;(format t "~%episode:~%~S"episode)
+       (setq visited (cons (episode-id episode) visited))
+       (loop
+	 for child in (rest branch)
+	 when (not (member (episode-id (car child)) visited
+			   :test #'equal))
+	   do
+	      (setq stack (cons child stack))))
+  eltm)
 
 (defun unhash-eltm (eltm)
   (loop
@@ -136,4 +255,4 @@
 
 (defun read-from-file (fname)
   (with-open-file (s fname)
-    (read s)))
+    (hash-eltm (read s))))

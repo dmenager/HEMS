@@ -63,7 +63,7 @@
 ;; var-values = hash table of values for each variable in CPD
 ;; cardinalities = array of cardinalities for each variable
 ;; step-sizes = array of number of steps to take before reaching variable's next assignment, for each variable
-;; rules = list of rules = <context; probability, count>
+;; rules = array of rules = <context; probability, count>
 ;; concept-blocks = rule probability-block map. For each probability in rules, associate it with the rules with the same probability
 ;; singleton-p = flag for whether this is a singleton cpd or not. If so, then rules represent potential fields, not probability
 ;; count = total number of times this CPD was observed

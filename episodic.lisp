@@ -1488,7 +1488,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     ;;(format t "~%original cue:~%~A~%partial-cue:~%~A" cue partial-cue)
     (multiple-value-bind (eme sol bindings depth cost)
         (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
-               (values (car eltm) nil nil 0 most-positive-fixnum most-positive-fixnum))
+               (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum))
               (t
                (new-retrieve-episode eltm cue nil :bic-p bic-p)))
       (declare (ignore depth cost))

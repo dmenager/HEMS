@@ -1,18 +1,5 @@
 (in-package :hems)
 
-#| Load event memory contents from file |#
-
-;; filename = string handle to file to load
-(defun load-eltm-from-file (file-name)
-  (format t "~%loading event memory...")
-  (with-open-file (eltm-stream file-name 
-                               :direction :input
-                               :if-does-not-exist nil)
-    (if eltm-stream
-        (setq eltm* (read eltm-stream))
-        (setq eltm* nil))
-    (format t "~%done!")))
-
 (defun a-list-to-hash (a-list)
   (if (listp a-list)
       (loop
@@ -273,4 +260,17 @@
 
 (defun read-from-file (fname)
   (with-open-file (s fname)
-    (hash-eltm (read s))))
+    (setq eltm* (hash-eltm (read s)))))
+
+#| Load event memory contents from file |#
+
+;; filename = string handle to file to load
+(defun load-eltm-from-file (file-name)
+  (format t "~%loading event memory...")
+  (with-open-file (eltm-stream file-name 
+                               :direction :input
+                               :if-does-not-exist nil)
+    (if eltm-stream
+        (setq eltm* (hash-eltm (read eltm-stream)))
+        (setq eltm* nil))
+    (format t "~%done!")))

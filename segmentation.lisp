@@ -478,13 +478,15 @@
       ;;(setq eltm* (list (make-empty-episode)))
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
+      ;;(setq data (alexandria:shuffle (rest data)))
       (setq data (rest data))
       (setq max-digits (get-max-digits file))
+      (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
       (loop
 	with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
-	for line in data ;;(subseq data 0 3)
+	for line in (subseq data 0 3) ;;data
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -550,9 +552,9 @@
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
-	   (when (= j 14)
+	   (when (= j 4)
 	     (setq print-special* nil))
-	   (when (not (= j 14))
+	   (when (not (= j 4))
 	     (setq print-special* nil))
 	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
@@ -561,13 +563,21 @@
 	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
-	   (when nil
-	     (when (car eltm*)
-	       (format t "~%~%Episode State Transitions:~%~S~%Episode State:~%~S~%Episode Observation:~%~S"
-		       (episode-state-transitions (car eltm*))
-		       (episode-state (car eltm*))
-		       (episode-observation (car eltm*)))))
+	   (loop
+	      for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
+	      for ep-type in (list "Observation" "State" "Temporal")
+	      when eltm* do
+		(loop
+		  for cpd being the elements of (car (funcall type (car eltm*)))
+		  do
+		     (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
 	   (when break
 	     (break))))
     (eltm-to-pdf)
     (save-eltm-to-file eltm*)))
+
+#|
+(ql:quickload :hems)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_FrozenLake-v1_data.csv")
+|#

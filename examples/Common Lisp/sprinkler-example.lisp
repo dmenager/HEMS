@@ -3017,7 +3017,7 @@
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
-	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
+	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil :bic-p nil))
  observations)))
 
 
@@ -3035,7 +3035,19 @@
 ;; P(wet=1 | rain=1, sprinkler=1) = 1.0000
 
 #| TESTS
+
+;; no observations
 (load "sprinkler-example.lisp")
 (hems::example)
 (hems::H[bn] (car (hems::get-eltm)) (make-hash-table))
+
+;; certain observations
+(let ((observations (make-hash-table :test #'equal)))
+(setf (gethash "ZEUS_ANGRY_243" observations) (list (cons "T" 1)))
+(hems::H[bn] (car (hems::get-eltm)) observations))
+
+;; uncertain observations
+(let ((observations (make-hash-table :test #'equal)))
+(setf (gethash "SPRINKLER_245" observations) (list (cons "T" .3) (cons "NIL" .7)))
+(hems::H[bn] (car (hems::get-eltm)) observations))
 |#

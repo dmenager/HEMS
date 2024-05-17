@@ -15,7 +15,7 @@
 	   (setq bn (episode-state-transitions episode)))
 	  (t
 	   (error "uh oh")))
-    (when nil t
+    (when t nil
       (format t "~%~%  episode id: ~S" (episode-id episode)))
     (loop
       with dice
@@ -172,6 +172,8 @@
   (let (new-episode new-bn)
   (multiple-value-bind (recollection eme)
       (remember eltm evidence-bn '+ 1 t)
+    (when nil
+      (format t "Posterior network:~%~S" recollection))
     (loop
       for cpd in recollection
       when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn

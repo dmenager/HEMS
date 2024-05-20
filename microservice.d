@@ -2,15 +2,15 @@ import std.socket, std.json, std.datetime, std.parallelism, std.stdio, std.uni, 
 import std.conv, std.algorithm, std.format, std.string, std.exception, std.uri, std.array, std.regex;
 import core.stdc.signal, core.stdc.stdlib, core.thread.osthread, core.stdc.errno, core.stdc.string;
 
-static ushort DEFAULT_PORT = 26583;
+static ushort DEFAULT_PORT = 26584;
 static uint DEFAULT_BACKLOG = 50;
-static auto DEFAULT_TIMEOUT = dur!"seconds"(10);//TODO: If it's actively sending packets for more than this, does it time out? If so, increase timeout.
+static auto DEFAULT_TIMEOUT = dur!"seconds"(2);//TODO: If it's actively sending packets for more than this, does it time out? If so, increase timeout.
 static auto BUFSIZ = 1024;
 
 alias Packet = Tuple!(string, "startline", string[string], "headers", string, "content");
 alias PacketCallback = void function(Socket conn, Packet packet);
-alias EndpointDelegate = void delegate(Socket conn, string startline, string[string] headers, string content);
-alias EndpointFunction = void function(Socket conn, string startline, string[string] headers, string content);
+alias EndpointDelegate = void delegate(Socket conn, string startline, string[string] headers, string[string] query_args, string content);
+alias EndpointFunction = void function(Socket conn, string startline, string[string] headers, string[string] query_args, string content);
 alias CEndpointFunction = void function(void *conn, const char *startline, void *headers, const char *content);
 
 static shared EndpointDelegate[string] endpoints;
@@ -67,7 +67,11 @@ static void error_log(string msg) {
 extern (C) void handle_kill(int sig) nothrow @nogc {	
 	static count = 0;
 	terminate = 1;
-	if (++count > 2) { // ^C means terminate gracefully. ^C^C^C means DIE ALREADY
+	// ^C means terminate gracefully. ^C^C^C means DIE ALREADY
+	// If it isn't dying on the first one, it's probably because the client is holding an open connection.
+	// Tell the client to stop that and it'll clean up properly.
+	if (++count > 2) { 
+		//TODO: Figure out a way to make sure the socket always gets closed.
 		exit(1);
 	}
 }
@@ -105,19 +109,52 @@ void sendPacket(Socket conn, uint status, string content, string content_type = 
 	}
 }
 
+//query_str is everything after the ?
+void parse_form_args(ref string[string] args, string query_str) {
+	foreach (entry; query_str.split("&")) {
+		auto a = entry.split("=");
+		if (a.length > 1) {
+			args[a[0]] = a[1];
+		}
+		else {
+			args[a[0]] = null;
+		}
+	}
+	writef("TEST 0\n");
+}
+
 // Decide which microservice the request should be forwarded to
 static void run_microservice(Socket conn, Packet packet) {
+	writef("run_microservice\n");
 	auto re = ctRegex!(`^([A-Z]+) (.*) (HTTP\/[0-9]+(?:\.[0-9]+)?)$`,"i");
 	auto captures = packet.startline.strip.matchFirst(re);
 	enforce(4 == captures.length, new HttpException(400, format("Invalid start line:\n%s\n", packet.startline)));
-	if ("POST" != captures[1].toUpper) {
-		throw new HttpException("BREW" == captures[1].toUpper ? 418 : 405, "", ["Allow: POST"]);//RFC 2324 compatibility
+	string[string] args;
+	
+	if ("GET" == captures[1].toUpper) {
+		//
+	}
+	else if ("POST" != captures[1].toUpper) {
+		throw new HttpException("BREW" == captures[1].toUpper ? 418 : 405, "", ["Allow: GET, POST"]);//RFC 2324 compatibility
 	}
 
-	//TODO: It's post, so we should be seeing any ?foo=bar stuff. But check for it anyway
-	auto uri = captures[2].strip;
+	string uri;
+	auto tok = captures[2].strip.split("?");
+	if (tok.length > 1) {
+		uri = tok[0];
+		parse_form_args(args, tok[1]);
+	}
+	else {
+		uri = captures[2].strip;
+	}
+	writef("TEST 1\n");
+	
+	if (uri !in endpoints) {
+		writef("Unrecognized endpoint: `%s`\n", uri);
+	}
+	writef("uri = %s\n", uri);
 	enforce(uri in endpoints, new HttpException(404, ""));
-	endpoints[uri](conn, packet.startline, packet.headers, packet.content);
+	endpoints[uri](conn, packet.startline, packet.headers, args, packet.content);
 }
 
 // Function should indicate errors by throwing HttpException (or any other Exception, to throw a 500 Internal Server Error)
@@ -125,9 +162,17 @@ static void run_microservice(Socket conn, Packet packet) {
 // Which in turn means that readChunk needs to read byte[], and only convert to string once the header/content boundary is identified
 static void handleConnection(Socket conn, PacketCallback callback, Duration timeout) {
 	scope(exit) {
+		/+
 		// Wait for the client to send a close message
 		char[64] buf;
-		while (0 != conn.receive(buf)) {}
+		writef("TEST 0\n");
+		while (1) {
+			auto r = conn.receive(buf);
+			writef("r = %s\n", r);
+			if (0 == r || Socket.ERROR == r) break;
+		}
+		writef("TEST 1\n");
+		+/
 		conn.close();
 	}
 
@@ -148,7 +193,6 @@ static void handleConnection(Socket conn, PacketCallback callback, Duration time
 
 	Packet readPacket() {
 		string readChunk(ulong bufsize) {
-			//writef("readChunk(%s)\n", bufsize);
 			auto buf = new char[bufsize];
 			auto n = conn.receive(buf);
 			enforce(Socket.ERROR != n, new Exception("Receive failed"));
@@ -156,7 +200,9 @@ static void handleConnection(Socket conn, PacketCallback callback, Duration time
 		}
 
 		string buf = readChunk(BUFSIZ);
-		if (!buf.length) return Packet(null, null, null);//Empty packet to get accept to stop blocking
+		if (!buf.length) {
+			return Packet(null, null, null);//Empty packet to get accept to stop blocking
+		}
 
 		// Double newline indicates that the headers are done. Receive until we reach them.
 		// HTTP specifies CRLF in headers
@@ -178,14 +224,17 @@ static void handleConnection(Socket conn, PacketCallback callback, Duration time
 		}
 		
 		// Fetch remaining content. Prepend any we got in the last chunk.
-		enforce("content-length" in packet.headers, new HttpException(411,""));
-		auto content_length = packet.headers["content-length"].to!ulong;
-	
-		if (packet.content.length < content_length) {
-			packet.content ~= readChunk(content_length - packet.content.length);
+		if ("content-length" in packet.headers) {
+			auto content_length = packet.headers["content-length"].to!ulong;
+		
+			if (packet.content.length < content_length) {
+				packet.content ~= readChunk(content_length - packet.content.length);
+			}
+			enforce(packet.content.length == content_length, 
+				new HttpException(400, format("Content-length: %s but received %s bytes", content_length, packet.content.length)));
 		}
-		enforce(packet.content.length == content_length, 
-			new HttpException(400, format("Content-length: %s but received %s bytes", content_length, packet.content.length)));
+
+		writef("FOO!\n");
 		return packet;
 	}
 
@@ -193,9 +242,7 @@ static void handleConnection(Socket conn, PacketCallback callback, Duration time
 		conn.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, timeout);
 		conn.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, timeout);
 		auto packet = readPacket();
-		if (null != packet.content) {
-			callback(conn, packet);
-		}
+		callback(conn, packet);
 	}
 	catch (HttpException e) { // These may happen if the user screws up
 		if (errno) {
@@ -229,6 +276,7 @@ void runServer(ushort port = DEFAULT_PORT, uint backlog = DEFAULT_BACKLOG, Durat
 		scope(exit) {
 			server.shutdown(SocketShutdown.BOTH);
 			server.close();
+			writef("Cleanup done\n");
 		}
 		auto addr = new InternetAddress("localhost", port);
 		server.bind(addr);
@@ -245,6 +293,7 @@ void runServer(ushort port = DEFAULT_PORT, uint backlog = DEFAULT_BACKLOG, Durat
 				taskPool.put(t);
 			}
 		}
+		writef("terminated\n");
 	}
 	catch (Exception e) {
 		if (errno) {
@@ -259,10 +308,10 @@ void runServer(ushort port = DEFAULT_PORT, uint backlog = DEFAULT_BACKLOG, Durat
 unittest {
 	import std.process, std.range;
 
-	auto foo = function void(Socket conn, string startline, string[string] headers, string content) {
+	auto foo = function void(Socket conn, string startline, string[string] headers, string[string] query_args, string content) {
 		sendPacket(conn, 200, format("Hit /foo endpoint\n%s", content), "text/plain");
 	};
-	auto bar = function void(Socket conn, string startline, string[string] headers, string content) {
+	auto bar = function void(Socket conn, string startline, string[string] headers, string[string] query_args, string content) {
 		sendPacket(conn, 200, `{"msg": "Hit /foo/bar endpoint"}`~"\n", "application/json");
 	};
 	register_endpoint("/foo", foo);

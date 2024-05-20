@@ -1,8 +1,15 @@
 DFLAGS=-g -O
+BIN=hems_visualizer
 OBJ=hems_visualizer.o microservice.o
 
+.PHONY: clean all
 
-hems_visualizer: $(OBJ)
+all: $(BIN)
+
+clean:
+	rm -- $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
 	ldc2 $(DFLAGS) $^ -of $@
 	
 %.o: %.d

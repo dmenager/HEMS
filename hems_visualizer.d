@@ -1,5 +1,5 @@
 import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, 
-	std.array, std.range, std.socket;
+	std.array, std.range, std.socket, std.parallelism, std.datetime;
 import microservice;
 
 immutable int
@@ -120,7 +120,7 @@ class SmallNode : Box {
 }
 
 string name2link(string name) {
-	return "%s.html".format(name);
+	return "visualization?node=%s".format(name);
 }
 
 void drawline(ref string[] svg_text, int x0, int y0, int x1, int y1, string color="black") {
@@ -197,17 +197,7 @@ class TreeBox {
 }
 
 
-void focus(Node *root, string target_name) {
-	Node *find_target(Node *node) {
-		if (node.name == target_name) return node;
-		foreach (child; node.children) {
-			auto r = find_target(child);
-			if (r !is null) return r;
-		}
-		return null;
-	}
-	auto target = find_target(root);
-
+void focus(Node *root, Node *target) {
 	//return true if `name` is this node or an ancestor
 	//descendent is 0 for non-descendents and dist(node, target) for descendents
 	bool aux(Node *node, uint descendent) {
@@ -269,12 +259,24 @@ auto create_graph(uint nlayers) {
 	}
 	return create_node(0);
 }
+	
+Node *find_target(Node *node, string target_name) {
+	if (node.name == target_name) return node;
+	foreach (child; node.children) {
+		auto r = find_target(child, target_name);
+		if (r !is null) return r;
+	}
+	return null;
+}
 
-void display_graph(const Node *tree, string focus_node) {
-	//TODO: Need a local copy of root that I can modify
+string display_graph(const Node *tree, string focus_node) {
 	auto root = tree.copy_node;
-
-	focus(root, focus_node);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
+			
+	auto target = find_target(root, focus_node);
+	if (target is null) {
+		return "<!DOCTYPE html>\n<html><body>Unrecognized node label</body></html>\n";
+	}
+	focus(root, target);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
 
 	auto box = new TreeBox(root);
 	string[] svg_text;
@@ -287,7 +289,8 @@ void display_graph(const Node *tree, string focus_node) {
 	//	`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
 	//	`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
 		`<!DOCTYPE html>`,
-		`<html><body>`,
+		`<html>`,
+		`<body>`,
 		`<svg x="0" y="0" width="%spx" height="%spx" viewBox="0.00 0.00 %.2f %.2f" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`.format(width, height, box.width, box.height),
 		`<style>`,
 		`	text.small {`,
@@ -299,33 +302,49 @@ void display_graph(const Node *tree, string focus_node) {
 		`<rect width="100%" height="100%" x="0" y="0" fill="white" />`,
 	];
 
-	svg_header.each!(a => writef("%s\n", a));
-	foreach (line; svg_text) {
-		writef("%s\n", line);
-	}
-	writef("</svg>\n");
-	writef("</body></html>\n");
+	string output = chain(svg_header, svg_text).join("\n");
+	output ~= "</svg>\n";
+	output ~= "</body>\n</html>\n";
+
 	stderr.writef("Box: %s, %s\n", box.width, box.height);
 	stderr.writef(" Px: %s, %s\n", width, height);
 	//TODO: Still a bit wide. Maybe display ancestors and children as big boxes, siblings and nieces as small boxes, and cousins as either dots or just replace the entire trees with ellipses
 	//dots will probably work if we have a PADDING_DOTBOX and PADDING_DOTTREE to keep it *super*-compressed
 	//Do that after getting bigbox working, though.
 	//Instead of ellipses, a triangle with a node count and/or observation count in it. Clicking the triangle gets the root node
+
+	return output;
 }
 	
 void main() {
 	auto root = create_graph(5);
 //	assert(root.type == Type.ANCESTOR, format("%s", root.type));
 	root.display_graph("1");
+	
 
-	void process_request(Socket conn, string startline, string[string] headers, string content) {
-		sendPacket(conn, 200, `{"msg", "Received"}` ~"\n", "application/json");
+	void process_request(Socket conn, string startline, string[string] headers, string[string] args, string content) {
 		stderr.writef("startline: %s\n", startline);
 		foreach (k,v; headers) {
 			writef("%s: %s\n", k, v);
 		}
+		writef("\n");
+		foreach (k,v; args) {
+			writef("%s: %s\n", k, v);
+		}
 		writef("\n%s\n", content);
+
+		string target;
+		if ("node" !in args) {
+			target = root.name;
+		}
+		else {
+			target = args["node"];
+		}
+
+		auto html = display_graph(root, target);
+		sendPacket(conn, 200, html, "text/html");
 	}
 
 	register_endpoint("/visualization", &process_request);
+	task!runServer(DEFAULT_PORT, DEFAULT_BACKLOG, dur!"seconds"(4)).executeInNewThread();
 }

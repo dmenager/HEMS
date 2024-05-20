@@ -1,4 +1,6 @@
-import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, std.array, std.range;
+import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, 
+	std.array, std.range, std.socket;
+import microservice;
 
 immutable int
 	PADDING_BIGBOX = 8,
@@ -24,15 +26,24 @@ struct Node {
 	Type type;
 }
 
-string[] svg_text;
-Node *root;
+Node *copy_node(const Node *from) {
+	return new Node(from.name, from.width, from.height,
+		from.children.map!(a => a.copy_node).array,
+		from.svg, from.type);
+}
+
+void dump(const Node *node, uint indent = 0) {
+	foreach (idx; 0..indent) writef("  ");
+	writef("%s\n", node.name);
+	foreach (child; node.children) dump(child, indent + 1);
+}
 
 //contains everything needed to draw the contents, given the x,y of its top-left.
 class Box {
 	Node *node;
 	uint width, height;
 	string name;
-	abstract void draw(int x, int y);
+	abstract void draw(ref string[] svg_text, int x, int y);
 	//TODO: need to add html area tags
 }
 
@@ -47,7 +58,7 @@ class TriangleNode : Box {
 		height = sz;
 		stderr.writef("Triangle %s, %s\n", width, height);
 	}
-	override void draw(int x, int y) {
+	override void draw(ref string[] svg_text, int x, int y) {
 		auto s = `<a href="%s"><polygon points="%s,%s %s,%s %s,%s" style="fill:white;stroke:blue;stroke-width:2" /></a>`.format(
 			node.name.name2link,
 			x + pad + sz/2,  y,
@@ -67,7 +78,7 @@ class BigNode : Box {
 		width = node.width + PADDING_BIGBOX * 2;
 		height = node.height + PADDING_BIGBOX * 2;
 	}
-	override void draw(int x, int y) {
+	override void draw(ref string[] svg_text, int x, int y) {
 		//just a simple box around the name
 		auto r = 10;//curve of the corners
 		auto box_w = width - 2 * PADDING_BIGBOX;
@@ -91,7 +102,7 @@ class SmallNode : Box {
 		height = PADDING_SMALLBOX * 2 + FONTSIZE;
 	}
 
-	override void draw(int x, int y) {
+	override void draw(ref string[] svg_text, int x, int y) {
 		//just a simple box around the name
 		auto r = 4;//curve of the corners
 		//TODO: need to define .small in svg's style tag
@@ -112,7 +123,7 @@ string name2link(string name) {
 	return "%s.html".format(name);
 }
 
-void drawline(int x0, int y0, int x1, int y1, string color="black") {
+void drawline(ref string[] svg_text, int x0, int y0, int x1, int y1, string color="black") {
 	auto linestyle = "stroke:%s;stroke-width:1".format(color);
 	svg_text ~= `<line x1="%s" y1="%s" x2="%s" y2="%s" style="%s" />`.format(x0, y0, x1, y1, linestyle);
 }
@@ -150,13 +161,13 @@ class TreeBox {
 		//TODO: maybe use longer vertical lines if bigboxes are involved
 	}
 
-	void draw(int x, int y) {
+	void draw(ref string[] svg_text, int x, int y) {
 		auto centerx = x + width / 2;
 		int nodex = centerx - nodebox.width / 2;
 		auto childx = centerx - children.map!(a => a.width).sum / 2;
 		assert(childx >= 0 && nodex >= 0);
 
-		nodebox.draw(nodex, y);
+		nodebox.draw(svg_text, nodex, y);
 		if (!children) return;
 
 		y += nodebox.height + vline_length;
@@ -166,9 +177,9 @@ class TreeBox {
 				//the lines below the horizontal line
 				auto center = childx + child.width / 2;
 				auto y1 = y + vline_length + (is_big(child.root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
-				drawline(center, y, center, y1);
+				drawline(svg_text, center, y, center, y1);
 			}
-			child.draw(childx, y + vline_length);
+			child.draw(svg_text, childx, y + vline_length);
 			childx += child.width;
 		}
 		int maxx = childx - children[$-1].width / 2;
@@ -176,17 +187,27 @@ class TreeBox {
 		auto y0 = y - vline_length - (is_big(root) ? PADDING_BIGBOX : PADDING_SMALLBOX);
 		if (1 == children.length) {//single vertical edge
 			auto y1 = y + vline_length;
-			drawline(minx, y0, minx, y1);
+			drawline(svg_text, minx, y0, minx, y1);
 		}
 		else {//upper vertical line (lower vertical lines already drawn), horizontal line
-			drawline(centerx, y0, centerx, y);
-			drawline(minx, y, maxx, y);
+			drawline(svg_text, centerx, y0, centerx, y);
+			drawline(svg_text, minx, y, maxx, y);
 		}
 	}
 }
 
 
-void focus(Node *target) {
+void focus(Node *root, string target_name) {
+	Node *find_target(Node *node) {
+		if (node.name == target_name) return node;
+		foreach (child; node.children) {
+			auto r = find_target(child);
+			if (r !is null) return r;
+		}
+		return null;
+	}
+	auto target = find_target(root);
+
 	//return true if `name` is this node or an ancestor
 	//descendent is 0 for non-descendents and dist(node, target) for descendents
 	bool aux(Node *node, uint descendent) {
@@ -238,7 +259,7 @@ void focus(Node *target) {
 auto create_graph(uint nlayers) {
 	uint node_idx = 0;
 	Node* create_node(uint layer) {
-		auto nchildren = uniform!"[]"(1,3);
+		auto nchildren = uniform!"[]"(1,7);
 		auto name = "%s".format(node_idx++);
 		auto children = (nlayers == layer + 1) ? null : iota(0, nchildren).map!(a => create_node(layer + 1)).array;
 		auto svg = null;//TODO: something else
@@ -249,14 +270,15 @@ auto create_graph(uint nlayers) {
 	return create_node(0);
 }
 
-void main() {
-	root = create_graph(4);
+void display_graph(const Node *tree, string focus_node) {
+	//TODO: Need a local copy of root that I can modify
+	auto root = tree.copy_node;
 
-	focus(root.children[1].children[1]);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
-//	assert(root.type == Type.ANCESTOR, format("%s", root.type));
+	focus(root, focus_node);//NOTE: Could crash if those don't exist. But they usually will, and this ijust a quick test
 
 	auto box = new TreeBox(root);
-	box.draw(0, 0);
+	string[] svg_text;
+	box.draw(svg_text, 0, 0);
 
 	uint width = 2000;
 	uint height = cast(uint)(box.height / cast(double)box.width * width);
@@ -289,4 +311,21 @@ void main() {
 	//dots will probably work if we have a PADDING_DOTBOX and PADDING_DOTTREE to keep it *super*-compressed
 	//Do that after getting bigbox working, though.
 	//Instead of ellipses, a triangle with a node count and/or observation count in it. Clicking the triangle gets the root node
+}
+	
+void main() {
+	auto root = create_graph(5);
+//	assert(root.type == Type.ANCESTOR, format("%s", root.type));
+	root.display_graph("1");
+
+	void process_request(Socket conn, string startline, string[string] headers, string content) {
+		sendPacket(conn, 200, `{"msg", "Received"}` ~"\n", "application/json");
+		stderr.writef("startline: %s\n", startline);
+		foreach (k,v; headers) {
+			writef("%s: %s\n", k, v);
+		}
+		writef("\n%s\n", content);
+	}
+
+	register_endpoint("/visualization", &process_request);
 }

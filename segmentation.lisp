@@ -486,7 +486,7 @@
 	with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
-	for line in (subseq data 0 23)
+	for line in (subseq data 0 10)
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -552,9 +552,9 @@
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
-	   (when (= j 7)
+	   (when (= j 8)
 	     (setq print-special* t))
-	   (when (not (= j 7))
+	   (when (not (= j 8))
 	     (setq print-special* nil))
 	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)

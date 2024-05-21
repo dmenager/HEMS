@@ -1733,9 +1733,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (setq obs observation)
     (if state
 	(setq st state))
-    (if insertp
-      (setf (gethash 0 (getf episode-buffer* :obs))
-	    (list nil)))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (cond (temporal-p

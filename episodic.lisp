@@ -1733,6 +1733,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (setq obs observation)
     (if state
 	(setq st state))
+    (if insertp
+      (setf (gethash 0 (getf episode-buffer* :obs))
+	    (list nil)))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
     (cond (temporal-p
@@ -2023,6 +2026,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                 (pdf-helper e id stream))
             (cdr eps))))
 
+
 #| Graphically display the episodic memory |#
 
 ;; eltm = episodic memory
@@ -2045,5 +2049,65 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (format eltm-file "}~%"))
 	   (uiop:run-program
 	    `("dot" "-Tpdf" "eltm.dot" "-o" ,(get-output-stream-string string-stream))))
+	  (t
+	   (format t "~%failed to generate pdf. eltm is nil")))))
+
+#| Helper function for printing the episodic memory in pdf form |#
+
+;; eps = episodes
+;; parent = parent of episodes
+;; stream = output stream
+(defun pdf-struct-helper (eps parent stream)
+  (let* ((ep (car eps))
+         (id (subseq (episode-id ep) (+ (search "-" (episode-id ep)) 1))))
+    (when parent
+      (format stream "~A -> ~A;~%" parent id))
+    ;;visit children
+    (mapcar #'(lambda (e)
+                (pdf-struct-helper e id stream))
+            (cdr eps))))
+
+#| Helper function for printing the episodic memory in pdf form |#
+
+;; eps = episodes
+;; parent = parent of episodes
+;; stream = output stream
+(defun pdf-helper-ray (eps parent)
+  (let* ((ep (car eps))
+         (id (subseq (episode-id ep) (+ (search "-" (episode-id ep)) 1))))
+    (with-open-file (stream (format nil "ray/~A.dot" (episode-id ep))
+			    :direction :output
+			    :if-exists :supersede
+			    :if-does-not-exist :create)
+      (format stream "digraph G {~%compound=true;~%")
+      (print-episode-state (episode-observation ep) id "Observation" stream)
+      (print-episode-state (episode-state ep) id "State" stream)
+      (print-episode-state (episode-state-transitions ep) id "Transition_Model" stream)
+      ;;(format t "~%HERE!!!!")
+      ;;(format stream "~d[shape=point style=invis]~%" id)
+      ;;(format stream "~d~%" id)
+      (format stream "}~%"))
+    ;;visit children
+    (mapcar #'(lambda (e)
+                (pdf-helper-ray e id))
+            (cdr eps))))
+
+
+#| Graphically display the episodic memory |#
+
+;; eltm = episodic memory
+;; count = count for the file number
+(defun eltm-to-pdf-ray (&optional eltm count)
+  (ensure-directories-exist "./ray/")
+  (let ((ep (if eltm eltm eltm*)))
+    (cond (ep
+	   (with-open-file (eltm-file "ray/eltm-struct.dot"
+				      :direction :output
+				      :if-exists :supersede
+				      :if-does-not-exist :create)
+	     (format eltm-file "digraph G {~%compound=true;~%")
+	     (pdf-struct-helper ep nil eltm-file)
+	     (format eltm-file "}~%"))
+	   (pdf-helper-ray ep nil))
 	  (t
 	   (format t "~%failed to generate pdf. eltm is nil")))))

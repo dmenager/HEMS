@@ -4197,7 +4197,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
+         (when t (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -5394,7 +5394,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t
+  (when nil
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
 				    (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -5666,7 +5666,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                       )
                 (return merged))))
         (t
-         (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi2)))
+         (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
            (format t "~%~%episode before update:~%~S~%schema before update:~%~S~%bindings:~%~S" phi1 phi2 bindings)
            ;;(format t "~%updating episode with schema")
            )
@@ -5679,19 +5679,19 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	 (when (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id phi2)))
 	   (check-cpd phi2 :check-uniqueness nil :check-rule-count nil))
-         (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi2)))
+         (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
            (format t "~%intermediate schema2:~%~S" phi2)
 	   ;;(break)
 	   )
 	 (setq phi1 (subst-cpd phi1 phi2 bindings))
-	 (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi2)))
+	 (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
 	   (format t "~%intermediate episode:~%~S" phi1)
 	   ;;(break)
 	   )
 	 (setq phi1 (cpd-transform-episode-domain phi1 phi2))
-         (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi2)))
+         (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
            (format t "~%episode after update:~%~S~%schema after update:~%~S" phi1 phi2)
-           ;;(break)
+           (break)
 	   )
 	 ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	 (factor-filter phi2 phi1 '+))))

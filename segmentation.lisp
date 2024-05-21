@@ -486,7 +486,7 @@
 	with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
-	for line in (subseq data 0 3) ;;data
+	for line in (subseq data 0 23)
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -546,15 +546,15 @@
 	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
 	     finally
 		(when t
-		  (format t "~%~%hidden state: ~d~%action: ~S" j action))
+		  (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action))
 		(setq st (eval `(compile-program (:relational-invariants t
 						  :neighborhood-func #'array-neighborhood
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
 	   
-	   (when (= j 4)
-	     (setq print-special* nil))
-	   (when (not (= j 4))
+	   (when (= j 7)
+	     (setq print-special* t))
+	   (when (not (= j 7))
 	     (setq print-special* nil))
 	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)

@@ -1,6 +1,7 @@
-import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, 
-	std.array, std.range, std.socket, std.parallelism, std.datetime;
-import microservice;
+import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, std.regex,
+	std.array, std.range, std.socket, std.parallelism, std.datetime, std.file, std.process, std.zip,
+	std.conv, std.path;
+import microservice, process_range;
 
 immutable int
 	PADDING_BIGBOX = 8,
@@ -12,12 +13,26 @@ immutable int
 	FONTSIZE = 14,
 	VLINE_SHORT = 25,
 	VLINE_LONG = 70,
-	TEXTALIGN_HACK = 4
+	TEXTALIGN_HACK = 4,
+	
+	// graph will be scaled down s.t. the largest episode box fits in (MAX_WIDTH, MAX_HEIGHT)
+	MAX_WIDTH = 1000,
+	MAX_HEIGHT = 600
 ;
 immutable double TEXTSCALE_HACK = 2;
 
+shared double scale_factor = 1.0;
+		
+auto python_filter = q"EOS
+import sys
+from bs4 import BeautifulSoup
+svg = BeautifulSoup(sys.stdin.read(), 'xml')
+print(svg.svg['width'])
+print(svg.svg['height'])
+print(svg.g)
+EOS";
 
-enum Type { SELF, ANCESTOR, PARENT, SIBLING, CHILD, DESCENDENT, NIECE, COUSIN };
+enum Type { SELF, ANCESTOR, PARENT, SIBLING, CHILD, DESCENDENT, NIECE, COUSIN, UNKNOWN };
 struct Node {
 	string name;
 	uint width, height;
@@ -50,22 +65,24 @@ class Box {
 // Represents a full subtree that isn't worth drawing out even in miniature
 class TriangleNode : Box {
 	alias pad = PADDING_TRIANGLE;
-	alias sz = TRIANGLE_SIZE;
+	uint textwidth, sz;
 	this(Node *root) {
 		node = root;
 		name = node.name;
+		textwidth = cast(uint)(FONTSIZE * node.name.length / TEXTSCALE_HACK);
+		sz = max(TRIANGLE_SIZE, textwidth);
 		width = sz + pad * 2;
 		height = sz;
-		stderr.writef("Triangle %s, %s\n", width, height);
 	}
 	override void draw(ref string[] svg_text, int x, int y) {
-		auto s = `<a href="%s"><polygon points="%s,%s %s,%s %s,%s" style="fill:white;stroke:blue;stroke-width:2" /></a>`.format(
+		auto center_x = x + pad + sz/2;
+		svg_text ~= `<g><a href="%s"><polygon points="%s,%s %s,%s %s,%s" style="fill:white;stroke:blue;stroke-width:2" />`.format(
 			node.name.name2link,
-			x + pad + sz/2,  y,
-			x + pad,         y + sz, 
-			x + pad + sz,    y + sz);
-		svg_text ~= s;
-		stderr.writef("x=%s, y=%s, w=%s, h=%s -> %s\n", x, y, width, height, s);
+			center_x,     y,
+			x + pad,      y + sz, 
+			x + pad + sz, y + sz);
+		svg_text ~= `	<text x="%s" y="%s" class="triangle" textLength="%spx">%s</text></a></g>`
+			.format(center_x, y + sz - FONTSIZE, textwidth, node.name);
 	}
 
 }
@@ -85,9 +102,13 @@ class BigNode : Box {
 		auto box_h = height - 2 * PADDING_BIGBOX;
 		auto color = (Type.SELF == node.type) ? "rgb(128,0,255)" : "rgb(0,0,255)";
 		auto weight = (Type.SELF == node.type) ? 6 : 2;
-		svg_text ~= `<a href="%s"><rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:%s;stroke:%s" /></a>`
+		svg_text ~= `<g><a href="%s"><rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="fill:rgb(255,255,255);stroke-width:%s;stroke:%s" />`
 			.format(node.name.name2link, box_w, box_h, x + PADDING_BIGBOX, y + PADDING_BIGBOX, r, r, weight, color);
-		//TODO: embed the rest of the original svg
+		svg_text ~= `	<text x="%s" y="%s" class="big">%s</text>`
+			.format(x + PADDING_BIGBOX + FONTSIZE, y, node.name);
+		svg_text ~= `	<g transform="translate(%s %s)">%s</g>`
+			.format(x + PADDING_BIGBOX, y + PADDING_BIGBOX, node.svg);
+		svg_text ~= "</a></g>";
 	}
 }
 
@@ -113,10 +134,20 @@ class SmallNode : Box {
 		auto style="fill:rgb(255,255,255);stroke-width:1;stroke:blue";
 		svg_text ~= `<g><a href="%s"><rect width="%s" height="%s" x="%s" y="%s" rx="%s" ry="%s" style="%s" />`
 			.format(node.name.name2link, box_w, box_h, x + PADDING_SMALLBOX, y + PADDING_SMALLBOX, r, r, style);
-		//svg_text ~= `<text font-size="%spx" x="%s" y="%s" class="smallname" text-anchor="middle" textLength="%s">%s</text></a></g>`
-		svg_text ~= `<text x="%s" y="%s" class="small" textLength="%spx">%s</text></a></g>`
+		//svg_text ~= `	<text font-size="%spx" x="%s" y="%s" class="smallname" text-anchor="middle" textLength="%s">%s</text></a></g>`
+		svg_text ~= `	<text x="%s" y="%s" class="small" textLength="%spx">%s</text></a></g>`
 			.format(center_x, center_y + TEXTALIGN_HACK, textwidth, node.name);
 	}
+}
+
+alias Subgraph = Tuple!(string, "graph", uint, "width", uint, "height");
+Subgraph readGraph(string name) {
+	//auto r = [ "dot", "-Tsvg", "episodes/%s.dot" ].execute;
+	//if (0 != r) return "ERROR";
+	string graph = "TEMP";
+	uint width = 0, height = 0;
+	//TODO: real values
+	return Subgraph(graph, width, height);
 }
 
 string name2link(string name) {
@@ -211,9 +242,6 @@ void focus(Node *root, Node *target) {
 
 		bool ancestor = 0;
 		foreach (child; node.children) {
-			if (node == root) {
-				stderr.writef("ancestor = %s\n", ancestor);
-			}
 			ancestor |= aux(child, descendent ? descendent + 1 : 0);
 		}
 
@@ -280,7 +308,7 @@ string display_graph(const Node *tree, string focus_node) {
 
 	auto box = new TreeBox(root);
 	string[] svg_text;
-	box.draw(svg_text, 0, 0);
+	box.draw(svg_text, 0, PADDING_BIGBOX + FONTSIZE);
 
 	uint width = 2000;
 	uint height = cast(uint)(box.height / cast(double)box.width * width);
@@ -298,16 +326,26 @@ string display_graph(const Node *tree, string focus_node) {
 		`		font-family: Courier, monospace;`,
 		`		font-size: %spx;`.format(FONTSIZE),
 		`	}`,
+		`	text.big {`,
+		`		text-anchor: left;`,
+		`		font-family: Courier, monospace;`,
+		`		font-size: %spx;`.format(FONTSIZE),
+		`	}`,
+		`	text.triangle {`,
+		`		text-anchor: middle;`,
+		`		font-family: Courier, monospace;`,
+		`		font-size: %spx;`.format(FONTSIZE),
+		`	}`,
 		`</style>`,
 		`<rect width="100%" height="100%" x="0" y="0" fill="white" />`,
+		`<g transform="scale(%.6f %.6f)">`.format(scale_factor, scale_factor)
 	];
 
 	string output = chain(svg_header, svg_text).join("\n");
-	output ~= "</svg>\n";
-	output ~= "</body>\n</html>\n";
+	output ~= "</g>\n</svg>\n</body>\n</html>\n";
 
-	stderr.writef("Box: %s, %s\n", box.width, box.height);
-	stderr.writef(" Px: %s, %s\n", width, height);
+	//stderr.writef("Box: %s, %s\n", box.width, box.height);
+	//stderr.writef(" Px: %s, %s\n", width, height);
 	//TODO: Still a bit wide. Maybe display ancestors and children as big boxes, siblings and nieces as small boxes, and cousins as either dots or just replace the entire trees with ellipses
 	//dots will probably work if we have a PADDING_DOTBOX and PADDING_DOTTREE to keep it *super*-compressed
 	//Do that after getting bigbox working, though.
@@ -315,32 +353,89 @@ string display_graph(const Node *tree, string focus_node) {
 
 	return output;
 }
-	
-void main() {
-	auto root = create_graph(5);
-//	assert(root.type == Type.ANCESTOR, format("%s", root.type));
-	root.display_graph("1");
-	
 
-	void process_request(Socket conn, string startline, string[string] headers, string[string] args, string content) {
-		stderr.writef("startline: %s\n", startline);
-		foreach (k,v; headers) {
-			writef("%s: %s\n", k, v);
-		}
-		writef("\n");
-		foreach (k,v; args) {
-			writef("%s: %s\n", k, v);
-		}
-		writef("\n%s\n", content);
+Node* read_graph(string zipfile) {
+	auto zip = new ZipArchive(zipfile.read);
+	string[int] dot;
+	int[][int] edges;//directed
 
-		string target;
-		if ("node" !in args) {
-			target = root.name;
+	foreach (name, am; zip.directory) {
+		writef("%s\n", name);
+		if ("eltm-struct.dot" == name.baseName) {
+			zip.expand(am);
+			string s = cast(string)am.expandedData.idup;
+			foreach (line; s.split('\n')) {
+				auto m = line.matchFirst(`^(\d+) -> (\d+);$`);
+				if (!m) continue;
+				auto src = m[1].to!int;
+				auto dst = m[2].to!int;
+				if (src !in edges) edges[src] = null;
+				edges[src] ~= dst;
+			}
 		}
 		else {
-			target = args["node"];
+			auto m = name.baseName.matchFirst(`^EPISODE-(\d+).dot$`);
+			if (!m) continue;
+			auto n = m[1].to!uint;
+			zip.expand(am);
+			dot[n] = cast(string)am.expandedData.idup;
+		}
+	}
+
+	// find root
+	int root_idx = -1;
+	foreach (node; dot.keys) {
+		bool is_child = 0;
+		foreach (src, lst; edges) {
+			foreach (dst; lst) {
+				if (dst == node) is_child = 1;
+			}
+		}
+		if (!is_child) {
+			assert(-1 == root_idx, "Multiple roots: %s and %s\n".format(root_idx, node));
+			root_idx = node;
+		}
+	}
+	assert(-1 != root_idx, "No root node");
+	
+	uint max_width = 0, max_height = 0;
+	Node *construct(int idx) {
+		auto pipeline = dot[idx].split('\n')
+			.processRange(["dot", "-Tsvg"])
+			.processRange(["python3", "-c", python_filter])
+		;
+
+		auto pop_pt() {
+			auto s = pipeline.front;
+			pipeline.popFront;
+			assert("pt" == s[$-2..$], "Expected number in form of 1234pt. Received: `%s`".format(s));
+			return s[0..$-2].to!uint;
 		}
 
+		auto width = pop_pt;
+		auto height = pop_pt;
+		max_width = max(width, max_width);
+		max_height = max(height, max_height);
+		auto svg = pipeline.join("\n\t\t");//TODO: add leading tabs as well.
+
+		auto children = (idx in edges) ? edges[idx].map!(a => construct(a)).array : null;
+
+		return new Node(idx.to!string, width, height, children, svg, Type.UNKNOWN);
+	}
+
+	auto root = construct(root_idx);
+	scale_factor = min(cast(double)MAX_WIDTH / max_width, cast(double)MAX_HEIGHT / max_height);
+	return root;
+}
+
+void main(string[] argv) {
+	//TODO: parse argv properly. permit --port
+	auto 
+
+	auto root = read_graph(argv[1]);
+
+	void process_request(Socket conn, string startline, string[string] headers, string[string] args, string content) {
+		string target = ("node" !in args) ? root.name : args["node"];
 		auto html = display_graph(root, target);
 		sendPacket(conn, 200, html, "text/html");
 	}

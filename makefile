@@ -1,6 +1,6 @@
 DFLAGS=-g -O
 BIN=hems_visualizer
-OBJ=hems_visualizer.o microservice.o
+OBJ=hems_visualizer.o microservice.o process_range.o
 
 .PHONY: clean all
 

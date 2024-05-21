@@ -120,13 +120,12 @@ void parse_form_args(ref string[string] args, string query_str) {
 			args[a[0]] = null;
 		}
 	}
-	writef("TEST 0\n");
 }
 
 // Decide which microservice the request should be forwarded to
 static void run_microservice(Socket conn, Packet packet) {
-	writef("run_microservice\n");
 	auto re = ctRegex!(`^([A-Z]+) (.*) (HTTP\/[0-9]+(?:\.[0-9]+)?)$`,"i");
+	writef("Request: %s\n", packet.startline);
 	auto captures = packet.startline.strip.matchFirst(re);
 	enforce(4 == captures.length, new HttpException(400, format("Invalid start line:\n%s\n", packet.startline)));
 	string[string] args;
@@ -147,12 +146,7 @@ static void run_microservice(Socket conn, Packet packet) {
 	else {
 		uri = captures[2].strip;
 	}
-	writef("TEST 1\n");
 	
-	if (uri !in endpoints) {
-		writef("Unrecognized endpoint: `%s`\n", uri);
-	}
-	writef("uri = %s\n", uri);
 	enforce(uri in endpoints, new HttpException(404, ""));
 	endpoints[uri](conn, packet.startline, packet.headers, args, packet.content);
 }
@@ -162,17 +156,13 @@ static void run_microservice(Socket conn, Packet packet) {
 // Which in turn means that readChunk needs to read byte[], and only convert to string once the header/content boundary is identified
 static void handleConnection(Socket conn, PacketCallback callback, Duration timeout) {
 	scope(exit) {
-		/+
+		
 		// Wait for the client to send a close message
 		char[64] buf;
-		writef("TEST 0\n");
 		while (1) {
 			auto r = conn.receive(buf);
-			writef("r = %s\n", r);
 			if (0 == r || Socket.ERROR == r) break;
 		}
-		writef("TEST 1\n");
-		+/
 		conn.close();
 	}
 
@@ -234,7 +224,6 @@ static void handleConnection(Socket conn, PacketCallback callback, Duration time
 				new HttpException(400, format("Content-length: %s but received %s bytes", content_length, packet.content.length)));
 		}
 
-		writef("FOO!\n");
 		return packet;
 	}
 
@@ -293,7 +282,6 @@ void runServer(ushort port = DEFAULT_PORT, uint backlog = DEFAULT_BACKLOG, Durat
 				taskPool.put(t);
 			}
 		}
-		writef("terminated\n");
 	}
 	catch (Exception e) {
 		if (errno) {
@@ -342,6 +330,7 @@ unittest {
 			format("HTTP/1.1 200 OK\r\nContent-type: text/plain\r\nContent-length: %s\r\nConnection: close\r\n\r\nHit /foo endpoint\n%s", 
 				BUFSIZ * 5 + 18, iota(0,BUFSIZ).map!(a => "hello").join("")) ],
 	];
+	//TODO: Permits GET now, so change the GET test from expecting an error to actually testing that the query string is parsed right.
 
 	foreach (cmd, expect; commands.map!`tuple(a[0],a[1])`) {
 		cmd = cmd.replaceAll(ctRegex!`PORT`, DEFAULT_PORT.to!string);

@@ -1,6 +1,6 @@
-import std.stdio, std.random, std.json, std.typecons, std.format, std.conv, std.algorithm, std.regex,
+import std.stdio, std.random, std.typecons, std.format, std.conv, std.algorithm, std.regex,
 	std.array, std.range, std.socket, std.parallelism, std.datetime, std.file, std.process, std.zip,
-	std.conv, std.path;
+	std.conv, std.path, std.getopt;
 import microservice, process_range;
 
 immutable int
@@ -15,7 +15,7 @@ immutable int
 	VLINE_LONG = 70,
 	TEXTALIGN_HACK = 4,
 	
-	// graph will be scaled down s.t. the largest episode box fits in (MAX_WIDTH, MAX_HEIGHT)
+	// graph will be scaled s.t. the largest episode box fits in (MAX_WIDTH, MAX_HEIGHT)
 	MAX_WIDTH = 1000,
 	MAX_HEIGHT = 600
 ;
@@ -337,8 +337,8 @@ string display_graph(const Node *tree, string focus_node) {
 		`		font-size: %spx;`.format(FONTSIZE),
 		`	}`,
 		`</style>`,
-		`<rect width="100%" height="100%" x="0" y="0" fill="white" />`,
-		`<g transform="scale(%.6f %.6f)">`.format(scale_factor, scale_factor)
+		`<g transform="scale(%.6f %.6f)">`.format(scale_factor, scale_factor),
+		`<rect width="100%" height="100%" x="0" y="0" fill="white" />`
 	];
 
 	string output = chain(svg_header, svg_text).join("\n");
@@ -360,7 +360,6 @@ Node* read_graph(string zipfile) {
 	int[][int] edges;//directed
 
 	foreach (name, am; zip.directory) {
-		writef("%s\n", name);
 		if ("eltm-struct.dot" == name.baseName) {
 			zip.expand(am);
 			string s = cast(string)am.expandedData.idup;
@@ -428,9 +427,18 @@ Node* read_graph(string zipfile) {
 	return root;
 }
 
-void main(string[] argv) {
+int main(string[] argv) {
 	//TODO: parse argv properly. permit --port
-	auto 
+	ushort port = DEFAULT_PORT;
+	
+	auto args = getopt(argv,
+		"port", &port
+	);
+	
+	if (args.helpWanted || argv.length < 2) {
+		defaultGetoptPrinter("", args.options);
+		return 1;
+	}
 
 	auto root = read_graph(argv[1]);
 
@@ -441,5 +449,6 @@ void main(string[] argv) {
 	}
 
 	register_endpoint("/visualization", &process_request);
-	task!runServer(DEFAULT_PORT, DEFAULT_BACKLOG, dur!"seconds"(4)).executeInNewThread();
+	task!runServer(port, DEFAULT_BACKLOG, dur!"seconds"(4)).executeInNewThread();
+	return 0;
 }

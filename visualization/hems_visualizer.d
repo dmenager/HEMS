@@ -432,11 +432,11 @@ int main(string[] argv) {
 	ushort port = DEFAULT_PORT;
 	
 	auto args = getopt(argv,
-		"port", &port
+		"port", "Default port is %s".format(port), &port,
 	);
 	
 	if (args.helpWanted || argv.length < 2) {
-		defaultGetoptPrinter("", args.options);
+		defaultGetoptPrinter("Usage: %s foo.zip\nfoo.zip must have a file called eltm-struct.dot that has the edges between episodes, and an EPISODE-1234.dot for each episode (with the appropriate 1234).\n".format(argv[0]), args.options);
 		return 1;
 	}
 

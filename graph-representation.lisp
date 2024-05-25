@@ -4440,31 +4440,31 @@
 ;; cpd1 = conditional probability distribution
 ;; cpd2 = conditional probability distribution
 ;; var-dif = new idents in episode not in schema
-(defun rule-split (rule conditions cpd1 cpd2 var-dif &key (enforce-compatible t) (avoid-hash (make-hash-table :test #'equal)) (split-on-all-conditions nil))
-  (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+(defun rule-split (rule conditions cpd1 cpd2 var-dif &key (enforce-compatible t) (avoid-hash (make-hash-table :test #'equal)))
+  (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
 	(format t "~%in rule-split on rule:~%~S~%conditions:~%~S~%avoid:~%~S" rule conditions avoid-hash))
   (cond ((and enforce-compatible (not (compatible-rule-p rule (make-rule :conditions conditions) cpd1 cpd2 :exact nil)))
-         (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+         (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
                (format t "~%not compatible. Returning"))
-         #|nil|# (list rule))
-        ((and (not split-on-all-conditions) (not (hash-difference avoid-hash #|conditions|# (rule-conditions rule) nil)))
-         (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+         (list rule))
+        ((not (hash-difference avoid-hash #|conditions|# (rule-conditions rule) nil))
+         (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
                (format t "~%conditions are a subset of the current rule context. Returning"))
          (list rule))
         (t
          (let (y new-rules y-domain pos)
            (setq y (car (hash-difference avoid-hash #|conditions|# (rule-conditions rule) nil)))
            (cond (y
-                  (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+                  (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
 			(format t "~%splitting on ~S" y))
                   (setq pos (gethash y (rule-based-cpd-identifiers cpd1)))
                   ;;(setq y-domain (mapcar #'car (gethash pos (rule-based-cpd-var-value-block-map cpd1))))
                   (setq y-domain (gethash y avoid-hash))
-                  (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+                  (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
 			(format t "~%attribute domain:~%~S~%from cpd:~%~S" y-domain cpd1))
                   (multiple-value-setq (new-rules avoid-hash)
                     (split-rule-on-variable rule y y-domain cpd1 var-dif :avoid-hash avoid-hash))
-                  (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+                  (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
 			(format t "~%new rules:~%~S" new-rules)
 			;;(break)
 			)
@@ -4472,7 +4472,7 @@
                               (rule-split new-rule conditions cpd1 cpd2 var-dif :enforce-compatible enforce-compatible :avoid-hash avoid-hash))
                           new-rules))
                  (t
-                  (when nil (and (= cycle* 16) (equal "X525" (rule-based-cpd-dependent-id cpd1)))
+                  (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id cpd1)))
 			(format t "~%No variable to split on. Returning"))
                   (list rule)))))))
 
@@ -5593,9 +5593,29 @@ Roughly based on (Koller and Friedman, 2009) |#
                         do
                            (setq missing-idx (gethash missing (rule-based-cpd-identifiers cpd2)))
                            (setf (gethash missing var-dif) (gethash missing-idx (rule-based-cpd-var-values cpd2))))
-                      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+                      (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
                             (format t "~%idents and their domains:~%~S" var-dif))
-                      (loop
+		      (setq expanded-rules (coerce (rule-based-cpd-rules cpd1) 'list))
+		      (loop
+			for var being the hash-keys of var-dif
+			  using (hash-value domain) 
+			do
+			   (loop
+			     with rules
+			     for rule in expanded-rules
+			     do
+				(when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+				  (format t "~%rule to split:")
+				  (print-cpd-rule rule))
+				(setq rules (split-rule-on-variable rule var domain cpd1 var-dif))
+				(when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+				  (format t "~%split rules:~%")
+				  (mapcar #'print-cpd-rule rules))
+			     nconc rules into new-rules
+			     finally
+				(setq expanded-rules new-rules)))
+		      #|
+		      (loop
                         with split-rules
                         for rule being the elements of (rule-based-cpd-rules cpd1)
                         do
@@ -5618,7 +5638,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                              (format t "~%expansion:~%")
 			     (mapcar #'print-cpd-rule expanded-rules)
                              ;;(break)
-			     )))
+			     ))
+		      |#)
                      (t
                       (setq expanded-rules (reverse (coerce (rule-based-cpd-rules cpd1) 'list)))))
                (values expanded-rules var-dif))))
@@ -5671,7 +5692,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
 	(format t "~%~%rules before compression:~%")
 	(mapcar #'print-cpd-rule new-rules)
-	(break)
+	;;(break)
 	)
       (cond ((eq op '*)
 	     (setq new-phi (update-cpd-rules new-phi
@@ -5825,7 +5846,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     for rule being the elements of (rule-based-cpd-rules phi1)
 	     do
 		(print-cpd-rule rule))
-	   ;;(break)
+	   (break)
 	   )
 	 (check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	 (factor-filter phi2 phi1 '+))))

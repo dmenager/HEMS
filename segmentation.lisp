@@ -555,7 +555,7 @@
 				  ,@program))))
 	   
 	   (when (= j 7)
-	     (setq print-special* t))
+	     (setq print-special* nil))
 	   (when (not (= j 7))
 	     (setq print-special* nil))
 	   

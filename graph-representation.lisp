@@ -3197,7 +3197,7 @@
                              (setq conflicts (three-way-hash-intersection all-conflicts att-block (rule-block rule)))
                              (setq redundancies (three-way-hash-intersection all-redundancies att-block (rule-block rule)))
                              )))
-                     (t
+                     (nil t
                       (setq all-conflicts (block-difference universe concept-block :output-hash-p t))
                       (setq all-redundancies (block-difference concept-block new-g :output-hash-p t))
                       (setq all-partial-coverings (make-hash-table))
@@ -4964,9 +4964,6 @@
 ;; op = operation to apply on rules
 (defun operate-filter-rules (rules1 rules2 phi1 phi2 new-idents op)
   (labels ((filter-missing-rule (factor1 factor2 rule1 rule2 rule-key seen num-rules)
-	     (when t
-	       (format t "~%filtering missing rule...SHOULDN'T BE HERE")
-	       (break))
 	     (cond ((gethash (rule-based-cpd-dependent-id factor2) (rule-conditions rule1))
 		    (when nil (and (eq op '*) (equal "WORKER_AGENT_BACKLOG__NO_OF_EFFORT_UNITS_" (rule-based-cpd-dependent-var factor2)))
 			  (print-cpd-rule rule1)
@@ -5190,7 +5187,7 @@
 				    (format t "~%rule key:~%~S" rk)
 				    ;;(break)
                                     )
-			      (when t
+			      (when nil
 				(loop
 				  with split-rules = nil
 				  for existing-rule being the hash-values of seen
@@ -5266,7 +5263,8 @@
 		 (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
                        (format t "~%no match for r2:")
 		       (print-cpd-rule r2)
-		       (format t "~%in phi1"))
+		       (format t "~%in phi1")
+		       (map nil #'print-cpd-rule (rule-based-cpd-rules phi1)))
 		 (loop
 		   for att being the hash-keys of (rule-conditions r2)
 		     using (hash-value val)
@@ -5491,7 +5489,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t
+  (when nil
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
 				    (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)

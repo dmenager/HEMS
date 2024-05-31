@@ -66,8 +66,8 @@ void main() {
 		wc[r][s] ~= w;
 	}
 	writef("))\n");
-    
-    writef(
+	
+	writef(
 		";; insert into event memory\n" ~
 		"(map nil #'(lambda (bn)\n" ~
 		"	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))\n" ~
@@ -87,7 +87,7 @@ void main() {
 	writef("\n")
 	writef( "#| TESTS\n" ~
 		"(load \"sprinkler-example.lisp\")\n" ~
-               	"(hems::example)\n" ~
-               	"(hems::H[bn] (car (hems::get-eltm)) (make-hash-table))\n" ~
-               	"|#")
+	           	"(hems::example)\n" ~
+	           	"(hems::H[bn] (car (hems::get-eltm)) (make-hash-table))\n" ~
+	           	"|#")
 }

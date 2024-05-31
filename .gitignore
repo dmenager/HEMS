@@ -2,3 +2,6 @@
 examples/*.*\~
 eltm.pdf
 *.dot
+visualization/hems_visualizer
+*.o
+*.swp

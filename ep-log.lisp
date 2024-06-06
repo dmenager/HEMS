@@ -8,6 +8,7 @@
 (defun log-message (message &optional (log-path log-path*) &key (if-exists :append))
   (when (not (equal log-path* log-path))
     (setq log-path (merge-pathnames log-path)))
+  (ensure-directories-exist log-path)
   (with-open-file (log log-path
 		       :direction :output
 		       :if-exists if-exists

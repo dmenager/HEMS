@@ -15,7 +15,7 @@
 	   (setq bn (episode-state-transitions episode)))
 	  (t
 	   (error "uh oh")))
-    (when t nil
+    (when nil nil
       (format t "~%~%  episode id: ~S" (episode-id episode)))
     (loop
       with dice

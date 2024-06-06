@@ -4,11 +4,8 @@
 		#:shuffle)
   (:export #:episode-buffer*
 	   #:eltm*
-	   #:push-to-ep-buffer
 	   #:eltm-to-pdf
-	   #:test-fun
 	   #:compile-program
-	   #:test-compiler
 	   #:remember
 	   #:compute-cpd-concentration
 	   #:compile-program-from-file
@@ -53,7 +50,6 @@
 	   #:get-hash
 	   #:-car
 	   #:-cdr
-	   #:push-from-files
 	   #:new-push-to-ep-buffer
 	   #:py-push-to-ep-buffer
 	   #:sample

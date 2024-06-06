@@ -18,6 +18,17 @@
 	   (return hash-table))
       a-list))
 
+(defun backlinks-to-hash (backlinks)
+  (if (listp backlinks)
+      (loop
+	with hash-table = (make-hash-table :test #'equal)
+	for (key . eltm) in backlinks
+	do
+	   (setf (gethash key hash-table) eltm)
+	finally
+	   (return hash-table))
+      backlinks))
+
 (defun hash-to-a-list (hash)
   (if (hash-table-p hash)
       (loop
@@ -209,7 +220,7 @@
        (setq branch (car stack))
        (setq episode (car branch))
        (setq stack (rest stack))
-       (setf (episode-backlinks episode) (a-list-to-hash (episode-backlinks episode)))
+       (setf (episode-backlinks episode) (backlinks-to-hash (episode-backlinks episode)))
        ;;(format t "~%visiting: ~S" (episode-id episode))
        (loop
 	 for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)

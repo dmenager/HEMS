@@ -471,7 +471,7 @@
       finally
 	 (return max-digits))))
 
-(defun run-execution-trace (file &key (hidden-state-p t) break)
+(defun run-execution-trace (file &key (hidden-state-p t) break (log-path "./"))
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-digits)
@@ -486,7 +486,7 @@
 	with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
-	for line in data ;;(subseq data 0 10)
+	for line in data ;;(subseq data 0 5)
 	for j from 1
 	do
 	   (setq processed (split-sequence:split-sequence #\, line))
@@ -562,7 +562,7 @@
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	   (when (equal action "terminal")
-	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)
 	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
 	   (eltm-to-pdf)
 	   (loop
@@ -576,10 +576,10 @@
 	   (when break
 	     (break))))
     (eltm-to-pdf)
-    (save-eltm-to-file eltm*)))
+    (save-eltm-to-file eltm* :path log-path)))
 
 #|
 (ql:quickload :hems)
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t)
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_FrozenLake-v1_data.csv")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t :log-path "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_6/ppo_FrozenLake-v1_data.csv" :log-path "/home/david/Code/HARLEM/HEMS_model/ppo_FrozenLake-v1/")
 |#

@@ -453,25 +453,162 @@
 	       (break))
 	))))
 
-(defun get-max-digits (file)
+(defun get-max-numbers (file)
   (let (features data)
     (setq data (uiop:read-file-lines file))
     (setq features (split-sequence:split-sequence #\, (car data)))
     (setq data (rest data))
     (loop
       with processed and hidden-state and observation and action
-      with num-digits and max-digits = -1
+      with num-numbers and max-numbers = -1
       for line in data
       for j from 1
       do
 	 (setq processed (split-sequence:split-sequence #\, line))
-	 (setq num-digits (- (array-dimension (fourth processed) 0) 2))
-	 (when (> num-digits max-digits)
-	   (setq max-digits num-digits))
+	 (setq num-numbers (length
+			    (remove ""
+				    (split-sequence:split-sequence
+				     #\space
+				     (subseq (subseq (fourth processed) 0
+						     (- (array-dimension (fourth processed) 0)
+						1))
+					     1))
+				    :test #'string=)))
+	 (when (> num-numbers max-numbers)
+	   (setq max-numbers num-numbers))
       finally
-	 (return max-digits))))
+	 (return max-numbers))))
 
+#| Domain-specific function for running an execution trace from gym toy text domains. Do not document. |#
 (defun run-execution-trace (file &key (hidden-state-p t) break (log-path "./"))
+  (labels ((integer-string-p (string)
+	     (ignore-errors (parse-integer string))))
+    (let (features data max-numbers)
+      ;;(setq eltm* (list (make-empty-episode)))
+      (setq data (uiop:read-file-lines file))
+      (setq features (split-sequence:split-sequence #\, (car data)))
+      ;;(setq data (alexandria:shuffle (rest data)))
+      (setq data (rest data))
+      (setq max-numbers (get-max-numbers file))
+      (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
+      (loop
+	with processed and hidden-state and observation and action
+	with st and obs
+	with len = (length data)
+	for line in data ;;(subseq data 0 5)
+	for j from 1
+	do
+	   (setq processed (split-sequence:split-sequence #\, line))
+	   
+	   (setq hidden-state (mapcan #'(lambda (string)
+					  (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								 (- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
+					  (when (integer-string-p string)
+					    (list string)))
+				      (split-sequence:split-sequence #\Space (third processed))))
+	   #|
+	   (setq observation (butlast (rest
+				       (mapcar #'string
+					       (coerce (fourth processed)
+						       'list)))))
+	   |#
+	   (setq observation (remove ""
+				     (split-sequence:split-sequence
+				      #\space
+				      (subseq (subseq (fourth processed) 0
+						      (- (array-dimension (fourth processed) 0)
+							 1))
+					      1))
+				     :test #'string=))
+	   (loop
+	     with len = (length observation)
+	     for i from len to (- max-numbers 1)
+	     do
+		(setq observation (cons "0" observation)))
+	#|
+	   (setq observation (mapcan #'(lambda (string)
+					 (when (char= #\[ (aref string 0))
+					    (setq string (subseq string 1)))
+					  (when (char= #\] (aref string
+								(- (array-dimension string 0) 1)))
+					    (setq string
+						  (subseq string 0
+							  (- (array-dimension string 0) 1))))
+					 (when (integer-string-p string)
+					   (list string)))
+				     (split-sequence:split-sequence #\Space (fourth processed))))
+	   (loop
+	      for digit being the elements of (car observation)
+	      collect (string digit) into new-obs
+	      finally
+		(setq observation new-obs))
+	|#
+	   (setq action (fifth processed))
+	   (loop 
+	     for var in (reverse observation)
+	     for i from 1
+	     nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
+														      (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var))))
+														      "_"
+														      (write-to-string i)))
+												:value ,var))
+	       into program
+	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
+	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	     finally
+		(when t
+		  (format t "~%~%observation: ~d~%action: ~S" j action))
+		(format t "~%program:~%~S" program)
+		(setq obs (eval `(compile-program nil
+				   ,@program))))
+	   (loop
+	     for var in hidden-state
+	     for i from 1
+	     nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
+														      (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var))))
+														      "_"
+														      (write-to-string i)))
+												:value ,var))
+	       into program
+	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
+	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	     finally
+	        (when t
+		  (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
+		  ;;(format t "~%program:~%~S" program)
+		  )
+		(setq st (eval `(compile-program nil
+				  ,@program))))
+	   (when (= j 7)
+	     (setq print-special* nil))
+	   (when (not (= j 7))
+	     (setq print-special* nil))
+	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
+	   (when (equal action "terminal")
+	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)
+	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
+	   (eltm-to-pdf)
+	   (loop
+	      for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
+	      for ep-type in (list "Observation" "State" "Temporal")
+	      when eltm* do
+		(loop
+		  for cpd being the elements of (car (funcall type (car eltm*)))
+		  do
+		     (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
+	   (when break
+	     (break))))
+    (eltm-to-pdf)
+    (save-eltm-to-file eltm* :path log-path)))
+
+#| Domain-specific function for running an execution trace from gym toy text domains. Do not document. |#
+(defun run-execution-trace-old (file &key (hidden-state-p t) break (log-path "./"))
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-digits)
@@ -553,12 +690,10 @@
 						  :neighborhood-func #'array-neighborhood
 						  :nbr-func-args (,(length hidden-state) 1))
 				  ,@program))))
-	   
 	   (when (= j 7)
 	     (setq print-special* nil))
 	   (when (not (= j 7))
 	     (setq print-special* nil))
-	   
 	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	   (when (equal action "terminal")

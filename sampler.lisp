@@ -163,6 +163,19 @@
 (defun py-sample (episode &key hiddenstatep outputperceptsp)
   (sample episode :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
 
+(defun get-matching-temporal-episode (eltm &key observation state action)
+  (let (obs-ref state-ref id-ref-hash state-transitions)
+    (setq id-ref-hash (make-hash-table :test #'equal))
+    (when observation
+      (setq obs-ref (new-retrieve-episode eltm observation nil))
+      (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+      (setq state-transitions (concatenate 'list state-transitions `(obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
+    (when state
+      (setq state-ref (new-retrieve-episode eltm state nil))
+      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
+      (setq state-transitions (concatenate 'list state-transitions `(state = (state-node state :value ,(episode-id (car state-ref)))))))
+    (when action)))
+
 #| Condition the sampling function on observations made in the environment. |#
 
 ;; eltm = episodic-long-term-memory

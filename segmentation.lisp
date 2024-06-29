@@ -480,7 +480,7 @@
 	 (return max-numbers))))
 
 #| Domain-specific function for running an execution trace from gym toy text domains. Do not document. |#
-(defun run-execution-trace (file &key (hidden-state-p t) break (log-path "./"))
+(defun run-execution-trace (file &key (hidden-state-p t) break (logpath "./") (savep nil))
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
     (let (features data max-numbers)
@@ -605,7 +605,8 @@
 	   (when break
 	     (break))))
     (eltm-to-pdf)
-    (save-eltm-to-file eltm* :path log-path)))
+    (when savep
+      (save-eltm-to-file eltm* :path logpath))))
 
 #| Domain-specific function for running an execution trace from gym toy text domains. Do not document. |#
 (defun run-execution-trace-old (file &key (hidden-state-p t) break (log-path "./"))
@@ -715,6 +716,6 @@
 
 #|
 (ql:quickload :hems)
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t :log-path "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_6/ppo_FrozenLake-v1_data.csv" :log-path "/home/david/Code/HARLEM/HEMS_model/ppo_FrozenLake-v1/")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :break t :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_FrozenLake-v1/")
 |#

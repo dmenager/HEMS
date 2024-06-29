@@ -33,6 +33,11 @@
 (defun get-eltm ()
   eltm*)
 
+(defun init-eltm()
+  (setq eltm* nil)
+  (sb-ext:gc :full t)
+  eltm*)
+
 (defun generate-list()
   (loop
     with hash

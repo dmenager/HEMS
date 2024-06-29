@@ -10,6 +10,7 @@
 	   #:compute-cpd-concentration
 	   #:compile-program-from-file
 	   #:get-eltm
+	   #:init-eltm
 	   #:log-message
 	   #:rule-based-cpd-dependent-id
 	   #:rule-based-cpd-identifiers

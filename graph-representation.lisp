@@ -4267,7 +4267,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+         (when nil t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))

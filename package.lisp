@@ -51,6 +51,7 @@
 	   #:get-hash
 	   #:-car
 	   #:-cdr
+	   #:hash-to-assoc-list
 	   #:new-push-to-ep-buffer
 	   #:py-push-to-ep-buffer
 	   #:sample
@@ -61,6 +62,7 @@
 	   #:conditional-sample
 	   #:py-conditional-sample
 	   #:get-entropy
-	   #:compute-network-concentration))
+	   #:compute-network-concentration
+	   #:make-temporal-episode-retrieval-cue))
 
 (in-package :hems)

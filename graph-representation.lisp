@@ -414,6 +414,13 @@
 (defun hash-keys-to-list (hash)
   (loop for key being the hash-keys of hash collect key))
 
+(defun hash-to-assoc-list (hash)
+  (loop for key being the hash-keys of hash
+     using (hash-value value)
+     collect (cons key value) into assoc
+     finally
+       (return assoc)))
+
 #| Take the intersection of hash table keys |#
 
 ;; hash1 = hash table
@@ -9599,7 +9606,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	((and (= (second next) (second best-solution))
 	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
 	      (= (sixth next) (sixth best-solution))
-	      (> (fifth next) (fifth best-solution)))
+	      (>= (fifth next) (fifth best-solution)))
 	 t)))
 #| Initialize empty set of mappings |#
 

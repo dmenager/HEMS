@@ -347,7 +347,56 @@
 	       (if success-p
 		   (good-fit-to-observations? new-models (rest obs-window) hidden-state-p)
 		   (good-fit-to-observations? new-models obs-window hidden-state-p))))))))
-    
+
+#| Generates code that compiles to a temporal episode. 
+   Returns multiple values. 
+      1. list of program statements 
+      2. episode backlinks hash table 
+      3. current observation identifier 
+      4. current state identifier 
+      5. current action identiier |#
+
+;; eltm = episodic long-term memory
+;; observation = observation retrieval cue
+;; state = state retrieval cue
+;; action = action name string
+;; state-transitions = list of program statements
+;; id-ref-hash = backlinks
+(defun make-temporal-episode-program (eltm &key observation state action state-transitions (id-ref-hash (make-hash-table :test #'equal)))
+  (let (obs-ref state-ref cur-st cur-obs cur-act cue)
+    (when observation
+      (setq cur-obs (gensym "OBS-"))
+      (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))
+			      :observation observation
+			      :state-transitions (cons (make-array 0) (make-hash-table))
+			      :backlinks (make-hash-table :test #'equal)
+			      :count 1
+			      :lvl 1))
+      (when nil t
+	(format t "~%retrieval cue for observation:~%~S" cue))
+      (setq obs-ref (new-retrieve-episode eltm cue nil))
+      (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
+    (when state
+      (setq cur-st (gensym "STATE-"))
+      (setq cue (make-episode :state state 
+			      :observation (cons (make-array 0) (make-hash-table))
+			      :state-transitions (cons (make-array 0) (make-hash-table))
+			      :backlinks (make-hash-table :test #'equal)
+			      :count 1
+			      :lvl 1))
+      (setq state-ref (new-retrieve-episode eltm cue nil))
+      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
+      (setq state-transitions (concatenate 'list state-transitions `(cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
+    (when action
+      (setq cur-act (gensym "ACT-"))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,action)))))
+    (when (and observation state)
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-st -> ,cur-obs))))
+    (when (and observation action)
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act))))
+    (values state-transitions id-ref-hash cur-obs cur-st cur-act)))
+
 (defun get-model (obs-window eltm observation-reject-list temporal-reject-list bic-p)
   (loop
     with cue and state-transitions
@@ -358,21 +407,13 @@
 			       :backlinks (make-hash-table :test #'equal)
 			       :count 1
 			       :lvl 1))
-       ;;(setq obs-ref (new-retrieve-episode eltm cue observation-reject-list :bic-p bic-p))
-       (multiple-value-bind (obs-ref sol bindings depth cost id new-obs-rejects)
-	   (new-retrieve-episode eltm cue observation-reject-list)
-	 (declare (ignore sol bindings depth cost id))
-	 (setq observation-reject-list new-obs-rejects)
-	 ;;(break)
-	 (when obs-ref
-	   (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-	   (setq cur-obs (gensym "OBS-"))
-	   (setq cur-act (gensym "ACT-"))
-	   (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
-	   (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act-name))))
-	   (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
-	   (setq prev-obs cur-obs)
-	   (setq prev-act cur-act)))
+       (multiple-value-bind (prog-statements backlinks new-obs new-st new-act)
+	   (make-temporal-episode-program eltm :observation obs :state-transitions state-transitions id-ref-hash id-ref-hash)
+	 (declare (ignore new-st))
+	 (setq state-transitions prog-statements)
+	 (setq id-ref-hash backlinks)
+	 (setq prev-obs new-obs)
+	 (setq prev-act new-act))
     finally
        (when state-transitions
 	 (setq st-bn (eval `(compile-program nil ,@state-transitions)))
@@ -479,11 +520,20 @@
       finally
 	 (return max-numbers))))
 
+(defun get-num-schemas (eltm)
+  (cond ((null (rest eltm))
+         1)
+        (t
+	 (+ (reduce #'+ (mapcar #'get-num-schemas (rest eltm))) 1))))
+
 #| Domain-specific function for running an execution trace from gym toy text domains. Do not document. |#
-(defun run-execution-trace (file &key (hidden-state-p t) break (logpath "./") (savep nil))
+(defun run-execution-trace (file &key (hidden-state-p t) break (logpath "./") (savep nil) (domain nil) (epdata nil) (seed nil) (trajectories nil))
   (labels ((integer-string-p (string)
 	     (ignore-errors (parse-integer string))))
-    (let (features data max-numbers)
+   (let (features data max-numbers csv)
+      (when domain
+	(setq csv (format nil "./bc_training_logs/~A_~A_memory_size_~d.csv" epdata domain seed))
+	(log-message (list "Domain,Num Schemas,Num Events,Observation,Num Trajectories~%") csv :if-exists :supersede))
       ;;(setq eltm* (list (make-empty-episode)))
       (setq data (uiop:read-file-lines file))
       (setq features (split-sequence:split-sequence #\, (car data)))
@@ -525,11 +575,13 @@
 							 1))
 					      1))
 				     :test #'string=))
+	   #|
 	   (loop
 	     with len = (length observation)
 	     for i from len to (- max-numbers 1)
 	     do
 		(setq observation (cons "0" observation)))
+	|#
 	#|
 	   (setq observation (mapcan #'(lambda (string)
 					 (when (char= #\[ (aref string 0))
@@ -549,61 +601,68 @@
 		(setq observation new-obs))
 	|#
 	   (setq action (fifth processed))
-	   (loop 
-	     for var in (reverse observation)
-	     for i from 1
-	     nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
-														      (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var))))
-														      "_"
-														      (write-to-string i)))
-												:value ,var))
-	       into program
-	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
-	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
-	     finally
-		(when t
-		  (format t "~%~%observation: ~d~%action: ~S" j action))
-		(format t "~%program:~%~S" program)
-		(setq obs (eval `(compile-program nil
-				   ,@program))))
-	   (loop
-	     for var in hidden-state
-	     for i from 1
-	     nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
-														      (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var))))
-														      "_"
-														      (write-to-string i)))
-												:value ,var))
-	       into program
-	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
-	     nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
-	     finally
-	        (when t
-		  (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
-		  ;;(format t "~%program:~%~S" program)
-		  )
-		(setq st (eval `(compile-program nil
-				  ,@program))))
-	   (when (= j 7)
-	     (setq print-special* nil))
-	   (when (not (= j 7))
-	     (setq print-special* nil))
-	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
-	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
-	   (when (equal action "terminal")
-	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)
-	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
-	   (eltm-to-pdf)
-	   (loop
-	      for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
-	      for ep-type in (list "Observation" "State" "Temporal")
-	      when eltm* do
-		(loop
-		  for cpd being the elements of (car (funcall type (car eltm*)))
-		  do
-		     (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
-	   (when break
-	     (break))))
+	   (when t (not (string-equal "terminal" action))
+		 (loop 
+	       for var in (reverse observation)
+	       for i from 1
+	       nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
+															(substitute #\_ #\Space 
+																    (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var)))))
+															"_"
+															(write-to-string i)))
+												  :value ,var))
+		 into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	       finally
+		  (when t
+		    (format t "~%~%observation idx: ~d~%action: ~S" j action))
+		  (format t "~%program:~%~S" program)
+		  (setq obs (eval `(compile-program nil
+				     ,@program))))
+	     (loop
+	       for var in hidden-state
+	       for i from 1
+	       nconcing `(,(intern (concatenate 'string "C" (write-to-string i))) = (percept-node ,(intern (concatenate 'string
+															(substitute #\_ #\Space
+																    (substitute #\_ #\- (string-upcase (format nil "~r" (parse-integer var)))))
+															"_"
+															(write-to-string i)))
+												  :value ,var))
+		 into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	       finally
+	          (when t
+		    (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
+		    ;;(format t "~%program:~%~S" program)
+		    )
+		  (setq st (eval `(compile-program nil
+				    ,@program))))
+	     (when (= j 7)
+	       (setq print-special* nil))
+	     (when (not (= j 7))
+	       (setq print-special* nil))
+	     ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	     (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
+	     (when domain
+	       (log-message (list "~A,~d,~d,~d,~d~%" domain (if (episode-p (car eltm*)) (get-num-schemas eltm*) 0) (if (episode-p (car eltm*)) (episode-count (car eltm*)) 0) (- j 1) trajectories) csv))
+	     (when (equal action "terminal")
+	       (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p nil)
+	       (when domain
+		 (log-message (list "~A,~d,~d,~d,~d~%" domain (get-num-schemas eltm*) (episode-count (car eltm*)) j trajectories) csv))
+	       (setf (gethash 0 (getf episode-buffer* :obs)) nil))
+	     (eltm-to-pdf)
+	     (loop
+	       for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
+	       for ep-type in (list "Observation" "State" "Temporal")
+	       when eltm* do
+		 (loop
+		   for cpd being the elements of (car (funcall type (car eltm*)))
+		   do
+		      (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
+	     (when break
+	       (break)))))
     (eltm-to-pdf)
     (when savep
       (save-eltm-to-file eltm* :path logpath))))
@@ -667,50 +726,51 @@
 		(setq observation new-obs))
 	|#
 	   (setq action (fifth processed))
-	   (loop
-	     for var in (reverse observation)
-	     for i from 1
-	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
-	     finally
-		(when t
-		  (format t "~%~%observation: ~d~%action: ~S" j action))
-		(setq obs (eval `(compile-program (:relational-invariants t
-						   :neighborhood-func #'array-neighborhood
-						   :nbr-func-args (,(length observation) 1))
-				   ,@program))))
-	   (loop
-	     for var in hidden-state
-	     for i from 1
-	     nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
-	     finally
-		(when t
-		  (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
-		  ;;(format t "~%program:~%~S" program)
-		  )
-		(setq st (eval `(compile-program (:relational-invariants t
-						  :neighborhood-func #'array-neighborhood
-						  :nbr-func-args (,(length hidden-state) 1))
-				  ,@program))))
-	   (when (= j 7)
-	     (setq print-special* nil))
-	   (when (not (= j 7))
-	     (setq print-special* nil))
-	   ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
-	   (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
-	   (when (equal action "terminal")
-	     (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)
-	     (setf (gethash 0 (getf episode-buffer* :obs)) nil))
-	   (eltm-to-pdf)
-	   (loop
-	      for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
-	      for ep-type in (list "Observation" "State" "Temporal")
-	      when eltm* do
-		(loop
-		  for cpd being the elements of (car (funcall type (car eltm*)))
-		  do
-		     (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
-	   (when break
-	     (break))))
+	   (when (not (string-equal "terminal" action))
+	     (loop
+	       for var in (reverse observation)
+	       for i from 1
+	       nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "OBSERVATION_VAR~d" i)) :value ,var)) into program
+	       finally
+		  (when t
+		    (format t "~%~%observation: ~d~%action: ~S" j action))
+		  (setq obs (eval `(compile-program (:relational-invariants t
+						     :neighborhood-func #'array-neighborhood
+						     :nbr-func-args (,(length observation) 1))
+				     ,@program))))
+	     (loop
+	       for var in hidden-state
+	       for i from 1
+	       nconcing `(,(gensym "C") = (percept-node ,(intern (format nil "STATE_VAR~d" i)) :value ,var)) into program
+	       finally
+		  (when t
+		    (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
+		    ;;(format t "~%program:~%~S" program)
+		    )
+		  (setq st (eval `(compile-program (:relational-invariants t
+						    :neighborhood-func #'array-neighborhood
+						    :nbr-func-args (,(length hidden-state) 1))
+				    ,@program))))
+	     (when (= j 7)
+	       (setq print-special* nil))
+	     (when (not (= j 7))
+	       (setq print-special* nil))
+	     ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	     (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
+	     (when (equal action "terminal")
+	       (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)
+	       (setf (gethash 0 (getf episode-buffer* :obs)) nil))
+	     (eltm-to-pdf)
+	     (loop
+	       for type in (list #'episode-observation #'episode-state #'episode-state-transitions)
+	       for ep-type in (list "Observation" "State" "Temporal")
+	       when eltm* do
+		 (loop
+		   for cpd being the elements of (car (funcall type (car eltm*)))
+		   do
+		      (log-message (list "~d,~A,~A,~d,~d~%" j ep-type (rule-based-cpd-dependent-id cpd) (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0)) "rule-compression.csv")))
+	     (when break
+	       (break)))))
     (eltm-to-pdf)
     (save-eltm-to-file eltm* :path log-path)))
 

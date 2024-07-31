@@ -163,28 +163,15 @@
 (defun py-sample (episode &key hiddenstatep outputperceptsp)
   (sample episode :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
 
-(defun get-matching-temporal-episode (eltm &key observation state action)
-  (let (obs-ref state-ref id-ref-hash state-transitions)
-    (setq id-ref-hash (make-hash-table :test #'equal))
-    (when observation
-      (setq obs-ref (new-retrieve-episode eltm observation nil))
-      (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
-    (when state
-      (setq state-ref (new-retrieve-episode eltm state nil))
-      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(state = (state-node state :value ,(episode-id (car state-ref)))))))
-    (when action)))
-
 #| Condition the sampling function on observations made in the environment. |#
 
 ;; eltm = episodic-long-term-memory
 ;; evidence-bn = the bayesian network that represents observations made in the environment
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
-(defun conditional-sample (eltm evidence-bn episode-type &key hidden-state-p output-percepts-p)
+(defun conditional-sample (eltm evidence-bn episode-type &key hidden-state-p output-percepts-p (backlinks (make-hash-table :test #'equal)))
   (let (new-episode new-bn)
   (multiple-value-bind (recollection eme)
-      (remember eltm evidence-bn '+ 1 t)
+      (remember eltm evidence-bn '+ 1 t :backlinks backlinks)
     (when nil
       (format t "Posterior network:~%~S" recollection))
     (loop
@@ -204,8 +191,23 @@
 	   (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type))))
   (sample new-episode :hidden-state-p hidden-state-p :output-percepts-p output-percepts-p)))
 
-(defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp)
-  (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
+#| Generates a retrieval cue for a temporal episode.
+   Returns: Cons where first element is an array of CPDs, and second element is a hash table of edges |#
+
+;; state = state retrieval cue
+;; obesrvation = observation retrieval cue
+;; action = action name string
+(defun make-temporal-episode-retrieval-cue (eltm &key state observation action)
+  (when nil t
+    (format t "~%~%making temporal episode retrieval cue"))
+  (multiple-value-bind (prog-statements backlinks)
+      (make-temporal-episode-program eltm :state state :observation observation :action action)
+    (when nil t
+    (format t "~%done"))
+    (values (eval `(compile-program nil ,@prog-statements)) backlinks)))
+
+(defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp (backlinks (make-hash-table :test #'equal)))
+  (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp :backlinks backlinks))
 
 (defun filter-sample (sample &key (test #'equal))
   (labels ((find-in-tree (item)
@@ -390,4 +392,15 @@
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
 (hems::generate-hems-data 2000 t t)
+
+(multiple-value-bind (evidence-bn backlinks)
+    (hems:make-temporal-episode-retrieval-cue
+     (hems:get-eltm)
+     :observation
+     (hems:compile-program nil
+       c1 = (relation-node number_1 :value "8")
+       c2 = (percept-node eight_1 :value "8")
+       c1 -> c2))
+  (hems:conditional-sample (hems:get-eltm) evidence-bn "state-transitions" :hidden-state-p t :output-percepts-p t :backlinks backlinks))
 |#
+    

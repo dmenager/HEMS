@@ -35,6 +35,7 @@
 	   #:rule-based-cpd-singleton-p
 	   #:rule-based-cpd-count
            #:rule-probability
+	   #:rule-id
 	   #:rule-conditions
 	   #:episode-id
 	   #:episode-parent
@@ -53,6 +54,7 @@
 	   #:-cdr
 	   #:hash-to-assoc-list
 	   #:new-push-to-ep-buffer
+	   #:new-retrieve-episode
 	   #:py-push-to-ep-buffer
 	   #:sample
 	   #:py-sample

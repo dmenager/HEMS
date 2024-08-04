@@ -193,7 +193,7 @@
 
 
 
-;; assns = assignments we want to know the posterior probability of 
+;; assns = assignments we want to know the posterior probability of (bindings) 
 ;; obs = hash-table of observed assignments
 (defun P[A=a] (bn assns)
   (loop

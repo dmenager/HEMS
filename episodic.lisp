@@ -319,6 +319,16 @@
 ;; q-first-bindings = variable bindings from q to p
 (defun new-combine (ep1 ep2 mappings unmatched bindings q-first-bindings)
   ;;(format t "~%schema decopositions:~%~S~%num:~%~d~%episode decopositions:~%~S~%num:~%~d~%decomp bindings:~%~S" (episode-decompositions ep1) (episode-num-decompositions ep1) (episode-decompositions ep2) (episode-num-decompositions ep2) decomp-bindings)
+  (when nil (episode-temporal-p ep2)
+    (format t "~%~%schema ID: ~S~%Episode ID: ~S~%schema state transitions:~%~S~%episode state transitions:~%~S~%mappings:~%~S~%bindings:~%~S~%q-first-bindings:~%~S"
+	    (episode-id ep1)
+	    (episode-id ep2)
+	    (episode-state-transitions ep1)
+	    (episode-state-transitions ep2)
+	    mappings
+	    bindings
+	    q-first-bindings)
+    (break))
   (make-episode :id (episode-id ep1)
                 :index-episode-id (episode-index-episode-id ep1)
                 :parent (if (episode-parent ep1) (episode-parent ep1))
@@ -1460,7 +1470,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (temporalp t) (observability 1))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1))
   (let (partial-states cue bindings and bn)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv") 
 
@@ -1472,7 +1482,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     ;;(log-message (list "~A," (specific-cue-p (caar partial-states))) "vse.csv")
     ;;(log-message (list "~d," observability) "vse.csv")
     ;;(log-message (list "~A~%" partial-states) "cues.txt")
-    (cond (temporalp
+    (cond ((string-equal type "state-transitions")
 	   (setq cue (make-episode
 		      :observation (cons (make-array 0) (make-hash-table :test #'equal))
 		      :state (cons (make-array 0) (make-hash-table :test #'equal))
@@ -1497,7 +1507,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
               (t
                (new-retrieve-episode eltm cue nil :bic-p bic-p)))
       (declare (ignore depth cost))
-      (if temporalp
+
+      (when nil (not (string-equal type "state-transitions"))
+	(format t "~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
+      (if (equal type "state-transitions") ;;temporalp
 	  (setq bn (episode-state-transitions (car eme)))
 	  (setq bn (episode-observation (car eme))))
       #|
@@ -1518,13 +1531,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					   observed-factors :key #'rule-based-cpd-dependent-id :test #'equal)))
              ;;(setq p-copy (copy-cpd p-match))
 	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match))) 
-	       (format t "~%~%p-cpd:~%~S~%q-cpd:~%~S~%episode id: ~S~%bindings:~%~S" (aref (caar partial-states) p-match)
-		       (aref (car bn) q-match)
+	       (format t "~%~%p-cpd:~%~S~%q-cpd:~%~S~%episode id: ~S~%bindings:~%~S" (aref (car (episode-state-transitions cue)) p-match)
+		       (rule-based-cpd-identifiers (aref (car bn) q-match))
 		       (episode-id (car eme))
 		       bindings))
              (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
 	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match)))
-	       (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (car bn) q-match))))
+		   (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (car bn) q-match))))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
              (setq idents (make-hash-table :test #'equal))
              (setf (gethash dep-id idents) 0)
@@ -1584,6 +1597,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                                         :lvl lvl))
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
+	   (when nil (not (string-equal type "state-transitions"))
+	     (format t "~%observed factors:~%~S" observed-factors))
 	   (let (evidence-table recollection max-card ground-marginals)
              (setq evidence-table (make-observations observed-factors))
              (setq max-card 0)
@@ -1717,17 +1732,19 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; ep2 = base episode
 (defun get-common-episode-class (ep1 ep2)
   (when (>= (episode-depth ep1) (episode-depth ep2))
-    (when nil
+    (when nil (episode-temporal-p ep1)
       (format t "~%~%episode depth: ~d~%schema depth: ~d" (episode-depth ep1) (episode-depth ep2)))
     (loop
       while (not (= (episode-depth ep1) (episode-depth ep2)))
       do
          (setq ep1 (car (episode-parent ep1)))
-	 (when nil
+	 (when nil (episode-temporal-p ep1)
 	   (format t "~%episode id: ~A~%episode depth: ~d" (episode-id ep1) (episode-depth ep1)))
       finally
+	 (when nil (episode-temporal-p ep1)
+	   (format t "~%episode id: ~S~%schema id: ~S~%equal? ~S" (episode-id ep1) (episode-id ep2) (equal (episode-id ep1) (episode-id  ep2))))
          (when (equal (episode-id ep1) (episode-id  ep2))
-           ep1))))
+           (return ep1)))))
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
@@ -1822,7 +1839,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq prev-act cur-act))
         finally
 	   (when state-transitions
-             ;;(setq state-transitions (concatenate 'list ,@state-transitions))
+	     ;;(eltm-to-pdf)
+	     ;;(setq state-transitions (concatenate 'list ,@state-transitions))
 	     (setq st-bn (eval `(compile-program nil ,@state-transitions)))
 	     (when (> (hash-table-count (rule-based-cpd-identifiers (aref (car st-bn) 0))) 1)
 	       (format t "~%state transition model:~%~A" st-bn)

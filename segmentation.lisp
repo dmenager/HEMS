@@ -548,8 +548,7 @@
 	for line in data ;;(subseq data 0 5)
 	for j from 1
 	do
-	   (setq processed (split-sequence:split-sequence #\, line))
-	   
+	   (setq processed (split-sequence:split-sequence #\, line))	   
 	   (setq hidden-state (mapcan #'(lambda (string)
 					  (when (char= #\[ (aref string 0))
 					    (setq string (subseq string 1)))

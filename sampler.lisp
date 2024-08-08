@@ -10,8 +10,9 @@
     (multiple-value-bind (recollection eme)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type)
       ;; verify in (remember) if the single observation node matches to the state transition models.
-      (when nil (string-equal episode-type "observation")
-	    (format t "~%Posterior network:~%~S" recollection))
+      (when nil (string-equal episode-type "state-transitions")
+	    (format t "~%Posterior network:~%~S" recollection)
+	    (break))
       (loop
 	for cpd in recollection
 	when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn
@@ -32,33 +33,34 @@
 #| Draw a random sample from an episode in the event memory. Returns an association list of variables and their values |# 
 
 ;; episode = episode in event memory
+;; eltm = episodic long-term memory
 ;; output-percepts-p = optional flag determining whether or not only percept nodes will be output or all node types
-(defun sample-observation (episode &key output-percepts-p (key "OBSERVATION") evidence-bn)
+(defun sample-observation (eltm &key output-percepts-p (key "OBSERVATION") evidence-bn)
   (let (bn)
-    (when t
-      (format t "~%episode id: ~S~%key: ~S~% (equal ~S \"OBSERVATION\"): ~s~%evidence-bn-p? ~S" (episode-id episode) key key (equal key "OBSERVATION") (not (null evidence-bn))))
+    (when nil t
+      (format t "~%episode id: ~S~%key: ~S~% (equal ~S \"OBSERVATION\"): ~s~%evidence-bn-p? ~S" (episode-id (car eltm)) key key (equal key "OBSERVATION") (not (null evidence-bn))))
     (cond ((equal key "OBSERVATION") ;;(> (array-dimension (car (episode-observation episode)) 0) 0)
 	   (cond (evidence-bn
-		  (when t
+		  (when nil t
 		    (format t "~%evidence:~%~S" evidence-bn))
 		  (setq bn (episode-observation
 			    (condition-model
-			     (list episode)
+			     eltm
 			     evidence-bn
 			     key)))
 		  (when nil t
 		    (format t "~%conditioned observation:~%~S" bn)))
 		 (t
-		  (setq bn (episode-observation episode)))))
+		  (setq bn (episode-observation (car eltm))))))
 	  ((equal key "STATE") ;;(> (array-dimension (car (episode-state episode)) 0) 0)
-	   (setq bn (episode-state episode)))
+	   (setq bn (episode-state (car eltm))))
 	  ;; enable this branch when we can do hierarchical segmentation/sampling
-	  (nil (> (array-dimension (car (episode-state-transitions episode)) 0) 0)
-	       (setq bn (episode-state-transitions episode)))
+	  (nil (> (array-dimension (car (episode-state-transitions (car eltm))) 0) 0)
+	       (setq bn (episode-state-transitions (car eltm))))
 	  (t
 	   (error "uh oh")))
     (when nil nil
-      (format t "~%~%  episode id: ~S" (episode-id episode)))
+      (format t "~%~%  episode id: ~S" (episode-id (car eltm))))
     (loop
       with dice
       with sample-rule = (make-rule :conditions (make-hash-table :test #'equal))
@@ -69,7 +71,7 @@
       do
 	 (setq dice (random 100))
 	 (setq compatible-rules (sort (get-compatible-rules cpd cpd sample-rule :find-all t) #'< :key #'rule-probability))
-	 (when t
+	 (when nil t
 	   (format t "~%~%   state/observation distribution")
 	   (print-hash-entry i cpd)
 	   (format t "~%   sample rule:")
@@ -91,7 +93,7 @@
 		(setf (gethash (rule-based-cpd-dependent-id cpd)
 			       (rule-conditions sample-rule))
 		      value)
-		(when t
+		(when nil t
 		  (format t "~%  sample: ~S" (cons (rule-based-cpd-dependent-id cpd) value)))
 		(when (or (not output-percepts-p)
 			  (and output-percepts-p
@@ -102,7 +104,7 @@
 		(return-from looper nil))
 	      (setq low-end high-end))
       finally
-	 (when t
+	 (when nil t
 	   (format t "~%conditional samples:~%~S" (reverse sample-list))
 	   (break))
 	 (return (reverse sample-list)))))
@@ -128,6 +130,16 @@
 (defun sample-state-transitions (episode hidden-state-p &key output-percepts-p evidence-bn)
   (let (bn)
     (cond ((episode-temporal-p episode)
+	   (when nil t
+	     (format t "~%sampling temporal episode: ~A" (episode-id episode))
+	     
+	     (loop
+		for backlink being the hash-keys of (episode-backlinks episode)
+		using (hash-value branch)
+		collect `(:label ,backlink :episode-id ,(episode-id (car branch))) into backlinks
+		finally
+		  (format t "~%backlinks:~%~S" backlinks))
+	     (break))
 	   (setq bn (episode-state-transitions episode)))
 	  (t
 	   (error "~%Given episode is not temporal. Check temporal-p flag")))
@@ -146,7 +158,7 @@
 	 (if hidden-state-p
 	     (setq marker (mod i 3))
 	     (setq marker (mod i 2)))
-	 (when t
+	 (when nil t
 	   (format t "~%~%distribution")
 	   (print-hash-entry i cpd)
 	   (format t "~%sample rule:")
@@ -170,25 +182,25 @@
 			       (rule-conditions sample-rule))
 		      value)
 		(setq ref (caar (nth value (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
-		(when t
+		(when nil
 		  (format t "~%ref: ~S" (episode-id (car (gethash ref (episode-backlinks episode))))))
 		(cond ((equal "NA" ref)
 		       (setq data (cons nil data)))
 		      (t
 		       (cond (hidden-state-p
 			      (cond ((= marker 0)
-				     (setq data (cons (sample-state (car (gethash ref (episode-backlinks episode))) :output-percepts-p output-percepts-p) data)))
+				     (setq data (cons (sample-state (gethash ref (episode-backlinks episode)) :output-percepts-p output-percepts-p) data)))
 				    ((= marker 1)
-				     (when t
+				     (when nil t
 				       (format t "~%here"))
-				     (setq data (cons (sample-observation (car (gethash ref (episode-backlinks episode))) :output-percepts-p output-percepts-p :evidence-bn evidence-bn) data)))
+				     (setq data (cons (sample-observation (gethash ref (episode-backlinks episode)) :output-percepts-p output-percepts-p :evidence-bn evidence-bn) data)))
 				    ((= marker 2)
 				     (setq data (cons ref data))
 				     (setq trajectory (cons (reverse data) trajectory))
 				     (setq data nil))))
 			     (t
 			      (cond ((= marker 0)
-				     (setq data (cons (sample-observation (car (gethash ref (episode-backlinks episode))) :output-percepts-p output-percepts-p :evidence-bn evidence-bn) data)))
+				     (setq data (cons (sample-observation (gethash ref (episode-backlinks episode)) :output-percepts-p output-percepts-p :evidence-bn evidence-bn) data)))
 				    ((= marker 1)
 				     (setq data (cons ref data))
 				     (setq trajectory (cons (reverse data) trajectory))
@@ -218,7 +230,7 @@
 ;; evidence-bn = the bayesian network that represents observations made in the environment
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
 (defun conditional-sample (eltm evidence-bn episode-type &key hidden-state-p output-percepts-p (backlinks (make-hash-table :test #'equal)) obs-evidence-bn)
-  (when t
+  (when nil t
     (format t "~%temporal evidence:~%~S" evidence-bn)
     (break))
   (sample

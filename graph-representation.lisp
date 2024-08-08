@@ -8776,7 +8776,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
 		(loop
 		  named probber
-		  with res
+		  with res and prob
 		  for qp-ref in qp-refs
 		  do
 		     (when nil
@@ -8784,14 +8784,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 		       ;;(break)
 		       )
 		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
+		     (if res
+			 (setq prob (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res)))
+			 (setq prob 0))
 		     (when nil t
 		       (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
 		       (break))
-		   when res
+		   when res ;;(and res (>= prob 1/2))
 		   do
 		     (setf (gethash p-ref bindings) qp-ref)
 		     (setf (gethash qp-ref q-first-bindings) p-ref)
 		     (setq q-likelihood (* q-likelihood (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res))))
+		     ;;(setq q-likelihood (* q-likelihood prob))
 		     (setq num-local-preds (+ num-local-preds 1))
 		     (return-from probber nil)
 		   finally

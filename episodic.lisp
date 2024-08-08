@@ -600,7 +600,8 @@
 	   (setq equivalent (or (= 0 (third res))
 				(= (array-dimension (car base) 0)
 				   (array-dimension (car pattern) 0)
-				   (array-dimension (car (funcall func generalized)) 0))))
+				   (array-dimension (car (funcall func generalized)) 0)
+				   -1)))
 	   (when nil
 	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%pattern id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
 	   (cond ((and equivalent (null (cdr x)))
@@ -631,7 +632,8 @@
 	     (setq equivalent (or (= 0 cost)
 				  (= (array-dimension (car base) 0)
 				     (array-dimension (car pattern) 0)
-				     (array-dimension (car (funcall func generalized)) 0))))
+				     (array-dimension (car (funcall func generalized)) 0)
+				     -1)))
 	     (when nil
 	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%episode id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
 	     (cond ((and equivalent (null (cdr x)))

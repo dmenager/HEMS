@@ -1463,6 +1463,19 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
          (setq recollection (loopy-belief-propagation model evidence-table mode lr))
          (return (values recollection bindings)))))
 
+(defun create-episode (&key (observation (cons (make-array 0) (make-hash-table :test #'equal)))
+			 (state (cons (make-array 0) (make-hash-table :test #'equal)))
+			 (transitions (cons (make-array 0) (make-hash-table :test #'equal)))
+			 (backlinks (make-hash-table :test #'equal)))
+  (make-episode
+   :observation observation
+   :state state
+   :state-transitions transitions
+   :backlinks backlinks
+   :temporal-p (if (equal (cons (make-array 0) (make-hash-table :test #'equal)) transitions) nil t)
+   :count 1
+   :lvl (if (equal (cons (make-array 0) (make-hash-table :test #'equal)) transitions) 1 2)))
+
 #| Recollect an experience |#
 
 ;; eltm = event memory
@@ -1746,7 +1759,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	 (when nil (episode-temporal-p ep1)
 	   (format t "~%episode id: ~S~%schema id: ~S~%equal? ~S" (episode-id ep1) (episode-id ep2) (equal (episode-id ep1) (episode-id  ep2))))
          (when (equal (episode-id ep1) (episode-id  ep2))
-           (return ep1)))))
+           (return ep1))
+	 (return nil))))
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
@@ -1872,7 +1886,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 #| Python wrapper for pushing new experience into event memory |#
 (defun py-push-to-ep-buffer(&key (observation nil) (state nil) (actionname nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
-  (new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep))
+  (let (ret)
+    (setq ret (handler-bind ((condition #'condition-handler))
+		(new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep)))
+    ret))
+
 (defun print-h-buffer ()
   (loop
     with lvls = (reduce #'max (hash-keys-to-list (getf episode-buffer* :obs)))

@@ -37,6 +37,7 @@
            #:rule-probability
 	   #:rule-id
 	   #:rule-conditions
+	   #:create-episode
 	   #:episode-id
 	   #:episode-parent
 	   #:episode-observation

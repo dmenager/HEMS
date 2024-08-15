@@ -3045,6 +3045,9 @@
 (let ((observations (make-hash-table :test #'equal)))
 (setf (gethash "ZEUS_ANGRY_243" observations) (list (cons "T" 1)))
 (hems::H[bn] (car (hems::get-eltm)) observations))
+(let (evidence-bn)
+(setq evidence-bn (compile-program nil c = (percept-node zeus_angry :value "T")))
+(hems::H[bn] (car (hems::get-eltm)) evidence-bn))
 
 ;; uncertain observations
 (let ((observations (make-hash-table :test #'equal)))

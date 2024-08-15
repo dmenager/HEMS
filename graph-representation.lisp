@@ -6440,10 +6440,10 @@ Roughly based on (Koller and Friedman, 2009) |#
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 200 and deltas
+    with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -8785,16 +8785,22 @@ Roughly based on (Koller and Friedman, 2009) |#
 		       )
 		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
 		     (if res
-			 (setq prob (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res)))
+			 (setq prob (/ (episode-count (car
+						       (gethash p-ref p-refs-map)))
+				       (episode-count (car
+						       (gethash qp-ref qp-refs-map)))))
 			 (setq prob 0))
 		     (when nil t
 		       (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
 		       (break))
-		   when res ;;(and res (>= prob 1/2))
+		   when (and res (>= prob 1/2))
 		   do
 		     (setf (gethash p-ref bindings) qp-ref)
 		     (setf (gethash qp-ref q-first-bindings) p-ref)
-		     (setq q-likelihood (* q-likelihood (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res))))
+		     (setq q-likelihood (* q-likelihood (/ (episode-count (car
+									   (gethash p-ref p-refs-map)))
+							   (episode-count (car
+									   (gethash qp-ref qp-refs-map))))))
 		     ;;(setq q-likelihood (* q-likelihood prob))
 		     (setq num-local-preds (+ num-local-preds 1))
 		     (return-from probber nil)
@@ -9643,7 +9649,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun cooling-schedule (time big-t &optional (alpha .80))
   (rationalize (* big-t (expt alpha time))))
 
-#| Determines if new match is current best |#
+#| Determines if new match is current best. Returns boolean. |#
 
 ;; next = new match
 ;; best-solution = current best solution so far
@@ -9662,6 +9668,27 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      (= (sixth next) (sixth best-solution))
 	      (>= (fifth next) (fifth best-solution)))
 	 t)))
+
+#| Determines if new match is current best. Returns boolean |#
+
+;; next = new match
+;; best-solution = current best solution so far
+(defun better-random-match? (next best-solution)
+  (cond ((< (second next) (second best-solution))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (> (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution))))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (< (sixth next) (sixth best-solution)))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (sixth next) (sixth best-solution))
+	      (> (fifth next) (fifth best-solution)))
+	 t)))
+
 #| Initialize empty set of mappings |#
 
 ;; p = pattern graph

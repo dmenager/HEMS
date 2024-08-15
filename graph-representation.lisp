@@ -6445,7 +6445,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when t
+       (when nil t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)

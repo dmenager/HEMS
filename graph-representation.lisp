@@ -414,6 +414,13 @@
 (defun hash-keys-to-list (hash)
   (loop for key being the hash-keys of hash collect key))
 
+(defun hash-to-assoc-list (hash)
+  (loop for key being the hash-keys of hash
+     using (hash-value value)
+     collect (cons key value) into assoc
+     finally
+       (return assoc)))
+
 #| Take the intersection of hash table keys |#
 
 ;; hash1 = hash table
@@ -4269,7 +4276,7 @@
                    (setq case (+ case 1))))
                 |#))
       finally
-         (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+         (when nil t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -5754,55 +5761,91 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; new-nodes = list of corespondences from p to q so far
 ;; phi2-count = schema episode count
 (defun factor-merge (phi1 phi2 bindings q-first-bindings new-nodes phi2-count)
-  (cond ((null phi2)
-	 (when nil t
-	   (format t "~%Episode has no schema match. Making schema."))
-	 (loop
-           with phi1-copy = (copy-rule-based-cpd phi1)
-           with rule and new-rules
-           for i from 0 to 1
-           do
-              (setq rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                    :conditions (make-hash-table :test #'equal)
-                                    :block (make-hash-table) ;;(list i)
-                                    :count (cond ((= (hash-table-count (rule-based-cpd-identifiers phi1)) 1)
-                                                  phi2-count)
-                                                 (t
-                                                  0))
-                                    ;;0 #|(rule-based-cpd-count phi1-copy) |#
-                                    ))
-              (setf (gethash i (rule-block rule)) i)
-              (cond ((= i 0)
-                     (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions rule)) 0)
-                     (setf (rule-probability rule) 1)
-                     (setq new-rules (cons rule new-rules)))
-                    ((= i 1)
-                     ;;(setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions rule)) (list 'not 0))
-                     (loop
-                       with loop-rule
-                       for vvb in (gethash 0 (rule-based-cpd-var-value-block-map phi1-copy))
-                       for j from 0
-                       when (not (= j 0))
-                         do
-                            (setq loop-rule (copy-cpd-rule rule))
-                            (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions loop-rule)) j)
-                            (setf (rule-probability loop-rule) 0)
-                            (setq new-rules (cons loop-rule new-rules)))
-                     ;;(setf (rule-probability rule) 0)
-                     ;; add new-rules together with additional rules
-                     ))
-           finally
-              (let (merged)
-                (setf (rule-based-cpd-rules phi1-copy) (make-array 2 :initial-contents new-rules))
-                (setf (rule-based-cpd-count phi1-copy) phi2-count)
-                (when nil t (and (equal "INTENTION2751" (rule-based-cpd-dependent-id phi1)))
-                  (format t "~%created schema match:~%~S" phi1-copy))
-                (setq merged (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count))
-                (when nil
-                      (format t "~%merged:~%~S" merged)
-                      ;;(break)
-                      )
-                (return merged))))
+  (labels ((refresh-cpds (ph1 ph2)
+	     (let (new-phi1 new-phi2)
+	       (setq new-phi2 (cpd-update-existing-vvms ph2 bindings new-nodes))
+               (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id new-phi2)))
+		     (format t "~%intermediate schema:~%~S" new-phi2)
+		     ;;(break)
+		     )
+               ;;(check-cpd ph2 :check-uniqueness nil)
+	       (setq new-phi2 (cpd-update-schema-domain new-phi2 ph1 new-nodes :q-first-bindings q-first-bindings))
+	       (when t (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi2)))
+		     (check-cpd new-phi2 :check-uniqueness nil :check-rule-count nil))
+               (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id new-phi2)))
+		 (format t "~%intermediate schema2:~%~S~%rules:" new-phi2)
+		 (loop
+		   for rule being the elements of (rule-based-cpd-rules new-phi2)
+		   do
+		      (print-cpd-rule rule))
+		 ;;(break)
+		 )
+	       (setq new-phi1 (subst-cpd ph1 new-phi2 bindings))
+	       (setq new-phi1 (cpd-transform-episode-domain new-phi1 new-phi2))
+	       (values new-phi1 new-phi2))))
+    (cond ((null phi2)
+	   (let ((phi1-copy (copy-rule-based-cpd phi1)))
+	     (loop
+	     with dep-id = (rule-based-cpd-dependent-id phi1-copy)
+	     with copy-rule and new-rules
+	     for rule being the elements of (rule-based-cpd-rules phi1-copy)
+	     for i from 1
+	     do
+		(setq copy-rule (copy-cpd-rule rule))
+		(loop
+		  named changer
+		  for att being the hash-keys of (rule-conditions copy-rule)
+		    using (hash-value val)
+		  do
+		     (cond ((not (equal att dep-id))
+			    (when (= val 0)
+			      (setq new-rules (cons copy-rule new-rules))
+			      (return-from changer nil))))
+		  finally
+		     (if (= (gethash dep-id (rule-conditions copy-rule)) 0)
+			 (setf (rule-probability copy-rule) 1)
+			 (setf (rule-probability copy-rule) 0))
+		     (setf (rule-count copy-rule) 0)
+		     (setq new-rules (cons copy-rule new-rules)))
+	     finally
+		(setf (rule-based-cpd-rules phi1-copy) (make-array i :initial-contents (reverse new-rules))))
+	   (multiple-value-bind (new-phi1 new-phi2)
+	       (refresh-cpds phi1 phi1-copy)
+	     (loop
+	       with rule-checker = (make-rule :conditions (make-hash-table :test #'equal)) and var and val
+	       for att being the hash-keys of (rule-based-cpd-identifiers phi1)
+	       using (hash-value idx)
+	       when (not (equal att (rule-based-cpd-dependent-id phi1)))
+		 do
+		    (setq var (caar (nth 1 (gethash idx (rule-based-cpd-var-value-block-map phi1)))))
+		    (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
+			  (format t "~%~%episode parent: ~S assignment: ~S"att var))
+		    (setq idx (gethash att (rule-based-cpd-identifiers new-phi2)))
+		    (setq val (cdaar (member var (gethash idx (rule-based-cpd-var-value-block-map new-phi2)) :test #'(lambda (v1 v2)
+														       (equal v1 (caar v2))))))
+		    (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
+			  (format t "~%schema parent: ~S~%schema parent idx: ~d~%schema vvbm:~%~S~%selected vvb:~%~S~%schema assignment: ~S"
+				  att idx
+				  (gethash idx (rule-based-cpd-var-value-block-map new-phi2))
+				  (member var (gethash idx (rule-based-cpd-var-value-block-map new-phi2)) :test #'(lambda (v1 v2)
+														    (equal v1 (caar v2))))
+				  val)
+			  (break))
+		    (setf (gethash att (rule-conditions rule-checker)) val)
+	       finally
+		  (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
+		    (format t "~%checker rule")
+		    (print-cpd-rule rule-checker))
+		  (loop
+		    for rule being the elements of (rule-based-cpd-rules new-phi2)
+		    when (not (compatible-rule-p rule rule-checker new-phi2 new-phi2))
+		      do
+			 (setf (rule-count rule) phi2-count)))
+	     (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
+	       (format t "~%~%original episode:~%~S~%transformed episode:~%~S~%phi1-copy:~%~S~%generated schema:~%~S"phi1 new-phi1 phi1-copy new-phi2)
+	       (break))
+	     (check-cpd new-phi1 :check-uniqueness nil :check-counts nil)
+	     (factor-filter new-phi2 new-phi1 '+))))
         (t
          (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
            (format t "~%~%episode before update:~%~S~%schema before update:~%~S~%bindings:~%~S~%schema rules:~%" phi1 phi2 bindings)
@@ -5849,7 +5892,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (break)
 	   )
 	 (check-cpd phi1 :check-uniqueness nil :check-counts nil)
-	 (factor-filter phi2 phi1 '+))))
+	 (factor-filter phi2 phi1 '+)))))
 
 
 #| Perform a marginalize operation over rules |#
@@ -6241,7 +6284,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 3) (= j 9))
+  (when nil (and (= i 1) (= j 75))
     (format t "~%~%sending message from ~d to ~d~%~d: ~S~%~d: ~S" i j i (rule-based-cpd-identifiers (aref factors i)) j (rule-based-cpd-identifiers (aref factors j))))
   (let (nbrs-minus-j reduced)
     (loop
@@ -6250,11 +6293,20 @@ Roughly based on (Koller and Friedman, 2009) |#
        when (and (= (cdr edge) i) (not (= (car edge) j)))
        collect (gethash i (gethash (car edge) messages)) into neighbors
        finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 3) (= j 9))
-      (format t "~%neighbors minus j:~%~S~%i:~%~S" nbrs-minus-j (aref factors i)))
+    (when nil (and (= i 1) (= j 75))
+	  (format t "~%neighbors minus j:~%~S~%i:~%~S"
+		  (loop for nbr in nbrs-minus-j
+			when (rule-based-cpd-p nbr)
+			  collect (cons (rule-based-cpd-identifiers nbr) (rule-based-cpd-rules nbr)) into nbrs
+			else
+			  collect nbr into nbrs
+			finally
+			   (return nbrs))
+		  (cons (rule-based-cpd-identifiers (aref factors i))
+			(rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 3) (= j 9))
-      (format t "~%evidence-collected:~%~S~%sepset: ~S~%variables to eliminate: ~S" reduced sepset
+    (when nil (and (= i 1) (= j 75))
+      (format t "~%evidence-collected:~%~S~%sepset: ~S~%variables to eliminate: ~S" (cons (rule-based-cpd-identifiers reduced) (rule-based-cpd-rules reduced)) sepset
               (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
     (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
 
@@ -6390,10 +6442,10 @@ Roughly based on (Koller and Friedman, 2009) |#
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 200 and deltas
+    with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -6408,8 +6460,8 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil t (and (= j 3) (= k 9))
-                    (format t "~%~%factor j = ~d:~%~A~%factor k = ~d:~%~A~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) sepset))
+              (when nil (and (= j 3) (= k 9))
+                    (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
               (setq new-message (send-message j k factors op edges messages sepset))
@@ -7944,7 +7996,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (loop
       for factor being the elements of (car state)
        do
-	 (when (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var factor))
+	 (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var factor))
 	   (format t "~%~%prior probabilities for:~%~A~%rules:~%~A" (rule-based-cpd-identifiers factor) (rule-based-cpd-rules factor)))
 	 (loop
 	   for rule being the elements of (rule-based-cpd-rules factor)
@@ -8113,7 +8165,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (when nil
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
       (format t "~%~%initial messages:~%~A" initial-messages)
-      (break)
+      ;;(break)
       )
     (setq estimates (calibrate-factor-graph all-factors op edges initial-messages lr))))
 
@@ -8726,17 +8778,32 @@ Roughly based on (Koller and Friedman, 2009) |#
 				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
 		(loop
 		  named probber
-		  with res
+		  with res and prob
 		  for qp-ref in qp-refs
 		  do
 		     (when nil
-		       (format t "~%~%p-ref: ~S~%member?: ~S~%qp-ref: ~d~%member?: ~S" p-ref (not (null (car (gethash p-ref p-refs-map)))) qp-ref (not (null (car (gethash qp-ref qp-refs-map))))))
+		       (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
+		       ;;(break)
+		       )
 		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
-		   when res
+		     (if res
+			 (setq prob (/ (episode-count (car
+						       (gethash p-ref p-refs-map)))
+				       (episode-count (car
+						       (gethash qp-ref qp-refs-map)))))
+			 (setq prob 0))
+		     (when nil t
+		       (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
+		       (break))
+		   when (and res (>= prob 1/2))
 		   do
 		     (setf (gethash p-ref bindings) qp-ref)
 		     (setf (gethash qp-ref q-first-bindings) p-ref)
-		     (setq q-likelihood (* q-likelihood (/ (episode-count (car (gethash p-ref p-refs-map))) (episode-count res))))
+		     (setq q-likelihood (* q-likelihood (/ (episode-count (car
+									   (gethash p-ref p-refs-map)))
+							   (episode-count (car
+									   (gethash qp-ref qp-refs-map))))))
+		     ;;(setq q-likelihood (* q-likelihood prob))
 		     (setq num-local-preds (+ num-local-preds 1))
 		     (return-from probber nil)
 		   finally
@@ -9584,7 +9651,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun cooling-schedule (time big-t &optional (alpha .80))
   (rationalize (* big-t (expt alpha time))))
 
-#| Determines if new match is current best |#
+#| Determines if new match is current best. Returns boolean. |#
 
 ;; next = new match
 ;; best-solution = current best solution so far
@@ -9601,8 +9668,29 @@ Roughly based on (Koller and Friedman, 2009) |#
 	((and (= (second next) (second best-solution))
 	      (= (hash-table-count (third next)) (hash-table-count (third best-solution)))
 	      (= (sixth next) (sixth best-solution))
+	      (>= (fifth next) (fifth best-solution)))
+	 t)))
+
+#| Determines if new match is current best. Returns boolean |#
+
+;; next = new match
+;; best-solution = current best solution so far
+(defun better-random-match? (next best-solution)
+  (cond ((< (second next) (second best-solution))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (> (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution))))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (< (sixth next) (sixth best-solution)))
+	 t)
+	((and (= (second next) (second best-solution))
+	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (sixth next) (sixth best-solution))
 	      (> (fifth next) (fifth best-solution)))
 	 t)))
+
 #| Initialize empty set of mappings |#
 
 ;; p = pattern graph

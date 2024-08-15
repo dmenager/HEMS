@@ -131,12 +131,17 @@
   (let ((observed-list (lookup-or-nil (getf bn :obs) (rule-based-cpd-dependent-id node))))
     (cond (observed-list
 	   (loop
+	     with res
 	     for (observed . prob) in observed-list
-	     when (> prob 0)
-	       collect (cdar (assoc observed (gethash 0 (rule-based-cpd-var-value-block-map node)) :test #'equal :key #'car))
+	     do
+		(setq res (assoc observed (gethash 0 (rule-based-cpd-var-value-block-map node)) :test #'equal :key #'car))
+	     when (and res (> prob 0))
+	       collect (cdar res)
 		 into values
 	     finally
-	     (return values)))
+		(if (null values)
+		    (return (get-cpd-values node))
+		    (return values))))
 	  (t
 	   (get-cpd-values node)))))
 
@@ -166,34 +171,47 @@
   
 
 #| returns the posterior distribution of episode's bn given a set of observations |# 
+;; obs = array of cpds
 (defun infer-posterior (cpds-hash episode obs)
-  (loop
-    with net = (if (episode-temporal-p episode)
-		   (episode-state-transitions episode)
-		   (episode-observation episode)) 
-    with cpd and val
-    with evidence = (make-hash-table :test #'equal)
-    with res
-    for cpd-id being the hash-keys of obs
-      using (hash-value var)
-    do
-       (setq cpd (gethash cpd-id cpds-hash))
-       ;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
-       (setf (gethash cpd-id evidence) var)
-    finally
-       (setq res (loopy-belief-propagation net evidence '+ 1))
-       (return (loop
-		 for cpd in res
-		 when (rule-based-cpd-singleton-p cpd)
-		   collect cpd into singletons
-		 else
-		   collect cpd into net
-		 finally
-		    (return (cons net singletons))))))
+  (let ((observation (make-hash-table :test #'equal))
+	(net (if (episode-temporal-p episode)
+		 (episode-state-transitions episode)
+		 (episode-observation episode))))
+    (multiple-value-bind (sol no-matches cost bindings)
+	(new-maximum-common-subgraph obs net (make-hash-table) (make-hash-table))
+      (declare (ignore sol no-matches cost))
+      (loop
+	 with mapped-id
+	 for cpd being the elements of (car obs)
+	 do
+	   (setq mapped-id (gethash (rule-based-cpd-dependent-id cpd) bindings))
+	   (when mapped-id
+	     (setf (gethash mapped-id observation) (list (cons (caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd)))) 1))))
+	 finally
+	   (return
+	     (loop
+		with cpd and val
+		with evidence = (make-hash-table :test #'equal)
+		with res
+		for cpd-id being the hash-keys of observation
+		using (hash-value var)
+		do
+		  (setq cpd (gethash cpd-id cpds-hash))
+		;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
+		  (setf (gethash cpd-id evidence) var)
+		finally
+		  (setq res (loopy-belief-propagation net evidence '+ 1))
+		  (return (loop
+			     for cpd in res
+			     when (rule-based-cpd-singleton-p cpd)
+			     collect cpd into singletons
+			     else
+			     collect cpd into net
+			     finally
+			       (return (list net singletons observation))))))))))
 
 
-
-;; assns = assignments we want to know the posterior probability of 
+;; assns = assignments we want to know the posterior probability of (bindings) 
 ;; obs = hash-table of observed assignments
 (defun P[A=a] (bn assns)
   (loop
@@ -289,9 +307,9 @@
     with parents = (get-parents-aux episode)
     with cpds = (get-cpd-from-id-aux episode)
     with res = (infer-posterior cpds episode observations)
-    with net = (car res) and singletons = (cdr res)
+    with net = (first res) and singletons = (second res) and obs = (third res)
     ;; bn is everything that is constant for all remaining computations
-    with bn = (list :net net :singletons singletons :cpds cpds :parents parents :obs observations) 
+    with bn = (list :net net :singletons singletons :cpds cpds :parents parents :obs obs) 
     for node being the elements of (get-nodes episode)
     ;;do
     ;;   (format t "~%H[~A|Pa] = ~d~%" (rule-based-cpd-dependent-id node) (H[X!Pa] bn node)) 
@@ -299,5 +317,40 @@
     finally
     (return (values net entropy))))
 
+(defun condition-handler (condition)
+  (log-message (list "~%~%lisp backtrace:~%~A~%error:~%~S" (sb-debug:list-backtrace) condition) "log.txt" :if-exists :supersede))
+
 (defun get-entropy (episode observations)
-  (H[bn] episode observations))
+  (multiple-value-bind (net entropy)
+      (handler-bind ((condition #'condition-handler))
+	(H[bn] episode observations))
+    (log-message (list "~%entropy value: ~d" entropy) "log.txt")
+    (values net entropy)))
+
+#| TESTS
+
+(ql:quickload :hems)
+(hems:load-eltm-from-file "~/Code/itm/components/decision_analyzer/event_based_diagnosis/eltm.txt")
+
+(let (bn)
+  (setq bn (hems:compile-program
+	    nil
+	    c1 = (percept-node PAIN :value "unknown")
+	    c2 = (percept-node RESPRATE :value "low")
+	    c3 = (percept-node HEARTRATE :value "high")
+	    c4 = (percept-node O2SAT :value "low")
+	    c5 = (relation-node CHEST_COLLAPSE :value "T" :kb-concept-id "INJURY")
+	    c6 = (relation-node AMPUTATION :value "T" :kb-concept-id "INJURY")
+	    c7 = (percept-node TAG :value "delayed")))
+  (multiple-value-bind (net entropy)
+      (hems:get-entropy
+       (car
+	(hems:new-retrieve-episode
+	 (hems:get-eltm)
+	 (hems:create-episode
+	  :observation bn)
+	 nil))
+       bn)
+    (declare (ignore net))
+    entropy))
+  |#

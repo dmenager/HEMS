@@ -4,15 +4,13 @@
 		#:shuffle)
   (:export #:episode-buffer*
 	   #:eltm*
-	   #:push-to-ep-buffer
 	   #:eltm-to-pdf
-	   #:test-fun
 	   #:compile-program
-	   #:test-compiler
 	   #:remember
 	   #:compute-cpd-concentration
 	   #:compile-program-from-file
 	   #:get-eltm
+	   #:init-eltm
 	   #:log-message
 	   #:rule-based-cpd-dependent-id
 	   #:rule-based-cpd-identifiers
@@ -37,7 +35,9 @@
 	   #:rule-based-cpd-singleton-p
 	   #:rule-based-cpd-count
            #:rule-probability
+	   #:rule-id
 	   #:rule-conditions
+	   #:create-episode
 	   #:episode-id
 	   #:episode-parent
 	   #:episode-observation
@@ -53,8 +53,9 @@
 	   #:get-hash
 	   #:-car
 	   #:-cdr
-	   #:push-from-files
+	   #:hash-to-assoc-list
 	   #:new-push-to-ep-buffer
+	   #:new-retrieve-episode
 	   #:py-push-to-ep-buffer
 	   #:sample
 	   #:py-sample
@@ -64,6 +65,7 @@
 	   #:conditional-sample
 	   #:py-conditional-sample
 	   #:get-entropy
-	   #:compute-network-concentration))
+	   #:compute-network-concentration
+	   #:make-temporal-episode-retrieval-cue))
 
 (in-package :hems)

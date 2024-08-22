@@ -1072,7 +1072,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; res = optimal common subgraph between cue and eltm, with associated cost
 ;; depth = optional depth of retrieval search
 (defun new-retrieve-episode (eltm cue reject-list &key (res nil) (depth 0) (bic-p t) (lvl-func nil) (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil) (forbidden-types nil) &aux best-child (best-child-weighted-cost most-positive-fixnum) (best-child-cost most-positive-fixnum))
-  (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1 0))
+  (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1 -1))
   (when nil t
     (format t "~%reject list in retrieve: ~A" reject-list))
   (when (or (null eltm) (member (episode-id (car eltm)) reject-list :test #'equal))

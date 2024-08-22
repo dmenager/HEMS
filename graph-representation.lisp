@@ -8819,13 +8819,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      (when (> kost 0)
 		(setq num-local-preds (+ num-local-preds 1)))))
      finally
-       (if bic-p
-	   (return (values (abs (- 1 (- q-likelihood
-					(* (/ (log q-m) 2)
-					   q-dif))))
-			   num-local-preds))
-	   (return (values (abs (- 1 q-likelihood))
-			   num-local-preds)))))
+	(when nil
+	  (format t "~%q-m: ~d~%q-dif: ~d" q-m q-dif))
+	(if bic-p
+	    (return (values (abs (- 1 (- q-likelihood
+					 (* (/ (log q-m) 2)
+					    q-dif))))
+			    num-local-preds))
+	    (return (values (abs (- 1 q-likelihood))
+			    num-local-preds)))))
 
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
@@ -9686,7 +9688,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	((and (= (second next) (second best-solution))
 	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
 	      (= (sixth next) (sixth best-solution))
-	      (> (fifth next) (fifth best-solution)))
+	      (>= (fifth next) (fifth best-solution)))
 	 t)))
 
 #| Initialize empty set of mappings |#
@@ -9983,7 +9985,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when (= (hash-table-count (rule-based-cpd-identifiers (aref (car q) i))) 1)
 	   (setq q-dim (+ q-dim 1))))
     (when (> q-dim p-dim)
-      (setq q-dim (- q-dim p-dim)))
+      (setq q-dif (- q-dim p-dim)))
     (setq temperature (handler-case (/ stop-temp (expt alpha required-swaps))
                         (error (c)
                           ;;(break "Going to set almost zero")

@@ -277,11 +277,12 @@
 
 ;; filename = string handle to file to load
 (defun load-eltm-from-file (file-name)
-  (format t "~%loading event memory...")
-  (with-open-file (eltm-stream file-name 
-                               :direction :input
-                               :if-does-not-exist nil)
-    (if eltm-stream
-        (setq eltm* (hash-eltm (read eltm-stream)))
-        (setq eltm* nil))
-    (format t "~%done!")))
+  (handler-bind ((condition #'condition-handler))
+    (with-open-file (eltm-stream file-name 
+				 :direction :input
+				 :if-does-not-exist nil)
+      (format t "~%loading event memory...")
+      (if eltm-stream
+          (setq eltm* (hash-eltm (read eltm-stream)))
+          (setq eltm* nil))
+      (format t "~%done!"))))

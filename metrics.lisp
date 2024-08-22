@@ -335,13 +335,18 @@
 (let (bn)
   (setq bn (hems:compile-program
 	    nil
-	    c1 = (percept-node PAIN :value "unknown")
-	    c2 = (percept-node RESPRATE :value "low")
-	    c3 = (percept-node HEARTRATE :value "high")
-	    c4 = (percept-node O2SAT :value "low")
-	    c5 = (relation-node CHEST_COLLAPSE :value "T" :kb-concept-id "INJURY")
-	    c6 = (relation-node AMPUTATION :value "T" :kb-concept-id "INJURY")
-	    c7 = (percept-node TAG :value "delayed")))
+	    c1 = (percept-node PAIN :value "low")
+c2 = (percept-node RESPRATE :value "high")
+c3 = (percept-node HEARTRATE :value "high")
+c4 = (percept-node O2SAT :value "normal")
+c5 = (relation-node AMPUTATION :value "T" :kb-concept-id "INJURY")
+c6 = (percept-node TAG :value "minimal")
+c5 -> c1
+c5 -> c2
+c5 -> c3
+c5 -> c4
+c5 -> c6
+))
   (multiple-value-bind (net entropy)
       (hems:get-entropy
        (car

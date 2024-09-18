@@ -13,4 +13,6 @@
 	      (:file "graph-representation" :depends-on ("package"))
 	      (:file "segmentation" :depends-on ("episodic"))
 	      (:file "sampler" :depends-on ("graph-representation"))
-	      (:file "serializer" :depends-on ("episodic"))))
+	      (:file "serializer" :depends-on ("episodic"))
+	      (:file "fast-greedy-equivalence-search" :dependes-on ("episodic"))
+	      (:file "fges-utils" :depends-on ("fast-greedy-equivalence-search"))))

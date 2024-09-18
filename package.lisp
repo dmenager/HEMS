@@ -66,6 +66,7 @@
 	   #:py-conditional-sample
 	   #:get-entropy
 	   #:compute-network-concentration
-	   #:make-temporal-episode-retrieval-cue))
+	   #:make-temporal-episode-retrieval-cue
+	   #:fges))
 
 (in-package :hems)

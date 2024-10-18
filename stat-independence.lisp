@@ -68,7 +68,7 @@
 			(setq l (add-parents-to-l y l)))))))
       r)))
 
-#|Algorithm for determining d-separation between two nodes in a Bayesian network
+#| Algorithm for determining d-separation between two nodes in a Bayesian network
   Returns boolean |#
 
 ;; bn = Bayesian network

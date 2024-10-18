@@ -67,6 +67,7 @@
 	   #:get-entropy
 	   #:compute-network-concentration
 	   #:make-temporal-episode-retrieval-cue
-	   #:fges))
+	   #:fges
+	   #:read-csv))
 
 (in-package :hems)

@@ -542,7 +542,7 @@
       (setq max-numbers (get-max-numbers file))
       (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
       (loop
-	with processed and hidden-state and observation and action
+	 with processed and hi dden-state and observation and action
 	with st and obs
 	with len = (length data)
 	for line in data ;;(subseq data 0 5)
@@ -560,12 +560,6 @@
 					  (when (integer-string-p string)
 					    (list string)))
 				      (split-sequence:split-sequence #\Space (third processed))))
-	   #|
-	   (setq observation (butlast (rest
-				       (mapcar #'string
-					       (coerce (fourth processed)
-						       'list)))))
-	   |#
 	   (setq observation (remove ""
 				     (split-sequence:split-sequence
 				      #\space
@@ -574,31 +568,6 @@
 							 1))
 					      1))
 				     :test #'string=))
-	   #|
-	   (loop
-	     with len = (length observation)
-	     for i from len to (- max-numbers 1)
-	     do
-		(setq observation (cons "0" observation)))
-	|#
-	#|
-	   (setq observation (mapcan #'(lambda (string)
-					 (when (char= #\[ (aref string 0))
-					    (setq string (subseq string 1)))
-					  (when (char= #\] (aref string
-								(- (array-dimension string 0) 1)))
-					    (setq string
-						  (subseq string 0
-							  (- (array-dimension string 0) 1))))
-					 (when (integer-string-p string)
-					   (list string)))
-				     (split-sequence:split-sequence #\Space (fourth processed))))
-	   (loop
-	      for digit being the elements of (car observation)
-	      collect (string digit) into new-obs
-	      finally
-		(setq observation new-obs))
-	|#
 	   (setq action (fifth processed))
 	   (when t (not (string-equal "terminal" action))
 		 (loop 

@@ -542,7 +542,7 @@
       (setq max-numbers (get-max-numbers file))
       (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
       (loop
-	 with processed and hi dden-state and observation and action
+	 with processed and hidden-state and observation and action
 	with st and obs
 	with len = (length data)
 	for line in data ;;(subseq data 0 5)

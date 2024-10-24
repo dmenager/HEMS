@@ -38,15 +38,3 @@
        (format t "Row: ~S~%" row))
 (teddy/data-frame::get-column "Action"))
 |#
-(ql:quickload :teddy)
-(ql:quickload :split-sequence)
-(ql:quickload :lhstats)
-(load "stat-independence")
-
-(defun test-g-squared-test ()
-  (let (df)
-    (setq df (read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_CliffWalking-v0_data.csv"))
-    (multiple-value-bind (g2 dof)
-	(g-squared-test df "Action" "Observation" "Hidden State")
-      (- 1 (statistics:chi-square-cdf 10.337d0 2)))))
-|#

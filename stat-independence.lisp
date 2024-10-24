@@ -81,21 +81,19 @@
       nil
       t))
 
-#| Performs g-squared conditional independence test. Returns scalar  |#
+#| Performs g-squared conditional independence test. 
+   Null hypothesis: The variables X and Y are conditionally independent given the variable Z
+   Returns scalar p-value  |#
 
 ;; df = teddy dataframe
 ;; x = column name
 ;; y = column name
 ;; z = column name
 (defun g-squared-test (df x y z)
-  (let ((nxyz 0)
-	(nz 0)
-	(nxz 0)
-	(nyz 0)
-	(smoothing .001)
-	(x-vals (remove-duplicates (teddy/data-frame::get-column df x :as :list)))
-	(y-vals (remove-duplicates (teddy/data-frame::get-column df y :as :list)))
-	(z-vals (remove-duplicates (teddy/data-frame::get-column df z :as :list)))
+  (let ((smoothing 0)
+	(x-vals (remove-duplicates (teddy/data-frame::get-column df x :as :list) :test #'equal))
+	(y-vals (remove-duplicates (teddy/data-frame::get-column df y :as :list) :test #'equal))
+	(z-vals (remove-duplicates (teddy/data-frame::get-column df z :as :list) :test #'equal))
 	(x-idx (teddy/data-frame::column-idx df x))
 	(y-idx (teddy/data-frame::column-idx df y))
 	(z-idx (teddy/data-frame::column-idx df z))
@@ -104,49 +102,76 @@
 	(nz-hash (make-hash-table :test #'equal))
 	(nyz-hash (make-hash-table :test #'equal))
 	(dof -1)
-	(sum 0)
-	(loop
-	  with cur-x and cur-y and cur-z
-	  with it = (teddy/data-frame::make-iterator df)
-	  with nxyz-key and nxz-key and nz-key and and nyz-key
-	  for row = (funcall it)
-	  while row
-	  do
-	     (setq cur-x (nth x-idx row))
-	     (setq cur-y (nth y-idx row))
-	     (setq cur-z (nth z-idx row))
-	     (setq nxyz-key (format nil "~d~d~d" cur-x cur-y cur-z))
-	     (setq nxz-key (format nil "~d~d" cur-x cur-z))
-	     (setq nz-key (format nil "~d" cur-z))
-	     (setq nyz-key (format nil "~d~d" cur-y cur-z))
-	     (when (null (gethash nxyz-key nxyz-hash))
-	       (setf (gethash nxyz-key nxyz-hash) 0))
-	     (when (null (gethash nxz-key nxz-hash))
-	       (setf (gethash nxz-key nxz-hash) 0))
-	     (when (null (gethash nz-key nz-hash))
-	       (setf (gethash nz-key nz-hash) 0))
-	     (when (null (gethash nyz-key nyz-hash))
-	       (setf (gethash nyz-key nyz-hash) 0))	     
-	     (setf (gethash nxyz-key nxyz-hash)
-		   (+ (gethash nxyz-key nxyz-hash) 1))
-	     (setf (gethash nxz-key nxz-hash)
-		   (+ (gethash nxz-key nxz-hash) 1))
-	     (setf (gethash nyz-key nyz-hash)
-		   (+ (gethash nyz-key nyz-hash) 1))
-	     (setf (gethash nz-key nz-hash)
-		   (+ (gethash nz-key nz-hash) 1)))
-	(loop
-	  with nxz-key and nz-key and and nyz-key
-	  with nxz and nz and nyz
-	  for nxyz-key being the hash-keys of nxyz-hash
-	    using (hash-value nxyz)
-	  do
-	  (setq nxz-key (format nil "~a~a" (aref nxyz-key 0) (aref nxyz-key 2))))
-	(setq sum (+ sum (* nxyz
-			    (if (> nxyz 0)
-				(log (/ (* nxyz nz)
-					(* (+ nxz smoothing)
-					   (+ nyz smoothing))))
-				0))))
-	(setq dof (* (- (length x-vals) 1) (- (length y-vals) 1) (length z-vals)))
-	(values (* 2d0 sum) dof))))
+	(sum 0))
+    (loop
+      with cur-x and cur-y and cur-z
+      with it = (teddy/data-frame::make-iterator df)
+      with nxyz-key and nxz-key and nz-key and nyz-key
+      for row = (funcall it)
+      while row
+      do
+	 (setq cur-x (nth x-idx row))
+	 (setq cur-y (nth y-idx row))
+	 (setq cur-z (nth z-idx row))
+	 (setq nxyz-key (format nil "~d,~d,~d" cur-x cur-y cur-z))
+	 (setq nxz-key (format nil "~d,~d" cur-x cur-z))
+	 (setq nz-key (format nil "~d" cur-z))
+	 (setq nyz-key (format nil "~d,~d" cur-y cur-z))
+	 (when (null (gethash nxyz-key nxyz-hash))
+	   (setf (gethash nxyz-key nxyz-hash) 0))
+	 (when (null (gethash nxz-key nxz-hash))
+	   (setf (gethash nxz-key nxz-hash) 0))
+	 (when (null (gethash nz-key nz-hash))
+	   (setf (gethash nz-key nz-hash) 0))
+	 (when (null (gethash nyz-key nyz-hash))
+	   (setf (gethash nyz-key nyz-hash) 0))	     
+	 (setf (gethash nxyz-key nxyz-hash)
+	       (+ (gethash nxyz-key nxyz-hash) 1))
+	 (setf (gethash nxz-key nxz-hash)
+	       (+ (gethash nxz-key nxz-hash) 1))
+	 (setf (gethash nyz-key nyz-hash)
+	       (+ (gethash nyz-key nyz-hash) 1))
+	 (setf (gethash nz-key nz-hash)
+	       (+ (gethash nz-key nz-hash) 1)))
+    (loop
+      with nxz-key and nz-key and nyz-key
+      with nxz and nz and nyz and all-keys
+      for nxyz-key being the hash-keys of nxyz-hash
+	using (hash-value nxyz)
+      do
+	 (setq all-keys (split-sequence:split-sequence #\, nxyz-key))
+	 (setq nxz-key (format nil "~a,~a" (nth 0 all-keys) (nth 2 all-keys)))
+	 (setq nyz-key (format nil "~a,~a" (nth 1 all-keys) (nth 2 all-keys)))
+	 (setq nz-key (format nil "~a" (nth 2 all-keys)))
+	 (setq nxz (gethash nxz-key nxz-hash))
+	 (setq nz (gethash nz-key nz-hash))
+	 (setq nyz (gethash nyz-key nyz-hash))
+	 (when (< (log (/ (* nxyz nz)
+			  (* (+ nxz smoothing)
+			     (+ nyz smoothing))))
+		  0)
+	   (format t "~%log is negative!~%nxyz: ~d~%nz: ~d~%nxz: ~d~%nyz: ~d" nxyz nz nxz nyz)
+	   (break))
+	 (setq sum (+ sum (* nxyz
+			     (if (> nxyz 0)
+				 (log (/ (* nxyz nz)
+					 (* (+ nxz smoothing)
+					    (+ nyz smoothing))))
+				 0)))))
+    
+    (setq dof (* (- (length x-vals) 1) (- (length y-vals) 1) (length z-vals)))
+    (- 1 (statistics:chi-square-cdf (* 2d0 (+ sum (if (= sum 0) .0001d0 0d0))) dof))))
+
+(defun test-g-squared-test ()
+  (let (df)
+    (setq df (read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_FrozenLake-v1_data.csv"))
+    (g-squared-test df "Action" "Observation" "Hidden State")))
+#| TESTS
+
+(ql:quickload :teddy)
+(ql:quickload :split-sequence)
+(ql:quickload :lhstats)
+(load "stat-independence")
+(load "csv.lisp")
+(test-g-squared-test)
+|#

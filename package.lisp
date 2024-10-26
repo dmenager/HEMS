@@ -68,6 +68,7 @@
 	   #:compute-network-concentration
 	   #:make-temporal-episode-retrieval-cue
 	   #:fges
-	   #:read-csv))
+	   #:read-csv
+	   #:g-squared-test))
 
 (in-package :hems)

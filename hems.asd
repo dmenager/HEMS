@@ -7,6 +7,7 @@
   :components((:file "package")
 	      (:file "ep-log" :depends-on ("package"))
 	      (:file "csv" :depends-on ("package"))
+	      (:file "stat-independence" :depends-on ("csv"))
 	      (:file "episodic" :depends-on ("graph-representation"))
 	      (:file "hems-program-compiler" :depends-on ("graph-representation" "performance-stats"))
 	      (:file "performance-stats" :depends-on ("graph-representation"))

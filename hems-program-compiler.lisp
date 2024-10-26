@@ -389,7 +389,7 @@
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
 ;; nbr-func-args = a list of arguments for neighborhood function
-(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args) &body body)
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t)) &body body)
   (let ((hash (gensym))
 	(args (gensym))
 	(inv-hash (gensym))
@@ -454,7 +454,8 @@
 			     do
 				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
 			   finally
-			      (setq ,cpd-list (topological-sort ,cpd-list))
+			      (when ,sort-p
+				(setq ,cpd-list (topological-sort ,cpd-list)))
 			      (when (and ,relational-invariants ,recurse-p)
 				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))

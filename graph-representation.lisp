@@ -7783,8 +7783,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                          (declare (ignore val))
                          (cond (bool2
                                 ;;(error "(i: ~d, val: ~d), and (val: ~d, i: ~d) already exists. Can't overrwite assignment with (i: ~d, j: ~d) and (j: ~d, i: ~d).~%i: ~A~%val: ~A~%j: ~A" i val val i i j j i (aref factors i) (aref factors val) (aref factors j))
-                                (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j))
-                                (break))
+                                (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j)))
                                (t
                                 (setf (gethash j hash) 1)))))
                       (t

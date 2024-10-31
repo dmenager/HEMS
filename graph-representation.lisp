@@ -7765,7 +7765,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 #| Construct a Bayesian Network |#
 
 ;; factors = array of factors
-(defun make-graph-edges (factors)
+(defun make-graph-edges (factors &key (edge-type 1))
   (loop
     with edges = (make-hash-table :test #'equal)
     for i from 0 to (- (array-dimension factors 0) 1)
@@ -7785,11 +7785,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                                 ;;(error "(i: ~d, val: ~d), and (val: ~d, i: ~d) already exists. Can't overrwite assignment with (i: ~d, j: ~d) and (j: ~d, i: ~d).~%i: ~A~%val: ~A~%j: ~A" i val val i i j j i (aref factors i) (aref factors val) (aref factors j))
                                 (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j)))
                                (t
-                                (setf (gethash j hash) 1)))))
+                                (setf (gethash j hash) edge-type)))))
                       (t
                        (let (row)
                          (setq row (make-hash-table))
-                         (setf (gethash j row) 1)
+                         (setf (gethash j row) edge-type)
                          (setf (gethash i edges) row)))))
               (multiple-value-bind (hash bool)
                   (gethash j edges)
@@ -7801,11 +7801,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                                 ;;(error "can't overrwite values")
                                 (warn "edge (~d, ~d) already set" j i))
                                (t
-                                (setf (gethash i hash) 1)))))
+                                (setf (gethash i hash) edge-type)))))
                       (t
                        (let (row)
                          (setq row (make-hash-table))
-                         (setf (gethash i row) 1)
+                         (setf (gethash i row) edge-type)
                          (setf (gethash j edges) row))))))
     finally
        ;;(print-messages edges)

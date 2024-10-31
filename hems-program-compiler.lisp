@@ -389,7 +389,7 @@
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
 ;; nbr-func-args = a list of arguments for neighborhood function
-(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t)) &body body)
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) (edge-type '->)) &body body)
   (let ((hash (gensym))
 	(args (gensym))
 	(inv-hash (gensym))
@@ -462,7 +462,7 @@
 				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
 							 :initial-contents (finalize-factors ,cpd-list)))
-			      (setq ,edges (make-graph-edges ,factors))
+			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t))))
 

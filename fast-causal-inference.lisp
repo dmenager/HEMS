@@ -115,7 +115,7 @@
 		   (equal zy-edge "o->")
 		   (equal zy-edge "<->")
 		   (equal zy-edge "---")
-		   (equal xy-edge "o-o"))
+		   (equal zy-edge "o-o"))
 	       (or (equal xz-edge "-->")
 		   (equal xz-edge "o->")
 		   (equal xz-edge "<->")
@@ -154,6 +154,42 @@
 	       zy-edge
 	       (null xz-edge))
       t)))
+#| Get all discriminating paths from a to b for c, ignoring edge orientations.
+   Returns a list of paths, each path is a list of verticex |#
+
+;; net = graph
+;; x = source node
+;; y = destination node
+;; b = the variable the descriminating path is for
+(defun get-definite-discriminating-paths-for-b (net x y b)
+  (labels ((worker (a visited path acc)
+	     (setf (gethash a visited) t)
+	     (setq path (cons a path))
+	     (if (equal a y)
+		 (when (and (>= path 3)
+			    (equal (b (second path))))
+		   (setq acc (cons (reverse path) acc)))
+		 (loop
+		   wth adjacencies = (cdr net)
+		   for i being the hash-keys of (gethash a adjacencies)
+		   when (and (not (gethash i visited))
+			     (or (and (equal a x)
+				      (gethash y (gethash i adjacnecies))
+				      (equal ">" (aref (gethash i (gethash a adjacencies))) 2))
+				 (and (not (equal a b))
+				      (not (equal a x))
+				      (gethash y (gethash i adjacnecies))
+				      (equal ">" (aref (gethash i (gethash a adjacencies))) 2)
+				      (collider-p net (second path 2) a i))
+				 (equal a b)))
+		     do
+			(setq acc (worker i visited path acc))))
+	     (setq path (cdr path))
+	     (remhash a visited)
+	     acc)))
+  (when (and (not (gethash y (gethash x (cdr net))))
+	     (not (gethash x (gethash y (cdr net)))))
+    (worker x (make-hash-table) nil nil)))
 
 (defun get-possible-d-sep (net a b possible-d-seps)
   (labels ((get-paths-from-a-to-b (x visited path acc)
@@ -271,6 +307,17 @@
 		 do
 		    (return-from in-sepset-p t))
 	     nil)
+	   (get-definite-discriminating-path (x y b)
+
+	     (loop
+	       for x on path
+	       for y on (rest x)
+	       for z on (rest y)
+	       when (or (collider-p net x y z)
+			(triangle-p net x y z))
+		 do
+		    (setf (gethash d-sep-key possible-d-seps)
+			  (cons y (gethash d-sep-key possible-d-seps)))))
 	   (n-orient-unshielded-triples (sepsets-hash)
 	     (loop
 	       for a being the hash-keys of (cdr net)
@@ -344,11 +391,12 @@
 			      (return-from n-orient-r-paths oriented-p))))
 		finally
 		   (return oriented-p)))
-	   (n-add-colliding-edges (triples)
+	   (n-add-edges-into-collider (triples)
 	     (loop
 	       with adjacencies = (cdr net) and d-oriented
 	       for (a b c) in triples
-	       when (collider-p net a b c)
+	       when (and (not (triangle-p net a b c))
+			 (collider-p net a b c))
 		 do
 		    (loop
 		      with db-edge
@@ -360,6 +408,98 @@
 			   (setq d-oriented t))
 	       finally
 		  (return d-oriented)))
+	   (n-orient-potential-triangle (triples)
+	     (loop
+	       with adjacencies = (cdr net) and oriented-p
+	       with yx-edge and xz-edge and yz-edge
+	       with xy-edge and zx-edge and zy-edge
+	       for (x y z) in triples
+	       when (potential-triangle-p net y x z)
+		 do
+		    (yx-edge (gethash x (gethash y adjacencies)))
+		    (xz-edge (gethash z (gethash x adjacencies)))
+		    (yz-edge (gethash y (gethash z adjacencies)))
+		    (xy-edge (gethash y (gethash x adjacencies)))
+		    (zx-edge (gethash x (gethash z adjacencies)))
+		    (zy-edge (gethash z (gethash y adjacencies)))
+		    (when (and (or (equal yx-edge "<->")
+				   (equal yx-edge "-->")
+				   (equal yx-edge "o->"))
+			       (equal xz-edge "-->")
+			       (or (equal yz-edge "<-o")
+				   (equal yz-edge "--o")
+				   (equal yz-edge "o-o")))
+		      (setf yz-edge (format nil "~a~a" (aref yz-edge 0) "->"))
+		      (setf zy-edge (format nil "~a~a" "<-" (aref zy-edge 2))))))
+	   (ddp-helper (a y b visited path acc)
+	     (setf (gethash a visited) t)
+	     (setq path (cons a path))
+	     (if (equal a y)
+		 (when (and (>= path 3)
+			    (null (gethash y (gethash a (cdr net))))
+			    (null (gethash a (gethash y (cdr net)))))
+		   (setq acc (cons path acc)))
+		 (loop
+		   with adjacencies = (cdr net)
+		   with ia-edge
+		   for i being the hash-keys of adjacencies
+		   using (hash-value edges-hash);;(gethash a adjacencies)
+		   when (gethash a edges-hash)
+		     do
+			(setq ia-edge (gethash a edges-hash))
+			(and (not (gethash i visited))
+			     (or (and (equal a x)
+				      (gethash y (gethash i adjacnecies))
+				      (equal ">" (aref ia-edge 2)))
+				 (and (not (equal a b))
+				      (not (equal a x))
+				      (gethash y (gethash i adjacnecies))
+				      (equal ">" (aref ia-edge 2))
+				      (collider-p net (second path 2) a i))
+				 (equal a b)))
+		     do
+			(setq acc (worker i visited path acc))))
+	     (setq path (cdr path))
+	     (remhash a visited)
+	     acc)
+	   (get-definite-discriminating-path-for-b (x y b acc)
+	     (ddp-helper worker x (make-hash-table) nil nil))
+	   (definite-discriminating-paths (triples)
+	     (loop
+	       with adjacencies = (cdr net)
+	       with paths
+	       for triple in triples
+	       when (triangle-p triple)
+		 do
+		    (loop
+		      with c and bs and ds and pair
+		      for v in triple
+		      do
+			 (setq pair (remove v triple))
+			 (setq bs nil)
+			 (setq ds nil)
+			 (when (collider-p (first pair) v (second pair))
+			   (setq c v)
+			   (when (equal ">"
+					(aref (gethash (first pair)
+						       (gethash (second pair) adjacencies))
+					      2))
+			     (setq ds (cons (first pair) ds))
+			     (setq bs (cons (second pair) bs)))
+			   (when (equal ">"
+					(aref (gethash (second pair)
+						       (gethash (first pair) adjacencies))
+					      2))
+			     (setq ds (cons (second pair) ds))
+			     (setq bs (cons (first pair) bs)))
+			   (when bs
+			     (loop
+			       for b in bs
+			       for d in ds
+			       do
+				  (setq paths (get-definite-discriminating-path-for-b d c b paths))))))
+	       finally
+		  (return paths)))
 	   (n-final-orientation (network-paths triples sepsets-hash)
 	     (let (oriented-r-edge oriented-triple-edge))
 	     (loop

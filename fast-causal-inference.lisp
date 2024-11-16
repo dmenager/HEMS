@@ -191,40 +191,29 @@
 	     (not (gethash x (gethash y (cdr net)))))
     (worker x (make-hash-table) nil nil)))
 
-(defun get-possible-d-sep (net a b possible-d-seps)
-  (labels ((get-paths-from-a-to-b (x visited path acc)
+#| Get all paths from a to b.
+   Returns a list of paths. Each path is a list of vertices. |#
+
+;; net = graph
+;; a = source node
+;; b = destination node
+(defun get-all-paths-from-a-to-b (net a b)
+  (labels ((path-worker (x visited path acc)
 	     (setf (gethash x visited) t)
 	     (setq path (cons x path))
 	     (if (equal x b)
 		 (when (>= path 3)
-		   (setq acc (cons path acc)))
+		   (setq acc (cons (reverse path) acc)))
 		 (loop
 		    for i being the hash-keys of (gethash x (cdr net))
 		    when (not (gethash i visited))
 		    do
-		      (setq acc (get-paths-from-a-to-b i b visited path acc))))
+		      (setq acc (path-worker i visited path acc))))
 	     (setq path (cdr path))
 	     (remhash x visited)
-	     acc)
-	   )
-    (let ((d-sep-key (format nil "~d,~d" a b))
-	  (a-b-paths nil))
-      (when (null (gethash d-sep-key possible-d-seps))
-	(setq a-b-paths (get-paths-from-a-to-b a (make-hash-table) nil nil))
-	(loop
-	  for path in a-b-paths
-	  do
-	     (loop
-	       for x on path
-	       for y on (rest x)
-	       for z on (rest y)
-	       when (or (collider-p net x y z)
-			(triangle-p net x y z))
-		 do
-		    (setf (gethash d-sep-key possible-d-seps)
-			  (cons y (gethash d-sep-key possible-d-seps))))))
-      (values (gethash d-sep-key possible-d-seps) a-b-paths possible-d-seps)))
-  
+	     acc)))
+  (path-worker a (make-hash-table) nil))
+
 (defun n-fci (net df)
   (labels ((get-x-y-pairs ()
 	     (loop
@@ -253,12 +242,12 @@
 			 for z being the hash-keys of (gethash y adjacencies)
 			 do
 			    (setq x-y-z-pairs (cons (list x y z) x-y-z-pairs)))
-	       finally
-		  (return x-y-z-pairs))))
+		    finally
+		       (return x-y-z-pairs))))
 	   (n-orient-edges-ambiguously ()
 	     (loop
 	       for x being the hash-keys of (cdr net)
-	       using (hash-value x-children)
+		 using (hash-value x-children)
 	       do
 		  (loop
 		    for y being the hash-keys of x-children
@@ -271,22 +260,54 @@
 	       with triples = (get-x-y-z-triples)
 	       for (x y z) in triples
 	       when (potential-collider-p net x y z)
-		do
-		  (setq sepset-key (format nil "~d,~d" x z))
-		  (when (not (member y (gethash sepset-key sepsets)))
-		    (setq xy-edge (gethash y (gethash x adjacencies)))
-		    (setf zy-edge (gethaxh y (gethash z adjacencies)))
-		    (setf (gethash y (gethash x adjacencies))
-			  (format nil "~a~a" (aref xy-edge 0)"->"))
-		    (setf (gethash y (gethash z adjacencies))
-			  (format nil "~a~a" (aref zy-edge 0) "->")))
+		 do
+		    (setq sepset-key (format nil "~d,~d" x z))
+		    (when (not (member y (gethash sepset-key sepsets)))
+		      (setq xy-edge (gethash y (gethash x adjacencies)))
+		      (setf zy-edge (gethaxh y (gethash z adjacencies)))
+		      (setf (gethash y (gethash x adjacencies))
+			    (format nil "~a~a" (aref xy-edge 0)"->"))
+		      (setf (gethash y (gethash z adjacencies))
+			    (format nil "~a~a" (aref zy-edge 0) "->")))
 	       finally
 		  (return triples)))
+	   (get-network-paths ()
+	     (loop
+	       with paths-hash = (make-hash-table #'equal)
+	       for i being the hash-keys of (cdr net)
+		 using (hash-value neighbors)
+	       do
+		  (loop
+		    for j being the hash-keys of (cdr net)
+		    when (not (equal i j))
+		      do
+			 (setf (gethash (format nil "~a,~a" i j) paths-hash)
+			       (get-all-paths-from-a-to-b net i j)))
+	       finally
+		  (return paths-hash)))
+	   (get-possible-d-sep (a b possible-d-seps)
+	     (let ((d-sep-key (format nil "~d,~d" a b))
+		   (a-b-paths nil))
+	       (when (null (gethash d-sep-key possible-d-seps))
+		 (setq a-b-paths (get-all-paths-from-a-to-b net a b))
+		 (loop
+		   for path in a-b-paths
+		   do
+		      (loop
+			for x on path
+			for y on (rest x)
+			for z on (rest y)
+			when (or (collider-p net (car x) (car y) (car z))
+				 (triangle-p net (car x) (car y) (car z)))
+			  do
+			     (setf (gethash d-sep-key possible-d-seps)
+				   (cons y (gethash d-sep-key possible-d-seps))))))
+	       (values (gethash d-sep-key possible-d-seps) a-b-paths possible-d-seps)))
 	   (remove-d-separated-edges (possible-d-seps sepsets)
 	     (loop
-		with xy-key and yx-key
-		with all-paths = (make-hash-table :test #'equal)
-		for xy-pair in (get-x-y-pairs)
+	       with xy-key and yx-key
+	       with all-paths = (make-hash-table :test #'equal)
+	       for xy-pair in (get-x-y-pairs)
 		do
 		  (setq xy-key (format nil "~d,~d" (car xy-pair) (cdr xy-pair)))
 		  (setq yx-key (format nil "~d,~d" (cdr xy-pair) (car xy-pair)))
@@ -307,17 +328,6 @@
 		 do
 		    (return-from in-sepset-p t))
 	     nil)
-	   (get-definite-discriminating-path (x y b)
-
-	     (loop
-	       for x on path
-	       for y on (rest x)
-	       for z on (rest y)
-	       when (or (collider-p net x y z)
-			(triangle-p net x y z))
-		 do
-		    (setf (gethash d-sep-key possible-d-seps)
-			  (cons y (gethash d-sep-key possible-d-seps)))))
 	   (n-orient-unshielded-triples (sepsets-hash)
 	     (loop
 	       for a being the hash-keys of (cdr net)
@@ -434,36 +444,51 @@
 	   (ddp-helper (a y b visited path acc)
 	     (setf (gethash a visited) t)
 	     (setq path (cons a path))
-	     (if (equal a y)
-		 (when (and (>= path 3)
-			    (null (gethash y (gethash a (cdr net))))
-			    (null (gethash a (gethash y (cdr net)))))
-		   (setq acc (cons path acc)))
+	     (if (and (null (gethash y (gethash a (cdr net))))
+		      (null (gethash a (gethash y (cdr net)))))
+		 (setq acc (cons path acc))
 		 (loop
 		   with adjacencies = (cdr net)
 		   with ia-edge
 		   for i being the hash-keys of adjacencies
 		   using (hash-value edges-hash);;(gethash a adjacencies)
-		   when (gethash a edges-hash)
+		   when (and (not (equal i b))
+			     (not (equal i y))
+			     (gethash a edges-hash))
 		     do
 			(setq ia-edge (gethash a edges-hash))
-			(and (not (gethash i visited))
-			     (or (and (equal a x)
-				      (gethash y (gethash i adjacnecies))
-				      (equal ">" (aref ia-edge 2)))
-				 (and (not (equal a b))
-				      (not (equal a x))
-				      (gethash y (gethash i adjacnecies))
-				      (equal ">" (aref ia-edge 2))
-				      (collider-p net (second path 2) a i))
-				 (equal a b)))
-		     do
-			(setq acc (worker i visited path acc))))
-	     (setq path (cdr path))
+			(when (and (not (gethash i visited))
+				   (collider-p net i a (second path)))
+			  (setq acc (worker i visited path acc)))))
+	     ;;(setq path (cdr path))
 	     (remhash a visited)
 	     acc)
 	   (get-definite-discriminating-path-for-b (x y b acc)
-	     (ddp-helper worker x (make-hash-table) nil nil))
+	     (ddp-helper worker x y b (make-hash-table) (list b y) acc))
+	   (colliding-path-p (path C)
+	     (loop
+	       named check
+	       with adjacencies = (cdr net)
+	       for x on path
+	       for y on (rest x)
+	       for z on (rest y)
+	       when (or (not (collider-p net (car x) (car y) (car z)))
+			(not (gethash y (gethash c adjacencies)))
+		 do
+		    (return-from check nil))
+	     t))
+	   (definite-discriminating-path-p (path)
+	     (let* ((triple (last path 3))
+		    (d (first triple))
+		    (b (second triple))
+		    (c (third triple))
+		    (a (first path))
+		    (adjacencies (cdr net)))
+	       (if (and (triangle-p d c b)
+			(collider-p d c b)
+			(not (gethash a (gethash c adjacencies)))
+			(colliding-path-p (butlast path) c))
+		 t)))
 	   (definite-discriminating-paths (triples)
 	     (loop
 	       with adjacencies = (cdr net)
@@ -498,30 +523,100 @@
 			       for d in ds
 			       do
 				  (setq paths (get-definite-discriminating-path-for-b d c b paths))))))
-	       finally
+`	       finally
 		  (return paths)))
-	   (n-final-orientation (network-paths triples sepsets-hash)
-	     (let (oriented-r-edge oriented-triple-edge))
+	   (orient-interpath-edges-p (path underlined-vars-hash sepsets-hash)
 	     (loop
-		with adjacencies = (cdr net)
-		with xy-edge
-		with yx-key
-		with x and y
-	        for xy-key being the hash-keys of network-paths
-		  using (hash-value xy-paths)
-		do
-		   (setq yx-key (split-sequence:split-sequence #\, xy-key))
-		   (setq yx-key (format nil "~d,~d" (second yx-key) (first yx-key)))
-		   (setq xy-edge (gethash y (gethash x adjacencies)))
-		   (cond ((and xy-edge (some #'directed-path-p xy-paths))
-			  (setf xy-edge (format nil "~a~a" (aref xy-edge 0) "->"))))))))
+	       with oriented-p = nil
+	       with adjacencies = (cdr net)
+	       with a = (first path) and b = (car (last path))
+	       for x on path
+	       for y on (rest x)
+	       for z on (rest y)
+	       do
+		  (cond ((and (equal #\> (aref (gethash (car y) (gethash (car x) adjacencies))))
+			      (member '(x y z) (gethash (car y) underlined-vars)
+				      :test #'equal))
+			 (setf (gethash (car z)
+					(gethash (car y) adjacencies))
+			       "-->")
+			 (setq oriented-p t))
+			(t
+			 (loop
+			   with d = (car (last path 2))
+			   for c being the hash-keys of (gethash b adjacencies)
+			   when (and (not (equal c a))
+				     (not (equal c d)))
+			     do
+				(cond ((and (collider-p net a b c)
+					    (not (gethash c (gethash a adjacencies)))
+					    (not (collider-p net a d c)))
+				       (setq oriented-p t)
+				       (setf (gethash b (gethash d adjacencies))
+					     (format nil "~a->" (aref (gethash b (gethash d adjacencies)) 0)))
+				       (setf (gethash d (gethash b adjacencies))
+					     (format nil "<-~a" (aref (gethash d (gethash b adjacencies)) 2))))
+				      ((and (equal #\> (aref (gethash b (gethash c adjacencies))))
+					    (equal "-->" (gethash d (gethash b adjacencies)))
+					    (equal #\o (aref (gethash c (gethash d adjacencies)) 0)))
+				       (setq oriented-p t)
+				       (setf (gethash d (gethash c adjacencies))
+					     (format nil "~a->" (aref (gethash d (gethash c adjacencies)) 0)))
+				       (setf (gethash c (gethash d adjacencies))
+					     (format nil "<-~a" (aref (gethash c (gethash d adjacencies )) 2))))
+				      ((definite-discriminating-path-p (append path (list c)))
+				       (cond ((member b (gethash (format nil "~a,~a" a c) sepsets-hash))
+					      (setf (gethash b underlined-vars-hash)
+						    (cons (list d b c) (gethash b underlined-vars-hash))))
+					     (t
+					      (setq oriented-p t)
+					      (let ((db-edge (gethash b (gethash d adjacencies)))
+						    (bd-edge (gethash d (getaash b adjacencies)))
+						    (bc-edge (gethach c (gethash b adjacencies)))
+						    (cb-edge (gethach b (gethash c adjacencies))))
+						(setf db-edge (format nil "~a->" (aref db-edge 0)))
+						(setf bd-edge (format nil "<-~a" (aref bd-edge 2)))
+						(setf bc-edge (format nil "<-~a" (aref bc-edge 2)))
+						(setf cb-edge (format nil "~a->" (aref cb-edge 0)))))))))))
+	       finally
+		  (return oriented-p)))
+	   (n-final-orientation (network-paths sepsets-hash)
+	     (loop
+	       with oriented-p = nil
+	       do
+		  (setq oriented-p nil)
+		  (loop
+		    with adjacencies = (cdr net)
+		    with ab-edge and ba-edge
+		    with ba-key
+		    with a and b
+	            for ab-key being the hash-keys of network-paths
+		      using (hash-value ab-paths)
+		    do
+		       (setq ba-key (split-sequence:split-sequence #\, ab-key))
+		       (setq b (second ba-key))
+		       (setq a (first ba-key)
+			     (setq ba-key (format nil "~d,~d" (second ba-key) (first ba-key)))
+			     (setq ab-edge (gethash b (gethash a adjacencies)))
+			     (setq ba-edge (gethash a (gethash b adjacencies)))
+			     (loop
+			       for path in xy-paths
+			       do
+				  (cond ((and ab-edge (directed-path-p path))
+					 (setf ab-edge (format nil "~a->" (aref ab-edge 0)))
+					 (setf ba-edge (format nil "<-~a" (aref ba-edge 2)))
+					 (setq oriented-p t))
+					(t
+					 (setq oriented-p (orient-interpath-edges-p path)))))))
+	       until (not oriented-p)))
     (let ((possible-d-seps (make-hash-table :test #'equal))
 	  network-paths
 	  triples)
       (multiple-value-bind (net1 sepsets-hash)
-	  (adjacency-search net df)
+	  (n-adjacency-search net df)
 	(declare (ignore net1))
 	(n-orient-unshielded-triples sepsets-hash)
-	(setq network-paths (remove-d-separated-edges possible-d-seps sepsets-hash))
+	(remove-d-separated-edges possible-d-seps sepsets-hash)
+	(setq network-paths (get-network-paths))
 	(n-orient-edges-ambiguously)
 	(setq triples (n-orient-colliders))))))

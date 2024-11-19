@@ -23,11 +23,11 @@
       (remhash (cdr xy) (gethash (car xy) (cdr net)))
       (remhash (car xy) (gethash (cdr xy) (cdr net)))
       (setf (gethash xy-key sepsets)
-	    (cons (car subsets) (gethash xy-key sepsets)))
+	    (cons z (gethash xy-key sepsets)))
       (setf (gethash yx-key sepsets)
-	    (cons (car subsets) (gethash yx-key sepsets)))
+	    (cons z (gethash yx-key sepsets)))
       (setq edge-removed-p t))
-    (values edge-removed sepsets)))
+    (values edge-removed-p sepsets)))
 
 #| Perform adjacency search through a fully connected undirected graph by sequentially removing edges.
    Returns a destructively modified graph (<array of cpds> . <2d hash table of edges>). |#
@@ -90,7 +90,7 @@
 		 do
 		   (multiple-value-bind (status sepsets-hash)
 		       (n-test-conditional-independence net df xy (car subsets) sepsets xy-key yx-key)
-		     (setq edge-removed status)
+		     (setq edge-removed-p status)
 		     (setq sepsets sepsets-hash))
 		   (setq subsets (rest subsets))
 		until (or (null subsets)
@@ -126,7 +126,7 @@
 	(xz-edge (gethash z (gethash x (cdr net))))
 	(zx-edge (gethash x (gethash z (cdr net))))
 	(zy-edge (gethash y (gethash z (cdr net))))
-	(zy-edge (gethash z (gethash y (cdr net)))))
+	(yz-edge (gethash z (gethash y (cdr net)))))
     (when (and (equal #\> (aref xy-edge 2))
 	       (equal #\< (aref yx-edge 0))
 	       (equal #\> (aref zy-edge 2))
@@ -146,44 +146,9 @@
 	(zy-edge (gethash y (gethash z (cdr net)))))
     (when (and xy-edge
 	       zy-edge
-	       (null xz-edge))
+	       (null xz-edge)
+	       (null zx-edge))
       t)))
-#| Get all discriminating paths from a to b for c, ignoring edge orientations.
-   Returns a list of paths, each path is a list of verticex |#
-
-;; net = graph
-;; x = source node
-;; y = destination node
-;; b = the variable the descriminating path is for
-(defun get-definite-discriminating-paths-for-b (net x y b)
-  (labels ((worker (a visited path acc)
-	     (setf (gethash a visited) t)
-	     (setq path (cons a path))
-	     (if (equal a y)
-		 (when (and (>= path 3)
-			    (equal (b (second path))))
-		   (setq acc (cons (reverse path) acc)))
-		 (loop
-		   wth adjacencies = (cdr net)
-		   for i being the hash-keys of (gethash a adjacencies)
-		   when (and (not (gethash i visited))
-			     (or (and (equal a x)
-				      (gethash y (gethash i adjacnecies))
-				      (equal ">" (aref (gethash i (gethash a adjacencies))) 2))
-				 (and (not (equal a b))
-				      (not (equal a x))
-				      (gethash y (gethash i adjacnecies))
-				      (equal ">" (aref (gethash i (gethash a adjacencies))) 2)
-				      (collider-p net (second path 2) a i))
-				 (equal a b)))
-		     do
-			(setq acc (worker i visited path acc))))
-	     (setq path (cdr path))
-	     (remhash a visited)
-	     acc)))
-  (when (and (not (gethash y (gethash x (cdr net))))
-	     (not (gethash x (gethash y (cdr net)))))
-    (worker x (make-hash-table) nil nil)))
 
 #| Get all paths from a to b.
    Returns a list of paths. Each path is a list of vertices. |#
@@ -196,7 +161,7 @@
 	     (setf (gethash x visited) t)
 	     (setq path (cons x path))
 	     (if (equal x b)
-		 (when (>= path 3)
+		 (when (>= (length path) 3)
 		   (setq acc (cons (reverse path) acc)))
 		 (loop
 		    for i being the hash-keys of (gethash x (cdr net))
@@ -205,8 +170,8 @@
 		      (setq acc (path-worker i visited path acc))))
 	     (setq path (cdr path))
 	     (remhash x visited)
-	     acc)))
-  (path-worker a (make-hash-table) nil))
+	     acc))
+    (path-worker a (make-hash-table) nil nil)))
 
 (defun n-fci (net df)
   (labels ((get-x-y-pairs ()
@@ -246,8 +211,8 @@
 		  (loop
 		    for y being the hash-keys of x-children
 		    do
-		       (setf (gethash y x-children "o-o")))))
-	   (n-orient-colliders ()
+		       (setf (gethash y x-children) "o-o"))))
+	   (n-orient-colliders (sepsets)
 	     (loop
 		with adjacencies = (cdr net)
 		with xy-edge and zy-edge and yx-edge and yz-edge
@@ -268,7 +233,7 @@
 		    (setf yz-edge (format nil "~a~a" "<-" (aref yz-edge 2))))))
 	   (get-network-paths ()
 	     (loop
-	       with paths-hash = (make-hash-table #'equal)
+	       with paths-hash = (make-hash-table :test #'equal)
 	       for i being the hash-keys of (cdr net)
 		 using (hash-value neighbors)
 	       do
@@ -307,7 +272,7 @@
 		  (setq xy-key (format nil "~d,~d" (car xy-pair) (cdr xy-pair)))
 		  (setq yx-key (format nil "~d,~d" (cdr xy-pair) (car xy-pair)))
 		  (multiple-value-bind (xy-seps xy-paths)
-		      (get-possible-d-sep net (car xy-par) (cdr xy-pair) possible-d-seps)
+		      (get-possible-d-sep (car xy-pair) (cdr xy-pair) possible-d-seps)
 		    (setf (gethash xy-key all-paths) xy-paths)
 		    (loop
 		       for z on (remove (cdr xy-pair)
@@ -361,47 +326,7 @@
 		  (when (not (equal #\> (aref edge 2)))
 		    (return-from directed-path-p nil)))
 	     t)
-	   (n-add-edges-into-collider (triples)
-	     (loop
-	       with adjacencies = (cdr net) and d-oriented
-	       for (a b c) in triples
-	       when (and (not (triangle-p net a b c))
-			 (collider-p net a b c))
-		 do
-		    (loop
-		      with db-edge
-		      for d in being the hash-keys of (gethash b adjacencies)
-		      when (not (collider-p net a d c))
-			do
-			   (setq db-edge (gethash b (gethash d adjacencies)))
-			   (setf db-edge (format nil "~a~a" (aref db-edge 0) "->"))
-			   (setq d-oriented t))
-	       finally
-		  (return d-oriented)))
-	   (n-orient-potential-triangle (triples)
-	     (loop
-	       with adjacencies = (cdr net) and oriented-p
-	       with yx-edge and xz-edge and yz-edge
-	       with xy-edge and zx-edge and zy-edge
-	       for (x y z) in triples
-	       when (potential-triangle-p net y x z)
-		 do
-		    (yx-edge (gethash x (gethash y adjacencies)))
-		    (xz-edge (gethash z (gethash x adjacencies)))
-		    (yz-edge (gethash y (gethash z adjacencies)))
-		    (xy-edge (gethash y (gethash x adjacencies)))
-		    (zx-edge (gethash x (gethash z adjacencies)))
-		    (zy-edge (gethash z (gethash y adjacencies)))
-		    (when (and (or (equal yx-edge "<->")
-				   (equal yx-edge "-->")
-				   (equal yx-edge "o->"))
-			       (equal xz-edge "-->")
-			       (or (equal yz-edge "<-o")
-				   (equal yz-edge "--o")
-				   (equal yz-edge "o-o")))
-		      (setf yz-edge (format nil "~a~a" (aref yz-edge 0) "->"))
-		      (setf zy-edge (format nil "~a~a" "<-" (aref zy-edge 2))))))
-	   (colliding-path-p (path C)
+	   (colliding-path-p (path c)
 	     (loop
 	       named check
 	       with adjacencies = (cdr net)
@@ -409,10 +334,10 @@
 	       for y on (rest x)
 	       for z on (rest y)
 	       when (or (not (collider-p net (car x) (car y) (car z)))
-			(not (gethash y (gethash c adjacencies)))
+			(not (gethash y (gethash c adjacencies))))
 		 do
 		    (return-from check nil))
-	     t))
+	     t)
 	   (definite-discriminating-path-p (path)
 	     (let* ((triple (last path 3))
 		    (d (first triple))
@@ -420,8 +345,8 @@
 		    (c (third triple))
 		    (a (first path))
 		    (adjacencies (cdr net)))
-	       (if (and (triangle-p d c b)
-			(collider-p d c b)
+	       (if (and (triangle-p net d c b)
+			(collider-p net d c b)
 			(not (gethash a (gethash c adjacencies)))
 			(colliding-path-p (butlast path) c))
 		 t)))
@@ -435,7 +360,7 @@
 	       for z on (rest y)
 	       do
 		  (cond ((and (equal #\> (aref (gethash (car y) (gethash (car x) adjacencies))))
-			      (member (list (car x) (car y) (car z)) (gethash (car y) underlined-vars)
+			      (member (list (car x) (car y) (car z)) (gethash (car y) underlined-vars-hash)
 				      :test #'equal))
 			 (setf (gethash (car z)
 					(gethash (car y) adjacencies))
@@ -474,9 +399,9 @@
 					     (t
 					      (setq oriented-p t)
 					      (let ((db-edge (gethash b (gethash d adjacencies)))
-						    (bd-edge (gethash d (getaash b adjacencies)))
-						    (bc-edge (gethach c (gethash b adjacencies)))
-						    (cb-edge (gethach b (gethash c adjacencies))))
+						    (bd-edge (gethash d (gethash b adjacencies)))
+						    (bc-edge (gethash c (gethash b adjacencies)))
+						    (cb-edge (gethash b (gethash c adjacencies))))
 						(setf db-edge (format nil "~a->" (aref db-edge 0)))
 						(setf bd-edge (format nil "<-~a" (aref bd-edge 2)))
 						(setf bc-edge (format nil "<-~a" (aref bc-edge 2)))
@@ -498,24 +423,22 @@
 		    do
 		       (setq ba-key (split-sequence:split-sequence #\, ab-key))
 		       (setq b (second ba-key))
-		       (setq a (first ba-key)
-			     (setq ba-key (format nil "~d,~d" (second ba-key) (first ba-key)))
-			     (setq ab-edge (gethash b (gethash a adjacencies)))
-			     (setq ba-edge (gethash a (gethash b adjacencies)))
-			     (loop
-			       for path in ab-paths
-			       do
-				  (cond ((and ab-edge (directed-path-p path))
-					 (setf ab-edge (format nil "~a->" (aref ab-edge 0)))
-					 (setf ba-edge (format nil "<-~a" (aref ba-edge 2)))
-					 (setq oriented-p t))
-					(t
-					 (setq oriented-p (orient-interpath-edges-p path underlined-vars-hash sepsets-hash)))))))
-	       until (not oriented-p)))
+		       (setq a (first ba-key))
+		       (setq ba-key (format nil "~d,~d" (second ba-key) (first ba-key)))
+		       (setq ab-edge (gethash b (gethash a adjacencies)))
+		       (setq ba-edge (gethash a (gethash b adjacencies)))
+		       (loop
+			 for path in ab-paths
+			 do
+			    (cond ((and ab-edge (directed-path-p path))
+				   (setf ab-edge (format nil "~a->" (aref ab-edge 0)))
+				   (setf ba-edge (format nil "<-~a" (aref ba-edge 2)))
+				   (setq oriented-p t))
+				  (t
+				   (setq oriented-p (orient-interpath-edges-p path underlined-vars-hash sepsets-hash))))))
+	       until (not oriented-p))))
     (let ((possible-d-seps (make-hash-table :test #'equal))
-	  network-paths
-	  triples
-	  underlined-vars-hash (mkae-hash-table :test #'equal))
+	  (underlined-vars-hash (make-hash-table :test #'equal)))
       (multiple-value-bind (net1 sepsets-hash)
 	  (n-adjacency-search net df)
 	(declare (ignore net1))
@@ -525,7 +448,6 @@
 	  (declare (ignore net2))
 	  (setq sepsets-hash sepsets-h))
 	(n-orient-edges-ambiguously)
-	(setq network-paths (get-network-paths))
-	(n-orient-colliders)
+	(n-orient-colliders sepsets-hash)
 	(n-final-orientation (get-network-paths) underlined-vars-hash sepsets-hash))
-      net))))
+      net)))

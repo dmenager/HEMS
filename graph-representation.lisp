@@ -7765,7 +7765,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 #| Construct a Bayesian Network |#
 
 ;; factors = array of factors
-(defun make-graph-edges (factors &key (edge-type 1))
+(defun make-graph-edges (factors &key (edge-type "-->"))
   (loop
     with edges = (make-hash-table :test #'equal)
     for i from 0 to (- (array-dimension factors 0) 1)

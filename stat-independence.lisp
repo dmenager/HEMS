@@ -1,3 +1,5 @@
+(in-package :hems)
+
 #| Algorithm for finding nodes reachable from X given Z via active trains.
    Returns a list of cpds
    Taken from Koller 2009 |#

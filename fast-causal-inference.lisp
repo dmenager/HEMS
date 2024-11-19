@@ -1,3 +1,5 @@
+(in-package :hems)
+
 #| See if X is conditionally independent from Y given Z.
    Returns boolean. Destructively modifies net and sepsets. |#
 
@@ -10,13 +12,13 @@
 ;; yx-key = yx key into sepsets
 (defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key)
   (let (x-var y-var p-value edge-removed-p)
-    (setq x-var (rule-based-cpd-dependent-var (aref (car net) (car xy))))
-    (setq y-var (rule-based-cpd-dependent-var (aref (car net) (cdr xy))))
+    (setq x-var (symbol-name (rule-based-cpd-dependent-var (aref (car net) (car xy)))))
+    (setq y-var (symbol-name (rule-based-cpd-dependent-var (aref (car net) (cdr xy)))))
     (setq p-value (g-squared-test df
 				  x-var
 				  y-var
 				  (mapcar #'(lambda (ele)
-					      (rule-based-cpd-dependent-var (aref (car net) ele)))
+					      (symbol-name (rule-based-cpd-dependent-var (aref (car net) ele))))
 					  z)))
     (when (< p-value .05)
       ;; delete the edge between x and y
@@ -34,7 +36,7 @@
 
 ;; net = graph
 ;; df = teddy data frame
-(defun n-adjacency-search (net df)
+(defun n-adjacency-search (net df &key (variables))
   (labels ((get-x-y-pairs (adjacencies n)
 	     (loop
 	       with x-y-pairs
@@ -173,8 +175,35 @@
 	     acc))
     (path-worker a (make-hash-table) nil nil)))
 
-(defun n-fci (net df)
-  (labels ((get-x-y-pairs ()
+(defun n-fci (df)
+  (labels ((generate-network (variables) 
+	     (let (vars program)
+	       (if variables
+		   (setq vars variables)
+		   (setq vars (subseq (teddy/data-frame::get-column-names df) 1)))
+	       (loop
+		 for v being the elements of vars
+		 for i from 0
+		 do
+		    (setq program (concatenate 'list
+					       program `(,(intern (format nil "C~d" i)) = (percept-node ,(intern v) :value "T")))))
+	       (loop
+		 for v1 being the elements of vars
+		 for i from 0
+		 do
+		    (loop
+		      for v2 being the elements of vars
+		      for j from 0
+		      when (not (= i j))
+			do
+			   (setq program
+				 (concatenate 'list
+					      program
+					      `(,(intern (format nil "C~d" i))
+						---
+						,(intern (format nil "C~d" j)))))))
+	       (eval `(compile-program (:sort-p nil) ,@program))))
+	   (get-x-y-pairs (net)
 	     (loop
 	       with adjacencies = (cdr net)
 	       with x-y-pairs
@@ -187,7 +216,7 @@
 		       (setq x-y-pairs (cons (cons x y) x-y-pairs)))
 	       finally
 		  (return x-y-pairs)))
-	   (get-x-y-z-triples ()
+	   (get-x-y-z-triples (net)
 	     (loop
 	       with adjacencies = (cdr net)
 	       with x-y-z-pairs
@@ -203,7 +232,7 @@
 			    (setq x-y-z-pairs (cons (list x y z) x-y-z-pairs)))
 		    finally
 		       (return x-y-z-pairs))))
-	   (n-orient-edges-ambiguously ()
+	   (n-orient-edges-ambiguously (net)
 	     (loop
 	       for x being the hash-keys of (cdr net)
 		 using (hash-value x-children)
@@ -212,12 +241,12 @@
 		    for y being the hash-keys of x-children
 		    do
 		       (setf (gethash y x-children) "o-o"))))
-	   (n-orient-colliders (sepsets)
+	   (n-orient-colliders (net sepsets)
 	     (loop
 		with adjacencies = (cdr net)
 		with xy-edge and zy-edge and yx-edge and yz-edge
 		with sepset-key
-		with triples = (get-x-y-z-triples)
+		with triples = (get-x-y-z-triples net)
 		for (x y z) in triples
 		when (potential-collider-p net x y z)
 		do
@@ -231,7 +260,7 @@
 		    (setf yx-edge (format nil "~a~a" "<-" (aref yx-edge 2)))
 		    (setf zy-edge (format nil "~a~a" (aref zy-edge 0) "->"))
 		    (setf yz-edge (format nil "~a~a" "<-" (aref yz-edge 2))))))
-	   (get-network-paths ()
+	   (get-network-paths (net)
 	     (loop
 	       with paths-hash = (make-hash-table :test #'equal)
 	       for i being the hash-keys of (cdr net)
@@ -245,7 +274,7 @@
 			       (get-all-paths-from-a-to-b net i j)))
 	       finally
 		  (return paths-hash)))
-	   (get-possible-d-sep (a b possible-d-seps)
+	   (get-possible-d-sep (net a b possible-d-seps)
 	     (let ((d-sep-key (format nil "~d,~d" a b))
 		   (a-b-paths nil))
 	       (when (null (gethash d-sep-key possible-d-seps))
@@ -263,16 +292,16 @@
 			     (setf (gethash d-sep-key possible-d-seps)
 				   (cons y (gethash d-sep-key possible-d-seps))))))
 	       (values (gethash d-sep-key possible-d-seps) a-b-paths possible-d-seps)))
-	   (n-remove-d-separated-edges (possible-d-seps sepsets)
+	   (n-remove-d-separated-edges (net possible-d-seps sepsets)
 	     (loop
 	       with xy-key and yx-key
 	       with all-paths = (make-hash-table :test #'equal)
-	       for xy-pair in (get-x-y-pairs)
+	       for xy-pair in (get-x-y-pairs net)
 		do
 		  (setq xy-key (format nil "~d,~d" (car xy-pair) (cdr xy-pair)))
 		  (setq yx-key (format nil "~d,~d" (cdr xy-pair) (car xy-pair)))
 		  (multiple-value-bind (xy-seps xy-paths)
-		      (get-possible-d-sep (car xy-pair) (cdr xy-pair) possible-d-seps)
+		      (get-possible-d-sep net (car xy-pair) (cdr xy-pair) possible-d-seps)
 		    (setf (gethash xy-key all-paths) xy-paths)
 		    (loop
 		       for z on (remove (cdr xy-pair)
@@ -289,7 +318,7 @@
 		 do
 		    (return-from in-sepset-p t))
 	     nil)
-	   (n-orient-unshielded-triples (sepsets-hash)
+	   (n-orient-unshielded-triples (net sepsets-hash)
 	     (loop
 		for a being the hash-keys of (cdr net)
 		using (hash-value a-children)
@@ -315,7 +344,7 @@
 			      (setf (gethash a b-children) "<--")
 			      (setf (gethash b c-children) "-->")
 			      (setf (gethash c b-children) "<--"))))))
-	   (directed-path-p (path)
+	   (directed-path-p (net path)
 	     (loop
 		with adjacencies = (cdr net)
 		with edge
@@ -326,7 +355,7 @@
 		  (when (not (equal #\> (aref edge 2)))
 		    (return-from directed-path-p nil)))
 	     t)
-	   (colliding-path-p (path c)
+	   (colliding-path-p (net path c)
 	     (loop
 	       named check
 	       with adjacencies = (cdr net)
@@ -338,7 +367,7 @@
 		 do
 		    (return-from check nil))
 	     t)
-	   (definite-discriminating-path-p (path)
+	   (definite-discriminating-path-p (net path)
 	     (let* ((triple (last path 3))
 		    (d (first triple))
 		    (b (second triple))
@@ -348,9 +377,9 @@
 	       (if (and (triangle-p net d c b)
 			(collider-p net d c b)
 			(not (gethash a (gethash c adjacencies)))
-			(colliding-path-p (butlast path) c))
+			(colliding-path-p net (butlast path) c))
 		 t)))
-	   (orient-interpath-edges-p (path underlined-vars-hash sepsets-hash)
+	   (orient-interpath-edges-p (net path underlined-vars-hash sepsets-hash)
 	     (loop
 	       with oriented-p = nil
 	       with adjacencies = (cdr net)
@@ -392,7 +421,7 @@
 					     (format nil "~a->" (aref (gethash d (gethash c adjacencies)) 0)))
 				       (setf (gethash c (gethash d adjacencies))
 					     (format nil "<-~a" (aref (gethash c (gethash d adjacencies )) 2))))
-				      ((definite-discriminating-path-p (append path (list c)))
+				      ((definite-discriminating-path-p net (append path (list c)))
 				       (cond ((member b (gethash (format nil "~a,~a" a c) sepsets-hash))
 					      (setf (gethash b underlined-vars-hash)
 						    (cons (list d b c) (gethash b underlined-vars-hash))))
@@ -408,7 +437,7 @@
 						(setf cb-edge (format nil "~a->" (aref cb-edge 0)))))))))))
 	       finally
 		  (return oriented-p)))
-	   (n-final-orientation (network-paths underlined-vars-hash sepsets-hash)
+	   (n-final-orientation (net network-paths underlined-vars-hash sepsets-hash)
 	     (loop
 	       with oriented-p = nil
 	       do
@@ -430,24 +459,34 @@
 		       (loop
 			 for path in ab-paths
 			 do
-			    (cond ((and ab-edge (directed-path-p path))
+			    (cond ((and ab-edge (directed-path-p net path))
 				   (setf ab-edge (format nil "~a->" (aref ab-edge 0)))
 				   (setf ba-edge (format nil "<-~a" (aref ba-edge 2)))
 				   (setq oriented-p t))
 				  (t
-				   (setq oriented-p (orient-interpath-edges-p path underlined-vars-hash sepsets-hash))))))
+				   (setq oriented-p (orient-interpath-edges-p net path underlined-vars-hash sepsets-hash))))))
 	       until (not oriented-p))))
     (let ((possible-d-seps (make-hash-table :test #'equal))
-	  (underlined-vars-hash (make-hash-table :test #'equal)))
+	  (underlined-vars-hash (make-hash-table :test #'equal))
+	  (net (generate-network (teddy/data-frame::get-column-names df))))
+      (format t "~%network: ~A" net)
+      (break)
       (multiple-value-bind (net1 sepsets-hash)
 	  (n-adjacency-search net df)
 	(declare (ignore net1))
-	(n-orient-unshielded-triples sepsets-hash)
+	(n-orient-unshielded-triples net sepsets-hash)
 	(multiple-value-bind (net2 sepsets-h)
-	    (n-remove-d-separated-edges possible-d-seps sepsets-hash)
+	    (n-remove-d-separated-edges net possible-d-seps sepsets-hash)
 	  (declare (ignore net2))
 	  (setq sepsets-hash sepsets-h))
-	(n-orient-edges-ambiguously)
-	(n-orient-colliders sepsets-hash)
-	(n-final-orientation (get-network-paths) underlined-vars-hash sepsets-hash))
+	(n-orient-edges-ambiguously net)
+	(n-orient-colliders net sepsets-hash)
+	(n-final-orientation net (get-network-paths net) underlined-vars-hash sepsets-hash))
       net)))
+
+#| TESTS
+(let (df)
+  (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_FrozenLake-v1_data.csv")) 
+  (setq df (teddy/data-frame:slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
+  (n-fci df))
+|#

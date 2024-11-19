@@ -389,7 +389,7 @@
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
 ;; nbr-func-args = a list of arguments for neighborhood function
-(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) (edge-type '->)) &body body)
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t)) &body body)
   (let ((hash (gensym))
 	(args (gensym))
 	(inv-hash (gensym))
@@ -399,6 +399,7 @@
 	(cpd-arr (gensym))
 	(factors (gensym))
 	(edges (gensym))
+	(edge-type (gensym))
 	(recurse-p (gensym))
 	(invariant-list (gensym))
 	(new-body (gensym)))
@@ -424,7 +425,12 @@
 					       (make-bn-node (third ,args))))
 					(t
 					 (error "Expected assignment to list in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
-				 ((equal (symbol-name '->) (symbol-name (second ,args)))
+				 ((or (equal "---" (symbol-name (second ,args)))
+				      (equal "-->" (symbol-name (second ,args))))
+				  (cond ((null ,edge-type)
+					 (setq ,edge-type (symbol-name (second ,args))))
+					((not (equal (second ,args) ,edge-type))
+					 (error "Multigraphs are not supported. Cannot reset edge type from ~A to ~A." ,edge-type (second ,args))))				  
 				  (when (not (gethash (first ,args) ,hash))
 				    (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 				  (cond ((and (symbolp (third ,args))
@@ -436,7 +442,7 @@
 					(t
 					 (raise-identifier-type-error (third ,args)))))
 				 (t
-				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or directed edge." (subseq ,args 0 3) (second ,args))))
+				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or three-part edge with a startpoint, connector, and endpoint." (subseq ,args 0 3) (second ,args))))
 			   (raise-identifier-type-error (first ,args))
 		        
 			   )

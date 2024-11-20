@@ -10,17 +10,17 @@
 ;; sepsets = hash table of sepsets
 ;; xy-key = xy key into sepsets
 ;; yx-key = yx key into sepsets
-(defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key)
+(defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key &key (threshold .05))
   (let (x-var y-var p-value edge-removed-p)
-    (setq x-var (symbol-name (rule-based-cpd-dependent-var (aref (car net) (car xy)))))
-    (setq y-var (symbol-name (rule-based-cpd-dependent-var (aref (car net) (cdr xy)))))
+    (setq x-var (rule-based-cpd-dependent-var (aref (car net) (car xy))))
+    (setq y-var (rule-based-cpd-dependent-var (aref (car net) (cdr xy))))
     (setq p-value (g-squared-test df
 				  x-var
 				  y-var
 				  (mapcar #'(lambda (ele)
-					      (symbol-name (rule-based-cpd-dependent-var (aref (car net) ele))))
+					      (rule-based-cpd-dependent-var (aref (car net) ele)))
 					  z)))
-    (when (< p-value .05)
+    (when (< p-value threshold)
       ;; delete the edge between x and y
       (remhash (cdr xy) (gethash (car xy) (cdr net)))
       (remhash (car xy) (gethash (cdr xy) (cdr net)))
@@ -36,7 +36,7 @@
 
 ;; net = graph
 ;; df = teddy data frame
-(defun n-adjacency-search (net df &key (variables))
+(defun n-adjacency-search (net df)
   (labels ((get-x-y-pairs (adjacencies n)
 	     (loop
 	       with x-y-pairs
@@ -54,7 +54,8 @@
 		  (return x-y-pairs)))
 	   (n-subsets-helper (lst n acc)
 	     (cond ((= n 0)
-		    (list (reverse acc)))
+		    (when acc
+		      (list (reverse acc))))
 		   ((null lst)
 		    nil)                 
 		   (t
@@ -89,14 +90,13 @@
 	      (loop
 		with p-value and edge-removed-p = nil
 		with subsets = (n-subsets adj-list n) and x-var and y-var
-		 do
+		while (and subsets (not edge-removed-p))
+		do
 		   (multiple-value-bind (status sepsets-hash)
 		       (n-test-conditional-independence net df xy (car subsets) sepsets xy-key yx-key)
 		     (setq edge-removed-p status)
 		     (setq sepsets sepsets-hash))
-		   (setq subsets (rest subsets))
-		until (or (null subsets)
-			  edge-removed-p)))
+		   (setq subsets (rest subsets))))
 	 (setq n (+ n 1))
       until (null x-y-pairs)
       finally
@@ -158,12 +158,12 @@
 ;; net = graph
 ;; a = source node
 ;; b = destination node
-(defun get-all-paths-from-a-to-b (net a b)
+(defun get-all-paths-from-a-to-b (net a b &key (min-path-length 3))
   (labels ((path-worker (x visited path acc)
 	     (setf (gethash x visited) t)
 	     (setq path (cons x path))
 	     (if (equal x b)
-		 (when (>= (length path) 3)
+		 (when (>= (length path) min-path-length)
 		   (setq acc (cons (reverse path) acc)))
 		 (loop
 		    for i being the hash-keys of (gethash x (cdr net))
@@ -228,10 +228,13 @@
 		    do
 		       (loop
 			 for z being the hash-keys of (gethash y adjacencies)
-			 do
-			    (setq x-y-z-pairs (cons (list x y z) x-y-z-pairs)))
-		    finally
-		       (return x-y-z-pairs))))
+			 when (and (not (equal x y))
+				   (not (equal x z))
+				   (not (equal y z)))
+			   do
+			      (setq x-y-z-pairs (cons (list x y z) x-y-z-pairs))))
+	       finally
+		  (return x-y-z-pairs)))
 	   (n-orient-edges-ambiguously (net)
 	     (loop
 	       for x being the hash-keys of (cdr net)
@@ -243,23 +246,23 @@
 		       (setf (gethash y x-children) "o-o"))))
 	   (n-orient-colliders (net sepsets)
 	     (loop
-		with adjacencies = (cdr net)
-		with xy-edge and zy-edge and yx-edge and yz-edge
-		with sepset-key
-		with triples = (get-x-y-z-triples net)
-		for (x y z) in triples
-		when (potential-collider-p net x y z)
-		do
-		  (setq sepset-key (format nil "~d,~d" x z))
-		  (when (not (member y (gethash sepset-key sepsets)))
-		    (setq xy-edge (gethash y (gethash x adjacencies)))
-		    (setq yx-edge (gethash x (gethash y adjacencies)))
-		    (setq zy-edge (gethash y (gethash z adjacencies)))
-		    (setq yz-edge (gethash z (gethash y adjacencies)))
-		    (setf xy-edge (format nil "~a~a" (aref xy-edge 0) "->"))
-		    (setf yx-edge (format nil "~a~a" "<-" (aref yx-edge 2)))
-		    (setf zy-edge (format nil "~a~a" (aref zy-edge 0) "->"))
-		    (setf yz-edge (format nil "~a~a" "<-" (aref yz-edge 2))))))
+	       with adjacencies = (cdr net)
+	       with xy-edge and zy-edge and yx-edge and yz-edge
+	       with sepset-key
+	       with triples = (get-x-y-z-triples net)
+	       for (x y z) in triples
+	       when (potential-collider-p net x y z)
+		 do
+		    (setq sepset-key (format nil "~d,~d" x z))
+		    (when (not (in-sepset-p y  (gethash sepset-key sepsets)))
+		      (setq xy-edge (gethash y (gethash x adjacencies)))
+		      (setq yx-edge (gethash x (gethash y adjacencies)))
+		      (setq zy-edge (gethash y (gethash z adjacencies)))
+		      (setq yz-edge (gethash z (gethash y adjacencies)))
+		      (setf xy-edge (format nil "~a~a" (aref xy-edge 0) "->"))
+		      (setf yx-edge (format nil "~a~a" "<-" (aref yx-edge 2)))
+		      (setf zy-edge (format nil "~a~a" (aref zy-edge 0) "->"))
+		      (setf yz-edge (format nil "~a~a" "<-" (aref yz-edge 2))))))
 	   (get-network-paths (net)
 	     (loop
 	       with paths-hash = (make-hash-table :test #'equal)
@@ -312,9 +315,8 @@
 		  (return (values net sepsets))))
 	   (in-sepset-p (var sepsets)
 	     (loop
-		for key being the hash-keys of sepsets
-		using (hash-value s)
-	       when (member var s)
+	       for sep in sepsets
+	       when (member var sep)
 		 do
 		    (return-from in-sepset-p t))
 	     nil)
@@ -388,7 +390,7 @@
 	       for y on (rest x)
 	       for z on (rest y)
 	       do
-		  (cond ((and (equal #\> (aref (gethash (car y) (gethash (car x) adjacencies))))
+		  (cond ((and (equal #\> (aref (gethash (car y) (gethash (car x) adjacencies)) 2))
 			      (member (list (car x) (car y) (car z)) (gethash (car y) underlined-vars-hash)
 				      :test #'equal))
 			 (setf (gethash (car z)
@@ -451,8 +453,8 @@
 		      using (hash-value ab-paths)
 		    do
 		       (setq ba-key (split-sequence:split-sequence #\, ab-key))
-		       (setq b (second ba-key))
-		       (setq a (first ba-key))
+		       (setq b (parse-integer (second ba-key)))
+		       (setq a (parse-integer (first ba-key)))
 		       (setq ba-key (format nil "~d,~d" (second ba-key) (first ba-key)))
 		       (setq ab-edge (gethash b (gethash a adjacencies)))
 		       (setq ba-edge (gethash a (gethash b adjacencies)))
@@ -469,24 +471,43 @@
     (let ((possible-d-seps (make-hash-table :test #'equal))
 	  (underlined-vars-hash (make-hash-table :test #'equal))
 	  (net (generate-network (teddy/data-frame::get-column-names df))))
-      (format t "~%network: ~A" net)
-      (break)
+      (when nil
+	(format t "~%network: ~A" (cdr net))
+	(break))
       (multiple-value-bind (net1 sepsets-hash)
 	  (n-adjacency-search net df)
 	(declare (ignore net1))
+	(when nil
+	  (format t "~%network after adjacency search: ~A" (cdr net))
+	  (break))
 	(n-orient-unshielded-triples net sepsets-hash)
+	(when nil
+	  (format t "~%network after orienting unshielded triples: ~A" (cdr net))
+	  (break))
 	(multiple-value-bind (net2 sepsets-h)
 	    (n-remove-d-separated-edges net possible-d-seps sepsets-hash)
 	  (declare (ignore net2))
+	  (when nil
+	    (format t "~%network after removing d-separated-edges: ~A" (cdr net))
+	    (break))
 	  (setq sepsets-hash sepsets-h))
 	(n-orient-edges-ambiguously net)
+	(when nil
+	  (format t "~%network after resetting network edges to o-o: ~A" (cdr net))
+	  (break))
 	(n-orient-colliders net sepsets-hash)
-	(n-final-orientation net (get-network-paths net) underlined-vars-hash sepsets-hash))
+	(when t
+	  (format t "~%network after orienting collider edges: ~A" (cdr net))
+	  (break))
+	(n-final-orientation net (get-network-paths net) underlined-vars-hash sepsets-hash)
+	(when t
+	  (format t "~%network after the final orientation rule: ~A" (cdr net))
+	  (break)))
       net)))
 
 #| TESTS
 (let (df)
   (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_FrozenLake-v1_data.csv")) 
-  (setq df (teddy/data-frame:slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
+  (setq df (teddy/data-frame::slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
   (n-fci df))
 |#

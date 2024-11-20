@@ -93,11 +93,11 @@
 ;; zs = column names
 (defun g-squared-test (df x y zs)
   (let ((smoothing 0)
-	(x-vals (remove-duplicates (teddy/data-frame::get-column df x :as :list) :test #'equal))
-	(y-vals (remove-duplicates (teddy/data-frame::get-column df y :as :list) :test #'equal))
+	(x-vals (remove-duplicates (coerce (teddy/data-frame::get-column df x) 'list) :test #'equal))
+	(y-vals (remove-duplicates (coerce (teddy/data-frame::get-column df y) 'list) :test #'equal))
 	(z-vals (loop
 		   for z in zs
-		   nconcing (remove-duplicates (teddy/data-frame::get-column df z :as :list) :test #'equal) into vals
+		   nconcing (remove-duplicates (coerce (teddy/data-frame::get-column df z) 'list) :test #'equal) into vals
 		   finally
 		     (return vals)))
 	(x-idx (teddy/data-frame::column-idx df x))
@@ -164,7 +164,9 @@
 					    (+ nyz smoothing))))
 				 0)))))    
     (setq dof (* (- (length x-vals) 1) (- (length y-vals) 1) (length z-vals)))
-    (- 1 (statistics:chi-square-cdf (* 2d0 (+ sum (if (= sum 0) .0001d0 0d0))) dof))))
+    (if (= dof 0)
+	1
+	(- 1 (statistics:chi-square-cdf (* 2d0 (+ sum (if (= sum 0) .0001d0 0d0))) dof)))))
 
 #| TESTS
 (hems:g-squared-test

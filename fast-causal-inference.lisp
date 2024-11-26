@@ -10,17 +10,20 @@
 ;; sepsets = hash table of sepsets
 ;; xy-key = xy key into sepsets
 ;; yx-key = yx key into sepsets
-(defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key &key (threshold .05))
+(defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key &key (test #'g-squared-test) (threshold .05))
   (let (x-var y-var p-value edge-removed-p)
     (setq x-var (rule-based-cpd-dependent-var (aref (car net) (car xy))))
     (setq y-var (rule-based-cpd-dependent-var (aref (car net) (cdr xy))))
-    (setq p-value (g-squared-test df
-				  x-var
-				  y-var
-				  (mapcar #'(lambda (ele)
-					      (rule-based-cpd-dependent-var (aref (car net) ele)))
-					  z)))
-    (when (< p-value threshold)
+    (when (and (not (equal test #'g-squared-test))
+	       (not (equal test #'chi-squared-test)))
+      (error "Given statistical independence test, ~A, is not supported. Input must be eitehr #'g-squared-test or #'chi-squared-test." test))
+    (setq p-value (funcall test df
+			   x-var
+			   y-var
+			   (mapcar #'(lambda (ele)
+				       (rule-based-cpd-dependent-var (aref (car net) ele)))
+				   z)))
+    (when (> p-value threshold)
       ;; delete the edge between x and y
       (remhash (cdr xy) (gethash (car xy) (cdr net)))
       (remhash (car xy) (gethash (cdr xy) (cdr net)))
@@ -29,7 +32,7 @@
       (setf (gethash yx-key sepsets)
 	    (cons z (gethash yx-key sepsets)))
       (setq edge-removed-p t))
-    (values edge-removed-p sepsets)))
+    (values edge-removed-p p-value sepsets)))
 
 #| Perform adjacency search through a fully connected undirected graph by sequentially removing edges.
    Returns a destructively modified graph (<array of cpds> . <2d hash table of edges>). |#
@@ -90,11 +93,13 @@
 	      (loop
 		with p-value and edge-removed-p = nil
 		with subsets = (n-subsets adj-list n) and x-var and y-var
-		while (and subsets (not edge-removed-p))
+		while (and subsets (gethash (cdr xy) (gethash (car xy) adjacencies)))
 		do
-		   (multiple-value-bind (status sepsets-hash)
-		       (n-test-conditional-independence net df xy (car subsets) sepsets xy-key yx-key)
+		   (multiple-value-bind (status p-value sepsets-hash)
+		       (n-test-conditional-independence net df xy (car subsets) sepsets xy-key yx-key :test #'g-squared-test)
 		     (setq edge-removed-p status)
+		     (when nil
+		       (format t "~%~%xy-pair: ~A~%n: ~d~%subset, T, of adjacencies(X)\{Y}:~%~S~%net:~%~S~%edge removed?: ~S~%p-value: ~d" xy n (car subsets) (cdr net) edge-removed-p p-value))
 		     (setq sepsets sepsets-hash))
 		   (setq subsets (rest subsets))))
 	 (setq n (+ n 1))
@@ -129,7 +134,11 @@
 	(zx-edge (gethash x (gethash z (cdr net))))
 	(zy-edge (gethash y (gethash z (cdr net))))
 	(yz-edge (gethash z (gethash y (cdr net)))))
-    (when (and (equal #\> (aref xy-edge 2))
+    (when (and (not (null xy-edge))
+	       (not (null yx-edge))
+	       (not (null zy-edge))
+	       (not (null yz-edge))
+	       (equal #\> (aref xy-edge 2))
 	       (equal #\< (aref yx-edge 0))
 	       (equal #\> (aref zy-edge 2))
 	       (equal #\< (aref yz-edge 0))
@@ -152,7 +161,7 @@
 	       (null zx-edge))
       t)))
 
-#| Get all paths from a to b.
+#| Get all undirected paths from a to b.
    Returns a list of paths. Each path is a list of vertices. |#
 
 ;; net = graph
@@ -175,7 +184,7 @@
 	     acc))
     (path-worker a (make-hash-table) nil nil)))
 
-(defun n-fci (df)
+(defun fci (df)
   (labels ((generate-network (variables) 
 	     (let (vars program)
 	       (if variables
@@ -286,6 +295,7 @@
 		   for path in a-b-paths
 		   do
 		      (loop
+			named subpath-check
 			for x on path
 			for y on (rest x)
 			for z on (rest y)
@@ -293,25 +303,25 @@
 				 (triangle-p net (car x) (car y) (car z)))
 			  do
 			     (setf (gethash d-sep-key possible-d-seps)
-				   (cons y (gethash d-sep-key possible-d-seps))))))
-	       (values (gethash d-sep-key possible-d-seps) a-b-paths possible-d-seps)))
+				   (cons (car y) (gethash d-sep-key possible-d-seps))))))
+	       (gethash d-sep-key possible-d-seps)))
 	   (n-remove-d-separated-edges (net possible-d-seps sepsets)
 	     (loop
-	       with xy-key and yx-key
-	       with all-paths = (make-hash-table :test #'equal)
+	       with xy-key and yx-key and xy-seps
 	       for xy-pair in (get-x-y-pairs net)
-		do
+	       do
 		  (setq xy-key (format nil "~d,~d" (car xy-pair) (cdr xy-pair)))
 		  (setq yx-key (format nil "~d,~d" (cdr xy-pair) (car xy-pair)))
-		  (multiple-value-bind (xy-seps xy-paths)
-		      (get-possible-d-sep net (car xy-pair) (cdr xy-pair) possible-d-seps)
-		    (setf (gethash xy-key all-paths) xy-paths)
-		    (loop
-		       for z on (remove (cdr xy-pair)
-					(remove (car xy-pair) xy-seps))
-		       do
-			 (n-test-conditional-independence net df xy-pair z sepsets xy-key yx-key)))
-		finally
+		  (setq xy-seps (get-possible-d-sep net (car xy-pair) (cdr xy-pair) possible-d-seps))
+		  (when nil
+		    (format t "~%~%xy-pair: ~S~%xy-seps:~%~S" xy-pair xy-seps))
+		  (loop
+		    for z on (set-difference xy-seps (list (car xy-pair) (cdr xy-pair)))
+		    do
+		       (when nil
+			 (format t "~%z:~%~S" z))
+		       (n-test-conditional-independence net df xy-pair z sepsets xy-key yx-key))
+	       finally
 		  (return (values net sepsets))))
 	   (in-sepset-p (var sepsets)
 	     (loop
@@ -381,7 +391,7 @@
 			(not (gethash a (gethash c adjacencies)))
 			(colliding-path-p net (butlast path) c))
 		 t)))
-	   (orient-interpath-edges-p (net path underlined-vars-hash sepsets-hash)
+	   (n-orient-interpath-edges-p (net path underlined-vars-hash sepsets-hash)
 	     (loop
 	       with oriented-p = nil
 	       with adjacencies = (cdr net)
@@ -415,7 +425,7 @@
 					     (format nil "~a->" (aref (gethash b (gethash d adjacencies)) 0)))
 				       (setf (gethash d (gethash b adjacencies))
 					     (format nil "<-~a" (aref (gethash d (gethash b adjacencies)) 2))))
-				      ((and (equal #\> (aref (gethash b (gethash c adjacencies))))
+				      ((and (equal #\> (aref (gethash b (gethash c adjacencies)) 2))
 					    (equal "-->" (gethash d (gethash b adjacencies)))
 					    (equal #\o (aref (gethash c (gethash d adjacencies)) 0)))
 				       (setq oriented-p t)
@@ -466,7 +476,7 @@
 				   (setf ba-edge (format nil "<-~a" (aref ba-edge 2)))
 				   (setq oriented-p t))
 				  (t
-				   (setq oriented-p (orient-interpath-edges-p net path underlined-vars-hash sepsets-hash))))))
+				   (setq oriented-p (n-orient-interpath-edges-p net path underlined-vars-hash sepsets-hash))))))
 	       until (not oriented-p))))
     (let ((possible-d-seps (make-hash-table :test #'equal))
 	  (underlined-vars-hash (make-hash-table :test #'equal))
@@ -496,11 +506,11 @@
 	  (format t "~%network after resetting network edges to o-o: ~A" (cdr net))
 	  (break))
 	(n-orient-colliders net sepsets-hash)
-	(when t
+	(when nil
 	  (format t "~%network after orienting collider edges: ~A" (cdr net))
 	  (break))
 	(n-final-orientation net (get-network-paths net) underlined-vars-hash sepsets-hash)
-	(when t
+	(when nil
 	  (format t "~%network after the final orientation rule: ~A" (cdr net))
 	  (break)))
       net)))
@@ -509,5 +519,5 @@
 (let (df)
   (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_FrozenLake-v1_data.csv")) 
   (setq df (teddy/data-frame::slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
-  (n-fci df))
+  (hems:fci df))
 |#

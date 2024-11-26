@@ -68,7 +68,7 @@
 	   #:compute-network-concentration
 	   #:make-temporal-episode-retrieval-cue
 	   #:fges
-	   #:n-fci
+	   #:fci
 	   #:read-csv
 	   #:g-squared-test))
 

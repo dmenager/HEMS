@@ -3,7 +3,7 @@
   :version "0.0.1"
   :author "David H. Menager <dhmenager@gmail.com>"
   :license "MIT"
-  :depends-on ("alexandria" "split-sequence" "teddy" "uiop" "cl-ppcre")
+  :depends-on ("alexandria" "split-sequence" "teddy" "uiop" "cl-ppcre" "lhstats")
   :components((:file "package")
 	      (:file "ep-log" :depends-on ("package"))
 	      (:file "csv-utils" :depends-on ("package"))

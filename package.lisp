@@ -70,6 +70,9 @@
 	   #:fges
 	   #:fci
 	   #:read-csv
+	   #:get-row
+	   #:get-rows
+	   #:n-format-df-column-names
 	   #:g-squared-test))
 
 (in-package :hems)

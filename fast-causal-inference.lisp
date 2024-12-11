@@ -517,7 +517,10 @@
 
 #| TESTS
 (let (df)
-  (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1/ppo_FrozenLake-v1_data.csv")) 
+  (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv")) 
   (setq df (teddy/data-frame::slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
   (hems:fci df))
+
+(defdf df* (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
+(setf df* (ls-user:remove-columns df* '("Episode_Number" "Timestep")))
 |#

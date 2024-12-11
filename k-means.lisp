@@ -5,11 +5,11 @@
 ;; p1 = point 1
 ;; p2 = point 2
 (defun distance (p1 p2)
-  (sqrt (reduce #'+ (mapcar #'(lambda (e1 e2)
+  (sqrt (reduce #'+ (map 'list #'(lambda (e1 e2)
 				(expt (- e1 e2) 2))
 			    p1 p2))))
 
-;; df = teddy dataframe
+;; df = lisp-stat dataframe
 ;; num-clusters = number of clusters
 (defun k-means (df num-clusters)
   (labels ((argmax (lst)
@@ -24,20 +24,9 @@
 		    (setq am j)
 	       finally
 		  (return am)))
-	   (get-teddy-df-row (idx)
-	     (loop
-	       named finder
-	       with it = (teddy/data-frame:make-iterator df)
-	       with i = 0
-	       for row = (funcall it)
-	       do
-		  (when (= i idx)
-		    (return-from finder row))
-		  (incf i)))
-	   (initialize ()
+	   (initialize (df-name)
 	     (let ((centroids))
-	       (setq centroids (cons (get-teddy-df-row
-				      (random (teddy/data-frame::num-rows df)))
+	       (setq centroids (cons (get-row df-name (random (ls-user:nrow df)))
 				     centroids))
 	       (loop
 		 with next-centroid
@@ -48,22 +37,20 @@
 		    (format t "~%~%cid: ~d~%dist: ~S" cid dist)
 		    (loop
 		      with d = most-positive-fixnum
-		      with iter = (teddy/data-frame:make-iterator df)
-		      for point = (funcall iter)
-		      when (numberp point)
-			do
+		      for point being the elements of (ls-user:rows df)
+		      do
 			   (format t "~%point: ~S" point)
 			   (loop
-			     for c in centroids
+			     for c being the elements of centroids
 			     do
 				(format t "~%centroid: ~S" c)
 				(setq d (min d (distance point c))))
 			   (setq dist (cons d dist)))
-		    (setq next-centroid (get-teddy-df-row (argmax dist)))
+		    (setq next-centroid (get-row df-name (argmax dist)))
 		    (setq centroids (cons next-centroid centroids))
 		    (setq dist nil))
 	       centroids)))
-    (initialize)))
+    (initialize "df")))
 
 #| TESTS 
 (let (df)
@@ -74,14 +61,12 @@
 |#
 
 #|
-(ql:quickload :lisp-stat)
-(ql:quickload :cl-ppcre)
-(ql:quickload :sqldf)
 (ql:quickload :hems)
 (ls-user:defdf df (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
 (setf df (ls-user:remove-columns df '(EPISODE-NUMBER TIMESTEP)))
 (hems:n-format-df-column-names df)
-(ls-user:column-names df)
+(setq df (ls-user:filter-rows df '(numberp action)))
+(k-means df 2)
 (hems:get-row "df" 10)
 (hems:get-rows "df" 10 20)
 |#

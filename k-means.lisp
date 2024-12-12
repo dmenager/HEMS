@@ -26,7 +26,7 @@
 		  (return am)))
 	   (initialize (df-name)
 	     (let ((centroids))
-	       (setq centroids (cons (get-row df-name (random (ls-user:nrow df)))
+	       (setq centroids (cons (aref (ls-user:rows (get-row df-name (random (ls-user:nrow df)))) 0)
 				     centroids))
 	       (loop
 		 with next-centroid
@@ -46,7 +46,9 @@
 				(format t "~%centroid: ~S" c)
 				(setq d (min d (distance point c))))
 			   (setq dist (cons d dist)))
-		    (setq next-centroid (get-row df-name (argmax dist)))
+		    (setq next-centroid (aref (ls-user:rows
+					       (get-row df-name (argmax dist)))
+					      0))
 		    (setq centroids (cons next-centroid centroids))
 		    (setq dist nil))
 	       centroids)))
@@ -63,9 +65,10 @@
 #|
 (ql:quickload :hems)
 (ls-user:defdf df (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
-(setf df (ls-user:remove-columns df '(EPISODE-NUMBER TIMESTEP)))
+(setf df (ls-user:remove-columns df '(EPISODE-NUMBER TIMESTEP hidden-state observation)))
 (hems:n-format-df-column-names df)
 (setq df (ls-user:filter-rows df '(numberp action)))
+
 (k-means df 2)
 (hems:get-row "df" 10)
 (hems:get-rows "df" 10 20)

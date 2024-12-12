@@ -12,8 +12,8 @@
 ;; yx-key = yx key into sepsets
 (defun n-test-conditional-independence (net df xy z sepsets xy-key yx-key &key (test #'g-squared-test) (threshold .05))
   (let (x-var y-var p-value edge-removed-p)
-    (setq x-var (rule-based-cpd-dependent-var (aref (car net) (car xy))))
-    (setq y-var (rule-based-cpd-dependent-var (aref (car net) (cdr xy))))
+    (setq x-var (intern (rule-based-cpd-dependent-var (aref (car net) (car xy)))))
+    (setq y-var (intern (rule-based-cpd-dependent-var (aref (car net) (cdr xy)))))
     (when (and (not (equal test #'g-squared-test))
 	       (not (equal test #'chi-squared-test)))
       (error "Given statistical independence test, ~A, is not supported. Input must be eitehr #'g-squared-test or #'chi-squared-test." test))
@@ -21,7 +21,7 @@
 			   x-var
 			   y-var
 			   (mapcar #'(lambda (ele)
-				       (rule-based-cpd-dependent-var (aref (car net) ele)))
+				       (intern (rule-based-cpd-dependent-var (aref (car net) ele))))
 				   z)))
     (when (> p-value threshold)
       ;; delete the edge between x and y
@@ -189,13 +189,13 @@
 	     (let (vars program)
 	       (if variables
 		   (setq vars variables)
-		   (setq vars (subseq (teddy/data-frame::get-column-names df) 1)))
+		   (setq vars (ls-user:keys df)))
 	       (loop
 		 for v being the elements of vars
 		 for i from 0
 		 do
 		    (setq program (concatenate 'list
-					       program `(,(intern (format nil "C~d" i)) = (percept-node ,(intern v) :value "T")))))
+					       program `(,(intern (format nil "C~d" i)) = (percept-node ,v :value "T")))))
 	       (loop
 		 for v1 being the elements of vars
 		 for i from 0
@@ -480,7 +480,7 @@
 	       until (not oriented-p))))
     (let ((possible-d-seps (make-hash-table :test #'equal))
 	  (underlined-vars-hash (make-hash-table :test #'equal))
-	  (net (generate-network (teddy/data-frame::get-column-names df))))
+	  (net (generate-network (ls-user:keys df))))
       (when nil
 	(format t "~%network: ~A" (cdr net))
 	(break))
@@ -516,10 +516,11 @@
       net)))
 
 #| TESTS
-(let (df)
-  (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv")) 
-  (setq df (teddy/data-frame::slice df :columns '("HIDDEN_STATE" "OBSERVATION" "ACTION" "REWARDS")))
-  (hems:fci df))
+(ql:quickload :hems)
+(ls-user:defdf df (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
+(hems:n-format-df-column-names df)
+(setq df (ls-user:remove-columns df '(episode_number timestep)))
+(hems:fci df)
 
 (defdf df* (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
 (setf df* (ls-user:remove-columns df* '("Episode_Number" "Timestep")))

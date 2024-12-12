@@ -25,3 +25,18 @@
     do
        (setq new-col (intern (cl-ppcre:regex-replace-all "-" (symbol-name col) "_")))
        (ls-user:rename-column! df new-col col)))
+
+#|Return the index of a column in a dataframe. Returns -1 if not found.|#
+
+;; df = lisp-stat df
+;; col = column name in df
+(defun col-index (df col)
+  (loop
+    named finder
+    for c being the elements of (ls-user:keys df)
+    for i from 0
+    when (equal c col)
+      do
+	 (return-from finder i)
+    finally
+       (return-from finder -1)))

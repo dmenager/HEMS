@@ -87,23 +87,23 @@
    Null hypothesis: The variables X and Y are conditionally dependent given the variable Z
    Returns scalar p-value  |#
 
-;; df = teddy dataframe
+;; df = lisp-stat dataframe
 ;; x = column name
 ;; y = column name
 ;; zs = column names
 (defun g-squared-test (df x y zs)
   (let ((smoothing 0)
-	(x-vals (remove-duplicates (coerce (teddy/data-frame::get-column df x) 'list) :test #'equal))
-	(y-vals (remove-duplicates (coerce (teddy/data-frame::get-column df y) 'list) :test #'equal))
+	(x-vals (remove-duplicates (coerce (ls-user:column df x) 'list) :test #'equal))
+	(y-vals (remove-duplicates (coerce (ls-user:column df y) 'list) :test #'equal))
 	(z-vals (loop
 		   for z in zs
-		   nconcing (remove-duplicates (coerce (teddy/data-frame::get-column df z) 'list) :test #'equal) into vals
+		   nconcing (remove-duplicates (coerce (ls-user:column df z) 'list) :test #'equal) into vals
 		   finally
 		     (return vals)))
-	(x-idx (teddy/data-frame::column-idx df x))
-	(y-idx (teddy/data-frame::column-idx df y))
+	(x-idx (col-index df x))
+	(y-idx (col-index df y))
 	(z-idxs (mapcar #'(lambda (z)
-			    (teddy/data-frame::column-idx df z))
+			    (col-index df z))
 			zs) )
 	(nxyz-hash (make-hash-table :test #'equal))
 	(nxz-hash (make-hash-table :test #'equal))
@@ -113,16 +113,14 @@
 	(sum 0))
     (loop
       with cur-x and cur-y and cur-z
-      with it = (teddy/data-frame::make-iterator df)
       with nxyz-key and nxz-key and nz-key and nyz-key
-      for row = (funcall it)
-      while row
+      for row being the elements of (ls-user:rows df)
       do
-	 (setq cur-x (nth x-idx row))
-	 (setq cur-y (nth y-idx row))
+	 (setq cur-x (aref row x-idx))
+	 (setq cur-y (aref row y-idx))
 	 (setq cur-z (format nil "(~{~a~^  ~})"
 			     (mapcar #'(lambda (z-idx)
-					 (nth z-idx row))
+					 (aref row z-idx))
 				     z-idxs)))
 	 (setq nxyz-key (format nil "~d,~d,~d" cur-x cur-y cur-z))
 	 (setq nxz-key (format nil "~d,~d" cur-x cur-z))
@@ -172,23 +170,23 @@
    Null hypothesis: The variables X and Y are conditionally dependent given the variable Z
    Returns scalar p-value  |#
 
-;; df = teddy dataframe
+;; df = lisp-stat dataframe
 ;; x = column name
 ;; y = column name
 ;; zs = column names
 (defun chi-squared-test (df x y zs)
   (let ((smoothing 0)
-	(x-vals (remove-duplicates (coerce (teddy/data-frame::get-column df x) 'list) :test #'equal))
-	(y-vals (remove-duplicates (coerce (teddy/data-frame::get-column df y) 'list) :test #'equal))
+	(x-vals (remove-duplicates (coerce (ls-user:column df x) 'list) :test #'equal))
+	(y-vals (remove-duplicates (coerce (ls-user:column df y) 'list) :test #'equal))
 	(z-vals (loop
 		   for z in zs
-		   nconcing (remove-duplicates (coerce (teddy/data-frame::get-column df z) 'list) :test #'equal) into vals
+		   nconcing (remove-duplicates (coerce (ls-user:column df z) 'list) :test #'equal) into vals
 		   finally
 		     (return vals)))
-	(x-idx (teddy/data-frame::column-idx df x))
-	(y-idx (teddy/data-frame::column-idx df y))
+	(x-idx (col-index df x))
+	(y-idx (col-index df y))
 	(z-idxs (mapcar #'(lambda (z)
-			    (teddy/data-frame::column-idx df z))
+			    (col-index df z))
 			zs) )
 	(nxyz-hash (make-hash-table :test #'equal))
 	(nxz-hash (make-hash-table :test #'equal))
@@ -198,16 +196,14 @@
 	(sum 0))
     (loop
       with cur-x and cur-y and cur-z
-      with it = (teddy/data-frame::make-iterator df)
       with nxyz-key and nxz-key and nz-key and nyz-key
-      for row = (funcall it)
-      while row
+      for row being the elements of (ls-user:rows df)
       do
-	 (setq cur-x (nth x-idx row))
-	 (setq cur-y (nth y-idx row))
+	 (setq cur-x (aref row x-idx))
+	 (setq cur-y (aref row y-idx))
 	 (setq cur-z (format nil "(~{~a~^  ~})"
 			     (mapcar #'(lambda (z-idx)
-					 (nth z-idx row))
+					 (aref row z-idx))
 				     z-idxs)))
 	 (setq nxyz-key (format nil "~d,~d,~d" cur-x cur-y cur-z))
 	 (setq nxz-key (format nil "~d,~d" cur-x cur-z))

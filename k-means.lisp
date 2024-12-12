@@ -24,8 +24,21 @@
 		    (setq am j)
 	       finally
 		  (return am)))
+	   (argmin (lst)
+	     (loop
+	       with min = most-positive-fixnum
+	       with am
+	       for i in lst
+	       for j from 0
+	       when (< i min)
+		 do
+		    (setq min i)
+		    (setq am j)
+	       finally
+		  (return am)))
 	   (initialize (df-name)
-	     (let ((centroids))
+	     (let ((centroids)
+		   (clusters (make-hash-table)))
 	       (setq centroids (cons (aref (ls-user:rows (get-row df-name (random (ls-user:nrow df)))) 0)
 				     centroids))
 	       (loop
@@ -34,25 +47,64 @@
 		 for cid from 1 to (- num-clusters 1)
 		 do
 		    (setq dist nil)
-		    (format t "~%~%cid: ~d~%dist: ~S" cid dist)
 		    (loop
 		      with d = most-positive-fixnum
 		      for point being the elements of (ls-user:rows df)
 		      do
-			   (format t "~%point: ~S" point)
-			   (loop
-			     for c being the elements of centroids
-			     do
-				(format t "~%centroid: ~S" c)
-				(setq d (min d (distance point c))))
-			   (setq dist (cons d dist)))
+			 (loop
+			   for c being the elements of centroids
+			   do
+			      (setq d (min d (distance point c))))
+			 (setq dist (cons d dist)))
 		    (setq next-centroid (aref (ls-user:rows
 					       (get-row df-name (argmax dist)))
 					      0))
 		    (setq centroids (cons next-centroid centroids))
 		    (setq dist nil))
-	       centroids)))
-    (initialize "df")))
+	       centroids
+	       (loop
+		 for centroid in centroids
+		 for i from 0
+		 do
+		    (setf (gethash i clusters) nil))
+	       (values centroids clusters)))
+	   (assign-clusters (centroids clusters)
+	     (loop
+	       with dist and cur-cluster
+	       for cur-x being the elements of (ls-user:rows df)
+	       for idx from 0
+	       do
+		  (setq dist nil)
+		  (loop
+		    for i from 0 to (- num-clusters 1)
+		    do
+		       (setq dist (cons (distance cur-x (nth i centroids))
+					dist)))
+		  (setq cur-cluster (argmin dist))
+		  (setf (gethash cur-cluster clusters)
+			(cons cur-x
+			      (gethash cur-cluster clusters))))
+	     (values centroids clusters))
+	   (mean (x)
+	     (/ (reduce #'+ x)
+		(length x)))
+	   (update-clusters (centroids clusters)
+	     (loop
+	       with points and cents
+	       for i from 0 to (- num-clusters 1)
+	       do
+		  (setq points (gethash i clusters))
+		  (when (> (length points) 0)
+		    (setq cents (cons (mean points) cents))
+		    (setf (gethash i clusters) nil))
+	       finally
+		  (setq cents (reverse cents))
+		  (return (values centroids clusters))))
+	   (fit ()
+	     (multiple-value-bind (centroids clusters)
+		 (initialize "df")
+	       )))
+    (fit)))
 
 #| TESTS 
 (let (df)
@@ -69,7 +121,7 @@
 (hems:n-format-df-column-names df)
 (setq df (ls-user:filter-rows df '(numberp action)))
 
-(k-means df 2)
+(hems::k-means df 2)
 (hems:get-row "df" 10)
 (hems:get-rows "df" 10 20)
 |#

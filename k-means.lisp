@@ -48,9 +48,10 @@
 		 do
 		    (setq dist nil)
 		    (loop
-		      with d = most-positive-fixnum
+		      with d
 		      for point being the elements of (ls-user:rows df)
 		      do
+			 (setq d most-positive-fixnum)
 			 (loop
 			   for c being the elements of centroids
 			   do
@@ -63,7 +64,6 @@
 					      0))
 		    (setq centroids (cons next-centroid centroids))
 		    (setq dist nil))
-	       centroids
 	       (loop
 		 for centroid in centroids
 		 for i from 0
@@ -108,8 +108,9 @@
 		  (return (values centroids clusters))))
 	   (pred-cluster (centroids)
 	     (loop
-	       with dist and cluster-assns
+	       with dist and cluster-assns = (make-array (ls-user:nrow df))
 	       for point being the elements of (ls-user:rows df)
+	       for i from 0
 	       do
 		  (setq dist nil)
 		  (loop
@@ -118,12 +119,12 @@
 		       (setq dist (cons (distance point c) dist))
 		    finally
 		       (setq dist (reverse dist)))
-		  (setq cluster-assns (cons (argmin dist) cluster-assns))
+		  (setf (aref cluster-assns i) (argmin dist))
 	       finally
-		  (return (reverse cluster-assns))))
-	   (fit (&key (iter 1000))
+		  (return cluster-assns)))
+	   (fit-predict (&key (iter 1000))
 	     (multiple-value-bind (centroids clusters)
-		 (initialize "df")
+		 (initialize (ls-user:name df))
 	       (loop
 		 for i from 1 to iter
 		 do
@@ -136,25 +137,21 @@
 		      (setq centroids c)
 		      (setq clusters cl))
 		 finally
-		    (return (values centroids clusters (pred-cluster centroids)))))))
-    (fit)))
+		    (return (values centroids (pred-cluster centroids)))))))
+    (fit-predict)))
 
 #| TESTS 
-(let (df)
-  (setq df (hems:read-csv "/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv")) 
-  (setq df (teddy/data-frame::slice df :columns '("ACTION" "REWARDS")))
-  (hems::k-means df 2)
-  )
-|#
-
-#|
 (ql:quickload :hems)
-(ls-user:defdf df (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
+(make-df df "/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv")
 (setf df (ls-user:remove-columns df '(EPISODE-NUMBER TIMESTEP hidden-state observation)))
 (hems:n-format-df-column-names df)
 (setq df (ls-user:filter-rows df '(numberp action)))
-
+(hems:set-df-name df)
+(multiple-value-bind (centroids preds)
 (hems::k-means df 2)
-(hems:get-row "df" 10)
+(declare (ignore centroids))
+(ls-user:add-column! df 'action_reward_rel preds))
+
+(hems:get-row (ls-user:name df) 10)
 (hems:get-rows "df" 10 20)
 |#

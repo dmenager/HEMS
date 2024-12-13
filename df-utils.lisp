@@ -40,3 +40,11 @@
 	 (return-from finder i)
     finally
        (return-from finder -1)))
+
+(defmacro make-df (df path)
+  `(progn
+     (ls-user:defdf ,df (ls-user:read-csv ,(merge-pathnames path)))
+     (setf (data-frame:name ,df) ,(symbol-name df))))
+
+(defmacro set-df-name (df)
+  `(setf (data-frame:name ,df) ,(symbol-name df)))

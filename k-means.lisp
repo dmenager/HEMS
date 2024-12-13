@@ -55,7 +55,9 @@
 			   for c being the elements of centroids
 			   do
 			      (setq d (min d (distance point c))))
-			 (setq dist (cons d dist)))
+			 (setq dist (cons d dist))
+		      finally
+			 (setq dist (reverse dist)))
 		    (setq next-centroid (aref (ls-user:rows
 					       (get-row df-name (argmax dist)))
 					      0))
@@ -76,10 +78,11 @@
 	       do
 		  (setq dist nil)
 		  (loop
-		    for i from 0 to (- num-clusters 1)
+		    for c in centroids
 		    do
-		       (setq dist (cons (distance cur-x (nth i centroids))
-					dist)))
+		       (setq dist (cons (distance cur-x c) dist))
+		    finally
+		       (setq dist (reverse dist)))
 		  (setq cur-cluster (argmin dist))
 		  (setf (gethash cur-cluster clusters)
 			(cons cur-x
@@ -95,15 +98,45 @@
 	       do
 		  (setq points (gethash i clusters))
 		  (when (> (length points) 0)
-		    (setq cents (cons (mean points) cents))
+		    (setq cents (cons (map 'vector #'(lambda (dim)
+						       (mean dim))
+					   points)
+				      cents))
 		    (setf (gethash i clusters) nil))
 	       finally
 		  (setq cents (reverse cents))
 		  (return (values centroids clusters))))
-	   (fit ()
+	   (pred-cluster (centroids)
+	     (loop
+	       with dist and cluster-assns
+	       for point being the elements of (ls-user:rows df)
+	       do
+		  (setq dist nil)
+		  (loop
+		    for c in centroids
+		    do
+		       (setq dist (cons (distance point c) dist))
+		    finally
+		       (setq dist (reverse dist)))
+		  (setq cluster-assns (cons (argmin dist) cluster-assns))
+	       finally
+		  (return (reverse cluster-assns))))
+	   (fit (&key (iter 1000))
 	     (multiple-value-bind (centroids clusters)
 		 (initialize "df")
-	       )))
+	       (loop
+		 for i from 1 to iter
+		 do
+		    (multiple-value-bind (c cl)
+			(assign-clusters centroids clusters)
+		      (setq centroids c)
+		      (setq clusters cl))
+		    (multiple-value-bind (c cl)
+			(update-clusters centroids clusters)
+		      (setq centroids c)
+		      (setq clusters cl))
+		 finally
+		    (return (values centroids clusters (pred-cluster centroids)))))))
     (fit)))
 
 #| TESTS 

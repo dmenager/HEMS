@@ -27,9 +27,10 @@
 (defun mode-update (data clusters k)
   "Update the modes for each cluster."
   (mapcar (lambda (cluster-index)
-            (let ((cluster-data (remove-if-not (lambda (index)
-                                                 (= cluster-index (nth index clusters)))
-                                               (loop for i from 0 below (length data) collect i))))
+            (let ((cluster-data (mapcan (lambda (point c)
+					  (when (= cluster-index c)
+					    (list point)))
+					data clusters)))
               (mapcar (lambda (col)
                         (let ((column-values (mapcar (lambda (row) (nth col row))
                                                      cluster-data)))
@@ -45,14 +46,17 @@
   "Perform clustering on data with k clusters and initial modes."
   (let ((clusters nil)
         (clusters-prev nil))
-    (loop for i from 1 to iterations
-          do (setf clusters (assign-clusters data modes))
-          (when (equal clusters clusters-prev)
-            (return))
-          (setf clusters-prev clusters)
-          (setf modes (mode-update data clusters k)))
+    (loop
+      for i from 1 to iterations
+      do
+	 (setf clusters (assign-clusters data modes))
+         (when (equal clusters clusters-prev)
+           (return))
+         (setf clusters-prev clusters)
+         (setf modes (mode-update data clusters k)))
     (values clusters modes)))
 
-(let ((result (cluster-data *data* *k* *modes* 10)))
-  (format t "Cluster assignments: ~a~%" (first result))
-  (format t "Modes: ~a~%" (second result)))
+(multiple-value-bind (cluster-assns modes)
+    (cluster-data *data* *k* *modes* 10)
+  (format t "Cluster assignments: ~a~%" cluster-assns)
+  (format t "Modes: ~a~%" modes))

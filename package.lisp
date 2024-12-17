@@ -73,6 +73,7 @@
 	   #:get-row
 	   #:get-rows
 	   #:n-format-df-column-names
-	   #:g-squared-test))
+	   #:g-squared-test
+	   #:bn-score))
 
 (in-package :hems)

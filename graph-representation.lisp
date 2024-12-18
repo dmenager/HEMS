@@ -8559,7 +8559,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 						     (return-from local-likelihood 0))
 						   (when nil t
 							 (format t "~%new likelihood: ~d" local-likelihood))
-						   #|
+						#|
 						do
 						   
                                                    (setq theta-mle (rule-probability compatible-rule))
@@ -8806,8 +8806,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 		     (setq num-local-preds (+ num-local-preds 1))
 		     (return-from probber nil)
 		   finally
-		     (setq num-local-preds 0)
-		     (setq q-likelihood (* q-likelihood 0)))))
+		     (setq num-local-preds 0)	
+	     (setq q-likelihood (* q-likelihood 0)))))
 	     (t
 	      (setq kost (cost (aref (car p) p-node)
 			       (if qp (aref (car q) qp) nil)

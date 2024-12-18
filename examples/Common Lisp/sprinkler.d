@@ -5,7 +5,7 @@ double[string][char] P;
 
 immutable VARIATION = true;
 
-static this() {
+void initialize() {
 	// capital letter means true; lowercase means false. Empty if no parents.
 	// e.g. P['W']["rS"] means P(wet=1 | rain=0, sprinkler=1)
 	if (!VARIATION) {
@@ -36,6 +36,10 @@ static this() {
 		// We assume that all the things that cause wet (including the prior) act independently
 		P['W']["RS"] = 1.0 - (1.0 - P['W']["rS"]) * (1.0 - P['W']["Rs"]) * (1.0 - P['W']["rs"]);
 	}
+}
+
+static this() {
+  initialize();
 }
 
 bool zeus_angry() {
@@ -72,9 +76,11 @@ void main() {
 	bool[][] rc = [ null, null ];
 	bool[][] sc = [ null, null ];
 	bool[][][] wc = [ [null,null], [null,null]];
+	uint num_pop = 5;
 	writef( "(ql:quickload :hems)\n" ~
 		"(in-package :hems)\n\n");
-	for (int i = 1; i <= 5; i++) {
+	for (int i = 1; i <= num_pop; i++) {
+	  initialize();
 	  writef(
 		 "(defun build-pop-%s ()\n" ~
 		 "(let (observations)\n" ~
@@ -160,7 +166,27 @@ void main() {
 	}
 	writef("\n");
 	writef( "#| TESTS\n" ~
-		"(load \"sprinkler-example.lisp\")\n" ~
+		"(let ("
+		);
+	for (int i = 1; i <= num_pop; i++)
+	  {
+	    writef( "(obs%s (hems::build-pop-%s))\n", i, i);
+	  }
+	writef(")\n");
+	writef("(hems:load-eltm-from-file \"eltm-pop-1.txt\")\n" ~
+	       "(hems:log-message (list \"MODEL_ID,POPULATION_ID,OBSERVATION_ID,SCORE~%%\") \"model-scores.csv\")\n");
+	for (int i = 1; i <= num_pop; i++)
+	  {
+	    writef("(loop\n" ~
+		   "with score\n");
+	    writef("for obs in obs%s\n", i);
+	    writef("for i from 0\n" ~
+		   "do\n" ~
+		   "(setq score (float (hems:bn-score obs (hems:episode-observation (car hems:eltm*)) (make-hash-table) (make-hash-table) :bic-p nil)))\n");
+	    writef("(hems:log-message (list \"~A,~d,~d,~d~%%\" \"eltm-pop-1\" %s i score) \"model-scores.csv\"))\n\n", i);
+	  }
+	writef(")\n");
+	writef( "(load \"sprinkler-example.lisp\")\n" ~
 		"(hems::example)\n" ~
 		"(hems::H[bn] (car (hems::get-eltm)) (make-hash-table))\n"
 		);

@@ -9930,8 +9930,19 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
 
+#| Score Bayes net, q, on pattern graph using likelihood or BIC |#
+
+;; p = pattern graph
+;; q = base graph
+;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = flag to compute BIC
 (defun bn-score (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
-  (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t))
+  (multiple-value-bind (sol no-matches score)
+      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t)
+    (declare (ignore sol no-matches))
+    score))
 
 #| TESTS
 1) Structure mapping tests

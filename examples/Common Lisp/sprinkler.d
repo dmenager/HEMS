@@ -74,7 +74,7 @@ void main() {
 	bool[][][] wc = [ [null,null], [null,null]];
 	writef( "(ql:quickload :hems)\n" ~
 		"(in-package :hems)\n\n");
-	for(int i = 1; i <= 5; i++) {
+	for (int i = 1; i <= 5; i++) {
 	  writef(
 		 "(defun build-pop-%s ()\n" ~
 		 "(let (observations)\n" ~
@@ -93,10 +93,10 @@ void main() {
 		   "	c2 = (percept-node rain :value \"%s\")\n" ~
 		   "	c3 = (percept-node sprinkler :value \"%s\")\n" ~
 		   "	c4 = (percept-node wet :value \"%s\")\n" ~
-		   "	c1 -> c2\n" ~
-		   "	c2 -> c3\n" ~
-		   "	c2 -> c4\n" ~
-		   "	c3 -> c4)\n",
+		   "	c1 --> c2\n" ~
+		   "	c2 --> c3\n" ~
+		   "	c2 --> c4\n" ~
+		   "	c3 --> c4)\n",
 		   z.tnil, r.tnil, s.tnil, w.tnil);
 	    
 	    zc ~= z;

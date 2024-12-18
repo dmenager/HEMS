@@ -10,3006 +10,3006 @@
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "T")
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
 	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
  observations)
- (save-eltm-to-file eltm* :filename eltm-pop-1)
+ (save-eltm-to-file eltm* :filename "eltm-pop-1.txt")
  (setq eltm* nil)
  observations))
 
@@ -3050,3006 +3050,3006 @@
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
+	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "T")
+	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
 	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
  observations)
- (save-eltm-to-file eltm* :filename eltm-pop-2)
+ (save-eltm-to-file eltm* :filename "eltm-pop-2.txt")
  (setq eltm* nil)
  observations))
 
@@ -6090,3006 +6090,3006 @@
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
+	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
+	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "NIL")
+	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
 	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
  observations)
- (save-eltm-to-file eltm* :filename eltm-pop-3)
+ (save-eltm-to-file eltm* :filename "eltm-pop-3.txt")
  (setq eltm* nil)
  observations))
 
@@ -9130,3006 +9130,3006 @@
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
+	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
 	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
  observations)
- (save-eltm-to-file eltm* :filename eltm-pop-4)
+ (save-eltm-to-file eltm* :filename "eltm-pop-4.txt")
  (setq eltm* nil)
  observations))
 
@@ -12170,3006 +12170,3006 @@
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
+	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
-	c1 = (percept-node zeus_angry :value "T")
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "T")
 	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "T")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "T")
+	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "T")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "NIL")
-	c2 = (percept-node rain :value "NIL")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
-(compile-program
-       nil
-	c1 = (percept-node zeus_angry :value "T")
-	c2 = (percept-node rain :value "T")
-	c3 = (percept-node sprinkler :value "NIL")
-	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "T")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "T")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 (compile-program
        nil
 	c1 = (percept-node zeus_angry :value "NIL")
 	c2 = (percept-node rain :value "NIL")
 	c3 = (percept-node sprinkler :value "NIL")
 	c4 = (percept-node wet :value "NIL")
-	c1 -> c2
-	c2 -> c3
-	c2 -> c4
-	c3 -> c4)
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "T")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "T")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "T")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "T")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
+(compile-program
+       nil
+	c1 = (percept-node zeus_angry :value "NIL")
+	c2 = (percept-node rain :value "NIL")
+	c3 = (percept-node sprinkler :value "NIL")
+	c4 = (percept-node wet :value "NIL")
+	c1 --> c2
+	c2 --> c3
+	c2 --> c4
+	c3 --> c4)
 ))
 ;; insert into event memory
 (map nil #'(lambda (bn)
 	 (new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil))
  observations)
- (save-eltm-to-file eltm* :filename eltm-pop-5)
+ (save-eltm-to-file eltm* :filename "eltm-pop-5.txt")
  (setq eltm* nil)
  observations))
 
@@ -15204,18 +15204,18 @@
 
 #| TESTS
 (load "sprinkler-example.lisp")
-(let ((obs1 (build-pop-1))
-      (obs2 (build-pop-2))
-      (obs3 (build-pop-3))
-      (obs4 (build-pop-4))
-      (obs5 (build-pop-4)))
-  (load-eltm-from-file "eltm-pop-1.txt")
+(let ((obs1 (hems::build-pop-1))
+      (obs2 (hems::build-pop-2))
+      (obs3 (hems::build-pop-3))
+      (obs4 (hems::build-pop-4))
+      (obs5 (hems::build-pop-5)))
+  (hems:load-eltm-from-file "eltm-pop-1.txt")
   (loop
     for obs in obs1
     collect
-    (hems:bn-score obs (car hems:eltm*) (make-hash-table) (make-hash-table) :bic-p nil) into scores
+    (hems:bn-score obs (hems:episode-observation (car hems:eltm*)) (make-hash-table) (make-hash-table) :bic-p nil) into scores
     finally
-       (format t "~%~%model id: ~A~%population id: ~d~%average score: ~d (~d)" "eltm-pop-1" 1 (hems:mean scores) (hems:stdev scores))))
+       (format t "~%~%model id: ~A~%population id: ~d~%average score: ~d (~d)" "eltm-pop-1" 1 (float (hems:mean scores)) (hems:stdev scores))))
   
 (hems::example)
 (hems::H[bn] (car (hems::get-eltm)) (make-hash-table))

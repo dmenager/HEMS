@@ -72,15 +72,15 @@ string tnil(bool a) {
 
 void main() {
 	uint N = 300;
-	bool[] zc = null;
-	bool[][] rc = [ null, null ];
-	bool[][] sc = [ null, null ];
-	bool[][][] wc = [ [null,null], [null,null]];
 	uint num_pop = 5;
 	writef( "(ql:quickload :hems)\n" ~
 		"(in-package :hems)\n\n");
 	for (int i = 1; i <= num_pop; i++) {
 	  initialize();
+	  bool[] zc = null;
+	  bool[][] rc = [ null, null ];
+	  bool[][] sc = [ null, null ];
+	  bool[][][] wc = [ [null,null], [null,null]];
 	  writef(
 		 "(defun build-pop-%s ()\n" ~
 		 "(let (observations)\n" ~
@@ -129,7 +129,7 @@ void main() {
 				   'W' : "wet"
 				   ];
 	  
-	  writef(";; Population distribution:\n");
+	  writef(";; Population ~s distribution:\n", i);
 	  foreach (var, table; P) {
 	    auto keys = table.keys.sort!((a,b) => a > b);
 	    foreach (cond; keys) {

@@ -129,7 +129,7 @@ void main() {
 				   'W' : "wet"
 				   ];
 	  
-	  writef(";; Population ~s distribution:\n", i);
+	  writef(";; Population %s distribution:\n", i);
 	  foreach (var, table; P) {
 	    auto keys = table.keys.sort!((a,b) => a > b);
 	    foreach (cond; keys) {

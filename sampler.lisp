@@ -217,9 +217,17 @@
 ;; output-percepts-p = optional flag to output only the samples from the sensors rather than inferred variables not directly observed
 ;; evidence-bn = evidence for the observation model
 (defun sample (episode &key hidden-state-p output-percepts-p evidence-bn)
-  (if (episode-temporal-p episode)
-      (sample-state-transitions episode hidden-state-p :output-percepts-p output-percepts-p :evidence-bn evidence-bn)
-      (sample-observation episode :output-percepts-p output-percepts-p :evidence-bn evidence-bn)))
+  (let (res)
+    (setq res
+	  (if (episode-temporal-p episode)
+	      (sample-state-transitions episode hidden-state-p :output-percepts-p output-percepts-p :evidence-bn evidence-bn)
+	      (sample-observation episode :output-percepts-p output-percepts-p :evidence-bn evidence-bn)))
+    (loop
+      for slice in res
+      for i from 0
+      do
+      (format t "~%~%time step: ~d" i)
+      (format t "~%    state:~%    ~A~%    observation:~%    ~A~%    action:~%    ~A" (first slice) (second slice) (third slice)))))
 
 (defun py-sample (episode &key hiddenstatep outputperceptsp)
   (sample episode :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp))
@@ -437,11 +445,18 @@
 
 ------------
 (ql:quickload :hems)
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
+(setf *print-circle* nil)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_1/ppo_CliffWalking-v0_data.csv")
 (hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_FrozenLake-v1_data.csv")
+
+;; Get random samples of the learned policy according to the data distribution
 (hems:sample (car (hems:get-eltm)) :hidden-state-p t :output-percepts-p t)
+
+
+;; Condition our random samples because interesting behavior we want to learn might be rare
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
 c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
+--------------------------------------
 (hems::generate-hems-data 2000 t t)
 
 (let (obs-evidence)

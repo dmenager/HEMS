@@ -392,9 +392,9 @@
       (setq cur-act (gensym "ACT-"))
       (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,action)))))
     (when (and observation state)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-st -> ,cur-obs))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
     (when (and observation action)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
     (values state-transitions id-ref-hash cur-obs cur-st cur-act)))
 
 (defun get-model (obs-window eltm observation-reject-list temporal-reject-list bic-p)
@@ -581,7 +581,7 @@
 												  :value ,var))
 		 into program
 	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
-	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) --> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
 	       finally
 		  (when t
 		    (format t "~%~%observation idx: ~d~%action: ~S" j action))
@@ -599,7 +599,7 @@
 												  :value ,var))
 		 into program
 	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) = (relation-node ,(intern (concatenate 'string "NUMBER_" (write-to-string i))) :value ,var)) into program
-	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) -> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
+	       nconcing `(,(intern (concatenate 'string "NUM" (write-to-string i))) --> ,(intern (concatenate 'string "C" (write-to-string i)))) into program
 	       finally
 	          (when t
 		    (format t "~%~%hidden state ~S: ~d~%action: ~S" hidden-state j action)
@@ -611,7 +611,7 @@
 	       (setq print-special* nil))
 	     (when (not (= j 7))
 	       (setq print-special* nil))
-	     ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	     ;;(format t "~%observation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	     (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (when domain
 	       (log-message (list "~A,~d,~d,~d,~d~%" domain (if (episode-p (car eltm*)) (get-num-schemas eltm*) 0) (if (episode-p (car eltm*)) (episode-count (car eltm*)) 0) (- j 1) trajectories) csv))
@@ -723,7 +723,7 @@
 	       (setq print-special* nil))
 	     (when (not (= j 7))
 	       (setq print-special* nil))
-	     ;;(format t "~%obsrvation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
+	     ;;(format t "~%observation bn:~%~A~%state bn:~%~S~%action:~%~S" obs st action)
 	     (new-push-to-ep-buffer :observation obs :state st :action-name action :hidden-state-p hidden-state-p :insertp t :bic-p nil)
 	     (when (equal action "terminal")
 	       (new-push-to-ep-buffer :observation (cons (make-array 0) (make-hash-table)) :state (cons (make-array 0) (make-hash-table)) :action-name "" :hidden-state-p hidden-state-p :insertp t :bic-p t)

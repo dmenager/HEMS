@@ -2,6 +2,8 @@
 
 #| Reference circular structures rather than print them all |#
 (setf *print-circle* t)
+(setf *print-pretty* t)
+(setf *print-lines* nil)
 
 #| Buffer for event cognition |#
 
@@ -601,9 +603,11 @@
 				(= (array-dimension (car base) 0)
 				   (array-dimension (car pattern) 0)
 				   (array-dimension (car (funcall func generalized)) 0)
-				   -1)))
-	   (when nil
-	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%pattern id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
+				   ;;-1
+				   )))
+	   (when nil (not equivalent)
+	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%pattern id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent)
+	     (break))
 	   (cond ((and equivalent (null (cdr x)))
                   (setf (car x) generalized)
                   (values x (third res) (fourth res) nil t reject-list (sixth res) func))
@@ -633,9 +637,11 @@
 				  (= (array-dimension (car base) 0)
 				     (array-dimension (car pattern) 0)
 				     (array-dimension (car (funcall func generalized)) 0)
-				     -1)))
-	     (when nil
-	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%episode id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
+				     ;;-1
+				     )))
+	     (when nil (not equivalent)
+	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%episode id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent)
+	       (break))
 	     (cond ((and equivalent (null (cdr x)))
                     (setf (car x) generalized)
                     (values x cost bindings nil t reject-list num-local-preds func))
@@ -1837,18 +1843,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act))))
 	     (when st
-	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st -> ,cur-obs))))
-	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act)))
 	     (cond (st
 		    (when prev-st
-		      (setq state-transitions (concatenate 'list state-transitions `(,prev-st -> ,cur-st)))))
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st)))))
 		   (t
 		    (when prev-obs
-		      (setq state-transitions (concatenate 'list state-transitions `(,prev-obs -> ,cur-obs))))))
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs))))))
 	     (when prev-act
 	       (if st
-		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-st)))
-		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-obs)))))
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-st)))
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs)))))
 	     (if st
 		 (setq prev-st cur-st)
 		 (setq prev-obs cur-obs))

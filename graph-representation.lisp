@@ -1707,11 +1707,11 @@
   (loop
     with split-rules = nil
     for existing-rule in rules
-    when (and (compatible-rule-p rule existing-rule phi phi)
-	      (or (not (equal (rule-probability rule)
+    when (and (or (not (equal (rule-probability rule)
 			      (rule-probability existing-rule)))
 		  (not (equal (rule-count rule)
-			      (rule-count existing-rule)))))
+			      (rule-count existing-rule))))
+	      (compatible-rule-p rule existing-rule phi phi))
       do
 	 (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
 	   (format t "~%~%existing rule is compatible with new rule.~%Splitting existing rule:")
@@ -8767,65 +8767,69 @@ Roughly based on (Koller and Friedman, 2009) |#
      for (p-node . qp) in n
      do
 	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
-		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))
-		   
-	      (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
-		    (qp-refs (when qp
-			       (mapcan #'(lambda (vvbm)
-					   (when (not (equal "NA" (caar vvbm)))
-					     (list (caar vvbm))))
-				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
-		(loop
-		  named probber
-		  with res and prob
-		  for qp-ref in qp-refs
-		  do
-		     (when nil
-		       (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
-		       ;;(break)
-		       )
-		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
-		     (if res
-			 (setq prob (/ (episode-count (car
-						       (gethash p-ref p-refs-map)))
-				       (episode-count (car
-						       (gethash qp-ref qp-refs-map)))))
-			 (setq prob 0))
-		     (when nil t
-		       (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
-		       (break))
-		   when (and res (>= prob 1/2))
+		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))	       
+	       (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
+		     (qp-refs (when qp
+				(mapcan #'(lambda (vvbm)
+					    (when (not (equal "NA" (caar vvbm)))
+					      (list (caar vvbm))))
+					(gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
+		 (loop
+		   named probber
+		   with res and prob
+		   with max-res = nil and max-prob = 1/2 and best-qp-ref
+		   for qp-ref in qp-refs
 		   do
-		     (setf (gethash p-ref bindings) qp-ref)
-		     (setf (gethash qp-ref q-first-bindings) p-ref)
-		     (setq q-likelihood (* q-likelihood (/ (episode-count (car
-									   (gethash p-ref p-refs-map)))
-							   (episode-count (car
-									   (gethash qp-ref qp-refs-map))))))
-		     ;;(setq q-likelihood (* q-likelihood prob))
-		     (setq num-local-preds (+ num-local-preds 1))
-		     (return-from probber nil)
+		      (when nil
+			(format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
+			;;(break)
+			)
+		      (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
+		      (if res
+			  (setq prob (/ (episode-count (car
+							(gethash p-ref p-refs-map)))
+					(episode-count (car
+							(gethash qp-ref qp-refs-map)))))
+			  (setq prob 0))
+		      (when nil t
+			    (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
+			    (break))
+		      (when (> prob max-prob)
+			(setq max-res res)
+			(setq max-prob prob)
+			(setq best-qp-ref qp-ref))		      
 		   finally
-		     (setq num-local-preds 0)	
-	     (setq q-likelihood (* q-likelihood 0)))))
-	     (t
-	      (setq kost (cost (aref (car p) p-node)
-			       (if qp (aref (car q) qp) nil)
-			       bindings
-			       q-first-bindings
-			       :cost-of-nil cost-of-nil
-			       :bic-p bic-p
-			       :forbidden-types forbidden-types))
-	      (setq q-likelihood (* q-likelihood kost))
-	      (when (> kost 0)
-		(setq num-local-preds (+ num-local-preds 1)))))
+		      (cond (max-res
+			     (setf (gethash p-ref bindings) best-qp-ref)
+			     (setf (gethash best-qp-ref q-first-bindings) p-ref)
+			     (setq q-likelihood (* q-likelihood (/ (episode-count (car
+										   (gethash p-ref p-refs-map)))
+								   (episode-count (car
+										   (gethash best-qp-ref qp-refs-map))))))
+			    
+			     ;;(setq q-likelihood (* q-likelihood max-prob))
+			     (setq num-local-preds (+ num-local-preds 1)))
+			    (t
+			     ;;(setq num-local-preds 0)
+			     (setq q-likelihood (* q-likelihood 0)))))))
+	      (t
+	       (setq kost (cost (aref (car p) p-node)
+				(if qp (aref (car q) qp) nil)
+				bindings
+				q-first-bindings
+				:cost-of-nil cost-of-nil
+				:bic-p bic-p
+				:forbidden-types forbidden-types))
+	       (setq q-likelihood (* q-likelihood kost))
+	       (when (> kost 0)
+		 (setq num-local-preds (+ num-local-preds 1)))))
      finally
 	(when nil
 	  (format t "~%q-m: ~d~%q-dif: ~d" q-m q-dif))
 	(if bic-p
 	    (return (values (if score-p
 				(- q-likelihood
-					 (* (/ (log q-m) 2)
+				   (* (/ (log q-m) 2)
 					    q-dif))
 				(abs (- 1 (- q-likelihood
 					 (* (/ (log q-m) 2)
@@ -9687,14 +9691,29 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (> (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution))))
+	      (> (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0))
 	      (< (sixth next) (sixth best-solution)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0))
 	      (= (sixth next) (sixth best-solution))
 	      (>= (fifth next) (fifth best-solution)))
 	 t)))

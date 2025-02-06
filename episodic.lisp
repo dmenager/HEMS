@@ -660,20 +660,61 @@
                     (setf (car x) generalized)
                     (values x cost bindings t nil reject-list num-local-preds func))))))))
 
+#| print episode |#
+(defun print-episode (ep &key (stream t))
+  (let ((indent "    ")
+	  (large-indent "        ")
+	  (fields (list :episode-id :parent :observation :state :state-transitions :backlinks :count :depth :temporal-p)))
+      (when (episode-p ep)
+	(format stream "~%~aEPISODE:" indent)
+	(loop
+	  for field in fields
+	  do
+	     (case field
+	       (:episode-id
+		(format stream "~%~a  ID: ~a" indent (episode-id ep)))
+	       (:parent
+		(format stream "~%~a  Parent: ~a" indent (when (episode-parent ep)
+						      (episode-id (car (episode-parent ep))))))
+	       (:observation
+		(format stream "~%~a  Observation:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:state
+		(format stream "~%~a  State:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:state-transitions
+		(format stream "~%~a  State Transitions:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:backlinks
+		(format stream "~%~a  Backlinks:" indent)
+		(loop
+		  for pointer being the hash-keys of (episode-backlinks ep)
+		    using (hash-value subtree)
+		  do
+		     (format stream "~%~a  (~a . ~a)" large-indent pointer (episode-id (car subtree)))))
+	       (:depth
+		(format stream "~%~a  Depth: ~a" indent (episode-depth ep)))
+	       (:count
+		(format stream "~%~a  Count: ~a" indent (episode-count ep)))
+	       (:temporal-p
+		(format stream "~%~a  Temporal-p: ~a" indent (episode-temporal-p ep))))))))
+
 #| Rudamentary printer for showing the branching structure of eltm. |#
 
 ;; eltm = episodic long-term memory
-(defun print-tree-structure (eltm)
+(defun print-tree-structure (eltm &key (stream t))
   (cond ((episode-p eltm)
-         (format t "x"))
+	 (print-episode eltm :stream stream))
         ((null (rest eltm))
-         (format t " (x)"))
+         (format stream "~%[")
+	 (print-episode (car eltm) :stream stream)
+	 (format stream "~%]"))
         (t
-         (format t "(")
+         (format stream "~%[")
          (loop
            for item in eltm do
-             (print-tree-structure item))
-         (format t ")"))))
+             (print-tree-structure item :stream stream))
+         (format stream "~%]"))))
 
 #| Inserts episode into episodic memory
 

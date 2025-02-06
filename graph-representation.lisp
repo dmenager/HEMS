@@ -1495,16 +1495,61 @@
            (format t "~%conflicted variables:~%~S~%new-conflicts:~%~S" (reverse (coerce conflicted 'list)) new-conflicts))
          (return (generate-final-csp-assignment csp (coerce conflicted 'list) new-conflicts)))))
 
-(defun print-cpd-rule (rule)
-  (format t "~%        (~A)<" (rule-id rule))
+(defun print-cpd-rule (rule &key (indent "      ") (stream t))
+  (format stream "~%~a  (~A)<" indent (rule-id rule))
   (loop
     for att being the hash-keys of (rule-conditions rule)
       using (hash-value val)
     do
-       (format t "~a:=~d " att val)
+       (format stream "~a:=~d " att val)
     finally
-       (format t "; ~d, ~d>" (if (rule-probability rule) (float (rule-probability rule))) (rule-count rule))))
+       (format stream "; ~d, ~d>" (if (rule-probability rule) (float (rule-probability rule))) (rule-count rule))))
 
+;; cpd = rule-based conditional-probability distribution
+(defun print-cpd (cpd indent &key (stream t))
+  (let ((big-indent (format nil "~a~a" indent indent))
+	(fields (list :identifiers :var-value-block-map :rules :singleton-p)))
+    (when (rule-based-cpd-p cpd)
+      (format stream "~%~aCPD:" indent)
+      (loop
+	for field in fields
+	do
+	   (case field
+	     (:identifiers
+	      (format stream "~%~a  P(~a | ~{~a~^ ~})" indent (rule-based-cpd-dependent-id cpd)
+		      (loop
+			for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+			when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+			collect ident into parents
+			finally
+			   (return parents))))
+	     (:var-value-block-map
+	      (format stream "~%~a  Variable Values:" indent)
+	      (loop
+		with vvbm
+		for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+		  using (hash-value idx)
+		do
+		   (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
+		   (format stream "~%~avar: ~a~%~avalues:~%~a  ~a" big-indent ident big-indent big-indent (mapcar #'car vvbm))))
+	     (:rules
+	      (format stream "~%~a  Rules:" indent)
+	      (map nil #'(lambda (rule)
+			   (print-cpd-rule rule :indent big-indent :stream stream))
+		   (rule-based-cpd-rules cpd)))
+	     (:singleton-p
+	      (format stream "~%~a  Singleton-p: ~a" indent (rule-based-cpd-singleton-p cpd))))))))
+
+;; bn = Bayesian network represented as a cons of an array of CPDs and a hash table of edges
+;; indent = size of indentations
+(defun print-bn (bn indent &key (stream t))
+  (when (consp bn)
+    (format stream "~%~aNETWORK:" indent)
+    (loop
+      for cpd being the elements of (car bn)
+      do
+	 (print-cpd cpd (format nil "~a~a" indent indent) :stream stream))))
+  
 #| Print key value pair from hashtable |#
 
 ;; key = hashtable key
@@ -7257,7 +7302,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; cpd = cpd to modify
 ;; modifier-cpd = cpd that updates values in cpd
-(defun modify-cpd (cpd modifier-cpd)
+(defun modify-cpd (cpd modifier-cpd &key causal-discovery)
   (let (new-cards new-steps)
     (setf (gethash (rule-based-cpd-dependent-id modifier-cpd)
                    (rule-based-cpd-identifiers cpd))
@@ -7274,31 +7319,32 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setf (gethash (hash-table-count (rule-based-cpd-qualified-vars cpd))
                    (rule-based-cpd-qualified-vars cpd))
           (gethash 0 (rule-based-cpd-qualified-vars modifier-cpd)))
-    (setf (gethash (hash-table-count (rule-based-cpd-var-value-block-map cpd))
-                   (rule-based-cpd-var-value-block-map cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-var-value-block-map modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-negated-vvbms cpd))
-                   (rule-based-cpd-negated-vvbms cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-negated-vvbms modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-set-valued-attributes cpd))
-                   (rule-based-cpd-set-valued-attributes cpd))
-          (copy-tree (gethash 0 (rule-based-cpd-set-valued-attributes modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-set-valued-negated-attributes cpd))
-                   (rule-based-cpd-set-valued-negated-attributes cpd))
-          (copy-tree (gethash 0 (rule-based-cpd-set-valued-negated-attributes modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-var-value-block-map cpd))
-                   (rule-based-cpd-lower-approx-var-value-block-map cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-negated-vvbms cpd))
-                   (rule-based-cpd-lower-approx-negated-vvbms cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-var-values cpd))
-                   (rule-based-cpd-var-values cpd))
-          (copy-list (gethash 0 (rule-based-cpd-var-values modifier-cpd))))
-    (setq new-cards (generate-cpd-cardinalities (rule-based-cpd-var-value-block-map cpd)))
-    (setq new-steps (generate-cpd-step-sizes new-cards))
-    (setf (rule-based-cpd-cardinalities cpd) new-cards)
-    (setf (rule-based-cpd-step-sizes cpd) new-steps)))
+    (unless causal-discovery
+      (setf (gethash (hash-table-count (rule-based-cpd-var-value-block-map cpd))
+                     (rule-based-cpd-var-value-block-map cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-var-value-block-map modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-negated-vvbms cpd))
+                     (rule-based-cpd-negated-vvbms cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-negated-vvbms modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-set-valued-attributes cpd))
+                     (rule-based-cpd-set-valued-attributes cpd))
+            (copy-tree (gethash 0 (rule-based-cpd-set-valued-attributes modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-set-valued-negated-attributes cpd))
+                     (rule-based-cpd-set-valued-negated-attributes cpd))
+            (copy-tree (gethash 0 (rule-based-cpd-set-valued-negated-attributes modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-var-value-block-map cpd))
+                     (rule-based-cpd-lower-approx-var-value-block-map cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-negated-vvbms cpd))
+                     (rule-based-cpd-lower-approx-negated-vvbms cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-var-values cpd))
+                     (rule-based-cpd-var-values cpd))
+            (copy-list (gethash 0 (rule-based-cpd-var-values modifier-cpd))))
+      (setq new-cards (generate-cpd-cardinalities (rule-based-cpd-var-value-block-map cpd)))
+      (setq new-steps (generate-cpd-step-sizes new-cards))
+      (setf (rule-based-cpd-cardinalities cpd) new-cards)
+      (setf (rule-based-cpd-step-sizes cpd) new-steps))))
 
 #| Update the conditional probability densities with new variables |#
 
@@ -7783,7 +7829,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                          (declare (ignore val))
                          (cond (bool2
                                 ;;(error "(i: ~d, val: ~d), and (val: ~d, i: ~d) already exists. Can't overrwite assignment with (i: ~d, j: ~d) and (j: ~d, i: ~d).~%i: ~A~%val: ~A~%j: ~A" i val val i i j j i (aref factors i) (aref factors val) (aref factors j))
-                                (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j)))
+                                (when nil
+				  (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j))))
                                (t
                                 (setf (gethash j hash) edge-type)))))
                       (t
@@ -7799,7 +7846,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                          (declare (ignore val))
                          (cond (bool2
                                 ;;(error "can't overrwite values")
-                                (warn "edge (~d, ~d) already set" j i))
+                                (when nil
+				  (warn "edge (~d, ~d) already set" j i)))
                                (t
                                 (setf (gethash i hash) edge-type)))))
                       (t

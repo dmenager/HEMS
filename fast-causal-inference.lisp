@@ -74,6 +74,8 @@
 		 collect n into adj
 	       finally
 		  (return adj))))
+    (when t
+      (format t "~%Conducting Adjacency Search"))
     (loop
       with sepsets = (make-hash-table :test #'equal)
       with adjacencies = (cdr net)
@@ -186,6 +188,8 @@
 
 (defun fci (df)
   (labels ((generate-network (variables) 
+	     (when t
+	       (format t "~%Generating fully connected network"))
 	     (let (vars program)
 	       (if variables
 		   (setq vars variables)
@@ -211,7 +215,7 @@
 					      `(,(intern (format nil "C~d" i))
 						---
 						,(intern (format nil "C~d" j)))))))
-	       (eval `(compile-program (:sort-p nil) ,@program))))
+	       (eval `(compile-program (:sort-p nil :causal-discovery t) ,@program))))
 	   (get-x-y-pairs (net)
 	     (loop
 	       with adjacencies = (cdr net)
@@ -515,9 +519,21 @@
 	  (break)))
       net)))
 
+(defun make-edge-bindings (net)
+  (loop with bindings = nil
+	for node being the hash-keys of (cdr net)
+	using (hash-value nbrs)
+	do
+	(loop for nbr being the hash-keys of nbrs
+	      do
+	      (setq bindings (cons (list node nbr) bindings))
+	finally
+	(return bindings))))
+
 #| TESTS
 (ql:quickload :hems)
 (ls-user:defdf df (ls-user:read-csv #P"/home/david/Code/HARLEM/ep_data_1000/ppo_FrozenLake-v1_data.csv"))
+(hems:make-df mnist "/home/david/Code/HARLEM/mnist_data.csv")
 (hems:n-format-df-column-names df)
 (setq df (ls-user:remove-columns df '(episode_number timestep)))
 (hems:fci df)

@@ -19,17 +19,12 @@
 
 ;; df = lisp-stat df
 (defun n-format-df-column-names (df)
-  (format t "~%df in format: ~S~%df keys:~%~S" df (ls-user:keys df))
   (loop
-    with keys = (ls-user:keys df)
-    for col being the elements of keys 
-    collect (cons (intern (cl-ppcre:regex-replace-all "-" (symbol-name col) "_")) col) into bindings
-    finally
-       (loop
-	 for binding in bindings
-	 do
-	 (ls-user:rename-column! df (car binding) (cdr binding)))
-       ))
+    with new-col
+    for col being the elements of (ls-user:keys df)
+    do
+       (setq new-col (intern (cl-ppcre:regex-replace-all "-" (symbol-name col) "_")))
+       (ls-user:rename-column! df new-col col)))
 
 #|Return the index of a column in a dataframe. Returns -1 if not found.|#
 
@@ -46,6 +41,10 @@
     finally
        (return-from finder -1)))
 
+#| Load csv into a lisp stat data frame |#
+
+;; df = unique identifier to name the dataframe
+;; path = file path to csv file to load
 (defmacro make-df (df path)
   `(progn
      (ls-user:defdf ,df (ls-user:read-csv ,(merge-pathnames path)))

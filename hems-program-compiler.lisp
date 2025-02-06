@@ -179,8 +179,8 @@
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expected type of non-nil symbol." recieved))
 
-(defun directed-edge (cpd1 cpd2)
-  (modify-cpd cpd2 cpd1))
+(defun directed-edge (cpd1 cpd2 causal-discovery)
+  (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery))
 
 #| Sort a list of factors in topological order. Returns a list. |#
 
@@ -389,7 +389,7 @@
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
 ;; nbr-func-args = a list of arguments for neighborhood function
-(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t)) &body body)
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) causal-discovery) &body body)
   (let ((hash (gensym))
 	(args (gensym))
 	(inv-hash (gensym))
@@ -438,7 +438,8 @@
 					 (when (not  (gethash (third ,args) ,hash))
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (third ,args) (subseq ,args 0 3)))
 					 (directed-edge (gethash (first ,args) ,hash)
-							(gethash (third ,args) ,hash)))
+							(gethash (third ,args) ,hash)
+							,causal-discovery))
 					(t
 					 (raise-identifier-type-error (third ,args)))))
 				 (t
@@ -467,7 +468,9 @@
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
 				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil ,edge-type)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
-							 :initial-contents (finalize-factors ,cpd-list)))
+							 :initial-contents (if ,causal-discovery
+									       ,cpd-list
+									       (finalize-factors ,cpd-list))))
 			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))

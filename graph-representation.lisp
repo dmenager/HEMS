@@ -1495,16 +1495,61 @@
            (format t "~%conflicted variables:~%~S~%new-conflicts:~%~S" (reverse (coerce conflicted 'list)) new-conflicts))
          (return (generate-final-csp-assignment csp (coerce conflicted 'list) new-conflicts)))))
 
-(defun print-cpd-rule (rule)
-  (format t "~%        (~A)<" (rule-id rule))
+(defun print-cpd-rule (rule &key (indent "      ") (stream t))
+  (format stream "~%~a  (~A)<" indent (rule-id rule))
   (loop
     for att being the hash-keys of (rule-conditions rule)
       using (hash-value val)
     do
-       (format t "~a:=~d " att val)
+       (format stream "~a:=~d " att val)
     finally
-       (format t "; ~d, ~d>" (if (rule-probability rule) (float (rule-probability rule))) (rule-count rule))))
+       (format stream "; ~d, ~d>" (if (rule-probability rule) (float (rule-probability rule))) (rule-count rule))))
 
+;; cpd = rule-based conditional-probability distribution
+(defun print-cpd (cpd indent &key (stream t))
+  (let ((big-indent (format nil "~a~a" indent indent))
+	(fields (list :identifiers :var-value-block-map :rules :singleton-p)))
+    (when (rule-based-cpd-p cpd)
+      (format stream "~%~aCPD:" indent)
+      (loop
+	for field in fields
+	do
+	   (case field
+	     (:identifiers
+	      (format stream "~%~a  P(~a | ~{~a~^ ~})" indent (rule-based-cpd-dependent-id cpd)
+		      (loop
+			for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+			when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+			collect ident into parents
+			finally
+			   (return parents))))
+	     (:var-value-block-map
+	      (format stream "~%~a  Variable Values:" indent)
+	      (loop
+		with vvbm
+		for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+		  using (hash-value idx)
+		do
+		   (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
+		   (format stream "~%~avar: ~a~%~avalues:~%~a  ~a" big-indent ident big-indent big-indent (mapcar #'car vvbm))))
+	     (:rules
+	      (format stream "~%~a  Rules:" indent)
+	      (map nil #'(lambda (rule)
+			   (print-cpd-rule rule :indent big-indent :stream stream))
+		   (rule-based-cpd-rules cpd)))
+	     (:singleton-p
+	      (format stream "~%~a  Singleton-p: ~a" indent (rule-based-cpd-singleton-p cpd))))))))
+
+;; bn = Bayesian network represented as a cons of an array of CPDs and a hash table of edges
+;; indent = size of indentations
+(defun print-bn (bn indent &key (stream t))
+  (when (consp bn)
+    (format stream "~%~aNETWORK:" indent)
+    (loop
+      for cpd being the elements of (car bn)
+      do
+	 (print-cpd cpd (format nil "~a~a" indent indent) :stream stream))))
+  
 #| Print key value pair from hashtable |#
 
 ;; key = hashtable key
@@ -1707,11 +1752,11 @@
   (loop
     with split-rules = nil
     for existing-rule in rules
-    when (and (compatible-rule-p rule existing-rule phi phi)
-	      (or (not (equal (rule-probability rule)
+    when (and (or (not (equal (rule-probability rule)
 			      (rule-probability existing-rule)))
 		  (not (equal (rule-count rule)
-			      (rule-count existing-rule)))))
+			      (rule-count existing-rule))))
+	      (compatible-rule-p rule existing-rule phi phi))
       do
 	 (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
 	   (format t "~%~%existing rule is compatible with new rule.~%Splitting existing rule:")
@@ -7257,7 +7302,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; cpd = cpd to modify
 ;; modifier-cpd = cpd that updates values in cpd
-(defun modify-cpd (cpd modifier-cpd)
+(defun modify-cpd (cpd modifier-cpd &key causal-discovery)
   (let (new-cards new-steps)
     (setf (gethash (rule-based-cpd-dependent-id modifier-cpd)
                    (rule-based-cpd-identifiers cpd))
@@ -7274,31 +7319,32 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setf (gethash (hash-table-count (rule-based-cpd-qualified-vars cpd))
                    (rule-based-cpd-qualified-vars cpd))
           (gethash 0 (rule-based-cpd-qualified-vars modifier-cpd)))
-    (setf (gethash (hash-table-count (rule-based-cpd-var-value-block-map cpd))
-                   (rule-based-cpd-var-value-block-map cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-var-value-block-map modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-negated-vvbms cpd))
-                   (rule-based-cpd-negated-vvbms cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-negated-vvbms modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-set-valued-attributes cpd))
-                   (rule-based-cpd-set-valued-attributes cpd))
-          (copy-tree (gethash 0 (rule-based-cpd-set-valued-attributes modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-set-valued-negated-attributes cpd))
-                   (rule-based-cpd-set-valued-negated-attributes cpd))
-          (copy-tree (gethash 0 (rule-based-cpd-set-valued-negated-attributes modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-var-value-block-map cpd))
-                   (rule-based-cpd-lower-approx-var-value-block-map cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-negated-vvbms cpd))
-                   (rule-based-cpd-lower-approx-negated-vvbms cpd))
-          (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms modifier-cpd))))
-    (setf (gethash (hash-table-count (rule-based-cpd-var-values cpd))
-                   (rule-based-cpd-var-values cpd))
-          (copy-list (gethash 0 (rule-based-cpd-var-values modifier-cpd))))
-    (setq new-cards (generate-cpd-cardinalities (rule-based-cpd-var-value-block-map cpd)))
-    (setq new-steps (generate-cpd-step-sizes new-cards))
-    (setf (rule-based-cpd-cardinalities cpd) new-cards)
-    (setf (rule-based-cpd-step-sizes cpd) new-steps)))
+    (unless causal-discovery
+      (setf (gethash (hash-table-count (rule-based-cpd-var-value-block-map cpd))
+                     (rule-based-cpd-var-value-block-map cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-var-value-block-map modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-negated-vvbms cpd))
+                     (rule-based-cpd-negated-vvbms cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-negated-vvbms modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-set-valued-attributes cpd))
+                     (rule-based-cpd-set-valued-attributes cpd))
+            (copy-tree (gethash 0 (rule-based-cpd-set-valued-attributes modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-set-valued-negated-attributes cpd))
+                     (rule-based-cpd-set-valued-negated-attributes cpd))
+            (copy-tree (gethash 0 (rule-based-cpd-set-valued-negated-attributes modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-var-value-block-map cpd))
+                     (rule-based-cpd-lower-approx-var-value-block-map cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-lower-approx-negated-vvbms cpd))
+                     (rule-based-cpd-lower-approx-negated-vvbms cpd))
+            (deep-copy-list (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms modifier-cpd))))
+      (setf (gethash (hash-table-count (rule-based-cpd-var-values cpd))
+                     (rule-based-cpd-var-values cpd))
+            (copy-list (gethash 0 (rule-based-cpd-var-values modifier-cpd))))
+      (setq new-cards (generate-cpd-cardinalities (rule-based-cpd-var-value-block-map cpd)))
+      (setq new-steps (generate-cpd-step-sizes new-cards))
+      (setf (rule-based-cpd-cardinalities cpd) new-cards)
+      (setf (rule-based-cpd-step-sizes cpd) new-steps))))
 
 #| Update the conditional probability densities with new variables |#
 
@@ -7765,7 +7811,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 #| Construct a Bayesian Network |#
 
 ;; factors = array of factors
-(defun make-graph-edges (factors)
+(defun make-graph-edges (factors &key (edge-type "-->"))
   (loop
     with edges = (make-hash-table :test #'equal)
     for i from 0 to (- (array-dimension factors 0) 1)
@@ -7783,14 +7829,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                          (declare (ignore val))
                          (cond (bool2
                                 ;;(error "(i: ~d, val: ~d), and (val: ~d, i: ~d) already exists. Can't overrwite assignment with (i: ~d, j: ~d) and (j: ~d, i: ~d).~%i: ~A~%val: ~A~%j: ~A" i val val i i j j i (aref factors i) (aref factors val) (aref factors j))
-                                (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j))
-                                (break))
+                                (when nil
+				  (warn "edge (~d, ~d) already set:~%parent factor (i = ~d):~%~S~%child factor (j = ~d):~%~S" i j i (aref factors i) j (aref factors j))))
                                (t
-                                (setf (gethash j hash) 1)))))
+                                (setf (gethash j hash) edge-type)))))
                       (t
                        (let (row)
                          (setq row (make-hash-table))
-                         (setf (gethash j row) 1)
+                         (setf (gethash j row) edge-type)
                          (setf (gethash i edges) row)))))
               (multiple-value-bind (hash bool)
                   (gethash j edges)
@@ -7800,13 +7846,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                          (declare (ignore val))
                          (cond (bool2
                                 ;;(error "can't overrwite values")
-                                (warn "edge (~d, ~d) already set" j i))
+                                (when nil
+				  (warn "edge (~d, ~d) already set" j i)))
                                (t
-                                (setf (gethash i hash) 1)))))
+                                (setf (gethash i hash) edge-type)))))
                       (t
                        (let (row)
                          (setq row (make-hash-table))
-                         (setf (gethash i row) 1)
+                         (setf (gethash i row) edge-type)
                          (setf (gethash j edges) row))))))
     finally
        ;;(print-messages edges)
@@ -8560,7 +8607,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 						     (return-from local-likelihood 0))
 						   (when nil t
 							 (format t "~%new likelihood: ~d" local-likelihood))
-						   #|
+						#|
 						do
 						   
                                                    (setq theta-mle (rule-probability compatible-rule))
@@ -8761,74 +8808,84 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
-(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil))
   (loop
      with q-likelihood = 1 and kost
      with num-local-preds = 0
      for (p-node . qp) in n
      do
 	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
-		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))
-		   
-	      (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
-		    (qp-refs (when qp
-			       (mapcan #'(lambda (vvbm)
-					   (when (not (equal "NA" (caar vvbm)))
-					     (list (caar vvbm))))
-				       (gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
-		(loop
-		  named probber
-		  with res and prob
-		  for qp-ref in qp-refs
-		  do
-		     (when nil
-		       (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
-		       ;;(break)
-		       )
-		     (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
-		     (if res
-			 (setq prob (/ (episode-count (car
-						       (gethash p-ref p-refs-map)))
-				       (episode-count (car
-						       (gethash qp-ref qp-refs-map)))))
-			 (setq prob 0))
-		     (when nil t
-		       (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
-		       (break))
-		   when (and res (>= prob 1/2))
+		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))	       
+	       (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
+		     (qp-refs (when qp
+				(mapcan #'(lambda (vvbm)
+					    (when (not (equal "NA" (caar vvbm)))
+					      (list (caar vvbm))))
+					(gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
+		 (loop
+		   named probber
+		   with res and prob
+		   with max-res = nil and max-prob = 1/2 and best-qp-ref
+		   for qp-ref in qp-refs
 		   do
-		     (setf (gethash p-ref bindings) qp-ref)
-		     (setf (gethash qp-ref q-first-bindings) p-ref)
-		     (setq q-likelihood (* q-likelihood (/ (episode-count (car
-									   (gethash p-ref p-refs-map)))
-							   (episode-count (car
-									   (gethash qp-ref qp-refs-map))))))
-		     ;;(setq q-likelihood (* q-likelihood prob))
-		     (setq num-local-preds (+ num-local-preds 1))
-		     (return-from probber nil)
+		      (when nil
+			(format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
+			;;(break)
+			)
+		      (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
+		      (if res
+			  (setq prob (/ (episode-count (car
+							(gethash p-ref p-refs-map)))
+					(episode-count (car
+							(gethash qp-ref qp-refs-map)))))
+			  (setq prob 0))
+		      (when nil t
+			    (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
+			    (break))
+		      (when (> prob max-prob)
+			(setq max-res res)
+			(setq max-prob prob)
+			(setq best-qp-ref qp-ref))		      
 		   finally
-		     (setq num-local-preds 0)
-		     (setq q-likelihood (* q-likelihood 0)))))
-	     (t
-	      (setq kost (cost (aref (car p) p-node)
-			       (if qp (aref (car q) qp) nil)
-			       bindings
-			       q-first-bindings
-			       :cost-of-nil cost-of-nil
-			       :bic-p bic-p
-			       :forbidden-types forbidden-types))
-	      (setq q-likelihood (* q-likelihood kost))
-	      (when (> kost 0)
-		(setq num-local-preds (+ num-local-preds 1)))))
+		      (cond (max-res
+			     (setf (gethash p-ref bindings) best-qp-ref)
+			     (setf (gethash best-qp-ref q-first-bindings) p-ref)
+			     (setq q-likelihood (* q-likelihood (/ (episode-count (car
+										   (gethash p-ref p-refs-map)))
+								   (episode-count (car
+										   (gethash best-qp-ref qp-refs-map))))))
+			    
+			     ;;(setq q-likelihood (* q-likelihood max-prob))
+			     (setq num-local-preds (+ num-local-preds 1)))
+			    (t
+			     ;;(setq num-local-preds 0)
+			     (setq q-likelihood (* q-likelihood 0)))))))
+	      (t
+	       (setq kost (cost (aref (car p) p-node)
+				(if qp (aref (car q) qp) nil)
+				bindings
+				q-first-bindings
+				:cost-of-nil cost-of-nil
+				:bic-p bic-p
+				:forbidden-types forbidden-types))
+	       (setq q-likelihood (* q-likelihood kost))
+	       (when (> kost 0)
+		 (setq num-local-preds (+ num-local-preds 1)))))
      finally
 	(when nil
 	  (format t "~%q-m: ~d~%q-dif: ~d" q-m q-dif))
 	(if bic-p
-	    (return (values (abs (- 1 (- q-likelihood
+	    (return (values (if score-p
+				(- q-likelihood
+				   (* (/ (log q-m) 2)
+					    q-dif))
+				(abs (- 1 (- q-likelihood
 					 (* (/ (log q-m) 2)
-					    q-dif))))
+					    q-dif)))))
 			    num-local-preds))
-	    (return (values (abs (- 1 q-likelihood))
+	    (return (values (if score-p
+				q-likelihood
+				(abs (- 1 q-likelihood)))
 			    num-local-preds)))))
 
 ;; cost-of-nil = episode count for matching to nil
@@ -9384,7 +9441,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; bic-p = whether to compute bic or likelihood
 ;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map))
+(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-p nil))
   (let (cost num-local-preds key previous-cost prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
@@ -9402,7 +9459,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 		p-backlinks q-backlinks
                 :cost-of-nil cost-of-nil
                 :bic-p bic-p
-                :forbidden-types forbidden-types))
+                :forbidden-types forbidden-types
+		:score-p score-p))
            (when sol-cost-map
              (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
            (values solution cost bindings q-first-bindings num-local-preds)))))
@@ -9681,14 +9739,29 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (> (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution))))
+	      (> (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0))
 	      (< (sixth next) (sixth best-solution)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (/ (hash-table-count (third next)) (sixth next)) (/ (hash-table-count (third best-solution)) (sixth best-solution)))
+	      (= (if (> (sixth next) 0)
+		     (/ (hash-table-count (third next)) (sixth next))
+		     0)
+		 (if (> (sixth best-solution) 0)
+		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		     0))
 	      (= (sixth next) (sixth best-solution))
 	      (>= (fifth next) (fifth best-solution)))
 	 t)))
@@ -9791,7 +9864,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types &key (score-p nil))
   (loop
     named looper
     with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
@@ -9812,7 +9885,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
-            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-p score-p)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
         (when nil
@@ -9848,89 +9921,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; p = pattern graph
 ;; q = base graph
-;; cost-of-nil = episode count for matching to nil
-;; bic-p = flag to compute BIC
-(defun maximum-common-subgraph (p q &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
-  (when nil t 
-	(format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
-		(array-dimension (car p) 0)
-		(map 'list #'rule-based-cpd-identifiers (car q))
-		(array-dimension (car q) 0))
-	(break)
-	)
-  (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif)
-    (setq sol-cost-map (make-hash-table :test #'equal))
-    (setq matches (make-nil-mappings p))
-    (setq cost most-positive-fixnum)
-    (setq num-local-preds -1)
-    (setq bindings (make-hash-table :test #'equal))
-    (setq q-first-bindings (make-hash-table :test #'equal))
-    (setq possible-candidates (get-possible-candidates p q))
-    (setq p-dim 0)
-    (setq p-m 0)
-    (setq q-dim 0)
-    (setq q-m 0)
-    (setq q-dif 0)
-    (when nil t
-      (format t "~%~%possible candidates:~%~S" possible-candidates)
-      )
-    (setq key (key-from-matches matches))
-    (when (null (gethash key sol-cost-map))
-      (setf (gethash key sol-cost-map) cost))
-    (setq current (list matches cost bindings q-first-bindings most-positive-fixnum))
-    (setq stop-temp (expt 10 (- 1)))
-    (setq almost-zero 1.e-39)
-    (setq alpha .999)
-    (setq p-nodes (make-hash-table :test #'equal))
-    (setq q-nodes (make-hash-table :test #'equal))
-    (loop
-       with i-options and swaps-hash = (make-hash-table :test #'equal)
-      for i from 0 to (- (if p (array-dimension (car p) 0) 0) 1)
-      do
-         (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) p-nodes) i)
-	 (setq p-m (max p-m (rule-based-cpd-count (aref (car p) i))))
-      if (= (hash-table-count (rule-based-cpd-identifiers (aref (car p) i))) 1)
-       do
-	 (setq p-dim (+ p-dim 1))
-         (setq i-options (analog-nodes i p q (gethash i possible-candidates) (make-hash-table) (make-hash-table)))
-         (when (> (array-dimension i-options 0) 1)
-           (setf (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash)
-                 (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
-         (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
-       finally
-       (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))
-    (loop
-       for i from 0 to (- (if q (array-dimension (car q) 0) 0) 1)
-       do
-	 (setq q-m (max q-m (rule-based-cpd-count (aref (car q) i))))
-	 (setf (gethash (rule-based-cpd-dependent-id (aref (car q) i)) q-nodes) i)
-	 (when (= (hash-table-count (rule-based-cpd-identifiers (aref (car q) i))) 1)
-	   (setq q-dim (+ q-dim 1))))
-    (when (> q-dim p-dim)
-      (setq q-dim (- q-dim p-dim)))
-    (setq temperature (handler-case (/ stop-temp (expt alpha required-swaps))
-                        (error (c)
-                          ;;(break "Going to set almost zero")
-                          (/ stop-temp almost-zero))))
-    (when nil t
-          (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
-          ;;(break)
-	  )
-    (multiple-value-bind (matches weighted-cost bindings q-first-bindings cost)
-        (simulated-annealing p q current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p p-refs-map qp-refs-map forbidden-types)
-      (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches weighted-cost bindings q-first-bindings cost)))
-    (values (first current) (second current) (third current) (fourth current) (fifth current))))
-
-#| Find largest common subgraph between two graphs |#
-
-;; p = pattern graph
-;; q = base graph
 ;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
-(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
+(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
   (when nil 
     (format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
 	    (array-dimension (car p) 0)
@@ -9997,10 +9992,24 @@ Roughly based on (Koller and Friedman, 2009) |#
           ;;(break)
 	  )
     (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
-        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-p score-p)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
+
+#| Score Bayes net, q, on pattern graph using likelihood or BIC |#
+
+;; p = pattern graph
+;; q = base graph
+;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
+;; cost-of-nil = episode count for matching to nil
+;; bic-p = flag to compute BIC
+(defun bn-score (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+  (multiple-value-bind (sol no-matches score)
+      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t)
+    (declare (ignore sol no-matches))
+    score))
 
 #| TESTS
 1) Structure mapping tests

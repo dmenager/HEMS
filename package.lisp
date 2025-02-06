@@ -66,6 +66,16 @@
 	   #:py-conditional-sample
 	   #:get-entropy
 	   #:compute-network-concentration
-	   #:make-temporal-episode-retrieval-cue))
+	   #:make-temporal-episode-retrieval-cue
+	   #:make-df
+	   #:fges
+	   #:fci
+	   #:read-csv
+	   #:get-row
+	   #:get-rows
+	   #:n-format-df-column-names
+	   #:g-squared-test
+	   #:bn-score
+	   #:print-tree-structure))
 
 (in-package :hems)

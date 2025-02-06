@@ -179,8 +179,8 @@
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expected type of non-nil symbol." recieved))
 
-(defun directed-edge (cpd1 cpd2)
-  (modify-cpd cpd2 cpd1))
+(defun directed-edge (cpd1 cpd2 causal-discovery)
+  (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery))
 
 #| Sort a list of factors in topological order. Returns a list. |#
 
@@ -389,7 +389,7 @@
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
 ;; nbr-func-args = a list of arguments for neighborhood function
-(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args) &body body)
+(defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) causal-discovery) &body body)
   (let ((hash (gensym))
 	(args (gensym))
 	(inv-hash (gensym))
@@ -397,6 +397,7 @@
 	(cpd (gensym))
 	(cpd-list (gensym))
 	(cpd-arr (gensym))
+	(edge-type (gensym))
 	(factors (gensym))
 	(edges (gensym))
 	(recurse-p (gensym))
@@ -404,7 +405,7 @@
 	(new-body (gensym)))
     (cond ((and neighborhood-func
 		(not (eq t relational-invariants)))
-	   (error "Relational Invariants flag must be set to t to define the neighborhood function: ~A."))
+	   (error "Relational Invariants flag must be set to t to define the neighborhood function: ~A." neighborhood-func))
 	  ((and (not (eq t relational-invariants))
 		(not (eq nil relational-invariants)))
 	   (error "Relational Invariants flag is boolean. Must be set to t or nil. Value~%~A~% is invalid" relational-invariants))
@@ -412,7 +413,7 @@
 	   ;;(error "Invalid neighborhood function. Received~%~A~%Expected a function." neighborhood-func))
 	  ((and (eq nil relational-invariants) nbr-func-args)
 	   (error "Cannot supply arguments~%~A~%when relational-invariants is nil." nbr-func-args)))
-    `(labels ((compile-hems-program (,hash ,args ,invariant-list ,recurse-p)
+    `(labels ((compile-hems-program (,hash ,args ,invariant-list ,recurse-p ,edge-type)
 		(cond (,args
 		       (if (and (symbolp (first ,args))
 				(not (null (first ,args))))
@@ -424,7 +425,12 @@
 					       (make-bn-node (third ,args))))
 					(t
 					 (error "Expected assignment to list in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
-				 ((equal (symbol-name '->) (symbol-name (second ,args)))
+				 ((or (equal "---" (symbol-name (second ,args)))
+				      (equal "-->" (symbol-name (second ,args))))
+				  (cond ((null ,edge-type)
+					 (setq ,edge-type (symbol-name (second ,args))))
+					((not (equal (symbol-name (second ,args)) ,edge-type))
+					 (error "Multigraphs are not supported. Cannot reset edge type from ~S to ~S." ,edge-type (second ,args))))				  
 				  (when (not (gethash (first ,args) ,hash))
 				    (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 				  (cond ((and (symbolp (third ,args))
@@ -432,15 +438,16 @@
 					 (when (not  (gethash (third ,args) ,hash))
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (third ,args) (subseq ,args 0 3)))
 					 (directed-edge (gethash (first ,args) ,hash)
-							(gethash (third ,args) ,hash)))
+							(gethash (third ,args) ,hash)
+							,causal-discovery))
 					(t
 					 (raise-identifier-type-error (third ,args)))))
 				 (t
-				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or directed edge." (subseq ,args 0 3) (second ,args))))
+				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or three-part edge with a startpoint, connector, and endpoint." (subseq ,args 0 3) (second ,args))))
 			   (raise-identifier-type-error (first ,args))
 		        
 			   )
-		       (compile-hems-program ,hash (nthcdr 3 ,args) ,invariant-list ,recurse-p))
+		       (compile-hems-program ,hash (nthcdr 3 ,args) ,invariant-list ,recurse-p ,edge-type))
 		      (t
 		       (let (,inv-hash)
 			 (when (and ,relational-invariants ,recurse-p)
@@ -454,16 +461,19 @@
 			     do
 				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
 			   finally
-			      (setq ,cpd-list (topological-sort ,cpd-list))
+			      (when ,sort-p
+				(setq ,cpd-list (topological-sort ,cpd-list)))
 			      (when (and ,relational-invariants ,recurse-p)
 				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
-				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil)))
+				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil ,edge-type)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
-							 :initial-contents (finalize-factors ,cpd-list)))
-			      (setq ,edges (make-graph-edges ,factors))
+							 :initial-contents (if ,causal-discovery
+									       ,cpd-list
+									       (finalize-factors ,cpd-list))))
+			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
-       (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t))))
+       (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))
 
 (defun compile-program-from-file (prog-file &key args)
   (with-open-file (in (merge-pathnames prog-file) :direction :input

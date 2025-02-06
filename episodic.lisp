@@ -2,6 +2,8 @@
 
 #| Reference circular structures rather than print them all |#
 (setf *print-circle* t)
+(setf *print-pretty* t)
+(setf *print-lines* nil)
 
 #| Buffer for event cognition |#
 
@@ -601,9 +603,11 @@
 				(= (array-dimension (car base) 0)
 				   (array-dimension (car pattern) 0)
 				   (array-dimension (car (funcall func generalized)) 0)
-				   -1)))
-	   (when nil
-	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%pattern id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
+				   ;;-1
+				   )))
+	   (when nil (not equivalent)
+	     (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%pattern id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count (fourth res)) (hash-table-count (fifth res)) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent)
+	     (break))
 	   (cond ((and equivalent (null (cdr x)))
                   (setf (car x) generalized)
                   (values x (third res) (fourth res) nil t reject-list (sixth res) func))
@@ -633,9 +637,11 @@
 				  (= (array-dimension (car base) 0)
 				     (array-dimension (car pattern) 0)
 				     (array-dimension (car (funcall func generalized)) 0)
-				     -1)))
-	     (when nil
-	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%episode id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent))
+				     ;;-1
+				     )))
+	     (when nil (not equivalent)
+	       (format t "~%~%num bindings: ~d~%num q-first bindings: ~d~%base id: ~S~%size of base: ~d~%episode id: ~S~%size of pattern: ~d~%equivalent-p: ~A" (hash-table-count bindings) (hash-table-count q-first-bindings) (episode-id (car x)) (array-dimension (car base) 0) (episode-id y) (array-dimension (car pattern) 0) equivalent)
+	       (break))
 	     (cond ((and equivalent (null (cdr x)))
                     (setf (car x) generalized)
                     (values x cost bindings nil t reject-list num-local-preds func))
@@ -654,20 +660,61 @@
                     (setf (car x) generalized)
                     (values x cost bindings t nil reject-list num-local-preds func))))))))
 
+#| print episode |#
+(defun print-episode (ep &key (stream t))
+  (let ((indent "    ")
+	  (large-indent "        ")
+	  (fields (list :episode-id :parent :observation :state :state-transitions :backlinks :count :depth :temporal-p)))
+      (when (episode-p ep)
+	(format stream "~%~aEPISODE:" indent)
+	(loop
+	  for field in fields
+	  do
+	     (case field
+	       (:episode-id
+		(format stream "~%~a  ID: ~a" indent (episode-id ep)))
+	       (:parent
+		(format stream "~%~a  Parent: ~a" indent (when (episode-parent ep)
+						      (episode-id (car (episode-parent ep))))))
+	       (:observation
+		(format stream "~%~a  Observation:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:state
+		(format stream "~%~a  State:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:state-transitions
+		(format stream "~%~a  State Transitions:" indent)
+		(print-bn (episode-observation ep) large-indent :stream stream))
+	       (:backlinks
+		(format stream "~%~a  Backlinks:" indent)
+		(loop
+		  for pointer being the hash-keys of (episode-backlinks ep)
+		    using (hash-value subtree)
+		  do
+		     (format stream "~%~a  (~a . ~a)" large-indent pointer (episode-id (car subtree)))))
+	       (:depth
+		(format stream "~%~a  Depth: ~a" indent (episode-depth ep)))
+	       (:count
+		(format stream "~%~a  Count: ~a" indent (episode-count ep)))
+	       (:temporal-p
+		(format stream "~%~a  Temporal-p: ~a" indent (episode-temporal-p ep))))))))
+
 #| Rudamentary printer for showing the branching structure of eltm. |#
 
 ;; eltm = episodic long-term memory
-(defun print-tree-structure (eltm)
+(defun print-tree-structure (eltm &key (stream t))
   (cond ((episode-p eltm)
-         (format t "x"))
+	 (print-episode eltm :stream stream))
         ((null (rest eltm))
-         (format t " (x)"))
+         (format stream "~%[")
+	 (print-episode (car eltm) :stream stream)
+	 (format stream "~%]"))
         (t
-         (format t "(")
+         (format stream "~%[")
          (loop
            for item in eltm do
-             (print-tree-structure item))
-         (format t ")"))))
+             (print-tree-structure item :stream stream))
+         (format stream "~%]"))))
 
 #| Inserts episode into episodic memory
 
@@ -1837,18 +1884,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,act))))
 	     (when st
-	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st -> ,cur-obs))))
-	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs -> ,cur-act)))
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act)))
 	     (cond (st
 		    (when prev-st
-		      (setq state-transitions (concatenate 'list state-transitions `(,prev-st -> ,cur-st)))))
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st)))))
 		   (t
 		    (when prev-obs
-		      (setq state-transitions (concatenate 'list state-transitions `(,prev-obs -> ,cur-obs))))))
+		      (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs))))))
 	     (when prev-act
 	       (if st
-		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-st)))
-		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act -> ,cur-obs)))))
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-st)))
+		   (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs)))))
 	     (if st
 		 (setq prev-st cur-st)
 		 (setq prev-obs cur-obs))

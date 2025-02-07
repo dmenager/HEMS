@@ -242,30 +242,6 @@
     collect rule into rules
     finally (return (make-array (length rules) :initial-contents rules))))
 
-#| Substitute bindings in hash table keys
-
-;; hash = hash table
-;; bindings = variable bindings for keys hash table
-;; var-val-mappings = map for consistently swapping the cdr of a binding
-(defun swap-hash-keys (hash bindings &key (var-val-mappings))
-  (loop
-    with new-hash
-    for id being the hash-keys of hash
-      using (hash-value pos)
-    do
-       (multiple-value-bind (new-ident present-p)
-           (gethash id bindings)
-         (when (and present-p (not (equal id new-ident)))
-           (remhash id hash)
-	   (if var-val-mappings
-	       (setf (gethash new-ident hash) (cdr (assoc pos
-							  (gethash new-ident var-val-mappings))))
-               (setf (gethash new-ident hash) pos))
-           ;;(format t "~%original id: ~A gets swapped with new id: ~A~%new identifiers:~%~A" id new-ident new-hash)
-           ))
-    finally
-       (return hash)))
-|#
 #| Substitute bindings in hash table keys.
    Returns hash table.|#
 
@@ -299,24 +275,61 @@
     finally
        (return hash)))
 
-(defun swap-rule-conditions (rules bindings var-val-mappings)
-  (loop
-    with new-rule
-    for rule being the elements of rules
-    do
-       (setq new-rule (make-rule :id (rule-id rule)
-                                 :conditions (swap-hash-keys (rule-conditions rule) bindings :var-val-mappings var-val-mappings)
-                                 :probability (rule-probability rule)
-                                 :block (rule-block rule)
-                                 :certain-block (rule-certain-block rule)
-                                 :avoid-list (rule-avoid-list rule)
-                                 :redundancies (rule-redundancies rule)
-                                 :count (rule-count rule)))
-    collect new-rule into new-rules
-    finally
-       (return (make-array (array-dimension rules 0) :initial-contents new-rules))))
+#| Substitute bindings in rule conditions.
+   Returns array of rules. |#
 
-#| Perform variable binding substituion in var value map |#
+;; hash = hash table
+;; bindings = variable bindings for keys hash table
+;; var-val-mappings = hash table for consistently swapping the cdr of a binding
+(defun swap-rule-conditions (rules bindings var-val-mappings)
+  (labels ((substitute-rule-conditions (rule-conditions)
+             (loop
+               for id being the hash-keys of rule-conditions
+                 using (hash-value set)
+               do
+                  (multiple-value-bind (new-ident present-p)
+                      (gethash id bindings)
+                    (cond ((and present-p (not (equal id new-ident)))
+                           (when (and present-p (not (equal id new-ident)))
+                             (remhash id hash)
+                             (if var-val-mappings
+                                 (setf (gethash new-ident hash)
+                                       (mapcar #'(lambda (val)
+                                                   (cdr (assoc val (gethash new-ident var-val-mappings))))
+                                               set))
+                                 (setf (gethash new-ident hash) set))
+                             ;;(format t "~%original id: ~A gets swapped with new id: ~A~%new identifiers:~%~A" id new-ident new-hash)
+                             ))
+                          (var-val-mappings
+                           (multiple-value-bind (present-p new-vvb)
+                               (gethash id var-val-mappings)
+                             (when present-p
+                               (setf (gethash id hash)
+                                     (mapcar #'(lambda (val)
+                                                 (cdr (assoc val (gethash id var-val-mappings))))
+                                             set)))))))
+               finally
+                  (return hash))))
+    (loop
+      with new-rule
+      for rule being the elements of rules
+      do
+         (setq new-rule (make-rule :id (rule-id rule)
+                                   :conditions (substitute-rule-conditions (rule-conditions rule))
+                                   :probability (rule-probability rule)
+                                   :block (rule-block rule)
+                                   :certain-block (rule-certain-block rule)
+                                   :avoid-list (rule-avoid-list rule)
+                                   :redundancies (rule-redundancies rule)
+                                   :count (rule-count rule)))
+      collect new-rule into new-rules
+      finally
+         (return (make-array (array-dimension rules 0) :initial-contents new-rules)))))
+
+#| Perform variable binding substituion in var value map.
+   Returns hash table.
+     key:  variable id,
+     value: list of bindings mapping variable values to new positional indecies |#
 
 ;; cpd = conditional probability distribution
 ;; cpd2 = conditional probability distribution
@@ -372,7 +385,7 @@
 		   (when (null (gethash ident var-val-mappings))
 		     (setf (gethash ident var-val-mappings) nil))
 		   (setf (gethash ident var-val-mappings)
-			 (cons (cons (cdr binding) val) (gethash ident var-val-mappings)))
+             (cons (cons (cdr binding) val) (gethash ident var-val-mappings)))
 		   (setq var-values (cons val var-values))
 		   (setq new-binding (list (cons q-match-binding val) block))
 		   (setq new-nbinding (list (cons q-match-binding val) nblock)))
@@ -889,6 +902,11 @@
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
 
+#| Substitute variable bindings across a CPD |#
+
+;; cpd = conditional probability 1
+;; cpd2 = conditional probability 2
+;; bindings = variable bindings
 (defun subst-cpd (cpd cpd2 bindings &key (deep nil) &aux new-cpd dep-id)
   ;;(format t "~%original cpd:~%~A" cpd)
   ;;(setq dep-id (cdr (assoc (cpd-dependent-id cpd) bindings :test #'equal)))

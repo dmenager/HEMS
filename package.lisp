@@ -67,10 +67,10 @@
 	   #:get-entropy
 	   #:compute-network-concentration
 	   #:make-temporal-episode-retrieval-cue
-	   #:make-df
-	   #:fges
-	   #:fci
-	   #:read-csv
+	   ;;#:make-df
+	   ;;#:fges
+	   ;;#:fci
+	   ;;#:read-csv
 	   #:get-row
 	   #:get-rows
 	   #:n-format-df-column-names

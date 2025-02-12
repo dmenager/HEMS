@@ -4591,7 +4591,94 @@
                (push rule result)))))
     result))
 
-#| Perform a filter operation over rules |#
+;; new-idents = identifiers in the phi2 that are not in phi1
+(defun operate-filter-rules (rules1 rules2 phi1 phi2 new-idents op)
+  (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
+             (loop
+               with matched = nil
+               for r1 being the elements of r1s
+               when (or (and (or (eq op '+) (eq op #'+)))
+                        (and (or (eq op '*) (eq op #'*))))
+                 do
+                    (setq matched nil)
+                    (loop
+                      for r2 being the elements of r2s
+                      when (compatible-rule-p r1 r2 phi1 phi2)
+                        do
+                           (setq matched t)
+                           (when (null (gethash (rule-id r1) matched-rules-hash))
+                             (setf (gethash (rule-id r1) matched-rules-hash) nil))
+                           (setf (gethash (rule-id r1) matched-rules-hash)
+                                 (cons r2 (gethash (rule-id r1) matched-rules-hash))))
+                    (when (null matched)
+                      (setq no-match-list (cons r1 no-match-list)))
+               finally
+                  (return (values matched-rules-hash no-match-list))))
+           (equal-rule-intersection (r1 r2)
+             ;; check if r1 and r2 have the same conditions
+
+             (loop
+               with set2 and insersection-set
+               for attribute being the hash-keys of (rule-conditions r1)
+                 using (hash-value set1)
+               do
+                  (setq set2 (gethash attribute (rule-conditions r2)))
+                  (setq intersection-set (intersection set1 set2))
+                  (cond ((null set2)
+                         ;; check to see if the attribute exists in the CPD
+                         (let ((foundp (gethash attribute new-idents)))
+                           (cond ((and foundp (null intersection-set))
+                                  ;; attribute was removed from rule during local covering step
+                                  ;; In this case, the domain for attribute is the universe
+                                  )
+                                 ((not foundp)
+                                  ;; attribute is new to phi1
+                                  )
+                                 (t
+                                  ;; failure case
+                                  )))
+                         )
+                        ((null intersection-set)
+                         (setq in))
+                        ((t))))))
+  (let ((matched-r1s (make-hash-table :test #'equal))
+        (matched-r2s (make-hash-table :test #'equal))
+        no-match-r1s
+        no-match-r2s)
+    ;; check to see if r1 has a match in phi2
+    (multiple-value-setq (matched-r1s no-match-r1s)
+      (find-matched-rules rules1 rules2 matched-r1s no-match-r1s))
+    ;; check to see if r2 has a match in phi1
+    (multiple-value-setq (matched-r2s no-match-r2s)
+      (find-matched-rules rules2 rules1 matched-r2s no-match-r2s))
+    ;; process the matched rules
+    (loop
+      with matched-rules
+      for r1 in rules1
+      when (or (and (or (eq op '+) (eq op #'+)))
+               (and (or (eq op '*) (eq op #'*))))
+        do
+           (setq matched-rules (gethash (rule-id r1) matched-r1s))
+           (loop
+             with new-conditions
+             for r2 in matched-rules
+             do
+                ;; check if the two rules are the same
+                (setq new-conditions (equal-rule-intersection r1 r2))
+                (cond ((null new-conditions)
+                       ;; compatible, but not the same rule
+                       )
+                      (t
+                       ;; for each rule condtion, there is a non-empty subset of the values of that conditions
+                       (setq new-rule (rule-filter r1 r2 op num-rules new-conditions))
+                       (when (rule-based-cpd-singleton-p phi2)
+                         (setf (rule-count new-rule) nil))))
+             ))
+    ;; process the no-match rules
+    )))
+
+#| Perform a filter operation over rules
+   Returns: a list of rules
 
 ;; rules1 = rules from phi1
 ;; rules2 = rules from phi2
@@ -4719,7 +4806,7 @@
            (setq rule-key (make-array (+ (hash-table-count new-idents) 1)
                                       :initial-element -1))
            (setf (aref rule-key 0) 1)
-           (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2))) 
+           (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
              (format t "~%rule1:~%")
              (print-cpd-rule r1)
              (format t "~%cpd identifiers:~%~S" (rule-based-cpd-identifiers phi1)))
@@ -4731,7 +4818,7 @@
                   (format t "~%att: ~S val: ~S~%identifiers:~%~S~%rule key:~%~S" cond val new-idents rule-key))
                 (setf (aref rule-key (+ (gethash cond new-idents) 1)) (+ 1 val)))
            (loop
-             with match-p = nil
+             with match-p = nil and compatible-p
              with split1 and split2 and avoid1 and avoid2
              with new-r1-rules and new-r2-rules and same-rule?
              with rk
@@ -4743,129 +4830,127 @@
                   (setq rk (make-array (+ (hash-table-count new-idents) 1)
                                        :initial-element -1))
                   (setf (aref rk 0) 1)
-                  (multiple-value-bind (compatible-p num-compatible)
-                      (compatible-rule-p r1 r2 phi1 phi2)
-                    (declare (ignore num-compatible))
-                    (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                      (format t "~%rule1:")
-                      (print-cpd-rule r1)
-                      (format t "~%~S~%rule2:" op)
-                      (print-cpd-rule r2)
-                      (format t "~%compatible: ~S" compatible-p))
-                    (cond (compatible-p
-                           (setq match-p t)
-                           (setf (aref unmatched-qs j) t)
-                           (cond ((same-rule-p r1 r2 phi1 phi2 :check-count nil :check-probability nil :exact t)
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%same-rule~%singleton-p phi1?: ~S" (singleton-cpd? phi1)))				
-                                  (setq new-rule (rule-filter r1 r2 op num-rules))
-                                  (when (rule-based-cpd-singleton-p phi2)
-                                    (setf (rule-count new-rule) nil))
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%candidate new rule:")
-                                    (print-cpd-rule new-rule)
-                                    (format t "~%rule key:~%~S" rk))
-                                  (when (< (rule-probability new-rule) 0)
-                                    (format t "~%rule with negative probability:~%~S" new-rule)
-                                    (break))
-                                  (setq existing (gethash rk seen))
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%rule exist in seen?:~%~S" existing))
-                                  (cond (existing
-                                         (when (> (rule-count new-rule) (rule-count existing))
-                                           (setf (rule-count existing) (rule-count new-rule))
-                                           (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                             (format t "~%updated existing rule count:~%~S" existing))))
-                                        (t
-                                         ;;(format t "~%new rule:~% ~S" new-rule)
-                                         (setf (rule-block new-rule) (make-hash-table))
-                                         (setf (gethash num-rules (rule-block new-rule)) num-rules) ;;(setf (rule-block candidate-rule) (list num-rules))
-                                         (setf (gethash rk seen) new-rule)
-                                         ;;(setq new-rules (cons new-rule new-rules))
-                                         (setq num-rules (+ num-rules 1))
+                  (setq compatible-p (compatible-rule-p r1 r2 phi1 phi2))
+                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                    (format t "~%rule1:")
+                    (print-cpd-rule r1)
+                    (format t "~%~S~%rule2:" op)
+                    (print-cpd-rule r2)
+                    (format t "~%compatible: ~S" compatible-p))
+                  (cond (compatible-p
+                         (setq match-p t)
+                         (setf (aref unmatched-qs j) t)
+                         (cond ((same-rule-p r1 r2 phi1 phi2 :check-count nil :check-probability nil :exact t)
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%same-rule~%singleton-p phi1?: ~S" (singleton-cpd? phi1)))
+                                (setq new-rule (rule-filter r1 r2 op num-rules))
+                                (when (rule-based-cpd-singleton-p phi2)
+                                  (setf (rule-count new-rule) nil))
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%candidate new rule:")
+                                  (print-cpd-rule new-rule)
+                                  (format t "~%rule key:~%~S" rk))
+                                (when (< (rule-probability new-rule) 0)
+                                  (format t "~%rule with negative probability:~%~S" new-rule)
+                                  (break))
+                                (setq existing (gethash rk seen))
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%rule exist in seen?:~%~S" existing))
+                                (cond (existing
+                                       (when (> (rule-count new-rule) (rule-count existing))
+                                         (setf (rule-count existing) (rule-count new-rule))
                                          (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                           ;;(format t "~%op: ~S" op)
-                                           (format t "~%updated new rules:")
-                                           (maphash #'print-hash-entry seen)))))
-                                 (t
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%not same rule"))
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%splitting:")
-                                    (print-cpd-rule r1)
-                                    (format t "~%and")
-                                    (print-cpd-rule r2))
-                                  (loop
-                                    with r2-copy = (copy-cpd-rule r2)
-                                    for att being the hash-keys of (rule-conditions r1)
-                                      using (hash-value val)
-                                    when (and (not (= val 0))
-                                              (null (gethash att (rule-based-cpd-identifiers phi2))))
-                                      do
-                                         (setf (rule-count r2-copy) 0)
-                                         (setf (rule-probability r2-copy) 0)
-                                    finally
-                                       (setq new-rule (rule-filter r1 r2-copy op num-rules)))
-                                  (when (rule-based-cpd-singleton-p phi2)
-                                    (setf (rule-count new-rule) nil))
-                                  (when (< (rule-probability new-rule) 0)
-                                    (format t "~%rule with negative probability:~%~S" new-rule)
-                                    (break))
-                                  (loop
-                                    for att being the hash-keys of (rule-conditions r2)
-                                      using (hash-value val)
+                                           (format t "~%updated existing rule count:~%~S" existing))))
+                                      (t
+                                       ;;(format t "~%new rule:~% ~S" new-rule)
+                                       (setf (rule-block new-rule) (make-hash-table))
+                                       (setf (gethash num-rules (rule-block new-rule)) num-rules) ;;(setf (rule-block candidate-rule) (list num-rules))
+                                       (setf (gethash rk seen) new-rule)
+                                       ;;(setq new-rules (cons new-rule new-rules))
+                                       (setq num-rules (+ num-rules 1))
+                                       (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                         ;;(format t "~%op: ~S" op)
+                                         (format t "~%updated new rules:")
+                                         (maphash #'print-hash-entry seen)))))
+                               (t
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%not same rule"))
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%splitting:")
+                                  (print-cpd-rule r1)
+                                  (format t "~%and")
+                                  (print-cpd-rule r2))
+                                (loop
+                                  with r2-copy = (copy-cpd-rule r2)
+                                  for att being the hash-keys of (rule-conditions r1)
+                                    using (hash-value val)
+                                  when (and (not (= val 0))
+                                            (null (gethash att (rule-based-cpd-identifiers phi2))))
                                     do
-                                       (setf (gethash att (rule-conditions new-rule)) val)
-                                       (setf (aref rk (+ (gethash att new-idents) 1)) (+ 1 val)))
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%candidate new rule:")
-                                    (print-cpd-rule new-rule)
-                                    (format t "~%rule key:~%~S" rk)
-                                    ;;(break)
-                                    )
-                                  (when nil
-                                    (loop
-                                      with split-rules = nil
-                                      for existing-rule being the hash-values of seen
-                                      when (and (compatible-rule-p new-rule existing-rule phi2 phi2)
-                                                (or (not (equal (rule-probability new-rule)
-                                                                (rule-probability existing-rule)))
-                                                    (not (equal (rule-count new-rule)
-                                                                (rule-count existing-rule)))))
-                                        do
-                                           (format t "~%~%candidate rule:")
-                                           (print-cpd-rule new-rule)
-                                           (Format t "~%is compatible with rule:")
-                                           (print-cpd-rule existing-rule)
-                                           (format t "~%but has different probability or count assignment")
-                                           (format t "~%r1 ~S:" (rule-id r1))
-                                           (print-cpd-rule r1)
-                                           (format t "~%r2 ~S:" (rule-id r2))
-                                           (print-cpd-rule r2)
-                                           (format t "~%schema (phi2) identifiers:~%~S" (rule-based-cpd-identifiers phi2))
-                                           (break)))
-                                  (setq existing (gethash rk seen))
-                                  (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
-                                    (format t "~%rule exist in seen?:~%~S" existing))
-                                  (cond (existing
-                                         (when (> (rule-count new-rule) (rule-count existing))
-                                           (setf (rule-count existing) (rule-count new-rule))
-                                           (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
-                                                 (format t "~%updated existing rule count:~%~S" existing)
-                                                 (finish-output))))
-                                        (t
-                                         (setf (rule-block new-rule) (make-hash-table))
-                                         (setf (gethash num-rules (rule-block new-rule)) num-rules) ;;(setf (rule-block candidate-rule) (list num-rules))
-                                         (setf (gethash rk seen) new-rule)
-                                         ;;(setq new-rules (cons new-rule new-rules))
-                                         (setq num-rules (+ num-rules 1))
+                                       (setf (rule-count r2-copy) 0)
+                                       (setf (rule-probability r2-copy) 0)
+                                  finally
+                                     (setq new-rule (rule-filter r1 r2-copy op num-rules)))
+                                (when (rule-based-cpd-singleton-p phi2)
+                                  (setf (rule-count new-rule) nil))
+                                (when (< (rule-probability new-rule) 0)
+                                  (format t "~%rule with negative probability:~%~S" new-rule)
+                                  (break))
+                                (loop
+                                  for att being the hash-keys of (rule-conditions r2)
+                                    using (hash-value val)
+                                  do
+                                     (setf (gethash att (rule-conditions new-rule)) val)
+                                     (setf (aref rk (+ (gethash att new-idents) 1)) (+ 1 val)))
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%candidate new rule:")
+                                  (print-cpd-rule new-rule)
+                                  (format t "~%rule key:~%~S" rk)
+                                  ;;(break)
+                                  )
+                                (when nil
+                                  (loop
+                                    with split-rules = nil
+                                    for existing-rule being the hash-values of seen
+                                    when (and (compatible-rule-p new-rule existing-rule phi2 phi2)
+                                              (or (not (equal (rule-probability new-rule)
+                                                              (rule-probability existing-rule)))
+                                                  (not (equal (rule-count new-rule)
+                                                              (rule-count existing-rule)))))
+                                      do
+                                         (format t "~%~%candidate rule:")
+                                         (print-cpd-rule new-rule)
+                                         (format t "~%is compatible with rule:")
+                                         (print-cpd-rule existing-rule)
+                                         (format t "~%but has different probability or count assignment")
+                                         (format t "~%r1 ~S:" (rule-id r1))
+                                         (print-cpd-rule r1)
+                                         (format t "~%r2 ~S:" (rule-id r2))
+                                         (print-cpd-rule r2)
+                                         (format t "~%schema (phi2) identifiers:~%~S" (rule-based-cpd-identifiers phi2))
+                                         (break)))
+                                (setq existing (gethash rk seen))
+                                (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+                                  (format t "~%rule exist in seen?:~%~S" existing))
+                                (cond (existing
+                                       (when (> (rule-count new-rule) (rule-count existing))
+                                         (setf (rule-count existing) (rule-count new-rule))
                                          (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
-                                               ;;(format t "~%op: ~S" op)
-                                               (format t "~%updated new rules:")
-                                               (maphash #'print-hash-entry seen)
-                                               (finish-output)
-                                               ;;(break)
-                                               ))))))))
+                                               (format t "~%updated existing rule count:~%~S" existing)
+                                               (finish-output))))
+                                      (t
+                                       (setf (rule-block new-rule) (make-hash-table))
+                                       (setf (gethash num-rules (rule-block new-rule)) num-rules) ;;(setf (rule-block candidate-rule) (list num-rules))
+                                       (setf (gethash rk seen) new-rule)
+                                       ;;(setq new-rules (cons new-rule new-rules))
+                                       (setq num-rules (+ num-rules 1))
+                                       (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi2)))
+                                             ;;(format t "~%op: ~S" op)
+                                             (format t "~%updated new rules:")
+                                             (maphash #'print-hash-entry seen)
+                                             (finish-output)
+                                             ;;(break)
+                                             )))))))
              finally
                 (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
                   (format t "~%~%new rules so far:")
@@ -4923,188 +5008,6 @@
                ;;(break)
                )
          (return (nreverse new-rules)))))
-
-#| Perform an operation over rules
-
-;; rules1 = rules from phi1
-;; rules2 = rules from phi2
-;; phi1 = schema conditional probability distribution
-;; phi2 = episode conditional probability distribution
-;; op = operation to apply on rules
-(defun operate-rules-1 (rules1 rules2 phi1 phi2 op var-dif &key (allow-negations-p t))
-  (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-    (format t "~%~%identifiers1:~%~S~%rules1:~%~S~%identifiers:2:~%~S~%rules2:~%~S" (rule-based-cpd-identifiers phi1) rules1 (rule-based-cpd-identifiers phi2) rules2))
-  (loop
-    with new-rule and new-rules and num-rules = 0
-    for r1 being the elements of rules1
-    do
-       (setq new-rule nil)
-       (loop
-         with split1 and split2 and avoid1 and avoid2 and candidate-rules
-         with new-r1-rules and new-r2-rules and same-rule?
-         for r2 being the elements of rules2
-         do
-            (multiple-value-bind (compatible-p num-compatible)
-                (compatible-rule-p r1 r2 phi1 phi2)
-              (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                    (format t "~%rule1:~%~S~%~S~%rule2:~%~S~%compatible: ~S" r1 op r2 compatible-p))
-              (cond (compatible-p
-                     (cond ((same-rule-p r1 r2 phi1 phi2 :check-count nil :check-probability nil :exact t)
-                            (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%same-rule"))
-                            (setq new-rule (rule-filter r1 r2 op num-rules (not (singleton-cpd? phi1))))
-                            ;;(format t "~%new rule:~% ~S" new-rule)
-                            (setq candidate-rules (list new-rule)))
-                           (t
-                            (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%not same rule"))
-                            (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                                  (format t "~%splitting:~%~S~%and~%~S" r1 r2))
-                            (loop
-                              with new-rule = (rule-filter r1 r2 op num-rules (not (singleton-cpd? phi1)))
-                              for att being the hash-keys of (rule-conditions r2)
-                                using (hash-value val)
-                              do
-                                 (setf (gethash att (rule-conditions new-rule)) val)
-                              finally
-                                 (setq candidate-rules (list new-rule)))
-                            (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                                  (format t "~%new rule:~%~S" (car candidate-rules))
-                                  ;;(break)
-                                  )))
-                     (loop
-                       for candidate-rule in candidate-rules
-                       for i from 0
-                       do
-                          (when t #|(and (or (null op)
-                                         (and op
-                                              (compatible-rule-p candidate-rule r1 nil nil)
-                                              (compatible-rule-p candidate-rule r2 nil nil)))
-                                       (not (member candidate-rule new-rules :test #'(lambda (r1 r2) (same-rule-p r1 r2 phi1 phi2)))))
-                                |#
-                            ;; look up compatibilities
-                            ;; if compatible with rule that has diff probability, break compatibilities by adding conditions
-                            ;; conditions must be not present in cpd
-                            (when nil (and (= cycle* 7) (equal "HAND1679" (rule-based-cpd-dependent-id phi1)))
-                                  (format t "~%added new rule"))
-                            (setf (rule-block candidate-rule) (make-hash-table))
-                            (setf (gethash num-rules (rule-block candidate-rule)) num-rules) ;;(setf (rule-block candidate-rule) (list num-rules))
-                            (setq new-rules (cons candidate-rule new-rules))
-                            (setq num-rules (+ num-rules 1))
-                            (when nil (and (= cycle* 2) (equal "BLOCK505" (rule-based-cpd-dependent-id phi1)))
-                                  ;;(format t "~%op: ~S" op)
-                                  (format t "~%updated new rules:~%~S" new-rules)
-                                  (break))))))))
-    finally
-       (when nil (and (= cycle* 15) (equal "INTENTION37068" (rule-based-cpd-dependent-id phi1)))
-             (format t "~%returning new rules:~%~S" new-rules))
-       (return new-rules)))
-|#
-
-#| Perform an operation over rules
-
-;; rules1 = rules from phi1
-;; rules2 = rules from phi2
-;; phi1 = schema conditional probability distribution
-;; phi2 = episode conditional probability distribution
-;; op = operation to apply on rules
-;; var-dif = new idents in episode not in schema
-(defun operate-rules-2 (rules1 rules2 phi1 phi2 op var-dif &key (allow-negations-p t))
-  (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-        (format t "~%~%identifiers1:~%~S~%rules1:~%~S~%identifiers2:~%~S~%rules2:~%~S" (rule-based-cpd-identifiers phi1) rules1 (rule-based-cpd-identifiers phi2) rules2))
-  (loop
-    with new-rule and new-rules and num-rules = 0
-    with r1 and match-p = nil
-    with rules2-copy = rules2
-    while rules1
-    do
-       (setq r1 (car rules1))
-       (setq new-rule nil)
-       (setq match-p nil)
-       (loop
-         named loop-rules2
-         with split1 and split2 and avoid1 and avoid2 and candidate-rules
-         with new-r1-rules and new-r2-rules
-         with r2
-         with j = 0
-         with rules2-copy-indexer = rules2-copy
-         while rules2
-         do
-            (setq r2 (car rules2))
-            (multiple-value-bind (compatible-p num-compatible)
-                (compatible-rule-p r1 r2 phi1 phi2)
-              (declare (ignore num-compatible))
-              (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                (format t "~%rule1:~%~S~%~S~%rule2:~%~S~%compatible: ~S" r1 op r2 compatible-p))
-              (cond (compatible-p
-                     (cond ((same-rule-p r1 r2 phi1 phi2 :check-count nil :check-probability nil :exact t)
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%same-rule"))
-                            (setq new-rule (rule-filter r1 r2 op num-rules (not (singleton-cpd? phi1))))
-                            ;;(format t "~%new rule:~% ~S" new-rule)
-                            (setf (rule-block new-rule) (make-hash-table))
-                            (setf (gethash num-rules (rule-block new-rule)) num-rules)
-                            (setq new-rules (cons new-rule new-rules))
-                            (setq num-rules (+ num-rules 1))
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              ;;(format t "~%op: ~S" op)
-                              (format t "~%updated new rules:~%~S" new-rules)
-                              ;;(break)
-                              )
-                            (setq rules1 (rest rules1))
-                            (setq r1 (car rules1))
-                            (cond ((= j 0)
-                                   (setq rules2 (rest rules2))
-                                   (setq rules2-copy rules2)
-                                   (setq rules2-copy-indexer rules2-copy))
-                                  (t
-                                   (setf (cdr rules2-copy-indexer) (cdr rules2))
-                                   (setq rules2 rules2-copy)))
-                            (setq match-p t)
-                            (return-from loop-rules2 nil))
-                           (t
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%not same rule"))
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%splitting:~%~S~%and~%~S" r1 r2))
-                            (multiple-value-setq (split1 split2 avoid1 avoid2)
-                              (prepare-rules-for-split r1 r2 phi1 phi2))
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%rule1:~%~S~%rule2:~%~S~%avoid1:~%~S~%avoid2:~%~S" split1 split2 avoid1 avoid2))
-                            (setq new-r1-rules (rule-split split1 (rule-conditions split2) phi1 phi2 var-dif :enforce-compatible (not (null op)) :avoid-hash avoid1))
-                            (setq new-r2-rules (rule-split split2 (rule-conditions split1) phi2 phi1 (make-hash-table) :enforce-compatible (not (null op)) :avoid-hash avoid2))
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t "~%split r1:~%~S~%split r2:~%~S" new-r1-rules new-r2-rules))
-                            (setf (cdr (last new-r1-rules)) (rest rules1))
-                            (setf (cdr (last new-r2-rules)) (rest rules2))
-                            (setq rules1 new-r1-rules)
-                            (setq r1 (car rules1))
-                            (setq rules2 new-r2-rules)
-                            (cond ((= j 0)
-                                   (setq rules2-copy rules2)
-                                   (setq rules2-copy-indexer rules2-copy))
-                                  (t
-                                   (setf (cdr rules2-copy-indexer) new-r2-rules)))
-                            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-                              (format t  "~%~%new r1 rules:~%~S~%new r2 rules:~%~S" rules1 rules2-copy)
-                              ;;(break)
-                              ))))
-                    (t
-                     (setq j (+ j 1))
-                     (setq rules2-copy-indexer rules2)
-                     (setq rules2 (rest rules2)))))
-         finally
-            (when (and (= cycle* 17) (equal "HAND524" (rule-based-cpd-dependent-id phi1)))
-              (format t "~%~%no match for~%~S~%skipping" r1)
-              ;; (break)
-              )
-            (setq rules2 rules2-copy))
-       (when (not match-p)
-         (setq rules1 (rest rules1)))
-    finally
-       (when nil (and (= cycle* 15) (equal "INTENTION37068" (rule-based-cpd-dependent-id phi1)))
-             (format t "~%returning new rules:~%~S" new-rules))
-       (return new-rules)))
 |#
 
 #| Check cpd vvbms |#

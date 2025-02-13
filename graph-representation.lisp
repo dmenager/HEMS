@@ -336,7 +336,7 @@
 ;; bindings = variable bindings for matches
 (defun subst-var-value-block-map (cpd cpd2 bindings)
   (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-    (format t "~%cpd:~%~S~%cpd2:~%~S~%bindings:~%~S" cpd cpd2 bindings))
+        (format t "~%cpd:~%~S~%cpd2:~%~S~%bindings:~%~S" cpd cpd2 bindings))
   (loop
     with var-val-mappings = (make-hash-table :test #'equal) and domain and domain2
     with var-values = nil
@@ -346,75 +346,67 @@
        (setq var-values nil)
        (setq domain (gethash idx (rule-based-cpd-var-value-block-map cpd)))
        (when cpd2
-	 (setq domain2 (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
-				(rule-based-cpd-var-value-block-map cpd2))))
+         (setq domain2 (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
+                                (rule-based-cpd-var-value-block-map cpd2))))
        (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-	 (format t "~%~%domain:~%~S~%domain2:~%~S" domain domain2))
+             (format t "~%~%domain:~%~S~%domain2:~%~S" domain domain2))
        (loop
-	 with last-idx = (length domain2) and q-match-binding
+         with last-idx = (length domain2) and q-match-binding
          for (binding block) in domain
-	 for (nbinding nblock) in (gethash idx (rule-based-cpd-negated-vvbms cpd))
-         with val and new-binding and new-nbinding
+         with val and new-binding
          do
-	    (setq q-match-binding (gethash (car binding) bindings))
-	    (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-	      (format t "~%vvm:~%~S~%bindings:~%~S~%q-match-binding: ~S" binding bindings q-match-binding))
+            (setq q-match-binding (gethash (car binding) bindings))
+            (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
+                  (format t "~%vvm:~%~S~%bindings:~%~S~%q-match-binding: ~S" binding bindings q-match-binding))
             (cond ((and cpd2 (gethash ident (rule-based-cpd-identifiers cpd2)))
-		   (when (or (equal (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
-					     (rule-based-cpd-vars cpd)) "ACTION")
-			     (equal (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
-					     (rule-based-cpd-vars cpd)) "GOAL"))
-		     (when (gethash (car binding) bindings)
-		       (setq binding (cons (gethash (car binding) bindings) (cdr binding)))))
-		   (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
-		   (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-		     (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val))
-		   (when (not val)
-		     (setq q-match-binding (car binding))
-		     (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
-		     (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-		       (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val)))
-		   (when (not val)
-		     (if (gethash (car binding) bindings)
-			 (setq q-match-binding (gethash (car binding) bindings))
-			 (setq q-match-binding (car binding)))
-		     (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
-		       (format t "~%q-match binding: ~S" q-match-binding))
-		     (setq val last-idx)
-		     (setq last-idx (+ 1 last-idx)))
-		   (when (null (gethash ident var-val-mappings))
-		     (setf (gethash ident var-val-mappings) nil))
-		   (setf (gethash ident var-val-mappings)
-             (cons (cons (cdr binding) val) (gethash ident var-val-mappings)))
-		   (setq var-values (cons val var-values))
-		   (setq new-binding (list (cons q-match-binding val) block))
-		   (setq new-nbinding (list (cons q-match-binding val) nblock)))
-		  (t
-		   (setq var-values (cons (cdr binding) var-values))
-		   (cond ((gethash (car binding) bindings)
-			  (setq new-binding (list (cons (gethash (car binding) bindings)
-							(cdr binding))
-						  block))
-			  (setq new-nbinding (list (cons (gethash (car binding) bindings)
-							 (cdr binding))
-						   nblock)))
-			 (t
-			  (setq new-binding (list binding block))
-			  (setq new-nbinding (list nbinding nblock))))
-		   (when (null (gethash ident var-val-mappings))
-		     (setf (gethash ident var-val-mappings) nil))
-		   (setf (gethash ident var-val-mappings)
-			 (cons (cons (cdr binding) (cdr binding))
-			       (gethash ident var-val-mappings)))))
+                   (when (or (equal (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
+                                             (rule-based-cpd-vars cpd)) "ACTION")
+                             (equal (gethash (gethash ident (rule-based-cpd-identifiers cpd2))
+                                             (rule-based-cpd-vars cpd)) "GOAL"))
+                     (when (gethash (car binding) bindings)
+                       (setq binding (cons (gethash (car binding) bindings) (cdr binding)))))
+                   (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
+                   (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
+                         (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val))
+                   (when (not val)
+                     (setq q-match-binding (car binding))
+                     (setq val (cdar (assoc q-match-binding domain2 :key #'car :test #'equal)))
+                     (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
+                           (format t "~%(assoc ~S ~S): ~S~%val:~%~S" q-match-binding  domain2 (assoc q-match-binding domain2 :key #'car :test #'equal) val)))
+                   (when (not val)
+                     (if (gethash (car binding) bindings)
+                         (setq q-match-binding (gethash (car binding) bindings))
+                         (setq q-match-binding (car binding)))
+                     (when nil (and print-special* cpd2 (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id cpd2)))
+                           (format t "~%q-match binding: ~S" q-match-binding))
+                     (setq val last-idx)
+                     (setq last-idx (+ 1 last-idx)))
+                   (when (null (gethash ident var-val-mappings))
+                     (setf (gethash ident var-val-mappings) nil))
+                   (setf (gethash ident var-val-mappings)
+                         (cons (cons (cdr binding) val) (gethash ident var-val-mappings)))
+                   (setq var-values (cons val var-values))
+                   (setq new-binding (list (cons q-match-binding val) block)))
+                  (t
+                   (setq var-values (cons (cdr binding) var-values))
+                   (cond ((gethash (car binding) bindings)
+                          (setq new-binding (list (cons (gethash (car binding) bindings)
+                                                        (cdr binding))
+                                                  block)))
+                         (t
+                          (setq new-binding (list binding block))))
+                   (when (null (gethash ident var-val-mappings))
+                     (setf (gethash ident var-val-mappings) nil))
+                   (setf (gethash ident var-val-mappings)
+                         (cons (cons (cdr binding) (cdr binding))
+                               (gethash ident var-val-mappings)))))
          collect new-binding into new-domain
-	 collect new-nbinding into new-ndomain
          finally
             (setf (gethash idx (rule-based-cpd-var-value-block-map cpd)) new-domain)
-	    (setf (gethash idx (rule-based-cpd-negated-vvbms cpd)) new-ndomain)
-	    (setf (gethash idx (rule-based-cpd-var-values cpd)) (nreverse var-values)))
+            (setf (gethash idx (rule-based-cpd-var-values cpd)) (nreverse var-values)))
     finally
        (when (and nil print-special* cpd2 (equal "GREATER_230" (rule-based-cpd-dependent-id cpd2)))
-	      (format t "~%var-val-mappings:~%~S" var-val-mappings))
+         (format t "~%var-val-mappings:~%~S" var-val-mappings))
        (return var-val-mappings)))
 
 #| Return the keys of the hash table as a list |#
@@ -4616,7 +4608,6 @@
                   (return (values matched-rules-hash no-match-list))))
            (equal-rule-intersection (r1 r2)
              ;; check if r1 and r2 have the same conditions
-
              (loop
                with set2 and insersection-set
                for attribute being the hash-keys of (rule-conditions r1)
@@ -4640,11 +4631,26 @@
                          )
                         ((null intersection-set)
                          (setq in))
-                        ((t))))))
+                        ((t)))))
+           (rule-check-for-missing-identifiers (r1 r2 new-rule cpd2)
+             (loop
+               named looper
+               for att being the hash-keys of (rule-conditions r1)
+                 using (hash-value vals)
+               when (and (not-every #'(lambda (val)
+                                        (= val 0))
+                                    vals)
+                         (null (gethash att (rule-based-cpd-identifiers cpd2))))
+                 do
+                    (setf (rule-count new-rule) 0)
+                    (setf (rule-probability new-rule) 0)
+                    (return-from looper new-rule))))
   (let ((matched-r1s (make-hash-table :test #'equal))
         (matched-r2s (make-hash-table :test #'equal))
+        (num-rules 0)
         no-match-r1s
-        no-match-r2s)
+        no-match-r2s
+        new-rules)
     ;; check to see if r1 has a match in phi2
     (multiple-value-setq (matched-r1s no-match-r1s)
       (find-matched-rules rules1 rules2 matched-r1s no-match-r1s))
@@ -4667,14 +4673,46 @@
                 (setq new-conditions (equal-rule-intersection r1 r2))
                 (cond ((null new-conditions)
                        ;; compatible, but not the same rule
+                       (let ((r2-copy (copy-cpd-rule r2))
+                             (r1-copy (copy-cpd-rule r1)))
+                         (setq r2-copy (rule-check-for-missing-identifiers r1 r2 r2-copy phi2))
+                         (setq r1-copy (rule-check-for-missing-identifiers r2 r1 r1-copy phi1))
+                         (setq new-rule (rule-filter r1-copy r2-copy op num-rules (make-hash-table :test #'equal)))
+                         (loop
+                           with vals2
+                           for attribute being the hash-keys of (rule-conditions r1)
+                             using (hash-value vals1)
+                           do
+                              (setq vals2 (gethash attribute (rule-conditions r2)))
+                              (cond ((and (gethash attribute (rule-based-cpd-identifiers phi2))
+                                          (null vals2))
+                                     ;; attribute was removed from local covering, so the block is the universe
+                                     (setf (gethash attribute (rule-conditions new-rule))
+                                           vals1))
+                                    ((and (null (gethash attribute (rule-based-cpd-identifiers phi2)))
+                                          (null vals2))
+                                     ;; attribute is not in phi2)
+                                    ((and (gethash attribute (rule-based-cpd-identifiers phi2))
+                                          vals2)
+                                     ;; attribute is in both cpds, so you take the intersection
+                                     (setf (gethash attribute (rule-conditions new-rule))
+                                           (intersection vals1 vals2)))))
+                         (loop
+                           for attribute-being-the-has)
+                         (when (rule-based-cpd-singleton-p phi2)
+                           (setf (rule-count new-rule) nil)))
                        )
                       (t
                        ;; for each rule condtion, there is a non-empty subset of the values of that conditions
                        (setq new-rule (rule-filter r1 r2 op num-rules new-conditions))
                        (when (rule-based-cpd-singleton-p phi2)
-                         (setf (rule-count new-rule) nil))))
+                         (setf (rule-count new-rule) nil))
+                       (setf (gethash num-rules (rule-block new-rule)) num-rules)
+                       (setq new-rules (cons new-rule new-rules))
+                       (setq num-rules (+ num-rules 1))))
              ))
     ;; process the no-match rules
+    ;; update the counts of rules that are a subset of other rules with higher counts
     )))
 
 #| Perform a filter operation over rules

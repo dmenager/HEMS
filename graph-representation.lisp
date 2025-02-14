@@ -4606,6 +4606,33 @@
                       (setq no-match-list (cons r1 no-match-list)))
                finally
                   (return (values matched-rules-hash no-match-list))))
+           (n-make-intersected-rule-conditions (r1 r2 cpd2 conditions-hash)
+             (loop
+               with vals2
+               for attribute being the hash-keys of (rule-conditions r1)
+                 using (hash-value vals1)
+               when (not (gethash attribute (rule-conditions r1)))
+                 do
+                  (setq vals2 (gethash attribute (rule-conditions r2)))
+                  (cond ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
+                              (null vals2))
+                         ;; attribute was removed from local covering, so the set vals2 would contain all values
+                         (setf (gethash attribute conditions-hash)
+                               vals1))
+                        ((and (null (gethash attribute (rule-based-cpd-identifiers cpd2)))
+                              (null vals2))
+                         ;; attribute is not in cpd2.
+                         ;; That means we have an (attribute . [0]) and (attribute . [1 ...]) for all rules.
+                         ;; (attribute . [0 ...]) will never happen durin insertion
+                         ;; We will never enter this branch during inference because attribute will be in cpd2 from schema
+                         ;; So, it is safe to set the new rule condition to vals1
+                         (setf (gethash attribute conditions-hash)
+                               vals1))
+                        ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
+                              vals2)
+                         ;; attribute is in both cpds, so you take the intersection
+                         (setf (gethash attribute conditions-hash)
+                               (intersection vals1 vals2))))))
            (equal-rule-intersection (r1 r2)
              ;; check if r1 and r2 have the same conditions
              (loop
@@ -4666,7 +4693,7 @@
         do
            (setq matched-rules (gethash (rule-id r1) matched-r1s))
            (loop
-             with new-conditions
+             with new-conditions and new-rule
              for r2 in matched-rules
              do
                 ;; check if the two rules are the same
@@ -4675,41 +4702,23 @@
                        ;; compatible, but not the same rule
                        (let ((r2-copy (copy-cpd-rule r2))
                              (r1-copy (copy-cpd-rule r1)))
-                         (setq r2-copy (rule-check-for-missing-identifiers r1 r2 r2-copy phi2))
                          (setq r1-copy (rule-check-for-missing-identifiers r2 r1 r1-copy phi1))
+                         (setq r2-copy (rule-check-for-missing-identifiers r1 r2 r2-copy phi2))
                          (setq new-rule (rule-filter r1-copy r2-copy op num-rules (make-hash-table :test #'equal)))
-                         (loop
-                           with vals2
-                           for attribute being the hash-keys of (rule-conditions r1)
-                             using (hash-value vals1)
-                           do
-                              (setq vals2 (gethash attribute (rule-conditions r2)))
-                              (cond ((and (gethash attribute (rule-based-cpd-identifiers phi2))
-                                          (null vals2))
-                                     ;; attribute was removed from local covering, so the block is the universe
-                                     (setf (gethash attribute (rule-conditions new-rule))
-                                           vals1))
-                                    ((and (null (gethash attribute (rule-based-cpd-identifiers phi2)))
-                                          (null vals2))
-                                     ;; attribute is not in phi2)
-                                    ((and (gethash attribute (rule-based-cpd-identifiers phi2))
-                                          vals2)
-                                     ;; attribute is in both cpds, so you take the intersection
-                                     (setf (gethash attribute (rule-conditions new-rule))
-                                           (intersection vals1 vals2)))))
-                         (loop
-                           for attribute-being-the-has)
+                         (setf (rule-conditions new-rule)
+                               (n-make-intersected-rule-conditions r1 r2 phi2 (rule-conditions new-rule)))
+                         (setf (rule-conditions new-rule)
+                               (n-make-intersected-rule-conditions r2 r1 phi1 (rule-conditions new-rule))
                          (when (rule-based-cpd-singleton-p phi2)
-                           (setf (rule-count new-rule) nil)))
-                       )
+                           (setf (rule-count new-rule) nil)))))
                       (t
                        ;; for each rule condtion, there is a non-empty subset of the values of that conditions
                        (setq new-rule (rule-filter r1 r2 op num-rules new-conditions))
                        (when (rule-based-cpd-singleton-p phi2)
-                         (setf (rule-count new-rule) nil))
-                       (setf (gethash num-rules (rule-block new-rule)) num-rules)
-                       (setq new-rules (cons new-rule new-rules))
-                       (setq num-rules (+ num-rules 1))))
+                         (setf (rule-count new-rule) nil))))
+                (setf (gethash num-rules (rule-block new-rule)) num-rules)
+                (setq new-rules (cons new-rule new-rules))
+                (setq num-rules (+ num-rules 1))
              ))
     ;; process the no-match rules
     ;; update the counts of rules that are a subset of other rules with higher counts

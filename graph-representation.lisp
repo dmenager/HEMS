@@ -4582,9 +4582,15 @@
 	      (t
                (push rule result)))))
     result))
+#| Perform a filter operation over rules
+   Returns: a list of rules |#
 
-;; new-idents = identifiers in the phi2 that are not in phi1
-(defun operate-filter-rules (rules1 rules2 phi1 phi2 new-idents op)
+;; rules1 = rules from phi1
+;; rules2 = rules from phi2
+;; phi1 = episode conditional probability distribution
+;; phi2 = schema conditional probability distribution
+;; op = operation to apply on rules
+(defun operate-filter-rules (rules1 rules2 phi1 phi2 op)
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -4608,7 +4614,7 @@
                   (return (values matched-rules-hash no-match-list))))
            (n-make-intersected-rule-conditions (r1 r2 cpd2 conditions-hash)
              (loop
-               with vals2
+               with vals2 and rule-conditions-subsetp = t
                for attribute being the hash-keys of (rule-conditions r1)
                  using (hash-value vals1)
                when (not (gethash attribute (rule-conditions r1)))
@@ -4627,39 +4633,16 @@
                          ;; We will never enter this branch during inference because attribute will be in cpd2 from schema
                          ;; So, it is safe to set the new rule condition to vals1
                          (setf (gethash attribute conditions-hash)
-                               vals1))
+                               vals1)
+                         (setq rule-conditions-subsetp nil))
                         ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
                               vals2)
                          ;; attribute is in both cpds, so you take the intersection
                          (setf (gethash attribute conditions-hash)
-                               (intersection vals1 vals2))))))
-           (equal-rule-intersection (r1 r2)
-             ;; check if r1 and r2 have the same conditions
-             (loop
-               with set2 and insersection-set
-               for attribute being the hash-keys of (rule-conditions r1)
-                 using (hash-value set1)
-               do
-                  (setq set2 (gethash attribute (rule-conditions r2)))
-                  (setq intersection-set (intersection set1 set2))
-                  (cond ((null set2)
-                         ;; check to see if the attribute exists in the CPD
-                         (let ((foundp (gethash attribute new-idents)))
-                           (cond ((and foundp (null intersection-set))
-                                  ;; attribute was removed from rule during local covering step
-                                  ;; In this case, the domain for attribute is the universe
-                                  )
-                                 ((not foundp)
-                                  ;; attribute is new to phi1
-                                  )
-                                 (t
-                                  ;; failure case
-                                  )))
-                         )
-                        ((null intersection-set)
-                         (setq in))
-                        ((t)))))
-           (rule-check-for-missing-identifiers (r1 r2 new-rule cpd2)
+                               (intersection vals1 vals2))))
+               finally
+                  (return rule-conditions-subsetp)))
+           (rule-check-for-missing-identifiers (r1 new-rule cpd2)
              (loop
                named looper
                for att being the hash-keys of (rule-conditions r1)
@@ -4671,7 +4654,18 @@
                  do
                     (setf (rule-count new-rule) 0)
                     (setf (rule-probability new-rule) 0)
-                    (return-from looper new-rule))))
+                    (return-from looper new-rule)))
+           (filter-no-match-rules (no-match-r1s cpd2 new-rules num-rules)
+             (loop
+               with no-match-r2 and no-match-rule
+               for no-match-r1 in no-match-r1s
+               do
+                  (setq no-match-r2 (copy-cpd-rule no-match-r1))
+                  (setf (rule-probability no-match-r2) 0)
+                  (setq no-match-r2 (rule-check-for-missing-identifiers no-match-r1 no-match-r2 cpd2))
+                  (setq no-match-rule (rule-filter no-match-r1 no-match-r2 op num-rules (rule-conditions no-match-r2)))
+                  (setq new-rules (cons new-rule new-rules))
+                  (setq num-rules (+ num-rules 1)))))
   (let ((matched-r1s (make-hash-table :test #'equal))
         (matched-r2s (make-hash-table :test #'equal))
         (num-rules 0)
@@ -4693,36 +4687,52 @@
         do
            (setq matched-rules (gethash (rule-id r1) matched-r1s))
            (loop
-             with new-conditions and new-rule
+             with new-conditions and new-rule and same-rule-p
              for r2 in matched-rules
              do
                 ;; check if the two rules are the same
-                (setq new-conditions (equal-rule-intersection r1 r2))
-                (cond ((null new-conditions)
-                       ;; compatible, but not the same rule
-                       (let ((r2-copy (copy-cpd-rule r2))
-                             (r1-copy (copy-cpd-rule r1)))
-                         (setq r1-copy (rule-check-for-missing-identifiers r2 r1 r1-copy phi1))
-                         (setq r2-copy (rule-check-for-missing-identifiers r1 r2 r2-copy phi2))
-                         (setq new-rule (rule-filter r1-copy r2-copy op num-rules (make-hash-table :test #'equal)))
-                         (setf (rule-conditions new-rule)
-                               (n-make-intersected-rule-conditions r1 r2 phi2 (rule-conditions new-rule)))
-                         (setf (rule-conditions new-rule)
-                               (n-make-intersected-rule-conditions r2 r1 phi1 (rule-conditions new-rule))
-                         (when (rule-based-cpd-singleton-p phi2)
-                           (setf (rule-count new-rule) nil)))))
-                      (t
+                (setq new-conditions (make-hash-table :test #'equal))
+                (setq same-rule-p (apply #'and
+                                         (list (n-make-intersected-rule-conditions r1 r2 phi2 new-conditions)
+                                               (n-make-intersected-rule-conditions r2 r1 phi1 new-conditions))))
+                (cond (same-rule-p
                        ;; for each rule condtion, there is a non-empty subset of the values of that conditions
                        (setq new-rule (rule-filter r1 r2 op num-rules new-conditions))
                        (when (rule-based-cpd-singleton-p phi2)
-                         (setf (rule-count new-rule) nil))))
+                         (setf (rule-count new-rule) nil)))
+                      (t
+                       ;; compatible, but not the same rule
+                       (let ((r2-copy (copy-cpd-rule r2))
+                             (r1-copy (copy-cpd-rule r1)))
+                         (setq r1-copy (rule-check-for-missing-identifiers r2 r1-copy phi1))
+                         (setq r2-copy (rule-check-for-missing-identifiers r1 r2-copy phi2))
+                         (setq new-rule (rule-filter r1-copy r2-copy op num-rules new-conditions))
+                         (when (rule-based-cpd-singleton-p phi2)
+                           (setf (rule-count new-rule) nil)))))
                 (setf (gethash num-rules (rule-block new-rule)) num-rules)
                 (setq new-rules (cons new-rule new-rules))
-                (setq num-rules (+ num-rules 1))
-             ))
+                (setq num-rules (+ num-rules 1))))
     ;; process the no-match rules
+    (multiple-value-setq (new-rules num-rules)
+      (filter-no-match-rules no-match-r1s phi2 new-rules num-rules))
+    (multiple-value-setq (new-rules num-rules)
+      (filter-no-match-rules no-match-r2s phi1 new-rules num-rules))
     ;; update the counts of rules that are a subset of other rules with higher counts
-    )))
+    (when (not (singleton-p phi2))
+      (loop
+        for rule1 in new-rules
+        for i from 0
+        do
+           (loop
+             for rule2 in new-rules
+             when (and (every #'(lambda (id)
+                                  (gethash id (rule-conditions rule2)))
+                              (rule-conditions rule1))
+                       (compatible-rule-p rule1 rule2 nil nil))
+               do
+                  (setf (rule-count rule1) (max (rule-count rule1)
+                                                (rule-count rule2))))))
+    (nreverse new-rules)))
 
 #| Perform a filter operation over rules
    Returns: a list of rules
@@ -4749,7 +4759,7 @@
                       (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                 :conditions (copy-hash-table (rule-conditions rule1))
                                                 :probability (cond ((or (eq op '*) (eq op #'*))
-                                                                    (funcall op (rule-probability rule1) (rule-probability compatible-rule)))
+                                                                    0 ;;(funcall op (rule-probability rule1) (rule-probability compatible-rule)))
                                                                    (t
                                                                     (rule-probability rule1)))
                                                 :block (make-hash-table)
@@ -5056,7 +5066,6 @@
                )
          (return (nreverse new-rules)))))
 |#
-
 #| Check cpd vvbms |#
 
 ;; cpd = conditional probability distribution
@@ -5078,9 +5087,9 @@
   (when nil
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
-				    (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
-				    (map nil #'print-cpd-rule (rule-based-cpd-rules cpd))
-				    (error "check number of rules")))
+                                    (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
+                                    (map nil #'print-cpd-rule (rule-based-cpd-rules cpd))
+                                    (error "check number of rules")))
       with row-len = (aref (rule-based-cpd-cardinalities cpd) 0)
       with index-rule = (make-rule :conditions (make-hash-table :test #'equal))
       with row-probs and row-counts = (make-list row-len :initial-element 0) and row-rules and row-assns and row-prob and compatible-rule and reference-count
@@ -5103,22 +5112,22 @@
                 (format t "~%multiple rules fire for assignment:~%~S~%cpd:~%~S~%compatible rules:~%~S" index-rule cpd compatible-rule)
                 (error "check compatible rules"))
                ((and (not check-uniqueness)
-		     #|
-		     (loop
-		       named looper
-		       with prob = (rule-probability (car compatible-rule))
-		       for rule in compatible-rule
-		       when (not (= (rule-probability rule) prob))
-			 do
-			    (return-from looper t)
-		       finally
-			  (return nil))
-		     |#
-		     (= -1 (reduce #'(lambda(x y) (if (= x y) x -1))
-				   (mapcar #'(lambda (rule)
-					       (rule-probability rule))
-					   compatible-rule)))
-		     )
+                     #|
+                     (loop
+                     named looper
+                     with prob = (rule-probability (car compatible-rule))
+                     for rule in compatible-rule
+                     when (not (= (rule-probability rule) prob))
+                     do
+                     (return-from looper t)
+                     finally
+                     (return nil))
+                     |#
+                     (= -1 (reduce #'(lambda(x y) (if (= x y) x -1))
+                                   (mapcar #'(lambda (rule)
+                                               (rule-probability rule))
+                                           compatible-rule)))
+                     )
                 (format t "~%compatible rules have different probabilities.~%Assignment:~%~S~%cpd:~%~S~%compatible rules:~%~S" index-rule cpd compatible-rule)
                 (error "check compatible rules"))
                #|
@@ -5127,7 +5136,7 @@
                (error "check rule count"))
                |#
                ((and check-count-prob-agreement (not (= (floor (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule))))
-							(ceiling (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule)))))))
+                                                        (ceiling (* (rule-count (car compatible-rule)) (rule-probability (car compatible-rule)))))))
                 (format t "~%probability-count mismatch.~%rule:~%~S~%cpd:~%~S" (car compatible-rule) cpd)
                 (error "check rule count and probability"))
                (t
@@ -5145,8 +5154,8 @@
            (setq row-prob (reduce #'+ row-probs))
            (cond ((and check-prob-sum (not (= 1 (read-from-string (format nil "~$" row-prob)))))
                   (when (> row-prob 0)
-		    (format t "~%Malformed cpd:~%~S~%row assignments:~%~S~%row rules:~%~S~%row probs:~%~S~%row probability is ~d, not 1" cpd row-assns row-rules row-probs row-prob)
-		    (error "Check row sums")))
+                    (format t "~%Malformed cpd:~%~S~%row assignments:~%~S~%row rules:~%~S~%row probs:~%~S~%row probability is ~d, not 1" cpd row-assns row-rules row-probs row-prob)
+                    (error "Check row sums")))
                  ((and check-counts (notevery #'= row-counts (rest row-counts)))
                   (format t "~%Malformed cpd:~%~S~%row assignments:~%~S~%row rules:~%~S~%row probs:~%~S~%row counts:~%~S~% row counts are not equal" cpd row-assns row-rules row-probs row-counts)
                   (error "Check row counts")))
@@ -5154,7 +5163,7 @@
            (setq row-rules nil)
            (setq row-assns nil)
            (setq row-counts (make-list row-len :initial-element 0))))))
-  
+
 #| Generate intermediate factor by multiplying two existing ones.
 Roughly based on (Koller and Friedman, 2009) |#
 
@@ -8021,26 +8030,6 @@ Roughly based on (Koller and Friedman, 2009) |#
      finally
        (return (values list1 list2))))
 
-
-
-#| Find rules whose conditions in the intersection agree
-
-;; schema-cpd = conditional probability distribution
-;; event-cpd = conditional probability distribution
-;; rule = rule to reference when finding compatible rules
-(defun get-compatible-rules (schema-cpd event-cpd rule &key (find-all t))
-  (loop
-    for schema-rule being the elements of (rule-based-cpd-rules schema-cpd)
-    when (and find-all (compatible-rule-p schema-rule rule schema-cpd event-cpd))
-      collect schema-rule into compatible-rules
-    else when (and (not find-all) (compatible-rule-p schema-rule rule schema-cpd event-cpd))
-      collect schema-rule into compatible-rules and
-    do
-       (return-from get-compatible-rules compatible-rules)
-    finally
-       (return compatible-rules)))
-|#
-
 #| Find rules whose conditions in the intersection agree |#
 
 ;; schema-cpd = conditional probability distribution
@@ -8062,6 +8051,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (return-from get-compatible-rules compatible-rules)
     finally
        (when (null match-p)
+         (break "THIS SHOULD NEVER HAPPEN")
          (let (zero-count-rule)
            (cond ((null event-dependent-id-val)
                   (loop
@@ -8084,8 +8074,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                            (setq compatible-rules rules)
                            (setq compatible-rules (list (car rules))))))
                  ((= event-dependent-id-val 0)
-		  ;; probability should be 0 if the operator is *
-		  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
+                  ;; probability should be 0 if the operator is *
+                  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                    :conditions (copy-hash-table (rule-conditions rule))
                                                    :probability 1
                                                    :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))

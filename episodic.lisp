@@ -1728,34 +1728,49 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                             (abs (float (- (rule-probability idx) (rule-probability ground-idx)))))
                                       "marginal-distribution.csv")))
 	     |#
-             (return (values recollection eme)))))))
+             (return (values recollection eme sol)))))))
 
-(defun remember-temporal (eltm evidence-bn backlinks obs-evidence-bns st-evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p output-percepts-p)
-  (let (conditioned-temporal)
-    (setq conditioned-temporal
-	  (condition-model eltm
-			   evidence-bn
-			   "state-transitions"
-			   :backlinks backlinks))
+(defun remember-temporal (eltm evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p output-percepts-p)
+  (multiple-value-bind (conditioned-temporal sol)
+      (condition-model eltm
+		       evidence-bn
+		       "state-transitions"
+		       :backlinks backlinks)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with slice = (make-array mod-len) and i = 0
+      with evidence-bn and dist-hash
+      with slice and i = 0 and node-type
       for cpd being the elements of temporal-bn
+      for (p-match . q-match) being the elements of sol
       when (singleton-cpd? cpd)
 	do
 	   (setq marker (mod i mod-len))
+	   (when (= marker 0)
+	     (setq slice (make-hash-table :test #'equal)))
+	   (setq evidence-bn (gethash q-match evidence-bns))
+	   (setq dist-hash (make-hash-table :test #'equal))
+	   (setq node-type (gethash 0(rule-based-cpd-types cpd)))
 	   (loop
-	     with prob and backlink-ref
+	     with prob and cond and backlink-ref
 	     with backlink-episode
 	     for rule in (rule-based-cpd-rules cpd)
 	     do
-		(setq prob (rule-condition rule))
+		(setq prob (rule-probability rule))
+		(setq cond (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
+		(setq cond (caar (nth cond (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
 		(setq backlink-ref (gethash (rule-conditions rule)
 					    (rule-based-cpd-dependent-id cpd)))
-		(setq backlink-episode (car (gethash backlink-ref (episode-backlinks conditioned-temporal)))))
+		(setq backlink-episode (car (gethash backlink-ref (episode-backlinks conditioned-temporal))))
+		(multiple-value-bind (recollection eme)
+		    (remember (list backlink-episode) evidence-bn mode lr bic-p )
+		  ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
+		  (setf (gethash cond dist-hash) (cons prob recollection))))
+	   (setf (gethash node-type slice) dist-hash)
       when (= marker mod-len)
-	collect slice into state-transistiions)))
+	collect slice into state-transistiions
+      finally
+	 (return state-transitions))))
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 

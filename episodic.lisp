@@ -1523,7 +1523,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
    :count 1
    :lvl (if (equal (cons (make-array 0) (make-hash-table :test #'equal)) transitions) 1 2)))
 
-#| Recollect an experience |#
+#| Recollect an experience.
+   Returns multiple values.
+   First value is a list twice as long as the number of variables in the network. The first half contains posterior CPDs and the last half contains marginalized singletons.
+   Second value is the retrieved event memory element. |#
 
 ;; eltm = event memory
 ;; pstm = perceived objects in retrieval cue
@@ -1569,7 +1572,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
               (t
                (new-retrieve-episode eltm cue nil :bic-p bic-p)))
       (declare (ignore depth cost))
-
       (when nil (not (string-equal type "state-transitions"))
 	(format t "~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
       (if (equal type "state-transitions") ;;temporalp
@@ -1727,6 +1729,33 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                       "marginal-distribution.csv")))
 	     |#
              (return (values recollection eme)))))))
+
+(defun remember-temporal (eltm evidence-bn backlinks obs-evidence-bns st-evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p output-percepts-p)
+  (let (conditioned-temporal)
+    (setq conditioned-temporal
+	  (condition-model eltm
+			   evidence-bn
+			   "state-transitions"
+			   :backlinks backlinks))
+    (loop
+      with temporal-bn = (car (episode-state-transitions conditioned-temporal))
+      with marker and mod-len = (if hidden-state-p 3 2)
+      with slice = (make-array mod-len) and i = 0
+      for cpd being the elements of temporal-bn
+      when (singleton-cpd? cpd)
+	do
+	   (setq marker (mod i mod-len))
+	   (loop
+	     with prob and backlink-ref
+	     with backlink-episode
+	     for rule in (rule-based-cpd-rules cpd)
+	     do
+		(setq prob (rule-condition rule))
+		(setq backlink-ref (gethash (rule-conditions rule)
+					    (rule-based-cpd-dependent-id cpd)))
+		(setq backlink-episode (car (gethash backlink-ref (episode-backlinks conditioned-temporal)))))
+      when (= marker mod-len)
+	collect slice into state-transistiions)))
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 

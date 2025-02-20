@@ -1797,7 +1797,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (setf (gethash cond dist-hash) (cons prob recollection)))))
 	   (setf (gethash node-type slice) dist-hash)
 	   (setq i (+ i 1))
-	   (format t "~%marker: ~S~%mod-len: ~S" marker mod-len)
 	   (when (= marker (- mod-len 1))
 	     (setq state-transitions (cons slice state-transitions)))
       finally

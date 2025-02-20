@@ -1556,10 +1556,19 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      :temporal-p t
 		      :count 1
 		      :lvl 2)))
-	  (t
+	  ((string-equa type "observation")
 	   (setq cue (make-episode
 		      :observation cue-bn
 		      :state (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+		      :backlinks (make-hash-table :test #'equal)
+		      :temporal-p nil
+		      :count 1
+		      :lvl 1)))
+	  ((string-equal type "state")
+	   (setq cue (make-episode
+		      :observation (cons (make-array 0) (make-hash-table :test #'equal))
+		      :state cue-bn
 		      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
 		      :backlinks (make-hash-table :test #'equal)
 		      :temporal-p nil
@@ -1574,9 +1583,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (declare (ignore depth cost))
       (when nil (not (string-equal type "state-transitions"))
 	(format t "~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
-      (if (equal type "state-transitions") ;;temporalp
-	  (setq bn (episode-state-transitions (car eme)))
-	  (setq bn (episode-observation (car eme))))
+      (cond ((string-equal type "state-transitions")
+	     (setq bn (episode-state-transitions (car eme))))
+	    ((string-equal type "observation")
+	     (setq bn (episode-observation (car eme))))
+	    ((string-equal type "state")
+	     (setq bn (episode-state (car eme)))))
       #|
       (if (> (episode-count eme) 1)
           (log-message (list "schema,") "vse.csv")
@@ -1730,47 +1742,66 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     |#
              (return (values recollection eme sol)))))))
 
-(defun remember-temporal (eltm evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p output-percepts-p)
+#| Recollect a temporal experience.
+   Returns list containing inferences for each slice of the temporal model.
+   Slice is a hash table. Key: CPD Type, Value: posterior distribution hash table.
+   Posterior distribution hash table: Key: backlink id :value posterior state/observation model|#
+
+;; eltm = episodic long-term memory
+;; temporal-evidence bn = evidence network on the temporal model
+;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
+;; evidence-bns = hash table of evidence observed for state and observation schemas. Keys: integer index, Value: evidence network
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p)
   (multiple-value-bind (conditioned-temporal sol)
       (condition-model eltm
-		       evidence-bn
+		       temporal-evidence-bn
 		       "state-transitions"
-		       :backlinks backlinks)
+		       :backlinks backlinks
+		       :keep-singletons t)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with evidence-bn and dist-hash
-      with slice and i = 0 and node-type
+      with evidence-bn and dist-hash and i = 0
+      with slice and node-type
+      with match and state-transitions
       for cpd being the elements of temporal-bn
-      for (p-match . q-match) being the elements of sol
       when (singleton-cpd? cpd)
 	do
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal)))
-	   (setq evidence-bn (gethash q-match evidence-bns))
+	   (cond ((< i (array-dimension sol 0))
+		  (setq match (aref sol i))
+		  (setq evidence-bn (gethash (cdr match) evidence-bns)))
+		 (t
+		  (setq match nil)
+		  (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal)))))
 	   (setq dist-hash (make-hash-table :test #'equal))
-	   (setq node-type (gethash 0(rule-based-cpd-types cpd)))
+	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
+	   (when (equal "PERCEPT" node-type)
+	       (setq node-type "ACTION"))
 	   (loop
-	     with prob and cond and backlink-ref
+	     with prob and cond
 	     with backlink-episode
-	     for rule in (rule-based-cpd-rules cpd)
+	     for rule being the elements of  (rule-based-cpd-rules cpd)
 	     do
 		(setq prob (rule-probability rule))
 		(setq cond (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
 		(setq cond (caar (nth cond (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
-		(setq backlink-ref (gethash (rule-conditions rule)
-					    (rule-based-cpd-dependent-id cpd)))
-		(setq backlink-episode (car (gethash backlink-ref (episode-backlinks conditioned-temporal))))
-		(multiple-value-bind (recollection eme)
+		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
+	        (when backlink-episode
+		  (multiple-value-bind (recollection eme)
 		    (remember (list backlink-episode) evidence-bn mode lr bic-p )
+		  (declare (ignore eme))
 		  ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-		  (setf (gethash cond dist-hash) (cons prob recollection))))
+		  (setf (gethash cond dist-hash) (cons prob recollection)))))
 	   (setf (gethash node-type slice) dist-hash)
-      when (= marker mod-len)
-	collect slice into state-transistiions
+	   (setq i (+ i 1))
+	   (format t "~%marker: ~S~%mod-len: ~S" marker mod-len)
+	   (when (= marker (- mod-len 1))
+	     (setq state-transitions (cons slice state-transitions)))
       finally
-	 (return state-transitions))))
+	 (return (reverse state-transitions)))))
 
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
@@ -2242,3 +2273,25 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (pdf-helper-ray ep nil))
 	  (t
 	   (format t "~%failed to generate pdf. eltm is nil")))))
+
+#| TESTS
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
+(let (st-evidence evidence-slices slice)
+  (setq st-evidence (hems:compile-program nil
+		       c1 = (relation-node number_1 :value "1")
+		       c2 = (percept-node one_1 :value "1")
+		       c3 = (relation-node number_2 :value "5")
+		       c4 = (percept-node five_2 :value "5")
+		       c1 --> c2
+		       c3 --> c4))
+  (setq slice (make-hash-table :test #'equal))
+  (setf (gethash "STATE" slice) st-evidence)
+  (setq evidence-slices (cons slice evidence-slices))
+  (multiple-value-bind (evidence-bn backlinks evidence-bns)
+      (hems:make-temporal-episode-retrieval-cue
+       (hems:get-eltm)
+       evidence-slices)
+    (hems::remember-temporal (hems:get-eltm) evidence-bn backlinks evidence-bns :hidden-state-p t)))
+    
+
+|#

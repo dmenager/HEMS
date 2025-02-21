@@ -1556,7 +1556,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      :temporal-p t
 		      :count 1
 		      :lvl 2)))
-	  ((string-equa type "observation")
+	  ((string-equal type "observation")
 	   (setq cue (make-episode
 		      :observation cue-bn
 		      :state (cons (make-array 0) (make-hash-table :test #'equal))
@@ -1748,7 +1748,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
    Posterior distribution hash table: Key: backlink id :value posterior state/observation model|#
 
 ;; eltm = episodic long-term memory
-;; temporal-evidence bn = evidence network on the temporal model
+;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-bns = hash table of evidence observed for state and observation schemas. Keys: integer index, Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p)
@@ -1802,6 +1802,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       finally
 	 (return (reverse state-transitions)))))
 
+(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep)
+  (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep))
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
 ;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges

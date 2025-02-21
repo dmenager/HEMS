@@ -6564,8 +6564,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                 (format t "~%Reached inference limit at iteration ~d." (+ count 1)))))
        (return
          (cond ((or (eq op '+)
-		    (eq op #'+))
-		
+		    (eq op #'+))	
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 ;; when (rule-based-cpd-singleton-p (aref factors i))
@@ -8170,8 +8169,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 			(format t "~%message:~%~S" msg)
 			(break))
-		  (setq j (+ j 1)))
-		
+		  (setq j (+ j 1)))		
 	      finally
 		(when seen
 		  (loop

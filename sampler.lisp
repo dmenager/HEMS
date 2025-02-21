@@ -1,24 +1,30 @@
 (in-package :hems)
 
-#| Condition the retrieved model on observations made in the environment. |#
+#| Condition the retrieved model on observations made in the environment.
+   Returns episode. |#
 
 ;; eltm = episodic-long-term-memory
 ;; evidence-bn = the bayesian network that represents observations made in the environment
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
-(defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)))
+(defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)) (keep-singletons nil))
   (let (new-episode new-bn)
-    (multiple-value-bind (recollection eme)
+    (when nil
+      (format t "~%evidence-bn:~%~A"evidence-bn))
+    (multiple-value-bind (recollection eme sol)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type)
       ;; verify in (remember) if the single observation node matches to the state transition models.
       (when nil (string-equal episode-type "state-transitions")
 	    (format t "~%Posterior network:~%~S" recollection)
+	    (format t "~%sol:~%~S" sol)
 	    (break))
-      (loop
-	for cpd in recollection
-	when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn
-	and count cpd into len
-	finally 
-	   (setq new-bn (cons (make-array len :initial-contents bn) (make-hash-table))))
+      (if keep-singletons
+	  (setq new-bn (cons (make-array (length recollection) :initial-contents recollection) (make-hash-table :test #'equal)))
+	  (loop
+	    for cpd in recollection
+	    when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn
+	    and count cpd into len
+	    finally 
+	       (setq new-bn (cons (make-array len :initial-contents bn) (make-hash-table :test #'equal)))))
       (setq new-episode (copy-ep (car eme)))
       (cond ((string-equal episode-type "observation")
 	     (setf (episode-observation new-episode) new-bn))
@@ -27,8 +33,8 @@
 	    ((string-equal episode-type "state-transitions")
 	     (setf (episode-state-transitions new-episode) new-bn))
 	    (t
-	     (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type))))
-    new-episode))
+	     (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type)))
+      (values new-episode sol))))
 
 #| Draw a random sample from an episode in the event memory. Returns an association list of variables and their values |# 
 
@@ -123,13 +129,15 @@
 (defun sample-action (episode &key output-percepts-p)
   (sample-observation episode :output-percepts-p output-percepts-p :key "ACTION"))
 
-#| Draw a random sample from an episode in the event memory. Returns a list of association lists of variables and their values |# 
+#| Draw a random sample from an episode in the event memory.
+   Returns a list of bindings of variables and their values |# 
 
 ;; episode = episode in event memory
 ;; output-percepts-p = optional flag determining whether or not only percept nodes will be output or all node types
 (defun sample-state-transitions (episode hidden-state-p &key output-percepts-p evidence-bn)
   (let (bn)
     (cond ((episode-temporal-p episode)
+	   #|
 	   (when nil t
 	     (format t "~%sampling temporal episode: ~A" (episode-id episode))
 	     
@@ -140,6 +148,7 @@
 		finally
 		  (format t "~%backlinks:~%~S" backlinks))
 	     (break))
+	   |#
 	   (setq bn (episode-state-transitions episode)))
 	  (t
 	   (error "~%Given episode is not temporal. Check temporal-p flag")))
@@ -253,17 +262,26 @@
 #| Generates a retrieval cue for a temporal episode.
    Returns: Cons where first element is an array of CPDs, and second element is a hash table of edges |#
 
-;; state = state retrieval cue
-;; obesrvation = observation retrieval cue
-;; action = action name string
-(defun make-temporal-episode-retrieval-cue (eltm &key state observation action)
+;; eltm = episodic long-term memory
+;; evidence-slices = list of hash tables of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence network
+(defun make-temporal-episode-retrieval-cue (eltm evidence-slices)
   (when nil t
-    (format t "~%~%making temporal episode retrieval cue"))
-  (multiple-value-bind (prog-statements backlinks)
-      (make-temporal-episode-program eltm :state state :observation observation :action action)
-    (when nil t
-    (format t "~%done"))
-    (values (eval `(compile-program nil ,@prog-statements)) backlinks)))
+	(format t "~%~%making temporal episode retrieval cue"))
+  (loop
+    with prog-statements and backlinks = (make-hash-table :test #'equal)
+    with evidence-bns = (make-hash-table) and i = 0
+    for slice in evidence-slices
+    do
+       (multiple-value-setq (prog-statements backlinks evidence-bns i)
+	 (make-temporal-episode-program eltm :state (gethash "STATE" slice)
+					     :observation (gethash "OBSERVATION" slice)
+					     :action (gethash "ACTION" slice)
+					     :state-transitions prog-statements
+					     :id-ref-hash backlinks
+					     :integer-index i
+					     :evidence-bns evidence-bns))
+    finally
+	 (return (values (eval `(compile-program nil ,@prog-statements)) backlinks evidence-bns))))
 
 (defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp (backlinks (make-hash-table :test #'equal)))
   (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp :backlinks backlinks))
@@ -393,9 +411,9 @@
 	(training-files (list ;;"a2c_CliffWalking-v0_data.csv"
 			      ;;"dqn_Taxi-v3_data.csv"
 			      ;;"a2c_FrozenLake-v1_data.csv"
-			      "ppo_CliffWalking-v0_data.csv"
+			      ;;"ppo_CliffWalking-v0_data.csv"
 			      ;;"a2c_Taxi-v3_data.csv"
-			      ;;"ppo_FrozenLake-v1_data.csv"
+			      "ppo_FrozenLake-v1_data.csv"
 			      ;;"ars_FrozenLake-v1_data.csv"
 			      ;;"ppo_Taxi-v3_data.csv"
 			      ;;"ars_Taxi-v3_data.csv"
@@ -417,7 +435,6 @@
 	 (setq action-counts (sample-to-file n-samples (concatenate 'string "HEMS-samples-" training-file) (car eltm*) hidden-state-p output-percepts-p))
 	 (format t "~%Balancing action samples.")
 	 (balance-action-samples action-counts training-file hidden-state-p output-percepts-p)
-	 
 	 ;;(break)
       )))
 
@@ -459,15 +476,18 @@ c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :ou
 --------------------------------------
 (hems::generate-hems-data 2000 t t)
 
-(let (obs-evidence)
-(setq obs-evidence (hems:compile-program nil
-		     c1 = (relation-node number_1 :value "314")
-		     c2 = (percept-node three_hundred_fourteen_1 :value "314")
-		     c1 -> c2))
-  (multiple-value-bind (evidence-bn backlinks)
+(let (obs-evidence evidence-slices slice)
+  (setq obs-evidence (hems:compile-program nil
+					   c1 = (relation-node number_1 :value "314")
+					   c2 = (percept-node three_hundred_fourteen_1 :value "314")
+					   c1 -> c2))
+  (setq slice (make-hash-table :test #'equal))
+  (setf (gethash "OBSERVATION" slice) obs-evidence)
+  (setq evidence-slices (cons slice evidence-slices))
+  (multiple-value-bind (evidence-bn backlinks evidence-bns)
       (hems:make-temporal-episode-retrieval-cue
        (hems:get-eltm)
-       :observation obs-evidence)
+       evidence-slices)
     (hems:conditional-sample (hems:get-eltm) evidence-bn "state-transitions" :hidden-state-p t :output-percepts-p t :backlinks backlinks :obs-evidence-bn obs-evidence)))
 |#
 

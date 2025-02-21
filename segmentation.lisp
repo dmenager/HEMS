@@ -362,8 +362,21 @@
 ;; action = action name string
 ;; state-transitions = list of program statements
 ;; id-ref-hash = backlinks
-(defun make-temporal-episode-program (eltm &key observation state action state-transitions (id-ref-hash (make-hash-table :test #'equal)))
+(defun make-temporal-episode-program (eltm &key observation state action state-transitions (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0) (evidence-bns (make-hash-table :test #'equal)))
   (let (obs-ref state-ref cur-st cur-obs cur-act cue)
+    (when state
+      (setq cur-st (gensym "STATE-"))
+      (setq cue (make-episode :state state 
+			      :observation (cons (make-array 0) (make-hash-table))
+			      :state-transitions (cons (make-array 0) (make-hash-table))
+			      :backlinks (make-hash-table :test #'equal)
+			      :count 1
+			      :lvl 1))
+      (setf (gethash integer-index evidence-bns) state)
+      (setq integer-index (+ integer-index 1))
+      (setq state-ref (new-retrieve-episode eltm cue nil))
+      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
+      (setq state-transitions (concatenate 'list state-transitions `(cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
     (when observation
       (setq cur-obs (gensym "OBS-"))
       (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))
@@ -373,21 +386,12 @@
 			      :count 1
 			      :lvl 1))
       (when nil t
-	(format t "~%retrieval cue for observation:~%~S" cue))
+	    (format t "~%retrieval cue for observation:~%~S" cue))
+      (setf (gethash integer-index evidence-bns) observation)
+      (setq integer-index (+ integer-index 1))
       (setq obs-ref (new-retrieve-episode eltm cue nil))
       (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
-    (when state
-      (setq cur-st (gensym "STATE-"))
-      (setq cue (make-episode :state state 
-			      :observation (cons (make-array 0) (make-hash-table))
-			      :state-transitions (cons (make-array 0) (make-hash-table))
-			      :backlinks (make-hash-table :test #'equal)
-			      :count 1
-			      :lvl 1))
-      (setq state-ref (new-retrieve-episode eltm cue nil))
-      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
     (when action
       (setq cur-act (gensym "ACT-"))
       (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,action)))))
@@ -395,7 +399,7 @@
       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
     (when (and observation action)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
-    (values state-transitions id-ref-hash cur-obs cur-st cur-act)))
+    (values state-transitions id-ref-hash evidence-bns integer-index cur-obs cur-st cur-act)))
 
 (defun get-model (obs-window eltm observation-reject-list temporal-reject-list bic-p)
   (loop
@@ -407,9 +411,9 @@
 			       :backlinks (make-hash-table :test #'equal)
 			       :count 1
 			       :lvl 1))
-       (multiple-value-bind (prog-statements backlinks new-obs new-st new-act)
+       (multiple-value-bind (prog-statements backlinks evidence-bns i new-obs new-st new-act)
 	   (make-temporal-episode-program eltm :observation obs :state-transitions state-transitions id-ref-hash id-ref-hash)
-	 (declare (ignore new-st))
+	 (declare (ignore new-st evicence-bns i))
 	 (setq state-transitions prog-statements)
 	 (setq id-ref-hash backlinks)
 	 (setq prev-obs new-obs)
@@ -535,11 +539,14 @@
 	(setq csv (format nil "./bc_training_logs/~A_~A_memory_size_~d.csv" epdata domain seed))
 	(log-message (list "Domain,Num Schemas,Num Events,Observation,Num Trajectories~%") csv :if-exists :supersede))
       ;;(setq eltm* (list (make-empty-episode)))
-      (setq data (uiop:read-file-lines file))
+     (setq data (uiop:read-file-lines file))
+     (when nil
+       (format t "~%data:~%~S" data)
+       (break))
       (setq features (split-sequence:split-sequence #\, (car data)))
       ;;(setq data (alexandria:shuffle (rest data)))
       (setq data (rest data))
-      (setq max-numbers (get-max-numbers file))
+      ;;(setq max-numbers (get-max-numbers file))
       (log-message (list "Case,Episode_Type,CPD,Num_Table_Params,Num_Rules~%") "rule-compression.csv" :if-exists :supersede)
       (loop
 	 with processed and hidden-state and observation and action
@@ -548,7 +555,9 @@
 	for line in data ;;(subseq data 0 5)
 	for j from 1
 	do
-	   (setq processed (split-sequence:split-sequence #\, line))	   
+	   (setq processed (split-sequence:split-sequence #\, line))
+	   (when t
+	     (format t "~%Processed line:~%~A" processed))
 	   (setq hidden-state (mapcan #'(lambda (string)
 					  (when (char= #\[ (aref string 0))
 					    (setq string (subseq string 1)))

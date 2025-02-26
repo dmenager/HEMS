@@ -4585,12 +4585,10 @@
 #| Perform a filter operation over rules
    Returns: a list of rules |#
 
-;; rules1 = rules from phi1
-;; rules2 = rules from phi2
 ;; phi1 = episode conditional probability distribution
 ;; phi2 = schema conditional probability distribution
 ;; op = operation to apply on rules
-(defun operate-filter-rules (rules1 rules2 phi1 phi2 op)
+(defun operate-filter-rules (phi1 phi2 op)
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -4666,7 +4664,9 @@
                   (setq no-match-rule (rule-filter no-match-r1 no-match-r2 op num-rules (rule-conditions no-match-r2)))
                   (setq new-rules (cons new-rule new-rules))
                   (setq num-rules (+ num-rules 1)))))
-  (let ((matched-r1s (make-hash-table :test #'equal))
+    (let ((rules1 (rule-based-cpd-rules phi1))
+	  (rules2 (rule-based-cpd-rules phi2))
+	  (matched-r1s (make-hash-table :test #'equal))
         (matched-r2s (make-hash-table :test #'equal))
         (num-rules 0)
         no-match-r1s
@@ -4681,7 +4681,7 @@
     ;; process the matched rules
     (loop
       with matched-rules
-      for r1 in rules1
+      for r1 being the elements of rules1
       when (or (and (or (eq op '+) (eq op #'+)))
                (and (or (eq op '*) (eq op #'*))))
         do
@@ -5246,13 +5246,10 @@ Roughly based on (Koller and Friedman, 2009) |#
       (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
         (format t "~%~%unexpanded schema rules:")
         (map nil #'print-cpd-rule (rule-based-cpd-rules phi1)))
-      (multiple-value-bind (expanded-schema-rules var-dif)
-          (expand-rules phi1 phi2)
-        (declare (ignore var-dif))
-        (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-          (format t "~%~%expanded schema rules:")
-          (map nil #'print-cpd-rule expanded-schema-rules))
-        (setq new-rules (operate-filter-rules (coerce (rule-based-cpd-rules phi2) 'list) expanded-schema-rules phi2 phi1 idents op)))
+      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+        (format t "~%~%expanded schema rules:")
+        (map nil #'print-cpd-rule expanded-schema-rules))
+      (setq new-rules (operate-filter-rules phi2 phi1 idents op))
       (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
         (format t "~%~%rules before compression:~%")
         (mapcar #'print-cpd-rule new-rules)

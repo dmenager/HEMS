@@ -2381,8 +2381,7 @@
 ;; new-rules = array of new rules to replace current rules
 (defun update-cpd-rules (cpd new-rules &key (disambiguate-p nil) (check-uniqueness nil))
   (setf (rule-based-cpd-rules cpd) new-rules)
-  (when t
-    (check-cpd cpd :check-uniqueness nil :check-rule-count nil))
+  (check-cpd cpd :check-uniqueness nil :check-rule-count nil)
   (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id cpd)))
         (format t "~%~%updating cpd rules for cpd:~%~S" cpd))
   (setq cpd (reset-attribute-and-concept-blocks cpd))
@@ -2547,7 +2546,9 @@
          (return-from togger tog))))
 |#
 
-#| Compute T(G) |#
+#| Compute T(G)
+   Returns: Hash table. Key: cpd identifier. Value: List
+|#
 
 ;; cpd = conditional probability distribution
 ;; g = goal block to cover
@@ -2575,20 +2576,18 @@
 		  (setq intersection (hash-intersection att-block new-g :output-hash-p t))
 		  (when (= (hash-table-count att-block) (hash-table-count universe))
                     (setq intersection (make-hash-table)))
-                  (if (null negate-p)
-                      (setq condition (cons ident (cdar value-block)))
-                      (setq condition (cons ident (list 'not (cdar value-block)))))
+                   (setq condition (cons ident (cdar value-block)))
                   (setq att-blocks (cons (list (list condition att-block) intersection) att-blocks))
                finally
 		  (when nil t
 		    (format t "~%returning:~%~S" att-blocks))
                   (return att-blocks)))
            (pass-condition-p (ident rule-conditions)
-             (let (val)
-               (setq val (gethash ident rule-conditions))
-               (if val
-                   (values nil val)
-                   (values t val)))))
+             (multiple-value-bind (vals present-p)
+		 (gethash ident rule-conditions)
+	       (if present-p
+		   (values nil vals)
+		   (values t vals)))))
     (when nil t (and (equal "HOLDING1182" (rule-based-cpd-dependent-id cpd)))
       (format t "~%~%identifiers:~%~S~%num idents: ~d~%certain-p: ~S" (rule-based-cpd-identifiers cpd) (hash-table-count (rule-based-cpd-identifiers cpd)) certain-p))
     (loop
@@ -2608,11 +2607,9 @@
 	   (when pass
              (setf (gethash ident tog)
                    (cond (certain-p
-                          (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-lower-approx-var-value-block-map cpd)) t new-g
-                                             (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-lower-approx-negated-vvbms cpd)) t new-g nil :negate-p t)))
+                          (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-lower-approx-var-value-block-map cpd)) t new-g nil))
                          ((not certain-p)
-                          (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-var-value-block-map cpd)) nil new-g
-                                             (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-negated-vvbms cpd)) nil new-g nil :negate-p t)))))))
+                          (get-tog-for-vvbms ident (gethash idx (rule-based-cpd-var-value-block-map cpd)) nil new-g nil))))))
        finally
          (return-from togger tog))))
 

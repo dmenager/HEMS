@@ -1591,10 +1591,8 @@
     with idents = (copy-hash-table (rule-based-cpd-identifiers phi1)) and var-union = (rule-based-cpd-vars phi1)
     with concept-ids = (rule-based-cpd-concept-ids phi1) and qvars = (rule-based-cpd-qualified-vars phi1)
     with var-value-block-map = (rule-based-cpd-var-value-block-map phi1) and types = (rule-based-cpd-types phi1)
-    with negated-vvbms = (rule-based-cpd-negated-vvbms phi1)
-    with sva = (rule-based-cpd-set-valued-attributes phi1) and svna = (rule-based-cpd-set-valued-negated-attributes phi1)
+    with sva = (rule-based-cpd-set-valued-attributes phi1)
     with lower-vvbms = (rule-based-cpd-lower-approx-var-value-block-map phi1)
-    with lower-nvvbms = (rule-based-cpd-lower-approx-negated-vvbms phi1)
     with vals = (rule-based-cpd-var-values phi1)
     for ident2 being the hash-keys of (rule-based-cpd-identifiers phi2)
       using (hash-value pos2)
@@ -1606,14 +1604,11 @@
          (setf (gethash (hash-table-count concept-ids) concept-ids) (gethash pos2 (rule-based-cpd-concept-ids phi2)))
          (setf (gethash (hash-table-count qvars) qvars) (gethash pos2 (rule-based-cpd-qualified-vars phi2)))
          (setf (gethash (hash-table-count var-value-block-map) var-value-block-map) (gethash pos2 (rule-based-cpd-var-value-block-map phi2)))
-         (setf (gethash (hash-table-count negated-vvbms) negated-vvbms) (gethash pos2 (rule-based-cpd-negated-vvbms phi2)))
          (setf (gethash (hash-table-count sva) sva) (gethash pos2 (rule-based-cpd-set-valued-attributes phi2)))
-         (setf (gethash (hash-table-count svna) svna) (gethash pos2 (rule-based-cpd-set-valued-negated-attributes phi2)))
          (setf (gethash (hash-table-count lower-vvbms) lower-vvbms) (gethash pos2 (rule-based-cpd-lower-approx-var-value-block-map phi2)))
-         (setf (gethash (hash-table-count lower-nvvbms) lower-nvvbms) (gethash pos2 (rule-based-cpd-lower-approx-negated-vvbms phi2)))
          (setf (gethash (hash-table-count vals) vals) (gethash pos2 (rule-based-cpd-var-values phi2))))
     finally
-        (return (values idents var-union types concept-ids qvars var-value-block-map negated-vvbms sva svna lower-vvbms lower-nvvbms vals))))
+        (return (values idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms vals))))
 
 #| Normalize factor rules to maintain probability measure |#
 
@@ -4627,7 +4622,7 @@
                               (null vals2))
                          ;; attribute is not in cpd2.
                          ;; That means we have an (attribute . [0]) and (attribute . [1 ...]) for all rules.
-                         ;; (attribute . [0 ...]) will never happen durin insertion
+                         ;; (attribute . [0 ...]) will never happen during insertion
                          ;; We will never enter this branch during inference because attribute will be in cpd2 from schema
                          ;; So, it is safe to set the new rule condition to vals1
                          (setf (gethash attribute conditions-hash)
@@ -5171,117 +5166,78 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi2 = conditional probability density 2
 ;; op = operation to apply to factor (* or +)
 (defun factor-filter (phi1 phi2 &optional (op '*))
-  (labels ((expand-rules (cpd1 cpd2)
-             (let (var-dif expanded-rules)
-               (setq var-dif (block-difference (rule-based-cpd-identifiers cpd2)
-                                               (rule-based-cpd-identifiers cpd1)
-                                               :output-hash-p t
-                                               :test #'equal))
-               (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id phi1)))
-                     (format t "~%idents in episode not in schema:~%~S~%hash table count: ~d" var-dif (hash-table-count var-dif)))
-               (cond ((> (hash-table-count var-dif) 0)
-                      (loop
-                        with missing-idx
-                        for missing being the hash-keys of var-dif
-                        do
-                           (setq missing-idx (gethash missing (rule-based-cpd-identifiers cpd2)))
-                           (setf (gethash missing var-dif) (gethash missing-idx (rule-based-cpd-var-values cpd2))))
-                      (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-                            (format t "~%idents and their domains:~%~S" var-dif))
-                      (setq expanded-rules (coerce (rule-based-cpd-rules cpd1) 'list))
-                      (loop
-                        for var being the hash-keys of var-dif
-                          using (hash-value domain)
-                        do
-                           (loop
-                             with rules
-                             for rule in expanded-rules
-                             do
-                                (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-                                      (format t "~%rule to split:")
-                                      (print-cpd-rule rule))
-                                (setq rules (split-rule-on-variable rule var domain cpd1 var-dif))
-                                (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-                                      (format t "~%split rules:~%")
-                                      (mapcar #'print-cpd-rule rules))
-                             nconc rules into new-rules
-                             finally
-                                (setq expanded-rules new-rules))))
-                     (t
-                      (setq expanded-rules (reverse (coerce (rule-based-cpd-rules cpd1) 'list)))))
-               (values expanded-rules var-dif))))
-    (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
-           (return-from factor-filter phi2))
-          ((and (numberp phi2) (rule-based-cpd-p phi1))
-           (return-from factor-filter  phi1))
-          ((and (numberp phi1) (numberp phi2))
-           (return-from factor-filter phi1))
-          ((and (rule-based-cpd-p phi1) (null phi2))
-           (return-from factor-filter phi1)))
-    (let (var-union types idents concept-ids qvars values cardinalities steps var-value-block-map negated-vvbms sva svna lower-vvbms lower-nvvbms new-phi new-rules)
-      (multiple-value-setq (idents var-union types concept-ids qvars var-value-block-map negated-vvbms sva svna lower-vvbms lower-nvvbms values)
-        (ordered-union phi1 phi2))
-      (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
-            (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
-      (setq cardinalities (get-var-cardinalities var-value-block-map))
-      (setq steps (generate-cpd-step-sizes cardinalities))
-      (setq new-phi (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id phi1)
-                                         :identifiers idents
-                                         :dependent-var (rule-based-cpd-dependent-var phi1)
-                                         :vars var-union
-                                         :types types
-                                         :concept-ids concept-ids
-                                         :qualified-vars qvars
-                                         :var-value-block-map var-value-block-map
-                                         :set-valued-attributes sva
-                                         :lower-approx-var-value-block-map lower-vvbms
-                                         :characteristic-sets (make-hash-table)
-                                         :characteristic-sets-values (make-hash-table)
-                                         :var-values values
-                                         :cardinalities cardinalities
-                                         :step-sizes steps
-                                         :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
-                                         :singleton-p (rule-based-cpd-singleton-p phi1)
-                                         :lvl (rule-based-cpd-lvl phi1)))
-      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-        (format t "~%~%unexpanded schema rules:")
-        (map nil #'print-cpd-rule (rule-based-cpd-rules phi1)))
-      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-        (format t "~%~%expanded schema rules:")
-        (map nil #'print-cpd-rule expanded-schema-rules))
-      (setq new-rules (operate-filter-rules phi2 phi1 idents op))
-      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-        (format t "~%~%rules before compression:~%")
-        (mapcar #'print-cpd-rule new-rules)
-        ;;(break)
-	)
-      (cond ((eq op '*)
-             (setq new-phi (update-cpd-rules new-phi
-                                             (make-array (length new-rules)
-                                                         :initial-contents new-rules))))
-            (t
-             (setq new-phi (get-local-coverings
-                            (update-cpd-rules new-phi
-                                              (make-array (length new-rules)
-                                                          :initial-contents new-rules))))))
-      (cond ((eq op '*)
-             (setf (rule-based-cpd-rules new-phi)
-                   (make-array (length new-rules) :initial-contents new-rules))
-             (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
-             ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
-             )
-            (t
-             ;; update-cpd-rules done in get-local-coverings
-             (when t (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
-                   (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
-             ))
-      (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-        (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
-        (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
-        ;;(format t "~%final rules:~%~S" new-phi)
-        (break)
-        )
-      new-phi)))
+  (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
+         (return-from factor-filter phi2))
+        ((and (numberp phi2) (rule-based-cpd-p phi1))
+         (return-from factor-filter  phi1))
+        ((and (numberp phi1) (numberp phi2))
+         (return-from factor-filter phi1))
+        ((and (rule-based-cpd-p phi1) (null phi2))
+         (return-from factor-filter phi1)))
+  (let (var-union types idents concept-ids qvars values cardinalities steps var-value-block-map sva lower-vvbms new-phi new-rules)
+    (multiple-value-setq (idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms values)
+      (ordered-union phi1 phi2))
+    (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+          (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
+    (setq cardinalities (get-var-cardinalities var-value-block-map))
+    (setq steps (generate-cpd-step-sizes cardinalities))
+    (setq new-phi (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id phi1)
+                                       :identifiers idents
+                                       :dependent-var (rule-based-cpd-dependent-var phi1)
+                                       :vars var-union
+                                       :types types
+                                       :concept-ids concept-ids
+                                       :qualified-vars qvars
+                                       :var-value-block-map var-value-block-map
+                                       :set-valued-attributes sva
+                                       :lower-approx-var-value-block-map lower-vvbms
+                                       :characteristic-sets (make-hash-table)
+                                       :characteristic-sets-values (make-hash-table)
+                                       :var-values values
+                                       :cardinalities cardinalities
+                                       :step-sizes steps
+                                       :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
+                                       :singleton-p (rule-based-cpd-singleton-p phi1)
+                                       :lvl (rule-based-cpd-lvl phi1)))
+    (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+      (format t "~%~%unexpanded schema rules:")
+      (map nil #'print-cpd-rule (rule-based-cpd-rules phi1)))
+    (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+      (format t "~%~%expanded schema rules:")
+      (map nil #'print-cpd-rule expanded-schema-rules))
+    (setq new-rules (operate-filter-rules phi2 phi1 idents op))
+    (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+      (format t "~%~%rules before compression:~%")
+      (mapcar #'print-cpd-rule new-rules)
+      ;;(break)
+      )
+    (cond ((eq op '*)
+           (setq new-phi (update-cpd-rules new-phi
+                                           (make-array (length new-rules)
+                                                       :initial-contents new-rules))))
+          (t
+           (setq new-phi (get-local-coverings
+                          (update-cpd-rules new-phi
+                                            (make-array (length new-rules)
+                                                        :initial-contents new-rules))))))
+    (cond ((eq op '*)
+           (setf (rule-based-cpd-rules new-phi)
+                 (make-array (length new-rules) :initial-contents new-rules))
+           (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
+           ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
+           )
+          (t
+           ;; update-cpd-rules done in get-local-coverings
+           (when t (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
+                 (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
+           ))
+    (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+      (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
+      (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
+      ;;(format t "~%final rules:~%~S" new-phi)
+      (break)
+      )
+    new-phi))
 
 #| Merge two matching factors together |#
 

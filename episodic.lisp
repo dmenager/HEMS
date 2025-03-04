@@ -678,13 +678,13 @@
 						      (episode-id (car (episode-parent ep))))))
 	       (:observation
 		(format stream "~%~a  Observation:" indent)
-		(print-bn (episode-observation ep) large-indent :stream stream))
+		(print-bn (episode-observation ep) :indent large-indent :stream stream))
 	       (:state
 		(format stream "~%~a  State:" indent)
-		(print-bn (episode-observation ep) large-indent :stream stream))
+		(print-bn (episode-observation ep) :indent large-indent :stream stream))
 	       (:state-transitions
 		(format stream "~%~a  State Transitions:" indent)
-		(print-bn (episode-observation ep) large-indent :stream stream))
+		(print-bn (episode-observation ep) :indent large-indent :stream stream))
 	       (:backlinks
 		(format stream "~%~a  Backlinks:" indent)
 		(loop

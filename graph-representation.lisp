@@ -2338,10 +2338,6 @@
 		 (setq block (block-difference block (second vvb2) :output-hash-p t))
 	      finally
 		 (setf (cadr lower) block))
-            (setf (cadr lower)
-                  (reduce #'(lambda (b1 b2)
-                              (list (car lower)(block-difference (second b1) (second b2) :output-hash-p t)))
-                          (cons vvb (remove-nth i vvbm))))
          #|
             (when nil (equal "INTENTION2406" (rule-based-cpd-dependent-id cpd))
             (format t "~%ident: ~S~%Getting lower approximation for vvb:~%~S~%current lower approximation:~%~S" ident vvb lower))
@@ -7874,7 +7870,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; rule = rule to reference (from event-cpd) when finding compatible rules
 (defun get-compatible-rules (schema-cpd event-cpd rule &key (find-all t) (check-count nil))
   (loop
-    with event-dependent-id-val = (gethash (rule-based-cpd-dependent-id event-cpd) (rule-conditions rule))
+    with event-dependent-id-vals = (gethash (rule-based-cpd-dependent-id event-cpd) (rule-conditions rule))
     with match-p = nil
     for schema-rule being the elements of (rule-based-cpd-rules schema-cpd)
     when (and find-all (compatible-rule-p schema-rule rule schema-cpd event-cpd :check-count check-count))
@@ -7888,42 +7884,28 @@ Roughly based on (Koller and Friedman, 2009) |#
        (return-from get-compatible-rules compatible-rules)
     finally
        (when (null match-p)
-	 (when t
+	 (when nil t
 	   (format t "~%~%schema cpd:")
 	   (print-cpd schema-cpd)
 	   (format t "~%~%episode cpd:")
 	   (print-cpd event-cpd)
 	   (format t "~%rule to reference (from episode cpd) when finding compatible rules")
 	   (print-cpd-rule rule))
-	 (break "THIS SHOULD NEVER HAPPEN")
          (let (zero-count-rule)
-           (cond ((null event-dependent-id-val)
+           (cond ((null event-dependent-id-vals)
+		  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
+                                                   :conditions (copy-hash-table (rule-conditions rule))
+						   :probability 0
+                                                   :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
                   (loop
                     for i from 0 to (- (aref (rule-based-cpd-cardinalities event-cpd) 0) 1)
-                    do
-                       (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                        :conditions (copy-hash-table (rule-conditions rule))
-                                                        :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
-                       (setf (gethash (rule-based-cpd-dependent-id event-cpd) (rule-conditions zero-count-rule)) i)
-                    when (= i 0)
                       do
-			 ;; if this is for a * operator, probability should be 0, I believe
-                         (setf (rule-probability zero-count-rule) 1)
-                    else
-                      do
-                         (setf (rule-probability zero-count-rule) 0)
-                    collect zero-count-rule into rules
+			 (setf (gethash (rule-based-cpd-dependent-id event-cpd)
+					(rule-conditions zero-count-rule))
+			       (cons i (gethash (rule-based-cpd-dependent-id event-cpd)
+						(rule-conditions zero-count-rule))))
                     finally
-                       (if find-all
-                           (setq compatible-rules rules)
-                           (setq compatible-rules (list (car rules))))))
-                 ((= event-dependent-id-val 0)
-                  ;; probability should be 0 if the operator is *
-                  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                   :conditions (copy-hash-table (rule-conditions rule))
-                                                   :probability 1
-                                                   :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
-                  (setq compatible-rules (cons zero-count-rule compatible-rules)))
+		       (setq compatible-rules (cons zero-count-rule compatible-rules))))
                  (t
                   (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                                    :conditions (copy-hash-table (rule-conditions rule))

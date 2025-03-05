@@ -2326,7 +2326,7 @@
                   (format t "~%lower:~%~S~%idx: ~d" lower idx))
             ;;(setf (cadr lower) (set-difference (second vvb) (second nvvb)))
             ;;(setf (cadr lower) (block-difference (second vvb) (second nvvb) :output-hash-p t))
-	    (when t
+	    (when nil
 	      (format t "~%~%vvbm:~%~S~%i: ~d~%updated vvbm:~%~S"
 		      vvbm
 		      i
@@ -4464,7 +4464,8 @@
 ;; phi1 = episode conditional probability distribution
 ;; phi2 = schema conditional probability distribution
 ;; op = operation to apply on rules
-(defun operate-filter-rules (phi1 phi2 op)
+;; new-rules = accumulator for the created filtered rules
+(defun operate-filter-rules (phi1 phi2 op new-rules)
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -4491,67 +4492,100 @@
                with vals2 and rule-conditions-subsetp = t
                for attribute being the hash-keys of (rule-conditions r1)
                  using (hash-value vals1)
-                 do
-                    (setq vals2 (gethash attribute (rule-conditions r2)))
-                    (cond ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
-				(null vals2))
-                           ;; attribute was removed from local covering, so the set vals2 would contain all values
+               do
+                  (setq vals2 (gethash attribute (rule-conditions r2)))
+                  (cond ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
+			      (null vals2))
+                         ;; attribute was removed from local covering, so the set vals2 would contain all values
+                         (setf (gethash attribute conditions-hash)
+			       vals1))
+                        ((and (null (gethash attribute (rule-based-cpd-identifiers cpd2)))
+			      (null vals2))
+                         ;; attribute is not in cpd2.
+                         ;; That means we have an (attribute . [0]) and (attribute . [1 ...]) for all rules.
+                         ;; (attribute . [0 ...]) will never happen during insertion
+                         ;; We will never enter this branch during inference because attribute will be in cpd2 from schema
+                         ;; So, it is safe to set the new rule condition to vals1
+                         (setf (gethash attribute conditions-hash)
+			       vals1)
+                         (setq rule-conditions-subsetp nil))
+                        ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
+			      vals2)
+                         ;; attribute is in both cpds, so you take the intersection
+			 (let ((int (intersection vals1 vals2)))
                            (setf (gethash attribute conditions-hash)
-				 vals1))
-                          ((and (null (gethash attribute (rule-based-cpd-identifiers cpd2)))
-				(null vals2))
-                           ;; attribute is not in cpd2.
-                           ;; That means we have an (attribute . [0]) and (attribute . [1 ...]) for all rules.
-                           ;; (attribute . [0 ...]) will never happen during insertion
-                           ;; We will never enter this branch during inference because attribute will be in cpd2 from schema
-                           ;; So, it is safe to set the new rule condition to vals1
-                           (setf (gethash attribute conditions-hash)
-				 vals1)
-                           (setq rule-conditions-subsetp nil))
-                          ((and (gethash attribute (rule-based-cpd-identifiers cpd2))
-				vals2)
-                           ;; attribute is in both cpds, so you take the intersection
-			   (let ((int (intersection vals1 vals2)))
-                             (setf (gethash attribute conditions-hash)
-				   int)
-			     (when (null int)
-			       (setq rule-conditions-subsetp nil)))))
+				 int)
+			   (when (null int)
+			     (setq rule-conditions-subsetp nil)))))
                finally
                   (return rule-conditions-subsetp)))
-           (rule-check-for-missing-identifiers (r1 new-rule cpd2)
-             (loop
-               named looper
-               for att being the hash-keys of (rule-conditions r1)
-                 using (hash-value vals)
-               when (and (notevery #'(lambda (val)
-                                        (= val 0))
-                                    vals)
-                         (null (gethash att (rule-based-cpd-identifiers cpd2))))
-                 do
-                    (setf (rule-count new-rule) 0)
-                    (setf (rule-probability new-rule) 0)
-                    (return-from looper nil))
-	     new-rule)
+	   (rule-check-for-missing-identifiers (r1 cpd2)
+	     (loop
+	       for att being the hash-keys of (rule-conditions r1)
+		 using (hash-value vals)
+	       when (and (null (gethash att (rule-based-cpd-identifiers cpd2))))
+		 collect att into missing-attributes
+	       finally
+		  (return missing-attributes)))
+	   (make-split-rules (r1 r2 missing-r1-atts)
+	     (loop
+	       with new-r1s
+	       with new-r1
+	       for i from 0 to 1
+	       do
+		  (setq new-r1 (copy-cpd-rule r1))
+		  (loop
+		    with store-p = nil
+		    for missing-r1-att in missing-r1-atts
+		    do
+		       (cond ((= i 0)
+			      (setq store-p t)
+			      (setf (gethash missing-r1-att
+					     (rule-conditions new-r1))
+				    (list 0)))
+			     ((= i 1)
+			      (let (removed-zero)
+				(setq removed-zero
+				      (remove 0 (gethash
+						 missing-r1-att
+						 (rule-conditions r2))))
+				(when removed-zero
+				  (setq store-p t)
+				  (setf (gethash missing-r1-att
+						 (rule-conditions new-r1))
+					removed-zero)
+				  (setf (rule-probability r1) 0)
+				  (setf (rule-count r1) 0)))))
+		    finally
+		       (when store-p
+			 (setq new-r1s (cons new-r1 new-r1s))))
+	       finally
+		  (return new-r1s)))
            (filter-no-match-rules (no-match-r1s cpd2 new-rules num-rules)
              (loop
-               with no-match-r2 and no-match-rule
+               with no-match-r2 and no-match-rule and missing-no-match-attributes
                for no-match-r1 in no-match-r1s
                do
                   (setq no-match-r2 (copy-cpd-rule no-match-r1))
                   (setf (rule-probability no-match-r2) 0)
-                  (setq no-match-r2 (rule-check-for-missing-identifiers no-match-r1 no-match-r2 cpd2))
+		  (loop
+		    for att being the hash-keys of (rule-conditions no-match-r2)
+		      using (hash-value vals)
+		    when (and (null (gethash att (rule-based-cpd-identifiers cpd2)))
+			      (set-difference vals (list 0)))
+		      do
+			 (setf (rule-count no-match-r2) 0))
                   (setq no-match-rule (rule-filter no-match-r1 no-match-r2 op num-rules (rule-conditions no-match-r2)))
-                  (setq new-rules (cons no-match-rule new-rules))
+		  (setq new-rules (cons no-match-rule new-rules))
                   (setq num-rules (+ num-rules 1)))
-	     new-rules))
+	     (values new-rules num-rules)))
     (let ((rules1 (rule-based-cpd-rules phi1))
 	  (rules2 (rule-based-cpd-rules phi2))
 	  (matched-r1s (make-hash-table :test #'equal))
           (matched-r2s (make-hash-table :test #'equal))
-          (num-rules 0)
+          (num-rules (length new-rules))
           no-match-r1s
-          no-match-r2s
-          new-rules)
+          no-match-r2s)
       ;; check to see if r1 has a match in phi2
       (multiple-value-setq (matched-r1s no-match-r1s)
 	(find-matched-rules rules1 rules2 matched-r1s no-match-r1s))
@@ -4586,13 +4620,51 @@
                            (setf (rule-count new-rule) nil)))
 			((compatible-rule-p r1 r2 phi1 phi2)
 			 ;; compatible, but not the same rule
-			 (let ((r2-copy (copy-cpd-rule r2))
-                               (r1-copy (copy-cpd-rule r1)))
-                           (setq r1-copy (rule-check-for-missing-identifiers r2 r1-copy phi1))
-                           (setq r2-copy (rule-check-for-missing-identifiers r1 r2-copy phi2))
-                           (setq new-rule (rule-filter r1-copy r2-copy op num-rules new-conditions))
-                           (when (rule-based-cpd-singleton-p phi2)
-                             (setf (rule-count new-rule) nil)))))
+			 (let (new-r2s
+                               new-r1s
+			       missing-r1-attributes
+			       missing-r2-attributes)
+			   (setq missing-r1-attributes (rule-check-for-missing-identifiers r2 phi1))
+			   (setq missing-r2-attributes (rule-check-for-missing-identifiers r1 phi2))
+			   (cond ((and (null missing-r1-attributes)
+				       (null missing-r2-attributes))
+				  (setq new-rule (rule-filter r1 r2 op num-rules new-conditions))
+				  (when (rule-based-cpd-singleton-p phi2)
+				    (setf (rule-count new-rule) nil)))
+				 ((and missing-r1-attributes
+				       (null missing-r2-attributes))
+				  (setq new-r1s (make-split-rules r1 r2 missing-r1-attributes))
+				  (let (new-phi1 new-phi2)
+				    (setq new-phi1 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi1)
+						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
+				    (setq new-phi2 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi2)
+						    :rules (make-array 1 :initial-contents (list r2))))
+				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
+				 ((and (null missing-r1-attributes)
+				       missing-r2-attributes)
+				  (setq new-r2s (make-split-rules r2 r1 missing-r2-attributes))
+				  (let (new-phi1 new-phi2)
+				    (setq new-phi1 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi1)
+						    :rules (make-array 1 :initial-contents (list r1))))
+				    (setq new-phi2 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi2)
+						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
+				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
+				 ((and missing-r1-attributes
+				       missing-r2-attributes)
+				  (setq new-r1s (make-split-rules r1 r2 missing-r1-attributes))
+				  (setq new-r2s (make-split-rules r2 r1 missing-r2-attributes))
+				  (let (new-phi1 new-phi2)
+				    (setq new-phi1 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi1)
+						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
+				    (setq new-phi2 (make-rule-based-cpd
+						    :identifiers (rule-based-cpd-identifiers phi2)
+						    :rules (make-array (length new-r2s) :initial-contents (list r2))))
+				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))))))
 		  (when new-rule
 		    (setf (gethash num-rules (rule-block new-rule)) num-rules)
 		    (setq new-rules (cons new-rule new-rules))
@@ -4627,7 +4699,7 @@
                     (setf (rule-count rule1) (max (rule-count rule1)
       (rule-count rule2))))))
       |#
-      (nreverse new-rules))))
+      new-rules)))
   
 #| Perform a filter operation over rules
    Returns: a list of rules
@@ -5098,7 +5170,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
-    (setq new-rules (operate-filter-rules phi2 phi1 op))
+    (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil)))
     (when t ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%filtered rules before compression:~%")
       (mapcar #'print-cpd-rule new-rules)

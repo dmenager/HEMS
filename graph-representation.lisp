@@ -4563,7 +4563,7 @@
 				    (setq new-phi2 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
-						    :rules (make-array (length new-r2s) :initial-contents (list r2))))
+						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil
 				      (format t "~%recursing..."))
 				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))))))
@@ -5097,7 +5097,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
       (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
       ;;(format t "~%final rules:~%~S" new-phi)
-      (break)
+      ;;(break)
       )
     new-phi))
 

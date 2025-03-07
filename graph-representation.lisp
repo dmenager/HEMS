@@ -4384,42 +4384,49 @@
 		 collect att into missing-attributes
 	       finally
 		  (return missing-attributes)))
-	   (make-split-rules (r1 r2 missing-r1-atts)
-	     (loop
-	       with new-r1s
-	       with new-r1
-	       for i from 0 to 1
-	       do
-		  (setq new-r1 (copy-cpd-rule r1))
-		  (loop
-		    with store-p = nil
-		    for missing-r1-att in missing-r1-atts
-		    do
-		       (cond ((= i 0)
-			      (setf (gethash missing-r1-att
-					     (rule-conditions new-r1))
-				    (list 0))
-			      (when (compatible-rule-p new-r1 r2 nil nil)
-				    (setq store-p t)))
-			     ((= i 1)
-			      (let (removed-zero)
-				(setq removed-zero
-				      (remove 0 (gethash
-						 missing-r1-att
-						 (rule-conditions r2))))
-				(when removed-zero
-				  (setf (gethash missing-r1-att
-						 (rule-conditions new-r1))
-					removed-zero)
-				  (setf (rule-probability new-r1) 0)
-				  (setf (rule-count new-r1) 0)
-				  (when (compatible-rule-p new-r1 r2 nil nil)
-				    (setq store-p t))))))
-		    finally
-		       (when store-p
-			 (setq new-r1s (cons new-r1 new-r1s))))
-	       finally
-		  (return new-r1s)))
+	   (make-split-rules (r1s r2 missing-r1-atts)
+	     (cond ((null missing-r1-atts)
+		    r1s)
+		   (t
+		    (loop
+		      with r2-vals
+		      with new-r1 and acc
+		      for r1 in r1s
+		      do
+			 (setq r2-vals (gethash (car missing-r1-atts) (rule-conditions r2)))
+			 (loop
+			   for i from 0 to 1
+			   do
+			      (setq new-r1 (copy-cpd-rule r1))
+			      (cond ((= i 0)
+				     (setf (gethash (car missing-r1-atts)
+						    (rule-conditions new-r1))
+					   (list 0))
+				     (when nil
+				       (format t "~%candidate rule condition:")
+				       (print-cpd-rule new-r1))
+				     (when (compatible-rule-p new-r1 r2 nil nil)
+				       (when nil
+					 (format t "~%success"))
+				       (setq acc (cons new-r1 acc))))
+				    ((= i 1)
+				     (let (removed-zero)
+				       (setq removed-zero
+					     (remove 0 r2-vals))
+				       (when nil
+					 (format t "~%testing new rule condition: (~S ~S)" (car missing-r1-atts) removed-zero))
+				       (when removed-zero
+					 (setf (gethash (car missing-r1-atts)
+							(rule-conditions new-r1))
+					       removed-zero)
+					 (setf (rule-probability new-r1) 0)
+					 (setf (rule-count new-r1) 0)
+					 (when (compatible-rule-p new-r1 r2 nil nil)
+					   (when nil
+					     (format t "~%success"))
+					   (setq acc (cons new-r1 acc))))))))
+		      finally
+			 (return (make-split-rules acc r2 (rest missing-r1-atts)))))))
            (filter-no-match-rules (no-match-r1s cpd2 new-rules num-rules)
              (loop
                with no-match-r2 and no-match-rule and missing-no-match-attributes
@@ -4512,7 +4519,7 @@
 				    (setf (rule-count new-rule) nil)))
 				 ((and missing-r1-attributes
 				       (null missing-r2-attributes))
-				  (setq new-r1s (make-split-rules r1 r2 missing-r1-attributes))
+				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
 				  (when nil
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s))
@@ -4530,7 +4537,7 @@
 				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
 				 ((and (null missing-r1-attributes)
 				       missing-r2-attributes)
-				  (setq new-r2s (make-split-rules r2 r1 missing-r2-attributes))
+				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
 				  (when nil
 				    (format t "~%new r2s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r2s))
@@ -4548,8 +4555,8 @@
 				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
 				 ((and missing-r1-attributes
 				       missing-r2-attributes)
-				  (setq new-r1s (make-split-rules r1 r2 missing-r1-attributes))
-				  (setq new-r2s (make-split-rules r2 r1 missing-r2-attributes))
+				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
+				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
 				  (when nil
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s)
@@ -4934,7 +4941,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd-vvbms (cpd)
-  (when t
+  (when nil
     (loop
       for card being the elements of (rule-based-cpd-cardinalities cpd)
       for idx being the hash-keys of (rule-based-cpd-var-value-block-map cpd)
@@ -4948,7 +4955,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t
+  (when nil
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -5042,7 +5049,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (ordered-union phi1 phi2))
     (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
-    (when t
+    (when nil
       (format t "~%~%phi1:")
       (print-cpd phi1)
       (format t "~%phi2:")
@@ -5068,7 +5075,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
     (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil)))
-    (when t ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+    (when nil ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%filtered rules before compression:~%")
       (mapcar #'print-cpd-rule new-rules)
       ;;(break)
@@ -5090,10 +5097,10 @@ Roughly based on (Koller and Friedman, 2009) |#
            )
           (t
            ;; update-cpd-rules done in get-local-coverings
-           (when t (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
+           (when nil (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
                  (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
            ))
-    (when t ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+    (when nil ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
       (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
       ;;(format t "~%final rules:~%~S" new-phi)

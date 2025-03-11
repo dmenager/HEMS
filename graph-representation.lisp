@@ -2682,285 +2682,6 @@
 		  (setq hardness (+ hardness 1))))
     finally
        (return hardness)))
-#| Get next condition candidtate for new rule
-
-;; certain-tog = certain T(G)
-;; tog = T(G)
-;; junk = conditions to avoid
-;; compatibilities = hash table showing which rules are compatible with each other
-;; cpd = conditional probability distributions
-;; case-constraints = hash table of constraints that a rule must satisfy for each covered case
-(defun find-subset-with-max (certain-tog tog junk cpd case-constraints  &key (reject-conditions))
-  (loop
-    with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
-    with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
-    with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
-    for certain-ident being the hash-keys of certain-tog
-      using (hash-value certain-att-blocks)
-    for ident being the hash-keys of tog
-      using (hash-value att-blocks)
-    do
-       (when nil (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
-         (format t "~%"))
-       (loop
-         with condition and att-block and lower-approx
-         with certain-discounted-coverage and discounted-coverage
-         with goodness-weight and goodness and cert-goodness-weight and cert-goodness
-         with penalty-weight and penalty and cert-penalty-weight and cert-penalty
-         with redundancy-weight and redundancy and cert-redundancy-weight and cert-redundancy
-         with partial-coverings and partial-coverings-weight
-         with size-penalty and hardness
-         for (cert-condition-block cert-intersection cert-conflicts cert-redundancies cert-g cert-all-conflicts cert-all-redundancies cert-all-partial-coverings) in certain-att-blocks
-         for (condition-block intersection conflicts redundancies g all-conflicts all-redundancies all-partial-coverings) in att-blocks
-	 when (and (> (hash-table-count cert-intersection) 0)
-		   (not (listp (cdar condition-block)))
-		   (condition-satisfy-case-constraints-p (car condition-block) cert-intersection case-constraints cpd)
-                   )
-           do
-	      (if (> (hash-table-count cert-intersection) 0)
-		  (setq cert-intersection-p 0)
-		  (setq cert-intersection-p 0))
-              (setq condition (car condition-block))
-              (setq att-block (second condition-block))
-              (setq lower-approx (second cert-condition-block))
-              
-              (setq cert-goodness 1)
-              (setq cert-penalty 1)
-              (setq cert-redundancy 1)
-              (setq partial-coverings 1)
-
-              (setq cert-goodness-weight (/ (hash-table-count cert-intersection) (hash-table-count att-block)))
-              (setq cert-penalty-weight (hash-table-count conflicts))
-              ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
-              ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
-              ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
-              (setq certain-discounted-coverage (- 0 ;;(* cert-goodness-weight cert-goodness)
-                                                   cert-penalty-weight
-                                                   ;;(* cert-redundancy-weight cert-redundancy)
-                                                   ;;(* partial-coverings-weight partial-coverings)
-                                                   ))
-              (when (and print-special* (equal "OBSERVATION_VAR1_209" (rule-based-cpd-dependent-id cpd)))
-                (format t "~%~%B_~S = ~S~%~S = ~S~%   hardness: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
-			condition lower-approx
-                        condition att-block
-			hardness
-                        conflicts
-                        (hash-table-count conflicts)
-			cert-conflicts
-			(hash-table-count cert-conflicts)
-			cert-intersection
-                        (hash-table-count cert-intersection)
-			intersection
-			(hash-table-count redundancies)
-			(hash-table-count intersection) (hash-table-count att-block)))
-              (when 
-		  #|
-		  (or (> (hash-table-count cert-intersection) best-cert-intersection) 
-                        (and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-			(and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-                             
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-                  )
-		  |#
-		  
-		  (or (and (< (hash-table-count conflicts) best-num-conflicts)) 
-                  (and (= (hash-table-count conflicts) best-num-conflicts)
-                             (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-                        )
-		  
-		  #|(or (> cert-intersection-p best-cert-intersection-p)
-			(and (= cert-intersection-p best-cert-intersection-p)
-			     (< hardness best-hardness))
-			(and (= cert-intersection-p best-cert-intersection-p)
-			     (= hardness best-hardness)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-		        (and (= cert-intersection-p best-cert-intersection-p)
-			     (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (> (hash-table-count cert-intersection) best-cert-intersection)
-			     )
-		        (and (= cert-intersection-p best-cert-intersection-p)
-			     (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     ;;(= (hash-table-count intersection) best-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= cert-intersection-p best-cert-intersection-p)
-			     (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     ;;(= (hash-table-count intersection) best-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))	
-                        )
-		|#
-		#|
-		(or (< hardness best-hardness)
-			(and (= hardness best-hardness)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (> (hash-table-count cert-conflicts) best-cert-conflicts))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count intersection) best-intersection))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count intersection) best-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count intersection) best-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))	
-                        )
-		|#
-		#|
-		  (or (< hardness best-hardness)
-			(and (= hardness best-hardness)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count intersection) best-intersection))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count intersection) best-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count intersection) best-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))	
-                        )
-		|#
-		#|
-		(or (< hardness best-hardness)
-			(and (= hardness best-hardness)
-			     (< (hash-table-count conflicts) best-num-conflicts))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= hardness best-hardness)
-			     (= (hash-table-count conflicts) best-num-conflicts)
-			     ;;(= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-                        )
-		  |#
-
-		#|
-		  (or (< (hash-table-count conflicts) best-num-conflicts) 
-                        (and (= (hash-table-count conflicts) best-num-conflicts)
-			     (> (hash-table-count cert-conflicts) best-cert-conflicts))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-			     (= (hash-table-count cert-conflicts) best-cert-conflicts)
-			     (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-	        
-                        )
-		|#
-		#|
-		(or (< (hash-table-count conflicts) best-num-conflicts) 
-                        (and (= (hash-table-count conflicts) best-num-conflicts)
-                             (> (hash-table-count cert-intersection) best-cert-intersection))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (< (hash-table-count att-block) smallest-card))
-			(and (= (hash-table-count conflicts) best-num-conflicts)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-			     (= (hash-table-count att-block) smallest-card)
-			     (< (hash-table-count redundancies) best-cert-redundancies))
-	        
-                        )
-		|#
-		#|
-		  (or (> certain-discounted-coverage max-certain-discounted-coverage)
-                        (and (= certain-discounted-coverage  max-certain-discounted-coverage)
-                             (> (hash-table-count cert-intersection) best-cert-intersection))
-			#|
-			(and (= certain-discounted-coverage  max-certain-discounted-coverage)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-                             (< (hash-table-count redundancies) best-cert-redundancies))
-			|#
-                        (and (= certain-discounted-coverage  max-certain-discounted-coverage)
-                             (= (hash-table-count cert-intersection) best-cert-intersection)
-			     ;;(= (hash-table-count redundancies) best-cert-redundancies)
-			     (< (hash-table-count att-block) smallest-card)))
-		|#
-		(setq best-hardness hardness)
-		(setq best-num-conflicts (hash-table-count conflicts))
-                (setq best-cert-intersection (hash-table-count cert-intersection))
-		(setq best-intersection (hash-table-count intersection))
-		(setq best-cert-conflicts (hash-table-count cert-conflicts))
-		(setq best-cert-redundancies (hash-table-count redundancies))
-                (setq best-condition condition)
-                (setq best-block att-block)
-                (setq best-lower-approx lower-approx)
-                (setq best-conflicts conflicts)
-                (setq best-redundancies redundancies)
-                (setq max-certain-discounted-coverage certain-discounted-coverage)
-                (setq smallest-certain-card (hash-table-count lower-approx))
-                ;;(setq max-discounted-coverage discounted-coverage)
-                (setq smallest-card (hash-table-count att-block))))
-    finally
-       (when nil (and (equal "HAND" (rule-based-cpd-dependent-var cpd)))
-         (format t "~%~%returning best condition:~%~S~%" best-condition)
-         (when (null best-condition)
-           (break))
-         )
-       (return (values best-condition best-block best-lower-approx best-conflicts best-redundancies))))
-|#
 
 #| Get next condition candidtate for new rule.
    Returns multiple values.  |#
@@ -3018,137 +2739,90 @@
 	       ;;(values conflicts redundancies new-g all-conflicts all-redundancies all-partial-coverings)
 	       (values conflicts redundancies new-g all-conflicts all-redundancies))))
     (loop
-       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
-       with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
-       with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
-       with best-info-gain = most-negative-fixnum
-       for certain-ident being the hash-keys of certain-tog
-       using (hash-value certain-att-blocks)
-       for ident being the hash-keys of tog
-       using (hash-value att-blocks)
-       do
+      with copy-rule and padding = 0.00001
+      with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
+      with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
+      with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
+      with best-info-gain = most-negative-fixnum
+      with best-rule
+      for certain-ident being the hash-keys of certain-tog
+	using (hash-value certain-att-blocks)
+      for ident being the hash-keys of tog
+	using (hash-value att-blocks)
+      do
 	 (when t (and (equal "STATE_VAR1_268" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	 (loop
-	   with copy-rule
-            with condition and att-block and lower-approx
-            with certain-discounted-coverage and discounted-coverage
-            with goodness-weight and goodness and cert-goodness-weight and cert-goodness
-            with penalty-weight and penalty and cert-penalty-weight and cert-penalty
-            with redundancy-weight and redundancy and cert-redundancy-weight and cert-redundancy
-            with partial-coverings and partial-coverings-weight
-            with size-penalty and hardness
-	    with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
-	    with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
-	    with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs
-	    for (cert-condition-block cert-intersection) in certain-att-blocks
-            for (condition-block intersection) in att-blocks
-	    when (and (> (hash-table-count cert-intersection) 0)
-		      (not (member (cdar condition-block)
-				   (gethash (caar condition-block)
-					    (rule-conditions rule))))
-		      (condition-satisfy-case-constraints-p (car condition-block) cert-intersection case-constraints cpd))
-              do
-		 (setq copy-rule (copy-cpd-rule rule))
-		 (setq condition (car condition-block))
-		 (setf (gethash (car condition)
-				(rule-conditions copy-rule))
-		       (cons (cdr condition)
-			     (gethash (car condition)
-				      (rule-conditions copy-rule))))
-		 (setf (rule-block copy-rule)
-		       (get-rule-block cpd copy-rule))
-		 (setf (rule-certain-block copy-rule)
-		       (get-rule-block cpd copy-rule :certain-p t))
-		 (setf (rule-avoid-list copy-rule)
-		       (block-difference (rule-block copy-rule)
-					 goal
-					 :output-hash-p t))		 
-              (setq att-block (second condition-block))
-              (setq lower-approx (second cert-condition-block))
-	      
-              (multiple-value-setq (cert-conflicts cert-redundancies cert-g cert-all-conflicts cert-all-redundancies)
-		(get-condition-fitness-measures rule att-block (if (> (hash-table-count (rule-block rule)) 0)
-							      (hash-intersection goal (rule-certain-block rule) :output-hash-p t)
-							      goal)
-					   t))
-	      (multiple-value-setq (conflicts redundancies g all-conflicts all-redundancies)
-		(get-condition-fitness-measures rule att-block goal nil))
-	      
-	      (setq cert-goodness 1)
-              (setq cert-penalty 1)
-              (setq cert-redundancy 1)
-              (setq partial-coverings 1)
-	      
-              (setq cert-goodness-weight (/ (hash-table-count cert-intersection) (hash-table-count att-block)))
-              (setq cert-penalty-weight (hash-table-count conflicts))
-
-	      (setq new-covered-pos (hash-table-count (hash-difference (rule-block copy-rule) (rule-avoid-list copy-rule) cpd :output-hash-p t)))
-	      (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
-	      
-	      (setq covered-pos (hash-table-count (hash-difference (rule-block rule) (rule-avoid-list rule) cpd :output-hash-p t)))
-	      (setq covered-negs (hash-table-count (rule-avoid-list rule)))
-	      (when t
-		(format t "~%condition: ~S~%certain intersection with goal:~%~S~%intersection with goal:~%~S~%conflicts:~%~S~%new covered positives: ~d~%new covered negatives: ~d" condition cert-intersection intersection conflicts new-covered-pos new-covered-negs))
-	      (cond ((> (hash-table-count (rule-conditions rule)) 0)
-		     (setq info-gain (- (log (/ new-covered-pos
-						(+ new-covered-pos new-covered-negs))
-					     2)
-					(log (/ covered-pos
-						(+ covered-pos covered-negs))
-					     2))))
-		    (t
-		     (setq info-gain (log (/ new-covered-pos
-					     (+ new-covered-pos new-covered-negs))
-					  2))))
-	      
-              ;;(setq cert-redundancy-weight (/ (hash-table-count redundancies) (hash-table-count att-block)))
-              ;;(setq partial-coverings-weight (/ (hash-table-count (block-difference intersection cert-intersection :output-hash-p t)) (hash-table-count intersection)))
-              ;;(setq hardness (conflict-hardness (car condition-block) conflicts tog certain-tog))
-              (setq certain-discounted-coverage (- 0 ;;(* cert-goodness-weight cert-goodness)
-                                                   cert-penalty-weight
-                                                   ;;(* cert-redundancy-weight cert-redundancy)
-                                                   ;;(* partial-coverings-weight partial-coverings)
-                                                   ))
-              (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
-                (format t "~%~%B_~S = ~S~%~S = ~S~%   info-gain: ~d~%   current best info-gain: ~d~%   conflicts: ~S = ~d~%   cert conflicts: ~S = ~d~%   cert intersection: ~S = ~d~%   intersection: ~S = ~d~%   redundancies: ~d~%   size: ~d"
-			condition lower-approx
-                        condition att-block
-			info-gain
-			best-info-gain
-                        conflicts
-                        (hash-table-count conflicts)
-			cert-conflicts
-			(hash-table-count cert-conflicts)
-			cert-intersection
-                        (hash-table-count cert-intersection)
-			intersection
-			(hash-table-count redundancies)
-			(hash-table-count intersection) (hash-table-count att-block)))
-              (when (> info-gain best-info-gain)
-		(setq best-info-gain info-gain)
-		(setq best-hardness hardness)
-		(setq best-num-conflicts (hash-table-count conflicts))
-                (setq best-cert-intersection (hash-table-count cert-intersection))
-		(setq best-intersection (hash-table-count intersection))
-		(setq best-cert-conflicts (hash-table-count cert-conflicts))
-		(setq best-cert-redundancies (hash-table-count redundancies))
-                (setq best-condition condition)
-                (setq best-block att-block)
-                (setq best-lower-approx lower-approx)
-                (setq best-conflicts (rule-avoid-list copy-rule))
-                (setq best-redundancies redundancies)
-                (setq max-certain-discounted-coverage certain-discounted-coverage)
-                (setq smallest-certain-card (hash-table-count lower-approx))
-                ;;(setq max-discounted-coverage discounted-coverage)
-                (setq smallest-card (hash-table-count att-block))))
-       finally
+           with condition and att-block and lower-approx
+           with certain-discounted-coverage and discounted-coverage
+           with goodness-weight and goodness and cert-goodness-weight and cert-goodness
+           with penalty-weight and penalty and cert-penalty-weight and cert-penalty
+           with redundancy-weight and redundancy and cert-redundancy-weight and cert-redundancy
+           with partial-coverings and partial-coverings-weight
+           with size-penalty and hardness
+	   with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
+	   with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
+	   with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs
+	   for (cert-condition-block cert-intersection) in certain-att-blocks
+           for (condition-block intersection) in att-blocks
+	   when (and (> (hash-table-count cert-intersection) 0)
+		     (not (member (cdar condition-block)
+				  (gethash (caar condition-block)
+					   (rule-conditions rule))))
+		     (condition-satisfy-case-constraints-p (car condition-block) cert-intersection case-constraints cpd))
+             do
+		(setq copy-rule (copy-cpd-rule rule))
+		(when t
+		  (format t "~%~%rule before adding condition:~%~S" copy-rule))
+		(setq condition (car condition-block))
+		(setf (gethash (car condition)
+			       (rule-conditions copy-rule))
+		      (cons (cdr condition)
+			    (gethash (car condition)
+				     (rule-conditions copy-rule))))
+		(setf (rule-block copy-rule)
+		      (get-rule-block cpd copy-rule))
+		(setf (rule-certain-block copy-rule)
+		      (get-rule-block cpd copy-rule :certain-p t))
+		(setf (rule-avoid-list copy-rule)
+		      (block-difference (rule-block copy-rule)
+					concept-block
+					:output-hash-p t))
+		(when (hash-intersection (rule-certain-block copy-rule) goal)
+		  (setq new-covered-pos (hash-table-count (hash-difference (rule-certain-block copy-rule) (rule-avoid-list copy-rule) cpd :output-hash-p t)))
+		  (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
+		  (setq covered-pos (hash-table-count (hash-difference (rule-certain-block rule) (rule-avoid-list rule) cpd :output-hash-p t)))
+		  (setq covered-negs (hash-table-count (rule-avoid-list rule)))
+		  (when t
+		    (format t "~%rule:~%~S~%condition: ~S~%certain intersection with goal:~%~S~%intersection with goal:~%~S~%new covered positives: ~d~%new covered negatives: ~d" copy-rule condition cert-intersection covered-pos new-covered-pos new-covered-negs))
+		  (cond ((> (hash-table-count (rule-conditions rule)) 0)
+			 (setq info-gain (- (log (/ new-covered-pos
+						       (+ new-covered-pos new-covered-negs))
+						 2)
+					    (log (/ covered-pos
+						       (+ covered-pos covered-negs))
+						 2))))
+			(t
+			 (setq info-gain (log (/ new-covered-pos
+						    (+ new-covered-pos new-covered-negs))
+					      2))))
+		  (when t 
+                    (format t "~%~%B_~S = ~S~%info-gain: ~d~% current best info-gain: ~d"
+			    condition
+			    (cdr condition-block)
+			    info-gain
+			    best-info-gain))
+		  (when (> info-gain best-info-gain)
+		    (setq best-info-gain info-gain)
+                    (setq best-condition condition)
+		    (setq best-rule (copy-cpd-rule copy-rule)))))
+      finally
 	 (when nil (and (equal "HAND" (rule-based-cpd-dependent-var cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition)
                (when (null best-condition)
 		 (break))
-         )
-	 (return (values best-condition best-block best-lower-approx best-conflicts best-redundancies)))))
+               )
+	 (return (values best-condition best-rule)))))
 
 #| Compute the block of a rule |#
 
@@ -3550,8 +3224,8 @@
                finally
                   (return t))))
     (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
-      (format t "~%getting local covering for:~%~S" cpd)
-      (map nil #'print-cpd-rule (rule-based-cpd-rules cpd))
+	  (format t "~%~%getting local covering for:~%~S~%" cpd )
+	  (print-cpd cpd)
       ;;(break)
       )
     (loop
@@ -3586,7 +3260,7 @@
                                              :probability probability-concept
                                              :block (make-hash-table)
                                              :certain-block (make-hash-table)
-                                             :avoid-list (block-difference universe goal :output-hash-p t)
+                                             :avoid-list (block-difference universe concept-block :output-hash-p t)
                                              :redundancies (make-hash-table)
                                              :count count))
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
@@ -3604,33 +3278,27 @@
                                (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
                                (not (rule-satisfy-case-constraints-p new-rule case-constraints)))
                      do
-                        (multiple-value-bind (condition condition-block lower-approx conflicts redundancies)
+                        (multiple-value-bind (condition copy-rule)
                             (find-subset-with-max certain-tog tog junk cpd case-constraints goal new-rule universe concept-block :reject-conditions reject-conditions)
 			  (cond (condition
+				 (setq new-rule copy-rule)
 				 (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
-				   (format t "~%--------------~%condition:~%~S~%condition-block:~%~S~%condition lower-approximation:~%~S~%condition conflicts:~%~S~%condition redundancies:~%~S" condition condition-block lower-approx conflicts redundancies))
-				 (when (and t (gethash (car condition) (rule-conditions new-rule)))
-				   (format t "Making set valued rule! with condition:~%~S" condition)
+				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
+				 (when (and t (> (length (gethash (car condition) (rule-conditions new-rule))) 1))
+				   (format t "~%Making set valued rule! with condition:~%~S" condition)
 				   (print-cpd-rule new-rule)
 				   (break))
-				 (setf (gethash (car condition)
-						(rule-conditions new-rule))
-				       (cons (cdr condition)
-					     (gethash (car condition)
-						      (rule-conditions new-rule))))
-				 (if (> (hash-table-count (rule-block new-rule)) 0)
-				     (setf (rule-block new-rule) (get-rule-block cpd new-rule))
-				     (setf (rule-block new-rule) condition-block))
-				 (if (> (hash-table-count (rule-certain-block new-rule)) 0) ;;(rule-certain-block new-rule)
-				     (setf (rule-certain-block new-rule) (get-rule-block cpd new-rule :certain-p t))
-				     (setf (rule-certain-block new-rule) lower-approx))
-				 (setf (rule-avoid-list new-rule) conflicts)
-				 (setf (rule-redundancies new-rule) redundancies)
 				 (when t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
-				   (format t "~%updated rule redundancies list:~%~S" (rule-redundancies new-rule))))
+				   (format t "~%num conditions: ~d" (hash-table-count (rule-conditions new-rule)))
+				   ;;(format t "~%num elements in new rule block not in concept block: ~d" (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)))
+				   ;;(format t "~%continue-p: ~S"
+				   ;;(or (= (hash-table-count (rule-conditions new-rule)) 0)
+				   ;;(not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
+				   ;;(not (rule-satisfy-case-constraints-p new-rule case-constraints))))
+				   ))
 				(t
 				 (error "No more condition from ToG but concept block is not covered properly")))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)

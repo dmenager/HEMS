@@ -3287,7 +3287,8 @@
 				 (when (and nil (gethash (car condition) (rule-conditions new-rule)))
 				   (format t "~%Making set-valued rule with condition: ~S!" condition)
 				   (print-cpd-rule new-rule)
-				   (break))
+				   ;;(break)
+				   )
 				 (setq new-rule copy-rule)
 				 (when nil t (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
@@ -3784,7 +3785,9 @@
 ;; phi2 = schema conditional probability distribution
 ;; op = operation to apply on rules
 ;; new-rules = accumulator for the created filtered rules
-(defun operate-filter-rules (phi1 phi2 op new-rules)
+;; rule-keys = hash table (test #'equal) for keeping track of visited rules
+;; new-cpd = cpd to store the filtered rules
+(defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd)
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -3891,6 +3894,7 @@
 			 (return (make-split-rules acc r2 (rest missing-r1-atts)))))))
            (filter-no-match-rules (no-match-r1s cpd2 new-rules num-rules)
              (loop
+	       with rule-key
                with no-match-r2 and no-match-rule and missing-no-match-attributes
                for no-match-r1 in no-match-r1s
                do
@@ -3911,9 +3915,44 @@
 		    (print-cpd-rule no-match-r2)
 		    (format t "~%filtered no match rule:")
 		    (print-cpd-rule no-match-rule))
-		  (setq new-rules (cons no-match-rule new-rules))
-                  (setq num-rules (+ num-rules 1)))
-	     (values new-rules num-rules)))
+		  (setq rule-key (polynomial-encoding no-match-rule))
+		  (when (not (gethash rule-key rule-keys))
+		    (setq new-rules (cons no-match-rule new-rules))
+		    (setf (gethash rule-key rule-keys) no-match-rule)
+                    (setq num-rules (+ num-rules 1))))
+	     (values new-rules num-rules))
+	   (mod-exp (base exp mod)
+	     "Computes (base^exp) % mod efficiently using modular exponentiation."
+	     (let ((result 1))
+	       (loop
+		 while (> exp 0)
+		 do
+		    ;; If exp is odd, multiply result by base
+		    (when (oddp exp) 
+		      (setq result (mod (* result base) mod)))
+		    ;; Square the base
+		    (setq base (mod (* base base) mod))
+		    ;; Reduce exp by half
+		    (setq exp (floor exp 2)))
+	       result))
+	   (polynomial-encoding (rule)
+	     (let ((x 3)
+		   (rule-key (make-array (hash-table-count (rule-based-cpd-identifiers new-cpd)))))
+	       (loop
+		 with values
+		 for j from 0
+		 for attribute being the hash-keys of (rule-based-cpd-identifiers new-cpd)
+		   using (hash-value idx)
+		 do
+		    (setq values (gethash attribute (rule-conditions rule)))
+		    (when (null values)
+		      (setq values (gethash idx (rule-based-cpd-var-values new-cpd))))
+		    (setf (aref rule-key j)
+			  (reduce #'+
+				  (mapcar #'(lambda (i)
+					      (mod-exp x i (+ (expt 10 9) 7)))
+					  values))))
+	       (format nil "~{~a~}" (coerce rule-key 'list)))))
     (when nil
       (format t "~%~%phi1:")
       (print-cpd phi1)
@@ -3943,7 +3982,7 @@
 	     (when nil
 	       (format t "~%"))
 	     (loop
-               with new-conditions and new-rule and same-rule-p
+               with new-conditions and new-rule and same-rule-p and rule-key
                for r2 in matched-rules
                do
                   ;; check if the two rules are the same
@@ -3996,7 +4035,8 @@
 						    :rules (make-array 1 :initial-contents (list r2))))
 				    (when nil
 				      (format t "~%recursing..."))
-				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
+				    (multiple-value-setq (new-rules rule-keys)
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))
 				 ((and (null missing-r1-attributes)
 				       missing-r2-attributes)
 				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
@@ -4014,7 +4054,8 @@
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil
 				      (format t "~%recursing..."))
-				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))
+				    (multiple-value-setq (new-rules rule-keys)
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))
 				 ((and missing-r1-attributes
 				       missing-r2-attributes)
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
@@ -4035,14 +4076,29 @@
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil
 				      (format t "~%recursing..."))
-				    (setq new-rules (operate-filter-rules new-phi1 new-phi2 op new-rules))))))))
+				    (multiple-value-setq (new-rules rule-keys)
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))))))
 		  (when new-rule
 		    (setf (gethash num-rules (rule-block new-rule)) num-rules)
-		    (setq new-rules (cons new-rule new-rules))
-		    (when nil
-                      (format t "~%new rule:")
-		      (print-cpd-rule new-rule))
-		    (setq num-rules (+ num-rules 1)))))
+		    (setq rule-key (polynomial-encoding new-rule))
+		    (let ((old-rule (gethash rule-key rule-keys)))
+		      
+		    (cond ((null old-rule)
+			   (setq new-rules (cons new-rule new-rules))
+			   (setf (gethash rule-key rule-keys) new-rule)
+			   (when nil
+			     (format t "~%new rule:")
+			     (print-cpd-rule new-rule))
+			   (setq num-rules (+ num-rules 1)))
+			  (t
+			   (when nil
+			     (format t "~%discarded duplicate rule"))
+			   (when nil (not (same-rule-p new-rule old-rule nil nil))
+			     (format t "~%new-rule collided with different old rule.~%rule key: ~S~%new rule:" rule-key)
+			     (print-cpd-rule new-rule)
+			     (format t "~%old rule:")
+			     (print-cpd-rule old-rule)
+			     (break))))))))
       ;; process the no-match rules
       (multiple-value-setq (new-rules num-rules)
 	(filter-no-match-rules no-match-r1s phi2 new-rules num-rules))
@@ -4065,7 +4121,7 @@
                     (setf (rule-count rule1) (max (rule-count rule1)
       (rule-count rule2))))))
       |#
-      new-rules)))
+      (values new-rules rule-keys))))
   
 #| Perform a filter operation over rules
    Returns: a list of rules
@@ -4511,7 +4567,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (ordered-union phi1 phi2))
     (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
-    (when t
+    (when nil t
       (format t "~%~%phi1:")
       (print-cpd phi1)
       (format t "~%phi2:")
@@ -4536,9 +4592,9 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
-    (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil)))
-    (when t ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
-      (format t "~%~%filtered rules before compression: ~d" (length new-rules))
+    (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi)))
+    (when nil ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+      (format t "~%~%num filtered rules before compression: ~d" (length new-rules))
       ;;(mapcar #'print-cpd-rule new-rules)
       ;;(break)
       )
@@ -4562,7 +4618,7 @@ Roughly based on (Koller and Friedman, 2009) |#
            (when nil (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
                  (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
            ))
-    (when t ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
+    (when nil ;;(and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
       (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
       ;;(format t "~%final rules:~%~S" new-phi)

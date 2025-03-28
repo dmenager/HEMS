@@ -2703,47 +2703,13 @@
 ;; universe =
 ;; concept-block
 (defun find-subset-with-max (certain-tog tog junk cpd case-constraints goal rule universe concept-block &key (reject-conditions))
-  (labels ((three-way-hash-intersection (h1 h2 h3)
-             (loop
-		with result = (make-hash-table :size (ceiling (* 1.3 (hash-table-count h1))) :test #'equal)
-		for key being the hash-keys of h1
-		when (and (gethash key h2) (gethash key h3))
-                do
-                  (setf (gethash key result) key)
-		finally (return result)))
-	   (get-condition-fitness-measures (rule att-block new-g certain-p)
-	     (let (all-conflicts all-redundancies all-partial-coverings conflicts redundancies)
-	       (setq conflicts (make-hash-table))
-               (setq redundancies (make-hash-table))
-               (setq all-conflicts (make-hash-table))
-               (setq all-redundancies (make-hash-table))
-               (setq all-partial-coverings (make-hash-table))
-	       (cond ((> (hash-table-count (rule-block rule)) 0) ;;(rule-block rule)
-                      (cond (certain-p
-                             (setq all-conflicts (hash-intersection (rule-certain-block rule) (rule-avoid-list rule) :output-hash-p t))
-                             (setq all-redundancies (hash-intersection (rule-certain-block rule) (rule-redundancies rule) :output-hash-p t))
-                             ;;(setq all-partial-coverings (make-hash-table))
-                             (setq conflicts (hash-intersection att-block all-conflicts :output-hash-p t))
-                             (setq redundancies (hash-intersection att-block all-redundancies :output-hash-p t))
-                             )
-                            (t
-                             (setq all-conflicts (rule-avoid-list rule))
-                             (setq all-redundancies (rule-redundancies rule))
-                             ;;(setq all-partial-coverings (block-difference (rule-block rule) (rule-certain-block rule) :output-hash-p t))
-                             (setq conflicts (three-way-hash-intersection all-conflicts att-block (rule-block rule)))
-                             (setq redundancies (three-way-hash-intersection all-redundancies att-block (rule-block rule)))
-                             )))
-                     (nil t
-                      (setq all-conflicts (block-difference universe concept-block :output-hash-p t))
-                      (setq all-redundancies (block-difference concept-block new-g :output-hash-p t))
-                      (setq all-partial-coverings (make-hash-table))
-                      (setq conflicts (hash-intersection att-block all-conflicts :output-hash-p t))
-                      (setq redundancies (hash-intersection att-block all-redundancies :output-hash-p t))
-                      (when nil (and (equal "HOLDING1182" (rule-based-cpd-dependent-id cpd)))
-                            (format t "~%all conflicts: ~S~%conflicts: ~S"all-conflicts conflicts))
-                      ))
-	       ;;(values conflicts redundancies new-g all-conflicts all-redundancies all-partial-coverings)
-	       (values conflicts redundancies new-g all-conflicts all-redundancies))))
+  (labels ((binary-entropy (p)
+	     (- (if (> p 0)
+		    (* (- p) (log p 2))
+		    0)
+		(if (> (- 1 p) 0)
+		    (* (- 1 p) (log (- 1 p) 2))
+		    0))))
     (loop
       with copy-rule and padding = 0.00001
       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum
@@ -2769,7 +2735,7 @@
            with size-penalty and hardness
 	   with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
 	   with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
-	   with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs
+	   with info-gain and new-covered-pos and covered-pos and new-entropy and entropy
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
 	   when (and (> (hash-table-count intersection) 0)
@@ -2796,40 +2762,32 @@
 		      (block-difference (rule-block copy-rule)
 					concept-block
 					:output-hash-p t))
-		;;(setq focus (hash-intersection (rule-certain-block copy-rule) concept-block :output-hash-p t))
 		(setq focus (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
-		(when t (> (hash-table-count focus) 0) ;;(hash-intersection (rule-certain-block copy-rule) goal)
-		  (setq new-covered-pos (hash-table-count focus))
-		  (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
-		  ;;(setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) concept-block :output-hash-p t)))
-		  (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
-		  (setq covered-negs (hash-table-count (rule-avoid-list rule)))
-		  (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
-		    (format t "~%updated rule:~%~S~%condition: ~S~%new covered positives: ~d~%new covered negatives: ~d~%previous covered pos: ~d~%previous covered negs: ~d" copy-rule condition new-covered-pos new-covered-negs covered-pos covered-negs))
-		  (cond ((> (hash-table-count (rule-conditions rule)) 0)
-			 (setq info-gain (- (log (/ new-covered-pos
-						    (+ new-covered-pos new-covered-negs))
-						 2)
-					    (log (/ covered-pos
-						    (+ covered-pos covered-negs))
-						     2))))
-			(t
-			 (setq info-gain (log (/ new-covered-pos
-						    (+ new-covered-pos new-covered-negs))
-					      2))))
-		  (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd))) 
-                    (format t "~%B_~S = ~S~%info-gain: ~d~% current best info-gain: ~d"
-			    condition
-			    (cdr condition-block)
-			    info-gain
-			    best-info-gain))
-		  (cond ((or (and (> info-gain best-info-gain))
-			     #|(and (= info-gain best-info-gain)
-				  (< (hash-table-count (cdar condition-block))))
-			     |#)
-			 (setq best-info-gain info-gain)
-			 (setq best-condition condition)
-			 (setq best-rule (copy-cpd-rule copy-rule))))))
+		(setq new-covered-pos (hash-table-count focus))
+		(setq new-entropy (binary-entropy (/ (hash-table-count focus) (hash-table-count (rule-certain-block copy-rule)))))
+		(cond ((= (hash-table-count (rule-conditions rule)) 0)
+		       (setq covered-pos (hash-table-count goal))
+		       (setq entropy (binary-entropy (/ covered-pos (hash-table-count universe)))))
+		      (t
+		       (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
+		       (setq entropy (binary-entropy (/ covered-pos (hash-table-count (rule-certain-block rule)))))))
+		(setq info-gain (- (* (hash-table-count (rule-certain-block rule)) entropy)
+				   (* (hash-table-count (rule-certain-block copy-rule)) new-entropy)))
+		(when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+		  (format t "~%updated rule:~%~S~%condition: ~S~%info-gain: ~d~%current best info-gain: ~d" copy-rule condition info-gain best-info-gain))
+		(when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd))) 
+                  (format t "~%B_~S = ~S~%info-gain: ~d~% current best info-gain: ~d"
+			  condition
+			  (cdr certain-condition-block)
+			  info-gain
+			  best-info-gain))
+		(cond ((or (and (> info-gain best-info-gain))
+			   #|(and (= info-gain best-info-gain)
+			   (< (hash-table-count (cdar condition-block))))
+			   |#)
+		       (setq best-info-gain info-gain)
+		       (setq best-condition condition)
+		       (setq best-rule (copy-cpd-rule copy-rule)))))
       finally
 	 (when nil (and (equal "HAND" (rule-based-cpd-dependent-var cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition)

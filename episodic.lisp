@@ -1347,7 +1347,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         named indexer
         for rule being the elements of (rule-based-cpd-rules factor)
           do
-            (setq idx (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
+             (setq idx (car (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule))))
 	    (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
 	    (when (null var)
 	      (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
@@ -1597,6 +1597,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(log-message (list "~d,~d,~d,~d,~d," cost weighted-cost depth (episode-count eme) (array-dimension (caar (episode-states eme)) 0)) "vse.csv")
       ;;(state-count-element-types (caar (episode-states eme)))
       ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
+      (when t
+	(format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
       (loop
         for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
@@ -1646,7 +1648,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                           :conditions (make-hash-table :test #'equal)
                                           :probability 1
                                           :count 1))
-                    (setf (gethash dep-id (rule-conditions rule)) card)
+                    (setf (gethash dep-id (rule-conditions rule)) (list card))
                     (setf (aref rules counter) rule)
                else
                  do
@@ -1654,7 +1656,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                           :conditions (make-hash-table :test #'equal)
                                           :probability 0
                                           :count 1))
-                    (setf (gethash dep-id (rule-conditions rule)) card)
+                    (setf (gethash dep-id (rule-conditions rule)) (list card))
                     (setf (aref rules counter) rule))
              (setq lvl (rule-based-cpd-lvl p-copy))
              (setq observed-factor (make-rule-based-cpd :dependent-id dep-id
@@ -1673,11 +1675,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                                         :lvl lvl))
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
-	   (when nil (not (string-equal type "state-transitions"))
+	   (when t nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
 	   (let (evidence-table recollection max-card ground-marginals)
              (setq evidence-table (make-observations observed-factors))
              (setq max-card 0)
+	     (when t
+	       (format t "~%evidence table:~%~S" evidence-table))
 	     #|
 	     (loop
 	       with msg
@@ -1786,7 +1790,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     for rule being the elements of  (rule-based-cpd-rules cpd)
 	     do
 		(setq prob (rule-probability rule))
-		(setq cond (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule)))
+		(setq cond (car (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule))))
 		(setq cond (caar (nth cond (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
 	        (when backlink-episode
@@ -2294,5 +2298,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        evidence-slices)
     (hems::remember-temporal (hems:get-eltm) evidence-bn backlinks evidence-bns :hidden-state-p t)))
     
-
+(let (evidence-bn)
+  (setq evidence-bn (hems:compile-program nil
+		       c1 = (relation-node number_1 :value "1")))
+(multiple-value-bind (recollection eme sol)
+(hems:remember (hems:get-eltm) evidence-bn '+ 1 t :type "state")
+(values recollection sol)))
 |#

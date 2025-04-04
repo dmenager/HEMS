@@ -3124,9 +3124,9 @@
                         (multiple-value-bind (condition copy-rule)
                             (find-subset-with-max certain-tog tog junk cpd case-constraints goal new-rule universe concept-block :reject-conditions reject-conditions)
 			  (cond (condition
-				 (when (and nil (gethash (car condition) (rule-conditions new-rule)))
-				   (format t "~%Making set-valued rule with condition: ~S!" condition)
-				   (print-cpd-rule new-rule)
+				 (when (and (> (length (gethash (car condition) (rule-conditions new-rule))) 1))
+				   (format t "~%Making set-valued rule")
+				   ;;(print-cpd-rule new-rule)
 				   ;;(break)
 				   )
 				 (setq new-rule copy-rule)
@@ -3984,7 +3984,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
     (loop
       with check-num-rules = (cond ((and check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -4287,7 +4287,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id)
   (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-    (format t "~%phi:~%~S~%vars to keep:~%~S" phi vars))
+	(format t "~%phi:~%~S~%vars to keep:~%~S" phi vars))
   (loop
     with rules = (rule-based-cpd-rules phi)
     with new-rules
@@ -4300,22 +4300,22 @@ Roughly based on (Koller and Friedman, 2009) |#
     for i from 0
     do
        (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-		  (= 1 (rule-probability r1)))
-	 (format t "~%~%rule at index i = ~d~%~S~%global ignore rule indeces:~%~S" i r1 global-ignore-idxs))
+		      (= 1 (rule-probability r1)))
+	     (format t "~%~%rule at index i = ~d~%~S~%global ignore rule indeces:~%~S" i r1 global-ignore-idxs))
        (setq marginalized-rule nil)
        (setq intersection1 nil)
        (loop
 	 named inter
-	 with val
+	 with vals
 	 for var in vars
 	 do
-	    (setq val (gethash var (rule-conditions r1)))
-	 when val
+	    (setq vals (gethash var (rule-conditions r1)))
+	 when vals
 	   do
-	      (setq intersection1 (cons (cons var val) intersection1)))
+	      (setq intersection1 (cons (cons var vals) intersection1)))
        (cond ((not intersection1)
 	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			 (= 1 (rule-probability r1)))
+			     (= 1 (rule-probability r1)))
 		    (format t "~%adding rule to new rules because by default"))
 	      (setq marginalized-rule (copy-cpd-rule r1))
 	      (setf (rule-block marginalized-rule) (make-hash-table))
@@ -4335,13 +4335,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 		   (setf (gethash (car inter) (rule-conditions marginalized-rule))
 			 (cdr inter)))
 	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			 (= 1 (rule-probability r1)))
-		(format t "~%initial marginalized rule:~%~S"marginalized-rule))
+			     (= 1 (rule-probability r1)))
+		    (format t "~%initial marginalized rule:~%~S"marginalized-rule))
 	      (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
 	      ;;(setq num-rules (+ num-rules 1))
 	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			 (= 1 (rule-probability r1)))
-		(format t "~%rule has intersection with keep vars"))
+			     (= 1 (rule-probability r1)))
+		    (format t "~%rule has intersection with keep vars"))
 	      (loop
 		with intersection2
 		with local-ignore = global-ignore-idxs
@@ -4355,13 +4355,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq intersection2 nil)
 		  (loop
 		    named inter
-		    with val
+		    with vals
 		    for var in vars
 		    do
-		       (setq val (gethash var (rule-conditions r2)))
-		    when val
+		       (setq vals (gethash var (rule-conditions r2)))
+		    when vals
 		      do
-			 (setq intersection2 (cons (cons var val) intersection2)))
+			 (setq intersection2 (cons (cons var vals) intersection2)))
 		  (cond ((not intersection2)
 			 (setq rule-bag (cons r2 rule-bag))
 			 (setf (rule-probability marginalized-rule)
@@ -4453,7 +4453,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (return (make-array num-rules :initial-contents (reverse new-rules)))))
 
 
-#| Perform a marginalize operation over rules |#
+#| Perform a marginalize operation over rules
 
 ;; phi = schema conditional probability distribution
 ;; var = variable to marginalize out
@@ -4569,6 +4569,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (return (remove-duplicates new-rules
                                   :test #'(lambda (r1 r2)
                                             (same-rule-p r1 r2 phi phi :check-probability nil :check-count nil))))))
+|#
 
 (defun reduce-cpd-meta-data (phi var)
   (let* ((var-pos (gethash var (rule-based-cpd-identifiers phi)))
@@ -4579,10 +4580,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          (new-qvars (reduce-ordinal-hash (rule-based-cpd-qualified-vars phi) var-pos))
          (new-vvbm (reduce-ordinal-hash (rule-based-cpd-var-value-block-map phi) var-pos))
          (new-sva (reduce-ordinal-hash (rule-based-cpd-set-valued-attributes phi) var-pos))
-         (new-svna (reduce-ordinal-hash (rule-based-cpd-set-valued-negated-attributes phi) var-pos))
-         (new-negated-vvbm (reduce-ordinal-hash (rule-based-cpd-negated-vvbms phi) var-pos))
          (new-lower-vvbm (reduce-ordinal-hash (rule-based-cpd-lower-approx-var-value-block-map phi) var-pos))
-         (new-lower-nvvbm (reduce-ordinal-hash (rule-based-cpd-lower-approx-negated-vvbms phi) var-pos))
          (new-values (reduce-ordinal-hash (rule-based-cpd-var-values phi) var-pos))
          (cardinalities (get-var-cardinalities new-vvbm))
          (steps (generate-cpd-step-sizes cardinalities))
@@ -4601,11 +4599,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                                             :concept-ids new-concept-ids
                                             :qualified-vars new-qvars
                                             :var-value-block-map new-vvbm
-                                            :negated-vvbms new-negated-vvbm
                                             :set-valued-attributes new-sva
-                                            :set-valued-negated-attributes new-svna
                                             :lower-approx-var-value-block-map new-lower-vvbm
-                                            :lower-approx-negated-vvbms new-lower-nvvbm
                                             :characteristic-sets (make-hash-table)
                                             :characteristic-sets-values (make-hash-table)
                                             :var-values new-values
@@ -6449,7 +6444,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%explicit factors:~%~A~%num elements: ~d" factors-list (array-dimension (car state) 0)))
     (loop
       with singleton
-      with dep-var and vars and types-hash and id and dep-id and cid and qvars and vvbm and nvvbm and sva and svna and lower-vvbm and lower-nvvbm and var-values and cards and steps and rules and lvl
+      with dep-var and vars and types-hash and id and dep-id and cid and qvars and vvbm and sva and lower-vvbm and var-values and cards and steps and rules and lvl
       for factor in factors-list
       for i from (length factors-list)
       do
@@ -6467,16 +6462,10 @@ Roughly based on (Koller and Friedman, 2009) |#
          (setf (gethash 0 qvars) (gethash 0 (rule-based-cpd-qualified-vars factor)))
          (setq vvbm (make-hash-table))
          (setf (gethash 0 vvbm) (gethash 0 (rule-based-cpd-var-value-block-map factor)))
-         (setq nvvbm (make-hash-table))
-         (setf (gethash 0 nvvbm) (gethash 0 (rule-based-cpd-negated-vvbms factor)))
          (setq sva (make-hash-table))
          (setf (gethash 0 sva) (gethash 0 (rule-based-cpd-set-valued-attributes factor)))
-         (setq svna (make-hash-table))
-         (setf (gethash 0 svna) (gethash 0 (rule-based-cpd-set-valued-negated-attributes factor)))
          (setq lower-vvbm (make-hash-table))
-         (setf (gethash 0 lower-vvbm) (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms factor)))
-         (setq lower-nvvbm (make-hash-table))
-         (setf (gethash 0 lower-nvvbm) (gethash 0 (rule-based-cpd-lower-approx-negated-vvbms factor)))
+         (setf (gethash 0 lower-vvbm) (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map factor)))
          (setq var-values (make-hash-table))
          (setf (gethash 0 var-values) (gethash 0 (rule-based-cpd-var-values factor)))
          (setq cards (make-array 1 :initial-contents (list (aref (rule-based-cpd-cardinalities factor) 0)) :fill-pointer t))
@@ -6491,11 +6480,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                                               :concept-ids cid
                                               :qualified-vars qvars
                                               :var-value-block-map vvbm
-                                              :negated-vvbms nvvbm
                                               :set-valued-attributes sva
-                                              :set-valued-negated-attributes svna
                                               :lower-approx-var-value-block-map lower-vvbm
-                                              :lower-approx-negated-vvbms lower-nvvbm
                                               :characteristic-sets (make-hash-table)
                                               :characteristic-sets-values (make-hash-table)
                                               :var-values var-values
@@ -6557,7 +6543,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					:count 1.0))
 		  (setf (gethash (rule-based-cpd-dependent-id factor)
 				 (rule-conditions rule))
-			value)
+			(list value))
 		  (setf (aref rules j) rule)
 		  (when nil (equal (rule-based-cpd-dependent-id factor) "ACTION7337")
 			(format t "~%message:~%~S" msg)
@@ -6578,7 +6564,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					     :count 1.0))
 		       (setf (gethash  (rule-based-cpd-dependent-id factor)
 				       (rule-conditions rule))
-			     val)
+			     (list val))
 		       (setf (aref rules k) rule))
 		  (setq msg (make-rule-based-cpd :dependent-id (rule-based-cpd-dependent-id factor)
 						 :identifiers (rule-based-cpd-identifiers factor)
@@ -6600,10 +6586,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setf (gethash index (gethash index messages)) msg))))
       finally
          (setq initial-messages messages))
-    (when nil
+    (when t
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
       (format t "~%~%initial messages:~%~A" initial-messages)
-      ;;(break)
+      (break)
       )
     (setq estimates (calibrate-factor-graph all-factors op edges initial-messages lr))))
 

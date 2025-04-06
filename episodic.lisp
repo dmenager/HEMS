@@ -2276,7 +2276,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (format t "~%failed to generate pdf. eltm is nil")))))
 
 #| TESTS
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_1/ppo_CliffWalking-v0_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
 (let (st-evidence evidence-slices slice)
   (setq st-evidence (hems:compile-program nil
 		       c1 = (relation-node number_1 :value "1")

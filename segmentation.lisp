@@ -376,7 +376,7 @@
       (setq integer-index (+ integer-index 1))
       (setq state-ref (new-retrieve-episode eltm cue nil))
       (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
     (when observation
       (setq cur-obs (gensym "OBS-"))
       (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))

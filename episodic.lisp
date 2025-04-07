@@ -1776,14 +1776,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq slice (make-hash-table :test #'equal)))
 	   (cond ((< i (array-dimension sol 0))
 		  (setq match (aref sol i))
-		  (setq evidence-bn (gethash (cdr match) evidence-bns)))
+		  (setq evidence-bn (gethash (car match) evidence-bns)))
 		 (t
 		  (setq match nil)
 		  (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal)))))
 	   (setq dist-hash (make-hash-table :test #'equal))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
-	       (setq node-type "ACTION"))
+	     (setq node-type "ACTION"))
 	   (loop
 	     with prob and cond
 	     with backlink-episode
@@ -1900,6 +1900,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(setq st state))
     (setf (gethash 0 (getf episode-buffer* :obs))
           (nreverse (cons (list obs st action-name) (nreverse (gethash 0 (getf episode-buffer* :obs))))))
+    #|
     (cond (temporal-p
 	   (unless insertp
 	     (setq model (getf (getf episode-buffer* :h-model) :model))
@@ -1915,7 +1916,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (unless (getf model :model)
 	       (setq insertp t))))
 	  (t
-	   (setq insertp t)))
+    (setq insertp t)))
+    |#
     (when t
       (format t "~%insertp?: ~A" insertp))
     (when insertp

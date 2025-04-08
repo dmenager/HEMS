@@ -1597,7 +1597,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(log-message (list "~d,~d,~d,~d,~d," cost weighted-cost depth (episode-count eme) (array-dimension (caar (episode-states eme)) 0)) "vse.csv")
       ;;(state-count-element-types (caar (episode-states eme)))
       ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
-      (when t
+      (when nil t
 	(format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
       (loop
         for (p-match . q-match) being the elements of sol
@@ -1675,12 +1675,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                                         :lvl lvl))
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
-	   (when t nil (not (string-equal type "state-transitions"))
+	   (when nil t nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
 	   (let (evidence-table recollection max-card ground-marginals)
              (setq evidence-table (make-observations observed-factors))
              (setq max-card 0)
-	     (when t
+	     (when nil t
 	       (format t "~%evidence table:~%~S" evidence-table))
 	     #|
 	     (loop
@@ -2282,6 +2282,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (format t "~%failed to generate pdf. eltm is nil")))))
 
 #| TESTS
+(ql:quickload :hems))
 (hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
 (let (st-evidence evidence-slices slice)
   (setq st-evidence (hems:compile-program nil

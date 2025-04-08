@@ -1679,41 +1679,6 @@
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
   phi)
 
-#| Normalize factor assignments to maintain probabilities in assignments
-
-;; assignments = array of assignments in conditional probability density
-;; row-length = length of row in multi-dementional cpd
-;; input-cpdp = generalized boolean stating whether the input distribution shows values for NA or not. (CPD or nil)
-;; output-cpdp = generalized boolean stating whether the output distribution is shows values for NA or not. (CPD or nil)
-(defun normalize-assignments (assignments row-length input-cpdp output-cpdp)
-  (loop
-    with row-idx-start and row-idx-end
-    with normalizing-constant = 0
-    with old-assn and new-assn and new-assignments = (make-hash-table)
-    for assn-idx being the hash-keys of assignments
-      using (hash-value prob)
-    when (or (not (= (mod assn-idx row-length) 0))
-             (not input-cpdp))
-      do
-         (setq row-idx-start (- assn-idx (mod assn-idx row-length)))
-         (setq row-idx-end (+ row-idx-start (- row-length 1)))
-         (loop
-           for j from row-idx-start to row-idx-end
-           sum (hash-access assignments 0 input-cpdp (list j)) into const
-           finally (setq normalizing-constant const))
-         (when (> normalizing-constant 0)
-           (setq old-assn (hash-access assignments 0 input-cpdp (list assn-idx)))
-           (setq new-assn (/ old-assn  normalizing-constant))
-           (when (> new-assn 1)
-             (error "Normalization error in normalize-assignments. New probability is greater than 1!~%Unnormalized assignments:~%~A~%normalizing constant:~%~d~%row start index: ~A~%row end index: ~d~%index in row: ~d~%retrieved probability: ~d~%new probability: ~d" assignments normalizing-constant row-idx-start row-idx-end assn-idx old-assn new-assn))
-           (cond ((and (> new-assn 0) (not output-cpdp))
-                  (setf (gethash assn-idx new-assignments) new-assn))
-                 ((and (> new-assn 0) output-cpdp (not (= (mod assn-idx row-length) 0)))
-                  (setf (gethash assn-idx new-assignments) new-assn))))
-     finally
-       (return new-assignments)))
-|#
-
 #| split rules compatible with new zero-count rules |#
 
 ;; rules = list of rules from which to split
@@ -3727,8 +3692,10 @@
 					 (setf (gethash (car missing-r1-atts)
 							(rule-conditions new-r1))
 					       removed-zero)
-					 (setf (rule-probability new-r1) 0)
-					 (setf (rule-count new-r1) 0)
+					 (when (or (eq op '+)
+						   (eq op #'+))
+					   (setf (rule-probability new-r1) 0)
+					   (setf (rule-count new-r1) 0))
 					 (when (compatible-rule-p new-r1 r2 nil nil)
 					   (when nil
 					     (format t "~%success"))
@@ -3796,7 +3763,10 @@
 					      (mod-exp x i (+ (expt 10 9) 7)))
 					  values))))
 	       (format nil "~{~a~}" (coerce rule-key 'list)))))
-    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+    (when (and (or (eq op '*)
+		   (eq op #'*))
+	       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+	       )
       (format t "~%~%phi1:")
       (print-cpd phi1)
       (format t "~%phi2:")
@@ -3822,7 +3792,10 @@
 		 (and (or (eq op '*) (eq op #'*))))
           do
              (setq matched-rules (gethash (rule-id r1) matched-r1s))
-	     (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+	     (when (and (or (eq op '*)
+			    (eq op #'*))
+			;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+			)
 	       (format t "~%"))
 	     (loop
                with new-conditions and new-rule and same-rule-p and rule-key
@@ -3835,7 +3808,10 @@
 					    (list 
 					     (n-make-intersected-rule-conditions r1 r2 phi2 new-conditions)
 					     (n-make-intersected-rule-conditions r2 r1 phi1 new-conditions))))
-		  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+		  (when (and (or (eq op '*)
+				 (eq op #'*))
+			     ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+			     )
                       (format t "~%rule1:")
                       (print-cpd-rule r1)
                       (format t "~%~S~%rule2:" op)
@@ -3854,7 +3830,10 @@
 			       missing-r2-attributes)
 			   (setq missing-r1-attributes (rule-check-for-missing-identifiers r2 phi1))
 			   (setq missing-r2-attributes (rule-check-for-missing-identifiers r1 phi2))
-			   (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+			   (when (and (or (eq op '*)
+					  (eq op #'*))
+				      ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+				      )
 			     (format t"~%missing r1 attributes:~%~S~%missing r2 attributes:~%~S" missing-r1-attributes missing-r2-attributes))
 			   (cond ((and (null missing-r1-attributes)
 				       (null missing-r2-attributes))
@@ -3864,7 +3843,10 @@
 				 ((and missing-r1-attributes
 				       (null missing-r2-attributes))
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
-				  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				  (when (and (or (eq op '*)
+						 (eq op #'*))
+					     ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					     )
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s))
 				  (let (new-phi1 new-phi2)
@@ -3876,14 +3858,20 @@
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
 						    :rules (make-array 1 :initial-contents (list r2))))
-				    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				    (when (and (or (eq op '*)
+						   (eq op #'*))
+					       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
 				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))
 				 ((and (null missing-r1-attributes)
 				       missing-r2-attributes)
 				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
-				  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				  (when (and (or (eq op '*)
+						 (eq op #'*))
+					     ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					     )
 				    (format t "~%new r2s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r2s))
 				  (let (new-phi1 new-phi2)
@@ -3895,7 +3883,10 @@
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
-				    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				    (when (and (or (eq op '*)
+						   (eq op #'*))
+					       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
 				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))
@@ -3903,7 +3894,10 @@
 				       missing-r2-attributes)
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
 				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
-				  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				  (when (and (or (eq op '*)
+						 (eq op #'*))
+					     ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					     )
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s)
 				    (format t "~%new r2s after splititng on missing variables:")
@@ -3917,7 +3911,10 @@
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
-				    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				    (when (and (or (eq op '*)
+						   (eq op #'*))
+					       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
 				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd))))))))
@@ -3929,7 +3926,10 @@
 		    (cond ((null old-rule)
 			   (setq new-rules (cons new-rule new-rules))
 			   (setf (gethash rule-key rule-keys) new-rule)
-			   (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+			   (when (and (or (eq op '*)
+					  (eq op #'*))
+				      ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+				      )
 			     (format t "~%new rule:")
 			     (print-cpd-rule new-rule))
 			   (setq num-rules (+ num-rules 1)))
@@ -4078,7 +4078,9 @@ Roughly based on (Koller and Friedman, 2009) |#
       (ordered-union phi1 phi2))
     (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
-    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi1)))
+    (when (and (or (eq op '*)
+		   (eq op #'*))
+	       (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
       (format t "~%~%phi1:")
       (print-cpd phi1)
       (format t "~%phi2:")
@@ -4121,6 +4123,11 @@ Roughly based on (Koller and Friedman, 2009) |#
     (cond ((eq op '*)
            (setf (rule-based-cpd-rules new-phi)
                  (make-array (length new-rules) :initial-contents new-rules))
+	   (when (and (or (eq op '*)
+			  (eq op #'*))
+		      (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
+	     (format t "~%unnormalized result:")
+	     (print-cpd new-phi))
            (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
            ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
            )
@@ -4129,7 +4136,9 @@ Roughly based on (Koller and Friedman, 2009) |#
            (when nil (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
                  (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
            ))
-    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi1)))
+    (when (and (or (eq op '*)
+		   (eq op #'*))
+	       (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
       (format t "~%~%num final rules: ~d~%final rules for:~%~S" (array-dimension (rule-based-cpd-rules new-phi) 0) (rule-based-cpd-identifiers new-phi))
       (map nil #'print-cpd-rule (rule-based-cpd-rules new-phi))
       ;;(format t "~%final rules:~%~S" new-phi)
@@ -4663,7 +4672,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 1) (= j 75))
+  (when (and (= i 2) (= j 6))
         (format t "~%~%sending message from ~d to ~d~%~d: ~S~%~d: ~S" i j i (rule-based-cpd-identifiers (aref factors i)) j (rule-based-cpd-identifiers (aref factors j))))
   (let (nbrs-minus-j reduced)
     (loop
@@ -4672,7 +4681,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
       finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 1) (= j 75))
+    (when (and (= i 2) (= j 6))
           (format t "~%neighbors minus j:~%~S~%i:~%~S"
                   (loop for nbr in nbrs-minus-j
                         when (rule-based-cpd-p nbr)
@@ -4684,7 +4693,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   (cons (rule-based-cpd-identifiers (aref factors i))
                         (rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 1) (= j 75))
+    (when (and (= i 2) (= j 6))
           (format t "~%evidence-collected:~%~S~%sepset: ~S~%variables to eliminate: ~S" (cons (rule-based-cpd-identifiers reduced) (rule-based-cpd-rules reduced)) sepset
                   (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
     (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
@@ -4824,7 +4833,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -4839,7 +4848,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (and (= j 3) (= k 9))
+              (when (and (= j 3) (= k 9))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4850,7 +4859,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil t (and (= j 3) (= k 9))
+	      (when t (and (= j 3) (= k 9))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -4885,13 +4894,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil t
+       (when t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil t
+       (when t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t

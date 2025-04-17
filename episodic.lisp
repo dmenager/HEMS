@@ -1597,8 +1597,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       ;;(log-message (list "~d,~d,~d,~d,~d," cost weighted-cost depth (episode-count eme) (array-dimension (caar (episode-states eme)) 0)) "vse.csv")
       ;;(state-count-element-types (caar (episode-states eme)))
       ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
-      (when nil t
-	(format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
+      (when nil
+	    (format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
       (loop
         for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
@@ -1765,9 +1765,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with evidence-bn and dist-hash and i = 0
+      with evidence-bn and dist-hash and i = 0 and j = 0
       with slice and node-type
-      with match and state-transitions
+      with match and state-transitions = (make-hash-table)
       for cpd being the elements of temporal-bn
       when (singleton-cpd? cpd)
 	do
@@ -1793,18 +1793,34 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(setq cond (car (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule))))
 		(setq cond (caar (nth cond (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
+		(when nil
+		  (print-cpd-rule rule)
+		  (format t "~%cond: ~S~%backlinks:" cond)
+		  (loop
+		    for key being the hash-keys of (episode-backlinks conditioned-temporal)
+		      using (hash-value subtree)
+		    do
+		    (format t "~%~S : ~S" key (episode-id (car subtree))))
+		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
+		  (when nil
+		    (format t "~%Remembering from:")
+		    (print-episode backlink-episode)
+		    (format t "~%node type: ~S~%Retrieval cue: " node-type)
+		    (print-bn evidence-bn)
+		    (format t "~%raw cue:~%~S" evidence-bn))
 		  (multiple-value-bind (recollection eme)
-		    (remember (list backlink-episode) evidence-bn mode lr bic-p )
-		  (declare (ignore eme))
+		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type)
+		    (declare (ignore eme))
 		  ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-		  (setf (gethash cond dist-hash) (cons prob recollection)))))
+		    (setf (gethash cond dist-hash) (cons prob recollection)))))
 	   (setf (gethash node-type slice) dist-hash)
-	   (setq i (+ i 1))
 	   (when (= marker (- mod-len 1))
-	     (setq state-transitions (cons slice state-transitions)))
+	     (setf (gethash j state-transitions) slice)
+	     (setq j (+ i j 1)))
+	   (setq i (+ i 1))
       finally
-	 (return (reverse state-transitions)))))
+	 (return state-transitions))))
 
 (defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep)
   (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep))
@@ -2282,9 +2298,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (format t "~%failed to generate pdf. eltm is nil")))))
 
 #| TESTS
-(ql:quickload :hems))
-(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv" :logpath "/home/david/Code/HARLEM/HEMS_model/ppo_CliffWalking-v0/")
-(let (st-evidence evidence-slices slice)
+(ql:quickload :hems)
+(hems::run-execution-trace "/home/david/Code/HARLEM/ep_data_10/ppo_CliffWalking-v0_data.csv")
+(let (st-evidence evidence-slices slice inference-slices-hash)
   (setq st-evidence (hems:compile-program nil
 		       c1 = (relation-node number_1 :value "1")
 		       c2 = (percept-node one_1 :value "1")
@@ -2299,7 +2315,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (hems:make-temporal-episode-retrieval-cue
        (hems:get-eltm)
        evidence-slices)
-    (hems::remember-temporal (hems:get-eltm) evidence-bn backlinks evidence-bns :hidden-state-p t)))
+(setq inference-slices-hash(hems::remember-temporal (hems:get-eltm) evidence-bn backlinks evidence-bns :hidden-state-p t))
+(loop
+for idx being the hash-keys of inference-slices-hash
+using (hash-value slice)
+do
+(format t "~%slice: ~d" idx)
+(format t "~%~A" slice))))
     
 (let (evidence-bn)
   (setq evidence-bn (hems:compile-program nil

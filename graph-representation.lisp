@@ -4833,7 +4833,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil
+       (when nil t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -4848,7 +4848,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when (and (= j 3) (= k 9))
+              (when nil t (and (= j 3) (= k 9))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4859,7 +4859,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 3) (= k 9))
+	      (when nil t (and (= j 3) (= k 9))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -4894,13 +4894,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil
+       (when nil t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil
+       (when nil t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t

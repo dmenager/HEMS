@@ -1823,7 +1823,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	 (return state-transitions))))
 
 (defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep)
-  (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep))
+  (let (alist)
+    (maphash #'(lambda (k v)
+		 (push (list k v) alist))
+	     (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep))
+    (coerce alist 'vector)))
+
+(defun py-test-hash ()
+  (let ((ht (make-hash-table))
+	alist)
+    (setf (gethash 1 ht) 42)
+    (setf (gethash 2 ht) "hello")
+    (maphash #'(lambda (k v)
+		 (push (list k v) alist))
+	     ht)
+    (coerce alist 'vector)))
+
 #| Add a new experience to the episodic buffer and insert it into memory when appropriate |#
 
 ;; state = dotted list where cons is an array of cpds, and the cdr is a hash table of edges

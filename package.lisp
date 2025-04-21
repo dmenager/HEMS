@@ -78,6 +78,7 @@
 	   #:n-format-df-column-names
 	   #:g-squared-test
 	   #:bn-score
-	   #:print-tree-structure))
+	   #:print-tree-structure
+	   #:py-test-hash))
 
 (in-package :hems)

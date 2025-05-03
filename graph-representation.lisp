@@ -3426,7 +3426,7 @@
            (setq new-prob (funcall op (rule-probability r1) (rule-probability r2)))
 	   (setq norm-const 0)
 	   (cond ((rule-count r2)
-                  (setq count (rule-count r2)))
+                  (setq count (* (if (rule-count r1) (rule-count r1) 1) (rule-count r2))))
 		 ;; check here to see if the count is zero, set new prob to 0
                  (t
                   (setq norm-const 0)))))
@@ -8443,4 +8443,119 @@ do
 (setf (gethash r h2) r)
 finally
 (return (hems::hash-intersection h1 h2 :output-hash-p t)))
+
+;; testing new method for making initial rules by factor filter with * operation
+(let (rules1 rules2 rules3 idents rule rule-cond cpd1 cpd2 cpd3 new-cpd new-new-cpd new-rules var-values)
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules1 (cons rule rules1))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules1 (cons rule rules1))
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 2))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules1 (cons rule rules1))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "B" idents) 0)
+  (setq cpd1 (make-rule-based-cpd
+	      :dependent-id "B"
+	      :identifiers idents
+	      :rules (make-array (length rules1) :initial-contents rules1)))
+
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules2 (cons rule rules2))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules2 (cons rule rules2))
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 2))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules2 (cons rule rules2))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setq cpd2 (make-rule-based-cpd
+	      :dependent-id "A"
+	      :identifiers idents
+	      :rules (make-array (length rules2) :initial-contents rules2)))
+
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setf (gethash "B" idents) 1)
+
+  (setq var-values (make-hash-table))
+  (setf (gethash 0 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1 2))
+  (setq new-cpd (make-rule-based-cpd
+		 :identifiers idents
+		 :var-values var-values))
+(setq new-rules (operate-filter-rules cpd2 cpd1 '* nil (make-hash-table :test #'equal) new-cpd))
+(format t "~%new rules:~%~A" new-rules)
+  (setf (rule-based-cpd-rules new-cpd) (make-array (length new-rules) :initial-contents new-rules))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "C" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules3 (cons rule rules3))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "C" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules3 (cons rule rules3))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "C" idents) 0)
+  (setq cpd3 (make-rule-based-cpd
+	      :dependent-id "C"
+	      :identifiers idents
+	      :rules (make-array (length rules3) :initial-contents rules3)))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setf (gethash "B" idents) 1)
+  (setf (gethash "C" idents) 2)
+
+  (setq var-values (make-hash-table))
+  (setf (gethash 0 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1))
+  (setq new-new-cpd (make-rule-based-cpd
+		 :identifiers idents
+		 :var-values var-values))
+  (setq new-rules (operate-filter-rules new-cpd cpd3 '* nil (make-hash-table :test #'equal) new-new-cpd)))
 |#
+

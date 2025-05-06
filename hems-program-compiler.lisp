@@ -457,7 +457,12 @@
 			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(+ - > = divides) ;;'(> = divides nothing single couple triple multiple)
 			   for ,ident being the hash-keys of ,hash
 			     using (hash-value ,cpd)
-			   collect ,cpd into ,cpd-list
+			   collect
+			   (if ,causal-discovery
+			       ,cpd
+			       (get-local-coverings
+				(update-cpd-rules ,cpd (rule-based-cpd-rules ,cpd))))
+			     into ,cpd-list
 			   when (and ,relational-invariants ,recurse-p)
 			     do
 				(setf (gethash (rule-based-cpd-dependent-id ,cpd) ,inv-hash) ,ident)
@@ -469,9 +474,7 @@
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
 				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil ,edge-type)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
-							 :initial-contents (if ,causal-discovery
-									       ,cpd-list
-									       (finalize-factors ,cpd-list))))
+							 :initial-contents ,cpd-list
 			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))

@@ -8453,7 +8453,7 @@ do
 (setf (gethash r h2) r)
 finally
 (return (hems::hash-intersection h1 h2 :output-hash-p t)))
-|#
+
 ;; testing new method for making initial rules by factor filter with * operation
 (let (rules1 rules2 rules3 idents rule rule-cond cpd1 cpd2 cpd3 new-cpd new-new-cpd new-rules var-values)
   (setq rule-cond (make-hash-table :test #'equal))

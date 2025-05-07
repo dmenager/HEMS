@@ -5746,7 +5746,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setf (rule-based-cpd-step-sizes cpd) new-steps)
       (setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd))
       (setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
-      (normailze-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
+      (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
     cpd))
 
 #| Update the conditional probability densities with new variables
@@ -8452,7 +8452,7 @@ do
 (setf (gethash r h2) r)
 finally
 (return (hems::hash-intersection h1 h2 :output-hash-p t)))
-
+|#
 ;; testing new method for making initial rules by factor filter with * operation
 (let (rules1 rules2 rules3 idents rule rule-cond cpd1 cpd2 cpd3 new-cpd new-new-cpd new-rules var-values)
   (setq rule-cond (make-hash-table :test #'equal))
@@ -8562,9 +8562,14 @@ finally
   (setf (gethash 0 var-values) (list 0 1 2))
   (setf (gethash 1 var-values) (list 0 1 2))
   (setf (gethash 1 var-values) (list 0 1))
-  (setq new-new-cpd (make-rule-based-cpd
+(setq new-new-cpd (make-rule-based-cpd
+:dependent-id "A"
 		 :identifiers idents
 		 :var-values var-values))
-  (setq new-rules (operate-filter-rules new-cpd cpd3 '* nil (make-hash-table :test #'equal) new-new-cpd)))
+  (setq new-rules (operate-filter-rules new-cpd cpd3 '* nil (make-hash-table :test #'equal) new-new-cpd))
+  (setf (rule-based-cpd-rules new-new-cpd) (make-array (length new-rules) :initial-contents new-rules))
+  (setq new-new-cpd (normalize-rule-probabilities new-new-cpd (rule-based-cpd-dependent-id new-new-cpd)))
+  (get-local-coverings
+   (update-cpd-rules new-new-cpd (rule-based-cpd-rules new-new-cpd))))
 |#
 

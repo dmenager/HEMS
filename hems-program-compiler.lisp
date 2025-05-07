@@ -145,19 +145,38 @@
 			   (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
 			   (setf (rule-based-cpd-count cpd) 1)
 			   (when value
-			     (setq values (list (cons "NA" 0) (cons value 1))))
-			   (when (not (member "NA" values :test #'equal))
-			     (setq values (cons (cons "NA" 0) values)))
+			     (setq values (list (list :value "NA" :probability 0 :count 1)
+						(list :value value :probability 1 :count 1))))
+			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
+										 (getf lst :value))))
+			     (setq values (cons (list :value "NA" :probability 0 :count 0) values)))
 			   (loop
-				 for (value . prob) in values
-				 for idx from 0
-				 do
-				 (cond ((stringp value)
-					(n-cpd-populate-vvbm-sva-vals value idx vvbm sva vals))
-				       ((numberp value)
-					(error "Numeric value, ~A, not yet supported in node definition list. Expected string." value))
-				       (t
-					(error "Unsupported value, ~A, for 'value' in node definition list.~%Received type ~A. Expected string or numeric." value (type-of value)))))
+			     with rule and rules = (make-array (length values))
+			     with value and prob and count
+			     for value-list in values
+			     for idx from 0
+			     do
+				(setq value (getf value-list :value))
+				(setq prob (getf value-list :probability))
+				(setq count (getf value-list :count))
+				(setq rule (make-rule
+					    :id (gensym "RULE-")
+					    :conditions (make-hash-table :test #'equal)
+					    :probability prob
+					    :certain-block (make-hash-table)
+					    :count count))
+				(setf (gethash (rule-based-cpd-dependent-id cpd)
+					       (rule-conditions rule))
+				      (list idx))
+				(setf (aref rules idx) rule)
+				(cond ((stringp value)
+				       (n-cpd-populate-vvbm-sva-vals value idx vvbm sva vals))
+				      ((numberp value)
+				       (error "Numeric value, ~A, not yet supported in node definition list. Expected string." value))
+				      (t
+				       (error "Unsupported value, ~A, for 'value' in node definition list.~%Received type ~A. Expected string or numeric." value (type-of value))))
+			     finally
+				(setf (rule-based-cpd-rules cpd) rules))
 			   (n-cpd-add-book-keeping-variables cpd vvbm sva vals)
 			   (cond ((or (null concept-id)
 				      (stringp concept-id))
@@ -474,7 +493,7 @@
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))
 				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil ,edge-type)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
-							 :initial-contents ,cpd-list
+							 :initial-contents ,cpd-list))
 			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))

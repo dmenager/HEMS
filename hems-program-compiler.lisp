@@ -145,7 +145,7 @@
 			   (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
 			   (setf (rule-based-cpd-count cpd) 1)
 			   (when value
-			     (setq values (list (list :value "NA" :probability 0 :count 1)
+			     (setq values (list (list :value "NA" :probability 0 :count 0)
 						(list :value value :probability 1 :count 1))))
 			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
 										 (getf lst :value))))

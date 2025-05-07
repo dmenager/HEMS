@@ -5746,7 +5746,8 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setf (rule-based-cpd-step-sizes cpd) new-steps)
       (setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd))
       (setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
-      (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
+      ;;(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+      )
     cpd))
 
 #| Update the conditional probability densities with new variables

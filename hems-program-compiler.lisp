@@ -476,6 +476,8 @@
 			   with ,factors and ,edges and ,cpd-arr and ,new-body and ,invariant-list = '(+ - > = divides) ;;'(> = divides nothing single couple triple multiple)
 			   for ,ident being the hash-keys of ,hash
 			     using (hash-value ,cpd)
+			   do
+			      (setq ,cpd (normalize-rule-probabilities ,cpd (rule-based-cpd-dependent-id ,cpd)))
 			   collect
 			   (if ,causal-discovery
 			       ,cpd

@@ -1642,7 +1642,7 @@
          (format t "~%normalizing rule:~%~S" r1))
          (loop
            with copy-rule = (copy-cpd-rule r1)
-           with compatible-rules and compatible-rule and norm-const
+           with compatible-rules and compatible-rule and norm-const and row-count
            for i in (gethash dep-id-pos (rule-based-cpd-var-values phi))
            do
               (setf (gethash new-dep-id (rule-conditions copy-rule)) (list i))
@@ -1652,29 +1652,32 @@
               (when nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
                     (format t "~%getting rule for assignment:~%~S~%candidatate matches:~%~S~%selection:~%~S" (rule-conditions copy-rule) compatible-rules compatible-rule))
            when (or (null (rule-count compatible-rule))
-                    (> (rule-count compatible-rule) 0))
+                    (>= (rule-count compatible-rule) 0)
+		    )
                 collect compatible-rule into row
            finally
               ;;(setq norm-const (reduce #'(lambda (rule1 rule2) (+ (rule-probability rule1) (rule-probability rule2))) row))
               (setq norm-const (apply #'+ (mapcar #'rule-probability row)))
-              (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+	      (setq new-rule (copy-cpd-rule r1))
+              (setf (rule-probability new-rule) (if (> norm-const 0)
+                                                    (/ (rule-probability r1) norm-const)
+                                                    0))
+	      (when (rule-count r1)
+		(setq row-count (apply #'max (mapcar #'rule-count row)))
+		(setf (rule-count new-rule) row-count))
+              (setf (rule-block new-rule) (make-hash-table))
+              (setf (gethash block (rule-block new-rule)) block)
+              (setq block (+ block 1))
+	      (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%~%row:")
 		    (mapcar #'print-cpd-rule row)
-		    (format t "~%normalizing constant: ~d" norm-const))
-               (setq new-rule (copy-cpd-rule r1))
-               (setf (rule-probability new-rule) (if (> norm-const 0)
-                                                     (/ (rule-probability r1) norm-const)
-                                                     0))
-               (setf (rule-block new-rule) (make-hash-table))
-               (setf (gethash block (rule-block new-rule)) block)
-               (setq block (+ block 1))
-               (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
-                     (format t "~%normalized rule:~%~S" new-rule))
-               (when (or (> (rule-probability new-rule) 1)
-                         (< (rule-probability new-rule) 0))
-                 (format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
-                 (error "Normalization error"))
-               (setq new-rules (cons new-rule new-rules)))
+		    (format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
+		    (format t "~%normalized rule:~%~S" new-rule))
+              (when (or (> (rule-probability new-rule) 1)
+                        (< (rule-probability new-rule) 0))
+                (format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+                (error "Normalization error"))
+              (setq new-rules (cons new-rule new-rules)))
     finally
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
   phi)
@@ -3426,7 +3429,7 @@
            (setq new-prob (funcall op (rule-probability r1) (rule-probability r2)))
 	   (setq norm-const 0)
 	   (cond ((rule-count r2)
-                  (setq count (rule-count r2)))
+                  (setq count (* (if (rule-count r1) (rule-count r1) 1) (rule-count r2))))
 		 ;; check here to see if the count is zero, set new prob to 0
                  (t
                   (setq norm-const 0)))))
@@ -5708,7 +5711,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cpd = cpd to modify
 ;; modifier-cpd = cpd that updates values in cpd
 (defun modify-cpd (cpd modifier-cpd &key causal-discovery)
-  (let (new-cards new-steps)
+  (let (new-cards new-steps new-rules)
     (setf (gethash (rule-based-cpd-dependent-id modifier-cpd)
                    (rule-based-cpd-identifiers cpd))
           (hash-table-count (rule-based-cpd-identifiers cpd)))
@@ -5740,9 +5743,14 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq new-cards (generate-cpd-cardinalities (rule-based-cpd-var-value-block-map cpd)))
       (setq new-steps (generate-cpd-step-sizes new-cards))
       (setf (rule-based-cpd-cardinalities cpd) new-cards)
-      (setf (rule-based-cpd-step-sizes cpd) new-steps))))
+      (setf (rule-based-cpd-step-sizes cpd) new-steps)
+      (setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd))
+      (setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
+      ;;(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+      )
+    cpd))
 
-#| Update the conditional probability densities with new variables |#
+#| Update the conditional probability densities with new variables
 
 ;; cpds = conditional probability densities
 ;; modifier-cpd = conditional probability to modify cpds
@@ -5794,6 +5802,7 @@ Roughly based on (Koller and Friedman, 2009) |#
        (when match
          (modify-cpd cpd modifier-cpd)))
   cpds)
+|#
 
 #| Update the conditional probability densities with new variables |#
 
@@ -6266,7 +6275,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (cpd-child-p cpd2 cpd1)) t)
         (t nil)))
 
-#| Converts a state to a directed asyclic graph where the nodes are conditional probability densities |#
+#| Converts a state to a directed asyclic graph where the nodes are conditional probability densities
 
 ;; pstm = percepts
 ;; cstm = beliefs
@@ -6374,6 +6383,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          (setq factors (make-array (length factors-list) :initial-contents factors-list :fill-pointer t))
          (setq edges (make-graph-edges factors))
          (return (values factors edges)))))
+|#
 
 (defun make-empty-graph ()
   (multiple-value-bind (factors edges)
@@ -8443,4 +8453,124 @@ do
 (setf (gethash r h2) r)
 finally
 (return (hems::hash-intersection h1 h2 :output-hash-p t)))
+
+;; testing new method for making initial rules by factor filter with * operation
+(let (rules1 rules2 rules3 idents rule rule-cond cpd1 cpd2 cpd3 new-cpd new-new-cpd new-rules var-values)
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules1 (cons rule rules1))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules1 (cons rule rules1))
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "B" rule-cond) (list 2))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules1 (cons rule rules1))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "B" idents) 0)
+  (setq cpd1 (make-rule-based-cpd
+	      :dependent-id "B"
+	      :identifiers idents
+	      :rules (make-array (length rules1) :initial-contents rules1)))
+
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules2 (cons rule rules2))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules2 (cons rule rules2))
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "A" rule-cond) (list 2))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules2 (cons rule rules2))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setq cpd2 (make-rule-based-cpd
+	      :dependent-id "A"
+	      :identifiers idents
+	      :rules (make-array (length rules2) :initial-contents rules2)))
+
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setf (gethash "B" idents) 1)
+
+  (setq var-values (make-hash-table))
+  (setf (gethash 0 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1 2))
+  (setq new-cpd (make-rule-based-cpd
+		 :identifiers idents
+		 :var-values var-values))
+(setq new-rules (operate-filter-rules cpd2 cpd1 '* nil (make-hash-table :test #'equal) new-cpd))
+(format t "~%new rules:~%~A" new-rules)
+  (setf (rule-based-cpd-rules new-cpd) (make-array (length new-rules) :initial-contents new-rules))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "C" rule-cond) (list 0))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 0
+	      :count 0))
+  (setq rules3 (cons rule rules3))
+  
+  (setq rule-cond (make-hash-table :test #'equal))
+  (setf (gethash "C" rule-cond) (list 1))
+  (setq rule (make-rule
+	      :conditions rule-cond
+	      :probability 1
+	      :count 1))
+  (setq rules3 (cons rule rules3))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "C" idents) 0)
+  (setq cpd3 (make-rule-based-cpd
+	      :dependent-id "C"
+	      :identifiers idents
+	      :rules (make-array (length rules3) :initial-contents rules3)))
+
+  (setq idents (make-hash-table :test #'equal))
+  (setf (gethash "A" idents) 0)
+  (setf (gethash "B" idents) 1)
+  (setf (gethash "C" idents) 2)
+
+  (setq var-values (make-hash-table))
+  (setf (gethash 0 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1 2))
+  (setf (gethash 1 var-values) (list 0 1))
+(setq new-new-cpd (make-rule-based-cpd
+:dependent-id "A"
+		 :identifiers idents
+		 :var-values var-values))
+  (setq new-rules (operate-filter-rules new-cpd cpd3 '* nil (make-hash-table :test #'equal) new-new-cpd))
+  (setf (rule-based-cpd-rules new-new-cpd) (make-array (length new-rules) :initial-contents new-rules))
+  (setq new-new-cpd (normalize-rule-probabilities new-new-cpd (rule-based-cpd-dependent-id new-new-cpd)))
+  (get-local-coverings
+   (update-cpd-rules new-new-cpd (rule-based-cpd-rules new-new-cpd))))
 |#
+

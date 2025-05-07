@@ -1537,11 +1537,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; observability = percent of state observable
 (defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1))
   (let (partial-states cue bindings and bn)
-    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv") 
-
-    ;; TODO: refactor remove-observations to work with new episode representation
-    ;;(setq partial-states (remove-observations cue-states observability))
-    
+    ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
     ;;(state-count-element-types (caar partial-states))
     ;;(log-message (list "~A," (specific-cue-p (caar partial-states))) "vse.csv")
@@ -1574,7 +1570,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      :temporal-p nil
 		      :count 1
 		      :lvl 1))))
-    ;;(format t "~%original cue:~%~A~%partial-cue:~%~A" cue partial-cue)
     (multiple-value-bind (eme sol bindings depth cost)
         (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
                (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum))
@@ -1589,14 +1584,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq bn (episode-observation (car eme))))
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
-      #|
-      (if (> (episode-count eme) 1)
-          (log-message (list "schema,") "vse.csv")
-          (log-message (list "episode,") "vse.csv"))
-      |#
-      ;;(log-message (list "~d,~d,~d,~d,~d," cost weighted-cost depth (episode-count eme) (array-dimension (caar (episode-states eme)) 0)) "vse.csv")
-      ;;(state-count-element-types (caar (episode-states eme)))
-      ;;(format t "~%partial cue:~%~A~%retrieved event memory element:~%~A~%bindings: ~A" partial-states eme bindings)
       (when nil
 	    (format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
       (loop
@@ -1617,133 +1604,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (when nil (gethash "ACTION7333" (rule-based-cpd-identifiers (aref (car bn) q-match)))
 		   (format t "~%subst:~%~S~%likelihood(p,q) = ~d" p-copy (local-likelihood p-copy (aref (car bn) q-match))))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
-             (setq idents (make-hash-table :test #'equal))
-             (setf (gethash dep-id idents) 0)
-             (setq dep-var (rule-based-cpd-dependent-var p-copy))
-             (setq vars (make-hash-table))
-             (setf (gethash 0 vars) dep-var)
-             (setq types-hash (make-hash-table))
-             (setf (gethash 0 types-hash) (gethash 0 (rule-based-cpd-types p-copy)))
-             (setq cids (make-hash-table))
-             (setf (gethash 0 cids) (gethash 0 (rule-based-cpd-concept-ids p-copy)))
-             (setq qvars (make-hash-table))
-             (setf (gethash 0 qvars) (gethash 0 (rule-based-cpd-qualified-vars p-copy)))
-             (setq vvbm (make-hash-table))
-             (setf (gethash 0 vvbm) (gethash 0 (rule-based-cpd-var-value-block-map p-copy)))
-	     (setq var-values (make-hash-table))
-	     (setf (gethash 0 var-values) (gethash 0 (rule-based-cpd-var-values p-copy)))
-	     (setq cards (make-array 1 :initial-element (aref (rule-based-cpd-cardinalities p-copy) 0) :fill-pointer t))
-             ;;(setq num-assignments (reduce #'* (coerce cards 'list)))
-             (setq steps (make-array 1 :initial-element (aref (rule-based-cpd-step-sizes p-copy) 0) :fill-pointer t))
-             ;;(setq assns (make-array (aref cards 0) :initial-element 0))
-             (setq rules (make-array (aref cards 0)))
-             (loop
-               with rule
-	       with max-card = (apply #'max (gethash 0 var-values))
-               for card in (gethash 0 var-values) ;;from 0 to (- (aref cards 0) 1)
-	       for counter from 0
-	       when (= card max-card)
-                 do
-                    (setq rule (make-rule :id (gensym "RULE-")
-                                          :conditions (make-hash-table :test #'equal)
-                                          :probability 1
-                                          :count 1))
-                    (setf (gethash dep-id (rule-conditions rule)) (list card))
-                    (setf (aref rules counter) rule)
-               else
-                 do
-                    (setq rule (make-rule :id (gensym "RULE-")
-                                          :conditions (make-hash-table :test #'equal)
-                                          :probability 0
-                                          :count 1))
-                    (setf (gethash dep-id (rule-conditions rule)) (list card))
-                    (setf (aref rules counter) rule))
-             (setq lvl (rule-based-cpd-lvl p-copy))
-             (setq observed-factor (make-rule-based-cpd :dependent-id dep-id
-                                                        :identifiers idents
-                                                        :dependent-var dep-var
-                                                        :vars vars
-                                                        :types types-hash
-                                                        :concept-ids cids
-                                                        :qualified-vars qvars
-                                                        :var-value-block-map vvbm
-							:var-values var-values
-							:cardinalities cards
-                                                        :step-sizes steps
-							:rules rules
-							:singleton-p t
-                                                        :lvl lvl))
+	     (loop
+	       for ident being the hash-keys of (rule-based-cpd-identifiers p-copy)
+	       when (not (equal ident dep-id))
+		 collect ident into remove
+	       finally
+		  (setq observed-factor (normalize-rule-probabilities
+					 (factor-operation p-copy (list dep-id) remove #'+)
+					 dep-id)))
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
 	   (when nil t nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
-	   (let (evidence-table recollection max-card ground-marginals)
+	   (let (evidence-table recollection)
              (setq evidence-table (make-observations observed-factors))
-             (setq max-card 0)
 	     (when nil t
 	       (format t "~%evidence table:~%~S" evidence-table))
-	     #|
-	     (loop
-	       with msg
-               for ground-cpd being the elements of (caar (episode-states eme))
-               when (and (> (aref (rule-based-cpd-cardinalities ground-cpd) 0) max-card))
-                 do
-                    (setq max-card (aref (rule-based-cpd-cardinalities ground-cpd) 0))
-		    (setq msg (factor-operation ground-cpd (hash-keys-to-list (rule-based-cpd-identifiers ground-cpd))
-					  (remove (rule-based-cpd-dependent-id ground-cpd)
-                                                  (hash-keys-to-list (rule-based-cpd-identifiers ground-cpd)))
-                                          '+))
-               collect (normalize-rule-probabilities msg (rule-based-cpd-dependent-id msg))
-                 into grounds
-               finally
-                  (setq ground-marginals grounds))
-	     |#
-             ;;(log-message (list "Learning_Rate,Iteration,Conflicts,Deltas,Deltas_std~%") "learning-curves.csv")
-             ;;(log-message (list "Learning_Rate,CPD,Value,Density,Error~%") "marginal-distribution.csv")
-             ;;(log-message (list "CPD,Value,Density~%") "ground-marginals.csv")
-	     #|
-	     (loop
-               for ground-cpd in ground-marginals
-               do
-                  (loop
-                    with idx
-                    for i from 0 to (- max-card 1)
-                    do
-                       (setq idx (make-rule :conditions (make-hash-table :test #'equal)))
-                       (setf (gethash (rule-based-cpd-dependent-id ground-cpd) (rule-conditions idx)) i)
-                       (setq idx (car (get-compatible-rules ground-cpd ground-cpd idx :find-all nil)))
-                       (log-message (list "~A,~d,~d~%"
-                                          (rule-based-cpd-dependent-id ground-cpd)
-                                          i
-                                          (float (rule-probability idx)))
-                                    "ground-marginals.csv")))
-	     |#
              (setq recollection (loopy-belief-propagation bn evidence-table mode lr))
-             #|
-	     (setq copy-grounds (copy-list ground-marginals))
-	     (loop
-               with ground-cpd
-               for cpd in recollection
-               when (rule-based-cpd-singleton-p cpd)
-                 do
-                    (setq ground-cpd (car copy-grounds))
-                    (setq copy-grounds (rest copy-grounds))
-                    (loop
-                      with idx with ground-idx
-                      for i from 0 to (- max-card 1)
-                      do
-                         (setq idx (make-rule :conditions (make-hash-table :test #'equal)))
-                         (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions idx)) i)
-                         (setq idx (car (get-compatible-rules cpd cpd idx :find-all nil)))
-                         (setq ground-idx (car (get-compatible-rules ground-cpd cpd idx :find-all nil)))
-                         (log-message (list "~d,~A,~d,~d,~d~%"
-                                            lr
-                                            (rule-based-cpd-dependent-id cpd)
-                                            i
-                                            (float (rule-probability idx))
-                                            (abs (float (- (rule-probability idx) (rule-probability ground-idx)))))
-                                      "marginal-distribution.csv")))
-	     |#
              (return (values recollection eme sol)))))))
 
 #| Recollect a temporal experience.

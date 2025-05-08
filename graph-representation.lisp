@@ -1623,7 +1623,8 @@
     finally
         (return (values idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms vals))))
 
-#| Normalize factor rules to maintain probability measure |#
+#| Normalize factor rules to maintain probability measure.
+   Returns: Destructively modified phi|#
 
 ;; assignments = array of assignments in conditional probability density
 ;; row-length = length of row in multi-dementional cpd

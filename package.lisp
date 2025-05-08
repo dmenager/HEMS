@@ -7,6 +7,7 @@
 	   #:eltm-to-pdf
 	   #:compile-program
 	   #:remember
+	   #:py-remember
 	   #:remember-temporal
 	   #:py-remember-temporal
 	   #:compute-cpd-concentration

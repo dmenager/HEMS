@@ -1535,7 +1535,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods nil))
   (let (partial-states cue bindings and bn)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
@@ -1584,8 +1584,20 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq bn (episode-observation (car eme))))
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
+      (when soft-likelihoods
+	(setq bn (copy-bn bn))
+	(loop
+	      for cpd being the elements of (car bn)
+	      for i from 0
+	      do
+	      (loop
+		    for rule being the elements of (rule-based-cpd-rules cpd)
+		    do
+		    (when (= (rule-probability rule) 0)
+		      (setf (rule-probability rule) 1/1000)))
+	      (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
       (when nil
-	    (format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
+	(format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))
       (loop
         for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
@@ -1694,10 +1706,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setf (gethash node-type slice) dist-hash)
 	   (when (= marker (- mod-len 1))
 	     (setf (gethash j state-transitions) slice)
-	     (setq j (+ i j 1)))
+	     (setq j (+ j 1)))
 	   (setq i (+ i 1))
       finally
 	 (return state-transitions))))
+
+(defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
+  (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
 
 (defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep)
   (let (alist)

@@ -1644,7 +1644,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-bns = hash table of evidence observed for state and observation schemas. Keys: integer index, Value: evidence network
-(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p)
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
   (multiple-value-bind (conditioned-temporal sol)
       (condition-model eltm
 		       temporal-evidence-bn
@@ -1699,7 +1699,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (print-bn evidence-bn)
 		    (format t "~%raw cue:~%~S" evidence-bn))
 		  (multiple-value-bind (recollection eme)
-		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type)
+		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
 		  ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 		    (setf (gethash cond dist-hash) (cons prob recollection)))))
@@ -1714,11 +1714,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
 
-(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep)
+(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods)
   (let (alist)
     (maphash #'(lambda (k v)
 		 (push (list k v) alist))
-	     (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep))
+	     (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods))
     (coerce alist 'vector)))
 
 (defun py-test-hash ()

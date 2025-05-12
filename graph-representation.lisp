@@ -84,6 +84,7 @@
   step-sizes
   rules
   concept-blocks
+  prior
   (singleton-p nil)
   count
   (lvl 1))
@@ -810,6 +811,7 @@
    :step-sizes (copy-array (rule-based-cpd-step-sizes cpd))
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (copy-hash-table (rule-based-cpd-concept-blocks cpd))
+   :prior (rule-based-cpd-prior cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -856,6 +858,7 @@
    :step-sizes (copy-array (rule-based-cpd-step-sizes cpd))
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
+   :prior (rule-based-cpd-prior cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -902,6 +905,7 @@
    :step-sizes (rule-based-cpd-step-sizes cpd)
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
+   :prior (rule-based-cpd-prior cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -4107,6 +4111,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :cardinalities cardinalities
                                        :step-sizes steps
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
+				       :prior (rule-based-cpd-prior phi1)
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
     (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi)))
@@ -4621,6 +4626,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                             :step-sizes steps
 					    :rules (rule-based-cpd-rules phi)
 					    :count (rule-based-cpd-count phi)
+					    :prior (rule-based-cpd-prior phi)
                                             :singleton-p (rule-based-cpd-singleton-p phi)
                                             :lvl (rule-based-cpd-lvl phi)))
     marginalized))
@@ -5232,396 +5238,6 @@ Roughly based on (Koller and Friedman, 2009) |#
   (car (member (cinstance-id belief) cltm*
                :key 'concept-id
                :test #'(lambda (id1 id2) (equal (symbol-name id1) (symbol-name id2))))))
-
-#| For each belief, generate a set of conditional probability densities.
-   One for the name, each argument, and each attribute. |#
-
-;; belief = belief in state
-(defun get-cpds-for-belief (belief)
-  (let (listform cpd1 cpd2 vars types-hash id dependent-ident vvbm nvvbm sva svna vals cards steps rules lvl identifiers cid cids type)
-    (setq listform (instantiate-listform (cdr belief)))
-    (setq type (symbol-name (car listform)))
-    (setq vars (make-hash-table))
-    (setf (gethash 0 vars) type)
-    (setq types-hash (make-hash-table))
-    (setf (gethash 0 types-hash) "BELIEF")
-    (setq id (symbol-name (gensym type)))
-    (setq identifiers (make-hash-table :test #'equal))
-    (setf (gethash id identifiers) 0)
-    #|
-    (loop
-      for idx being the hash-keys of vars
-        using (hash-value ele)
-      do
-         (if (= idx 0) (setq dependent-ident (symbol-name (gensym ele))))
-         (setf (gethash (if (= idx 0) dependent-ident (symbol-name (gensym ele))) identifiers) idx))
-    |#
-    (setq vvbm (make-hash-table))
-    ;;(setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons id 1) (make-hash-table))))
-    (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons "T" 1) (make-hash-table))))
-    (setq sva (make-hash-table))
-    (setf (gethash 0 sva) (list (list 0) (list 1))) ;; ((0) (1) (2))
-    (setq svna (make-hash-table))
-    (setf (gethash 0 svna) (list (list 1) (list 0))) ;; ((1) (0)) -> ((1 2) (0 2) (0 1))
-    (setq vals (make-hash-table))
-    (setf (gethash 0 vals) (list 0 1))
-    (setq lvl (car belief))
-    (setq cards (generate-cpd-cardinalities vvbm))
-    (setq steps (generate-cpd-step-sizes cards))
-    (setq cids (make-hash-table))
-    (setf (gethash 0 cids) "NIL")
-    (setq cpd1 (make-rule-based-cpd :dependent-id id ;;dependent-ident
-                                    :identifiers identifiers
-                                    :dependent-var type
-                                    :vars vars
-                                    :types types-hash
-                                    :concept-ids cids
-                                    :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                    :var-value-block-map vvbm
-                                    :negated-vvbms (copy-hash-table vvbm)
-                                    :set-valued-attributes sva
-                                    :set-valued-negated-attributes svna
-                                    :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                    :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                    :characteristic-sets (make-hash-table)
-                                    :characteristic-sets-values (make-hash-table)
-                                    :var-values vals
-                                    :cardinalities cards
-                                    :step-sizes steps
-                                    :rules rules
-                                    :concept-blocks (make-hash-table)
-                                    :count 1
-                                    :lvl lvl))
-    #|
-    (setq vars (make-hash-table))
-    (setf (gethash 0 vars) type)
-    (setf (gethash 1 vars) type)
-    (setq types-hash (make-hash-table))
-    (setf (gethash 0 types-hash) "BELIEF")
-    (setf (gethash 1 types-hash) "BELIEF")
-    (setq identifiers (make-hash-table :test #'equal))
-    (setf (gethash id identifiers) 0)
-    (setf (gethash (rule-based-cpd-dependent-id cpd1) identifiers) 1)
-    (setq cid (symbol-name (concept-id (get-concept (cdr belief)))))
-    (setq vvbm (make-hash-table))
-    (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons "T" 1) (make-hash-table))))
-    (setf (gethash 1 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons id 1) (make-hash-table))))
-    (setq sva (make-hash-table))
-    (setf (gethash 0 sva) (list (list 0) (list 1)))
-    (setf (gethash 1 sva) (list (list 0) (list 1)))
-    (setq svna (make-hash-table))
-    (setf (gethash 0 svna) (list (list 1) (list 0)))
-    (setf (gethash 1 svna) (list (list 1) (list 0)))
-    (setq vals (make-hash-table))
-    (setf (gethash 0 vals) (list 0 1))
-    (setf (gethash 1 vals) (list 0 1))
-    (setq lvl (car belief))
-    (setq cards (generate-cpd-cardinalities vvbm))
-    (setq steps (generate-cpd-step-sizes cards))
-    (setq cids (make-hash-table))
-    (setf (gethash 0 cids) cid)
-    (setf (gethash 1 cids) (gethash 0 (rule-based-cpd-concept-ids cpd1)))
-    (setq cpd2 (make-rule-based-cpd :dependent-id id
-                                    :identifiers identifiers
-                                    :dependent-var type
-                                    :vars vars
-                                    :types types-hash
-                                    :concept-ids cids
-                                    :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                    :var-value-block-map vvbm
-                                    :negated-vvbms (copy-hash-table vvbm)
-                                    :set-valued-attributes sva
-                                    :set-valued-negated-attributes svna
-                                    :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                    :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                    :characteristic-sets (make-hash-table)
-                                    :characteristic-sets-values (make-hash-table)
-                                    :var-values vals
-                                    :cardinalities cards
-                                    :step-sizes steps
-                                    :rules rules
-                                    :concept-blocks (make-hash-table)
-                                    :count 1
-                                    :lvl lvl))
-    (list cpd1 cpd2)
-    |#
-    (list cpd1)))
-
-#| For each percept, generate a set of conditional probability densities.
-   One for the name and each attribute. |#
-
-;; percept = percept in state
-(defun get-cpds-for-percept (percept)
-  (loop
-     for (att val) on (cdr percept) by #'cddr
-     for i from 0
-     with cpd and vars and types-hash and cids and vvbm and sva and svna and vals and cards and steps and rules and identifiers
-     with name and type and type-identifier and att-identifier
-     when (= i 0)
-       do
-          (setq type att)
-          (setq name val)
-          (setq vars (make-hash-table))
-          (setf (gethash 0 vars) att)
-          (setq types-hash (make-hash-table))
-          (setf (gethash 0 types-hash) "PERCEPT")
-          (setq identifiers (make-hash-table :test #'equal))
-          (setq type-identifier (symbol-name (gensym type)))
-          (setf (gethash type-identifier identifiers) 0)
-          (setq vvbm (make-hash-table))
-          (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons name 1) (make-hash-table))))
-          (setq sva (make-hash-table))
-          (setf (gethash 0 sva) (list (list 0) (list 1)))
-          (setq svna (make-hash-table))
-          (setf (gethash 0 svna) (list (list 1) (list 0)))
-          (setq vals (make-hash-table))
-          (setf (gethash 0 vals) (list 0 1))
-          (setq cards (generate-cpd-cardinalities vvbm))
-          (setq steps (generate-cpd-step-sizes cards))
-          (setq cids (make-hash-table))
-          (setf (gethash 0 cids) "NIL")
-          (setq cpd (make-rule-based-cpd :dependent-id type-identifier
-                                         :identifiers identifiers
-                                         :dependent-var att
-                                         :vars vars
-                                         :types types-hash
-                                         :concept-ids cids
-                                         :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                         :var-value-block-map vvbm
-                                         :negated-vvbms (copy-hash-table vvbm)
-                                         :set-valued-attributes sva
-                                         :set-valued-negated-attributes svna
-                                         :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                         :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                         :characteristic-sets (make-hash-table)
-                                         :characteristic-sets-values (make-hash-table)
-                                         :var-values vals
-                                         :cardinalities cards
-                                         :step-sizes steps
-                                         :rules rules
-                                         :concept-blocks (make-hash-table)
-                                         :count 1
-                                         :lvl (car percept)))
-       and collect cpd into cpds
-     if (> i 0 )
-       do
-          (setq att-identifier (symbol-name (gensym att)))
-          (setq vars (make-hash-table))
-          (setf (gethash 0 vars) att)
-          (setf (gethash 1 vars) type)
-          (setq types-hash (make-hash-table))
-          (setf (gethash 0 types-hash) "PERCEPT")
-          (setf (gethash 1 types-hash) "PERCEPT")
-          (setq identifiers (make-hash-table :test #'equal))
-          (setf (gethash att-identifier identifiers) 0)
-          (setf (gethash type-identifier identifiers) 1)
-          (setq vvbm (make-hash-table))
-          (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons val 1) (make-hash-table))))
-          (setf (gethash 1 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons name 1) (make-hash-table))))
-          (setq sva (make-hash-table))
-          (setf (gethash 0 sva) (list (list 0) (list 1)))
-          (setf (gethash 1 sva) (list (list 0) (list 1)))
-          (setq svna (make-hash-table))
-          (setf (gethash 0 svna) (list (list 1) (list 0)))
-          (setf (gethash 1 svna) (list (list 1) (list 0)))
-          (setq vals (make-hash-table))
-          (setf (gethash 0 vals) (list 0 1))
-          (setf (gethash 1 vals) (list 0 1))
-          (setq cards (generate-cpd-cardinalities vvbm))
-          (setq steps (generate-cpd-step-sizes cards))
-          (setq cids (make-hash-table))
-          (setf (gethash 0 cids) "NIL")
-          (setf (gethash 1 cids) "NIL")
-          (setq cpd (make-rule-based-cpd :dependent-id att-identifier
-                                         :identifiers identifiers
-                                         :dependent-var att
-                                         :vars vars
-                                         :types types-hash
-                                         :concept-ids cids
-                                         :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                         :var-value-block-map vvbm
-                                         :negated-vvbms (copy-hash-table vvbm)
-                                         :set-valued-attributes sva
-                                         :set-valued-negated-attributes svna
-                                         :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                         :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                         :characteristic-sets (make-hash-table)
-                                         :characteristic-sets-values (make-hash-table)
-                                         :var-values vals
-                                         :cardinalities cards
-                                         :step-sizes steps
-                                         :rules rules
-                                         :concept-blocks (make-hash-table)
-                                         :count 1
-                                         :lvl (car percept)))
-       and collect cpd into cpds
-     finally
-       (return cpds)))
-
-#| For each action, generate a set of conditional probability densities.
-   One for the generic action and the action type. |#
-
-;; action = action completed in state
-(defun get-cpds-for-action (action)
-  (let (listform cpd cpds vars types-hash id dependent-ident vvbm sva svna vals cards steps rules lvl identifiers cid cids type)
-    (setq listform (cdr action))
-    (setq type (second listform))
-    (setq vars (make-hash-table))
-    (setf (gethash 0 vars) type)
-    (setq types-hash (make-hash-table))
-    (setf (gethash 0 types-hash) "ACTION")
-    (setq id (symbol-name (gensym (car listform))))
-    (setq identifiers (make-hash-table :test #'equal))
-    (loop
-      for idx being the hash-keys of vars
-        using (hash-value ele)
-      do
-         (if (= idx 0) (setq dependent-ident (symbol-name (gensym ele))))
-         (setf (gethash (if (= idx 0) dependent-ident (symbol-name (gensym ele))) identifiers) idx))
-    (setq vvbm (make-hash-table))
-    (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons id 1) (make-hash-table))))
-    (setq sva (make-hash-table))
-    (setf (gethash 0 sva) (list (list 0) (list 1)))
-    (setq svna (make-hash-table))
-    (setf (gethash 0 svna) (list (list 1) (list 0)))
-    (setq vals (make-hash-table))
-    (setf (gethash 0 vals) (list 0 1))
-    (setq lvl (car action))
-    (setq cards (generate-cpd-cardinalities vvbm))
-    (setq steps (generate-cpd-step-sizes cards))
-    (setq cids (make-hash-table))
-    (setf (gethash 0 cids) "NIL")
-    (setq cpd (make-rule-based-cpd :dependent-id dependent-ident
-                                   :identifiers identifiers
-                                   :dependent-var type
-                                   :vars vars
-                                   :types types-hash
-                                   :concept-ids cids
-                                   :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                   :var-value-block-map vvbm
-                                   :negated-vvbms (copy-hash-table vvbm)
-                                   :set-valued-attributes sva
-                                   :set-valued-negated-attributes svna
-                                   :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                   :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                   :characteristic-sets (make-hash-table)
-                                   :characteristic-sets-values (make-hash-table)
-                                   :var-values vals
-                                   :cardinalities cards
-                                   :step-sizes steps
-                                   :rules rules
-                                   :concept-blocks (make-hash-table)
-                                   :count 1
-                                   :lvl lvl))
-    (setq cpds (cons cpd cpds))
-    (setq vars (make-hash-table))
-    (setf (gethash 0 vars) (car listform))
-    (setf (gethash 1 vars) type)
-    (setq types-hash (make-hash-table))
-    (setf (gethash 0 types-hash) "ACTION")
-    (setf (gethash 1 types-hash) "ACTION")
-    (setq type id)
-    (setq identifiers (make-hash-table :test #'equal))
-    (setf (gethash id identifiers) 0)
-    (setf (gethash (rule-based-cpd-dependent-id cpd) identifiers) 1)
-    (setq cid "NIL")
-    (setq vvbm (make-hash-table))
-    (setf (gethash 0 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons (list-to-string (list (car listform))) 1) (make-hash-table))))
-    (setf (gethash 1 vvbm) (list (list (cons "NA" 0) (make-hash-table)) (list (cons id 1) (make-hash-table))))
-    (setq sva (make-hash-table))
-    (setf (gethash 0 sva) (list (list 0) (list 1)))
-    (setf (gethash 1 sva) (list (list 0) (list 1)))
-    (setq svna (make-hash-table))
-    (setf (gethash 0 svna) (list (list 1) (list 0)))
-    (setf (gethash 1 svna) (list (list 1) (list 0)))
-    (setq vals (make-hash-table))
-    (setf (gethash 0 vals) (list 0 1))
-    (setf (gethash 1 vals) (list 0 1))
-    (setq lvl (car action))
-    (setq cards (generate-cpd-cardinalities vvbm))
-    (setq steps (generate-cpd-step-sizes cards))
-    (setq cids (make-hash-table))
-    (setf (gethash 0 cids) cid)
-    (setf (gethash 1 cids) (gethash 0 (rule-based-cpd-concept-ids cpd)))
-    (setq cpd (make-rule-based-cpd :dependent-id id
-                                   :identifiers identifiers
-                                   :dependent-var (car listform)
-                                   :vars vars
-                                   :types types-hash
-                                   :concept-ids cids
-                                   :qualified-vars (generate-cpd-vars identifiers vars cids)
-                                   :var-value-block-map vvbm
-                                   :negated-vvbms (copy-hash-table vvbm)
-                                   :set-valued-attributes sva
-                                   :set-valued-negated-attributes svna
-                                   :lower-approx-var-value-block-map (copy-hash-table vvbm)
-                                   :lower-approx-negated-vvbms (copy-hash-table vvbm)
-                                   :characteristic-sets (make-hash-table)
-                                   :characteristic-sets-values (make-hash-table)
-                                   :var-values vals
-                                   :cardinalities cards
-                                   :step-sizes steps
-                                   :rules rules
-                                   :concept-blocks (make-hash-table)
-                                   :count 1
-                                   :lvl lvl))
-    (setq cpds (cons cpd cpds))
-    #|
-    (loop
-       for (att val) on (nthcdr 2 listform) by #'cddr do
-         (setq id (symbol-name (gensym att)))
-         (setq vars (make-hash-table))
-         (setf (gethash 0 vars) att)
-         (setf (gethash 1 vars) (car listform))
-         (setq types-hash (make-hash-table))
-         (setf (gethash 0 types-hash) "ACTION")
-         (setf (gethash 1 types-hash) "ACTION")
-         (setq identifiers (make-hash-table :test #'equal))
-         (setf (gethash id identifiers) 0)
-         (setf (gethash type identifiers) 1)
-         (setq vvbm (make-hash-table))
-         (setf (gethash 0 vvbm) (list (list (cons "NA" 0) nil) (list (cons val 1) nil)))
-         (setf (gethash 1 vvbm) (list (list (cons "NA" 0) nil) (list (cons "T" 1) nil)))
-    (setq sva (make-hash-table))
-    (setf (gethash 0 sva) (list (list 0) (list 1)))
-    (setf (gethash 1 sva) (list (list 0) (list 1)))
-    (setq svna (make-hash-table))
-    (setf (gethash 0 svna) (list (list 1) (list 0)))
-    (setf (gethash 1 svna) (list (list 1) (list 0)))
-    (setq vals (make-hash-table))
-    (setf (gethash 0 vals) (list 0 1))
-    (setf (gethash 1 vals) (list 0 1))
-         (setq cards (generate-cpd-cardinalities vvbm))
-         (setq steps (generate-cpd-step-sizes cards))
-         (setq cids (make-hash-table))
-         (setf (gethash 0 cids) "NIL")
-         (setf (gethash 1 cids) "NIL")
-         (setq cpd (make-rule-based-cpd :dependent-id id
-                             :identifiers identifiers
-                             :dependent-var att
-                             :vars vars
-                             :types types-hash
-                             :concept-ids cids
-                             :qualified-vars (generate-cpd-vars identifiers vars cids)
-                             :var-value-block-map vvbm
-                             :negated-vvbms (copy-hash-table vvbm)
-    :set-valued-attributes: sva
-    :set-valued-negated-attributes: svna
-    :lower-approx-var-value-block-map (copy-hash-table vvbm)
-    :lower-approx-negated-vvbms (copy-hash-table vvbm)
-    :characteristic-sets (make-hash-table)
-    :characteristic-sets-values (make-hash-table)
-    :var-values vals
-                             :cardinalities cards
-                             :step-sizes steps
-                             :rules rules
-                             :concept-blocks (make-hash-table)
-                             :count 1
-                             :lvl (car action)))
-         (setq cpd (get-local-coverings cpd))
-         (setq cpds (cons cpd cpds)))
-    |#
-    (reverse cpds)))
 
 #| Check if variable matches value |#
 
@@ -6275,116 +5891,6 @@ Roughly based on (Koller and Friedman, 2009) |#
         ((and (= (rule-based-cpd-lvl cpd1) (rule-based-cpd-lvl cpd2))
               (cpd-child-p cpd2 cpd1)) t)
         (t nil)))
-
-#| Converts a state to a directed asyclic graph where the nodes are conditional probability densities
-
-;; pstm = percepts
-;; cstm = beliefs
-;; previous-state = most recent state in episodic buffer
-;; executing-intention = current executing intention
-(defun state-to-graph (pstm cstm &key (previous-state nil) (executing-intention nil) &aux percepts action-buff actions beliefs intentions state-elements)
-  (let (take-rest result)
-    (setq result
-          (mapcar #'(lambda (percept)
-                      (cond ((eq 'action (second percept))
-                             (setq take-rest t)
-                             (setq action-buff (cons percept action-buff)))
-                            (t
-                             (cons 1 (mapcar #'(lambda (p)
-                                                 (if (numberp p) p (symbol-name p)))
-                                             percept)))))
-                  pstm))
-    (setq percepts (if take-rest (rest result) result)))
-  (when nil (and (= cycle* 4))
-    (format t "~%pstm:~%~S~%percepts:~%~S" pstm percepts)
-    (break))
-  (setq actions (mapcar #'(lambda (action)
-                            (cons 2 (mapcar #'(lambda (a)
-                                                (if (or (numberp a) (stringp a)) a (symbol-name a)))
-                                            action)))
-                        action-buff))
-  (setq beliefs (mapcar #'(lambda (belief)
-                            (let (concept)
-                              (setq concept (get-concept belief))
-                              (cons (+ (depth concept cltm* cltm*) 2) belief)))
-                        cstm))
-  (when nil (and (= cycle* 4))
-    (format t "~%cstm:~%~S~%beliefs:~%~S" cstm beliefs)
-    (break))
-  (setq state-elements (append percepts actions (sort beliefs #'< :key 'car)))
-  (loop
-    for st-ele in state-elements
-    for i from 0
-    with elements-cpds
-    with concept do
-      (cond ((and (listp (cdr st-ele))
-                  (equal "ACTION" (second (cdr st-ele))))
-             (setq elements-cpds (reverse (cons (cons (cdr st-ele) (get-cpds-for-action st-ele)) (reverse elements-cpds))))
-             (add-temporal-link-for-action elements-cpds previous-state)
-             ;;(format t "~%(cdr st-ele): ~A~%(nthcdr 2 (cdr st-ele)): ~A" (cdr st-ele) (nthcdr 2 (cdr st-ele)))
-             (loop
-               with relevant-cpds
-               for (att val) on (nthcdr 2 (cdr st-ele)) by #'cddr do
-                 ;;(format t "~%~%att: ~A val: ~A" att val)
-                 (setq relevant-cpds nil)
-                 (loop
-                   named cpd-finder
-                   for element in elements-cpds do
-                     ;;(format t "~%element:~%~A" element)
-                     (when (and (equal (caar element) att)
-                                (equal (second (car element)) val))
-                       (setq relevant-cpds element)
-                       (return-from cpd-finder)))
-                 ;;(format t "~%relevant-cpds:~%~A~%modifier-cpds:~%~A" relevant-cpds (nthcdr 2 (car (last elements-cpds))))
-                 (when relevant-cpds
-                   (update-cpds-given-action (rest relevant-cpds) (nthcdr 2 (car (last elements-cpds)))))))
-            ((and (listp (cdr st-ele))
-                  (not (equal "ACTION" (second (cdr st-ele)))))
-             (setq elements-cpds (reverse (cons (cons (cdr st-ele) (get-cpds-for-percept st-ele)) (reverse elements-cpds))))
-             ;;(when (= cycle* 11)
-             ;;  (format t "~%~%elements-cpds:~%~A" elements-cpds))
-             )
-            ((cinstance-p (cdr st-ele))
-             (setq elements-cpds (reverse (cons (cons (mapcar #'(lambda (p)
-								  (if (numberp p) p (symbol-name p)))
-							      (instantiate-listform (cdr st-ele)))
-						      (get-cpds-for-belief st-ele))
-						(reverse elements-cpds))))
-             (setq concept (get-concept (cdr st-ele)))
-             (loop
-               for element in (concept-elements concept)
-               with instantiated and match
-               do
-                  (setq instantiated (mapcar #'(lambda (p)
-						 (if (numberp p) p (symbol-name p)))
-					     (sublis (cinstance-bindings (cdr st-ele)) element)))
-		  ;;(format t "~%~%element:~%~S~%instantiated:~%~S~%concept:~%~S" element instantiated concept)
-		  (setq match (find-matching-cpd instantiated concept elements-cpds (cinstance-bindings (cdr st-ele)) 0 (length pstm)))
-		  ;;(format t "~%match:~%~S~%elements-cpds:~%~S" match elements-cpds)
-               when match
-                 do
-                    (update-cpds (rest match) (second (car (last elements-cpds))) concept element))
-             (loop
-               for condition in (concept-conditions concept)
-               with instantiated and match
-               do
-                  (when (eq 'not (car condition))
-                    (setq condition (second condition)))
-                  (setq instantiated (mapcar #'(lambda (p) (if (numberp p) p (symbol-name p))) (sublis (cinstance-bindings (cdr st-ele)) condition)))
-                  (setq match (find-matching-cpd instantiated concept elements-cpds (cinstance-bindings (cdr st-ele)) (length pstm)))
-               when match
-                 do
-                    (update-cpds (rest match) (second (car (last elements-cpds))) concept condition))))
-    finally
-       (setq intentions (get-cpds-for-executing-intention executing-intention 3 nil elements-cpds pstm))
-       (let (factors-list factors edges)
-         (setq factors-list (mapcan #'cdr elements-cpds))
-         (setq factors-list (sort (append intentions factors-list) #'higher-lvl-cpd))
-         (setf factors-list (finalize-factors factors-list))
-         (setq factors (make-array (length factors-list) :initial-contents factors-list :fill-pointer t))
-         (setq edges (make-graph-edges factors))
-         (return (values factors edges)))))
-|#
 
 (defun make-empty-graph ()
   (multiple-value-bind (factors edges)
@@ -7710,6 +7216,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                      :var-values vals
                      :cardinalities cards
                      :step-sizes steps
+		     :prior (rule-based-cpd-prior q-cpd)
                      :count 1
                      :lvl (rule-based-cpd-lvl q-cpd)))
               (setq rules (make-initial-rules dummy-match assn))

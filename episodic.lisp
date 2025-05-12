@@ -1535,7 +1535,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods nil))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t))
   (let (partial-states cue bindings and bn)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
@@ -1584,6 +1584,34 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq bn (episode-observation (car eme))))
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
+      (when priors
+	;; match priors to variables in bn.
+	(multiple-value-bind (sol matches cost bindings)
+	    (new-maximum-common-subgraph priors bn (make-hash-table) (make-hash-table) :bic-p bic-p)
+	  (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings)))
+	;; update schema domain on all bn cpds that include prior variables
+	(loop
+	      for prior being the elements of (car priors)
+	      for i from 0
+	      do
+	      (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings)
+	      (setf (aref (car priors) i)
+		    (subst-cpd prior (are)))
+	      (loop
+		    for cpd being the elements of (car bn)
+		    for i from 0
+		    when (gethash (rule-based-cpd-dependent-id prior)
+				  (rule-based-cpd-identifiers cpd))
+		    do
+		    (if (>= (length (gethash 0 (rule-based-cpd-var-values prior)))
+			    (length (gethash (gethash (rule-based-cpd-dependent-id prior)
+						      (rule-based-cpd-identifiers cpd))
+					     (rule-based-cpd-var-values cpd))))
+			(setf (aref (car bn) i)
+			      (cpd-update-schema-domain cpd prior nil))
+			(error "~%Prior domain must be at least as big corresponding variable in bn")))
+	;; add priors to factors list so they get incorporated into the bethe cluster graph.
+	)
       (when soft-likelihoods
 	(setq bn (copy-bn bn))
 	(loop

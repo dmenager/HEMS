@@ -80,6 +80,7 @@
 	   #:g-squared-test
 	   #:bn-score
 	   #:print-tree-structure
-	   #:py-test-hash))
+	   #:py-test-hash
+	   #:discrete-uniform))
 
 (in-package :hems)

@@ -472,9 +472,12 @@
 				  (cond ((listp (third ,args))
 					 (when (not (gethash (first ,args) ,hash))
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
-					 (let ((,prior-args (apply (second (third ,args))
+					 (let* ((raw-symbol (first (third ,args)))
+						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
+							   raw-symbol))
+						(,prior-args (apply prior-fn ;;(first (third ,args))
 								   (loop
-								     for (key arg) on (nthcdr 2 (third ,args)) by #'cddr
+								     for (key arg) on (cdr (third ,args)) by #'cddr
 								     append (list key arg)))))
 					 (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
 					       (list (get-cpd-type (gethash (first ,args) ,hash))

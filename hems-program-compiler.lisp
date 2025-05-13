@@ -434,6 +434,7 @@
 (defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) causal-discovery) &body body)
   (let ((hash (gensym))
 	(args (gensym))
+	(prior-args (gensym))
 	(inv-hash (gensym))
         (ident (gensym))
 	(cpd (gensym))
@@ -471,13 +472,14 @@
 				  (cond ((listp (third ,args))
 					 (when (not (gethash (first ,args) ,hash))
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
+					 (let ((,prior-args (apply (second (third ,args))
+								   (loop
+								     for (key arg) on (nthcdr 2 (third ,args)) by #'cddr
+								     append (list key arg)))))
 					 (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
 					       (list (get-cpd-type (gethash (first ,args) ,hash))
 						     'prior
-						     :values (funcall (second (third ,args))
-								   (loop
-								     for (key arg) on (nthcdr 2 (third ,args)) by #'cddr
-								     append (list key (cons 'list arg)))))))
+						     :values ,prior-args))))
 					(t
 					 (error "Expected distributional identity to prior definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((or (equal "---" (symbol-name (second ,args)))

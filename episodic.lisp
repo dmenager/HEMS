@@ -1535,8 +1535,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods nil))
-  (let (partial-states cue bindings and bn)
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t))
+  (let (partial-states cue bindings and bn priors)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
     ;;(state-count-element-types (caar partial-states))
@@ -1584,8 +1584,53 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq bn (episode-observation (car eme))))
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
+      (setq bn (copy-bn bn))
+      (setq priors (make-hash-table :test #'equal))
+      ;; update schema domain on all bn cpds that include prior variables
+      (loop
+	with prior-cpd and bindings = (make-hash-table :test #'equal)
+	for cpd1 being the elements of (car bn)
+	when (rule-based-cpd-prior cpd1)
+	do
+	   (setq prior-cpd
+		 (aref (car (eval `(compile-program nil
+				     c1 = ,(rule-based-cpd-prior cpd1))))
+		       0))
+	   (setf (rule-based-cpd-singleton-p prior-cpd) t)
+	   (when nil
+	     (format t "~%prior:~%")
+	     (print-cpd prior-cpd))
+	   ;; make bindings
+	   (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
+		 (rule-based-cpd-dependent-id cpd1))
+	   (loop
+	     for value in (getf (rule-based-cpd-prior cpd1) :values)
+	     do
+		(setf (gethash (getf value :value) bindings)
+		      (getf value :value)))
+	   (setq prior-cpd (subst-cpd prior-cpd cpd1 bindings))
+	   (cpd-update-schema-domain cpd1 prior-cpd nil)
+	   (when nil
+	     (format t "~%subst prior:~%")
+	     (print-cpd prior-cpd)
+	     (format t "~%updated cpd1:~%")
+	     (print-cpd cpd1)
+	     (break))
+	   ;; update the domain of CPD1 in downstream cpds
+	   (loop
+	     for cpd2 being the elements of (car bn)
+	     for i from 0
+	     when (gethash (rule-based-cpd-dependent-id cpd1)
+			   (rule-based-cpd-identifiers cpd2))
+	       do
+		  (setf (aref (car bn) i)
+			(cpd-update-existing-vvms cpd2 bindings (list cpd1)))
+		  (when nil
+		    (format t "~%updated downstream cpd:~%")
+		    (print-cpd (aref (car bn) i))
+		    (break)))
+	   (setf (gethash (rule-based-cpd-dependent-id cpd1) priors) prior-cpd))
       (when soft-likelihoods
-	(setq bn (copy-bn bn))
 	(loop
 	      for cpd being the elements of (car bn)
 	      for i from 0
@@ -1632,7 +1677,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (setq evidence-table (make-observations observed-factors))
 	     (when nil t
 	       (format t "~%evidence table:~%~S" evidence-table))
-             (setq recollection (loopy-belief-propagation bn evidence-table mode lr))
+             (setq recollection (loopy-belief-propagation bn evidence-table priors mode lr))
              (return (values recollection eme sol)))))))
 
 #| Recollect a temporal experience.
@@ -2236,4 +2281,16 @@ do
 (multiple-value-bind (recollection eme sol)
 (hems:remember (hems:get-eltm) evidence-bn '+ 1 t :type "state")
 (values recollection sol)))
+
+;;;; Inference with prior example
+(ql:quickload :hems)
+(let (bn eltm)
+  (setq bn (hems:compile-program nil 
+	     c2 = (percept-node b :value "10")
+	     c2 ~ (discrete-uniform :values ("10" "20" "30" "40"))
+	     c1 = (percept-node a :value "A")
+	     c1 --> c2))
+  (hems:new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil)
+  (hems:new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil)
+  (hems:remember (hems:get-eltm) (cons (make-array 0) (make-hash-table :test #'equal)) '+ 1 t :type "observation"))
 |#

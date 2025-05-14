@@ -57,7 +57,29 @@
 		 do
 		    (setq neighbors (cons ix neighbors)))
 	  finally
-	     (return (reverse neighbors)))))))
+	      (return (reverse neighbors)))))))
+
+(defun bernoulli ())
+(defun binomial ())
+
+#| Create a discrete uniform prior distribution |#
+
+;; values = list of values defining the cpd domain
+(defun discrete-uniform (&key values)
+  (let ((p (/ 1 (length values))))
+    (mapcar #'(lambda (value)
+		(list :value value :probability p :count nil))
+	    values)))
+
+(defun get-cpd-type (ref-cpd)
+  (cond ((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "PERCEPT")
+	 'percept-node)
+	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "OBSERVATION")
+	 'observation-node)
+	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "BELIEF")
+	 'relation-node)
+	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "STATE")
+	 'state-node)))
 
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
 (defun make-bn-node (node-def)
@@ -149,7 +171,10 @@
 						(list :value value :probability 1 :count 1))))
 			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
 										 (getf lst :value))))
-			     (setq values (cons (list :value "NA" :probability 0 :count 0) values)))
+			     (let (count-val)
+			       (if (numberp (getf (car values) :count))
+				   (setq count-val 0))
+			       (setq values (cons (list :value "NA" :probability 0 :count count-val) values))))
 			   (loop
 			     with rule and rules = (make-array (length values))
 			     with value and prob and count
@@ -412,6 +437,7 @@
 (defmacro compile-program ((&key relational-invariants neighborhood-func nbr-func-args (sort-p t) causal-discovery) &body body)
   (let ((hash (gensym))
 	(args (gensym))
+	(prior-args (gensym))
 	(inv-hash (gensym))
         (ident (gensym))
 	(cpd (gensym))
@@ -444,7 +470,24 @@
 					 (setf (gethash (first ,args) ,hash)
 					       (make-bn-node (third ,args))))
 					(t
-					 (error "Expected assignment to list in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
+					 (error "Expected assignment to node definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
+				 ((equal (symbol-name '~) (symbol-name (second ,args)))
+				  (cond ((listp (third ,args))
+					 (when (not (gethash (first ,args) ,hash))
+					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
+					 (let* ((raw-symbol (first (third ,args)))
+						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
+							   (error "~A does not name a defined function" raw-symbol)))
+						(,prior-args (apply prior-fn
+								   (loop
+								     for (key arg) on (cdr (third ,args)) by #'cddr
+								     append (list key arg)))))
+					 (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
+					       (list (get-cpd-type (gethash (first ,args) ,hash))
+						     'prior
+						     :values ,prior-args))))
+					(t
+					 (error "Expected distributional identity to prior definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((or (equal "---" (symbol-name (second ,args)))
 				      (equal "-->" (symbol-name (second ,args))))
 				  (cond ((null ,edge-type)
@@ -463,10 +506,9 @@
 					(t
 					 (raise-identifier-type-error (third ,args)))))
 				 (t
-				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment or three-part edge with a startpoint, connector, and endpoint." (subseq ,args 0 3) (second ,args))))
+				  (error "Unrecognized operator in statement ~{~A~^ ~}.~%Received ~A.~%Expected assignment, distributional identity, or three-part edge with a startpoint, connector, and endpoint." (subseq ,args 0 3) (second ,args))))
 			   (raise-identifier-type-error (first ,args))
-		        
-			   )
+		           )
 		       (compile-hems-program ,hash (nthcdr 3 ,args) ,invariant-list ,recurse-p ,edge-type))
 		      (t
 		       (let (,inv-hash)
@@ -524,6 +566,7 @@
   
 #| TESTS
 
-(hems:compile-program (:relational-invariants t :nbr-func-args (2)) 
-c1 = (percept-node a :value "10")
-c2 = (percept-node b :value "10")) |#
+(hems:compile-program nil 
+c2 = (percept-node b :value "10")
+c2 ~ (discrete-uniform :values ("10" "20" "30" "40")))
+|#

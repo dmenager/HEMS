@@ -234,11 +234,11 @@
     for i in (gethash 0 (rule-based-cpd-var-values factor)) ;;from 0 to (- num-rules 1)
     do
        (setq rule (make-rule :id (gensym "RULE-")
-                             :conditions (make-hash-table :test #'equal)
-                             :probability (float value)
-                             :block (make-hash-table)
-                             :certain-block (make-hash-table)
-                             :count nil))
+			     :conditions (make-hash-table :test #'equal)
+			     :probability (float value)
+			     :block (make-hash-table)
+			     :certain-block (make-hash-table)
+			     :count nil))
        (setf (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)) (list i))
     collect rule into rules
     finally (return (make-array (length rules) :initial-contents rules))))
@@ -5943,11 +5943,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 #| Perfrom probabilistic inference over bayesian network |#
 
-;; state = bayesian network of the state represented as a graph of cpds
-;; evidence = hash-table of variable value pairs
+  ;; state = bayesian network of the state represented as a graph of cpds
+  ;; evidence = hash-table of variable value pairs
+  ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence op lr)
+(defun loopy-belief-propagation (state evidence priors op lr)
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -5973,7 +5974,10 @@ Roughly based on (Koller and Friedman, 2009) |#
       with dep-var and vars and types-hash and id and dep-id and cid and qvars and vvbm and sva and lower-vvbm and var-values and cards and steps and rules and lvl
       for factor in factors-list
       for i from (length factors-list)
-      do
+      when (gethash (rule-based-cpd-dependent-id factor) priors)
+	do
+	   (setq singleton (gethash (rule-based-cpd-dependent-id factor) priors))
+      else do
          (setq dep-id (rule-based-cpd-dependent-id factor))
          (setq id (make-hash-table :test #'equal))
          (setf (gethash dep-id id) 0)

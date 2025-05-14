@@ -171,7 +171,10 @@
 						(list :value value :probability 1 :count 1))))
 			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
 										 (getf lst :value))))
-			     (setq values (cons (list :value "NA" :probability 0 :count 0) values)))
+			     (let (count-val)
+			       (if (numberp (getf (car values) :count))
+				   (setq count-val 0))
+			       (setq values (cons (list :value "NA" :probability 0 :count count-val) values))))
 			   (loop
 			     with rule and rules = (make-array (length values))
 			     with value and prob and count
@@ -474,8 +477,8 @@
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (let* ((raw-symbol (first (third ,args)))
 						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
-							   raw-symbol))
-						(,prior-args (apply prior-fn ;;(first (third ,args))
+							   (error "~A does not name a defined function" raw-symbol)))
+						(,prior-args (apply prior-fn
 								   (loop
 								     for (key arg) on (cdr (third ,args)) by #'cddr
 								     append (list key arg)))))
@@ -565,5 +568,5 @@
 
 (hems:compile-program nil 
 c2 = (percept-node b :value "10")
-c2 ~ (prior discrete-uniform :values ("10" "20" "30" "40")))
+c2 ~ (discrete-uniform :values ("10" "20" "30" "40")))
 |#

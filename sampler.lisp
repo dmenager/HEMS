@@ -6,14 +6,14 @@
 ;; eltm = episodic-long-term-memory
 ;; evidence-bn = the bayesian network that represents observations made in the environment
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
-(defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)) (keep-singletons nil))
+(defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)) (keep-singletons nil) (soft-likelihoods nil))
   (let (new-episode new-bn)
-    (when nil
+    (when t
       (format t "~%evidence-bn:~%~A"evidence-bn))
     (multiple-value-bind (recollection eme sol)
-	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type)
+	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type :soft-likelihoods soft-likelihoods)
       ;; verify in (remember) if the single observation node matches to the state transition models.
-      (when nil (string-equal episode-type "state-transitions")
+      (when (string-equal episode-type "state-transitions")
 	    (format t "~%Posterior network:~%~S" recollection)
 	    (format t "~%sol:~%~S" sol)
 	    (break))
@@ -373,7 +373,7 @@
 	     do
 		(format t "~%generating ~d more samples for action ~S" diff act)
 		(setq s (conditional-sample eltm* (eval `(compile-program nil
-							   c1 = (percept-node action :value ,act)))
+							   c1 = (action-node action :value ,act)))
 					    "state-transitions"
 					    :hidden-state-p hidden-state-p
 					    :output-percepts-p output-percepts-p))
@@ -472,7 +472,7 @@
 
 ;; Condition our random samples because interesting behavior we want to learn might be rare
 (hems:conditional-sample (hems:get-eltm) (hems:compile-program nil
-c1 = (percept-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
+c1 = (action-node action :value "2")) "state-transitions" :hidden-state-p t :output-percepts-p t)
 --------------------------------------
 (hems::generate-hems-data 2000 t t)
 

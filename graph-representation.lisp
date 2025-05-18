@@ -1938,7 +1938,7 @@
                      (setf (rule-based-cpd-step-sizes phi1)
                            (generate-cpd-step-sizes
                             (rule-based-cpd-cardinalities phi1)))))
-              (when (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi1)))
+              (when nil (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi1)))
                 (format t "~%updated cpd variables:~%~S" phi1)
                 (break))
               (loop
@@ -2719,7 +2719,7 @@
 		     )
              do
 		(setq copy-rule (copy-cpd-rule rule))
-		(when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+		(when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 		  (format t "~%~%rule before adding condition:~%~S" copy-rule))
 		(setq condition (car condition-block))
 		(setf (gethash (car condition)
@@ -2761,7 +2761,7 @@
 		  (setq info-gain (- (log p 2)
 				     (log q 2)))
 		  |#
-		  (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+		  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 			(format t "~%updated rule:~%~S~%condition: ~S~%new-entropy: ~d~%entropy: ~d~%info-gain: ~d~%current best info-gain: ~d" copy-rule condition new-entropy entropy info-gain best-info-gain))
 		  (when nil nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd))) 
 			(format t "~%B_~S = ~S~%info-gain: ~d~% current best info-gain: ~d"
@@ -3039,7 +3039,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                   (return t))))
-    (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd))) nil t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd))) nil t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
 	  (format t "~%~%getting local covering for:~%~S~%" cpd )
 	  (print-cpd cpd)
       ;;(break)
@@ -3081,7 +3081,7 @@
                                              :count count))
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
-                   (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+                   (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3103,9 +3103,9 @@
 				   ;;(break)
 				   )
 				 (setq new-rule copy-rule)
-				 (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3158,7 +3158,7 @@
 					     (remhash attribute (rule-conditions new-rule)))))
                           ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+			  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:")
 			    (print-cpd-rule new-rule)
@@ -3221,7 +3221,7 @@
                         (setq minimal-rules (reverse (cons rule (reverse minimal-rules))))
                         (setq case (+ case 1)))))
       finally
-         (when (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+         (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%final rules:~%%*********************************")
 	       (format t "~%cpd:~%~S" (rule-based-cpd-identifiers cpd))
 	       (format t "~%cardinalities: ~S" (rule-based-cpd-cardinalities cpd))
@@ -4265,7 +4265,7 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi2 :check-uniqueness nil)
            (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	   (check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-           (when (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema2:~%~S~%rules:" phi2)
              (loop
                for rule being the elements of (rule-based-cpd-rules phi2)
@@ -4682,8 +4682,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 2) (= j 6))
-        (format t "~%~%sending message from ~d to ~d~%~d: ~S~%~d: ~S" i j i (rule-based-cpd-identifiers (aref factors i)) j (rule-based-cpd-identifiers (aref factors j))))
+  (when nil (and (= i 3) (= j 6))
+    (format t "~%~%sending message from ~d to ~d" i j)
+    (format t "~%~d:" i)
+    (print-cpd (aref factors i))
+    (format t "~%~d:" j)
+    (print-cpd (aref factors j)))
   (let (nbrs-minus-j reduced)
     (loop
       for k from 0 to (- (array-dimension edges 0) 1)
@@ -4691,7 +4695,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
       finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 2) (= j 6))
+    (when nil (and (= i 3) (= j 6))
           (format t "~%neighbors minus j:~%~S~%i:~%~S"
                   (loop for nbr in nbrs-minus-j
                         when (rule-based-cpd-p nbr)
@@ -4703,7 +4707,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   (cons (rule-based-cpd-identifiers (aref factors i))
                         (rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 2) (= j 6))
+    (when nil (and (= i 3) (= j 6))
           (format t "~%evidence-collected:~%~S~%sepset: ~S~%variables to eliminate: ~S" (cons (rule-based-cpd-identifiers reduced) (rule-based-cpd-rules reduced)) sepset
                   (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
     (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
@@ -4843,7 +4847,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -4858,7 +4862,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil t (and (= j 3) (= k 9))
+              (when t (and (= j 3) (= k 9))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4869,7 +4873,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil t (and (= j 3) (= k 9))
+	      (when t (and (= j 3) (= k 9))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -4904,13 +4908,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil t
+       (when t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil t
+       (when t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t
@@ -7582,7 +7586,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun cooling-schedule (time big-t &optional (alpha .80))
   (rationalize (* big-t (expt alpha time))))
 
-#| Determines if new match is current best. Returns boolean. |#
+#| Determines if new match is current best. Returns boolean.
 
 ;; next = new match
 ;; best-solution = current best solution so far
@@ -7601,6 +7605,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      (= (sixth next) (sixth best-solution))
 	      (>= (fifth next) (fifth best-solution)))
 	 t)))
+|#
 
 #| Determines if new match is current best. Returns boolean |#
 
@@ -7649,7 +7654,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 				  finally
 				     (return res))))
 
-#| Optimize structure mapping between two graphs |#
+#| Optimize structure mapping between two graphs
 
 ;; p = pattern graph
 ;; q = base graph
@@ -7716,6 +7721,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                (setq current best-solution))
               (nil t
                (setq current (prob-select current next (ignore-errors (exp (/ (- delta-e) big-t))))))))))
+|#
 
 #| Optimize structure mapping between two graphs |#
 
@@ -7759,11 +7765,13 @@ Roughly based on (Koller and Friedman, 2009) |#
             (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-p score-p)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
-        (when nil
+        (when nil (and print-special*
+		       (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
               (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
         (when (better-random-match? next best-solution)
           (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next) (array-dimension (car q) 0)))
-          (when nil
+          (when nil (and print-special*
+			 (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
 		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
         (cond ((< delta-e 0)
                (when nil
@@ -7840,8 +7848,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (setq p-dim (+ p-dim 1))
            (setq i-options (analog-nodes i p q (gethash i possible-candidates) (make-hash-table) (make-hash-table)))
            (when (> (array-dimension i-options 0) 1)
-             (setf (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash)
-                   (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-var (aref (car p) i)) swaps-hash))))
+             (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) swaps-hash)
+                   (cons (get-expected-iterations i-options) (gethash (rule-based-cpd-dependent-id (aref (car p) i)) swaps-hash))))
            (setq top-lvl-nodes (nreverse (cons i (nreverse top-lvl-nodes))))
       finally
 	 (setq required-swaps (* (+ (reduce #'+ (loop for swaps being the hash-values of swaps-hash collect (reduce #'* swaps))) 1) 2)))

@@ -394,7 +394,7 @@
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
     (when action
       (setq cur-act (gensym "ACT-"))
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (percept-node action :value ,action)))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node action :value ,action)))))
     (when (and observation state)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
     (when (and observation action)

@@ -8,12 +8,12 @@
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
 (defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)) (keep-singletons nil) (soft-likelihoods nil))
   (let (new-episode new-bn)
-    (when t
+    (when nil
       (format t "~%evidence-bn:~%~A"evidence-bn))
     (multiple-value-bind (recollection eme sol)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type :soft-likelihoods soft-likelihoods)
       ;; verify in (remember) if the single observation node matches to the state transition models.
-      (when (string-equal episode-type "state-transitions")
+      (when nil (string-equal episode-type "state-transitions")
 	    (format t "~%Posterior network:~%~S" recollection)
 	    (format t "~%sol:~%~S" sol)
 	    (break))

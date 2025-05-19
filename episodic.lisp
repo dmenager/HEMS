@@ -1503,7 +1503,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
       (setq bn (copy-bn bn))
-      (when nil
+      (when nil t
 	(format t"~%episode id: ~A~%retrieved model:~%~%~A~%" (episode-id (car eme)) bn)
 	(print-bn bn)
 	(break))
@@ -1621,7 +1621,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       :backlinks backlinks
 		       :keep-singletons t)
 
-    (when t
+    (when nil t
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
@@ -1885,8 +1885,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     ;;(eltm-to-pdf)
 	     ;;(setq state-transitions (concatenate 'list ,@state-transitions))
 	     (setq st-bn (eval `(compile-program nil ,@state-transitions)))
-	     (when (> (hash-table-count (rule-based-cpd-identifiers (aref (car st-bn) 0))) 1)
-	       (format t "~%state transition model:~%~A" st-bn)
+	     (when nil (> (hash-table-count (rule-based-cpd-identifiers (aref (car st-bn) 0))) 1)
+		   ;;(format t "~%state transition model:~%~A" st-bn)
+		   (format t "~%~S" `(compile-program nil ,@state-transitions))
+		   (print-bn st-bn)
 	       (break))
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))

@@ -1545,7 +1545,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     when (and (gethash (rule-based-cpd-dependent-id cpd1)
 				(rule-based-cpd-identifiers cpd2))
 		       (not (equal (rule-based-cpd-dependent-id cpd1)
-				   (rule-based-cpd-dependnet-id cpd2))))
+				   (rule-based-cpd-dependent-id cpd2))))
 	       do
 		  (setf (aref (car bn) i)
 			(cpd-update-existing-vvms cpd2 bindings (list cpd1)))
@@ -2224,5 +2224,5 @@ do
 	     c1 --> c2))
   (hems:new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil)
   (hems:new-push-to-ep-buffer :observation bn :insertp t :temporal-p nil)
-  (hems:remember (hems:get-eltm) (cons (make-array 0) (make-hash-table :test #'equal)) '+ 1 t :type "observation"))
+  (hems:remember (hems:get-eltm) (cons (make-array 0) (make-hash-table :test #'equal)) '+ 1 t :type "observation" :soft-likelihoods t))
 |#

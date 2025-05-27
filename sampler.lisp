@@ -259,30 +259,6 @@
    :output-percepts-p output-percepts-p
    :evidence-bn obs-evidence-bn))
 
-#| Generates a retrieval cue for a temporal episode.
-   Returns: Cons where first element is an array of CPDs, and second element is a hash table of edges |#
-
-;; eltm = episodic long-term memory
-;; evidence-slices = list of hash tables of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence network
-(defun make-temporal-episode-retrieval-cue (eltm evidence-slices)
-  (when nil t
-	(format t "~%~%making temporal episode retrieval cue"))
-  (loop
-    with prog-statements and backlinks = (make-hash-table :test #'equal)
-    with evidence-bns = (make-hash-table) and i = 0
-    for slice in evidence-slices
-    do
-       (multiple-value-setq (prog-statements backlinks evidence-bns i)
-	 (make-temporal-episode-program eltm :state (gethash "STATE" slice)
-					     :observation (gethash "OBSERVATION" slice)
-					     :action (gethash "ACTION" slice)
-					     :state-transitions prog-statements
-					     :id-ref-hash backlinks
-					     :integer-index i
-					     :evidence-bns evidence-bns))
-    finally
-	 (return (values (eval `(compile-program nil ,@prog-statements)) backlinks evidence-bns))))
-
 (defun py-conditional-sample (eltm evidence-bn episode-type &key hiddenstatep outputperceptsp (backlinks (make-hash-table :test #'equal)))
   (conditional-sample eltm evidence-bn episode-type :hidden-state-p hiddenstatep :output-percepts-p outputperceptsp :backlinks backlinks))
 

@@ -1620,7 +1620,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       "state-transitions"
 		       :backlinks backlinks
 		       :keep-singletons t)
-
     (when nil t
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
@@ -1685,6 +1684,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq i (+ i 1))
       finally
 	 (return state-transitions))))
+
+(defun calibrate-temporal ())
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))

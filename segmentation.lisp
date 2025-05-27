@@ -348,59 +348,6 @@
 		   (good-fit-to-observations? new-models (rest obs-window) hidden-state-p)
 		   (good-fit-to-observations? new-models obs-window hidden-state-p))))))))
 
-#| Generates code that compiles to a temporal episode. 
-   Returns multiple values. 
-      1. list of program statements 
-      2. episode backlinks hash table 
-      3. current observation identifier 
-      4. current state identifier 
-      5. current action identiier |#
-
-;; eltm = episodic long-term memory
-;; observation = observation retrieval cue
-;; state = state retrieval cue
-;; action = action name string
-;; state-transitions = list of program statements
-;; id-ref-hash = backlinks
-(defun make-temporal-episode-program (eltm &key observation state action state-transitions (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0) (evidence-bns (make-hash-table :test #'equal)))
-  (let (obs-ref state-ref cur-st cur-obs cur-act cue)
-    (when state
-      (setq cur-st (gensym "STATE-"))
-      (setq cue (make-episode :state state 
-			      :observation (cons (make-array 0) (make-hash-table))
-			      :state-transitions (cons (make-array 0) (make-hash-table))
-			      :backlinks (make-hash-table :test #'equal)
-			      :count 1
-			      :lvl 1))
-      (setf (gethash integer-index evidence-bns) state)
-      (setq integer-index (+ integer-index 1))
-      (setq state-ref (new-retrieve-episode eltm cue nil))
-      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
-    (when observation
-      (setq cur-obs (gensym "OBS-"))
-      (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))
-			      :observation observation
-			      :state-transitions (cons (make-array 0) (make-hash-table))
-			      :backlinks (make-hash-table :test #'equal)
-			      :count 1
-			      :lvl 1))
-      (when nil t
-	    (format t "~%retrieval cue for observation:~%~S" cue))
-      (setf (gethash integer-index evidence-bns) observation)
-      (setq integer-index (+ integer-index 1))
-      (setq obs-ref (new-retrieve-episode eltm cue nil))
-      (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
-    (when action
-      (setq cur-act (gensym "ACT-"))
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node action :value ,action)))))
-    (when (and observation state)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
-    (when (and observation action)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
-    (values state-transitions id-ref-hash evidence-bns integer-index cur-obs cur-st cur-act)))
-
 (defun get-model (obs-window eltm observation-reject-list temporal-reject-list bic-p)
   (loop
     with cue and state-transitions
@@ -429,7 +376,8 @@
 				 :lvl 2))
 	 (multiple-value-bind (eme sol bindings depth cost id new-temp-rejects)
 	     (new-retrieve-episode eltm cue temporal-reject-list
-				   :bic-p bic-p)
+				   :bic-p bic-p
+				   :type "state-transitions")
 	   (declare (ignore sol bindings depth cost id))
 	   (setq temporal-reject-list new-temp-rejects)
 	   ;;(break)

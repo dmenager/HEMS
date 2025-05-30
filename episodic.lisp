@@ -866,9 +866,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; x = episodic memory
 ;; y = retrieval cue to match with root of x
 ;; res = optimal common subgraph between cue and eltm, with associated cost
+;; type = type of the episodic memory content. Either, observation, state, or state transitions.
 ;; reject-list = list of episode ids to reject when merging
 ;; bicp-p = retrieval mode for using BIC or likelihood for structure mapping
-(defun new-match-cue (x y res reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+(defun new-match-cue (x y res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
   (cond ((null x)
 	 (values (list nil most-positive-fixnum nil -1 0 ) nil reject-list))
         ((reject-branch? x y reject-list :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case)
@@ -880,13 +881,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                 (values res t reject-list))))
         (t ;; when checking starts at the root
 	 (let (pattern base)
-	   (cond ((> (array-dimension (car (episode-observation y)) 0) 0)
+	   (cond ((string-equal type "observation") ;;(> (array-dimension (car (episode-observation y)) 0) 0)
 	     (setq pattern (episode-observation y))
 	     (setq base (episode-observation (car x))))
-	    ((> (array-dimension (car (episode-state y)) 0) 0)
+	    ((string-equal type "state") ;;(> (array-dimension (car (episode-state y)) 0) 0)
 	     (setq pattern (episode-state y))
 	     (setq base (episode-state (car x))))
-	    ((> (array-dimension (car (episode-state-transitions y)) 0) 0)
+	    ((string-equal type "state-transitions") ;;(> (array-dimension (car (episode-state-transitions y)) 0) 0)
 	     (setq pattern (episode-state-transitions y))
              (setq base (episode-state-transitions (car x))))
 	    (t
@@ -1044,7 +1045,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (return-from new-retrieve-episode (values nil nil nil depth most-positive-fixnum most-positive-fixnum nil reject-list)))
   ;; merge eltm and ep
   (multiple-value-bind (p-cost branch rejects)
-      (new-match-cue eltm cue res reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+      (new-match-cue eltm cue res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
     ;; for each child, check the match result
     (setq reject-list rejects)
     (when nil t

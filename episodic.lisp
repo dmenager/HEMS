@@ -1714,7 +1714,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; id-ref-hash = backlinks
 (defun make-temporal-episode-program (eltm state-p &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0) (evidence-bns (make-hash-table :test #'equal)))
   (let (obs-ref state-ref cur-st cur-obs cur-act cue)
+    (when nil
+      (format t "~%before"))
     (when state-p
+      (when nil
+	(format t "~%after"))
       (setq cur-st (gensym "STATE-"))
       (if (null state)
 	  (setq state (cons (make-array 0) (make-hash-table))))
@@ -1754,12 +1758,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when (and observation action)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
     (cond (state-p
-	   (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st)))
-	   (when action
+	   (when prev-st
+	     (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st))))
+	   (when prev-act
 	     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-st)))))
 	  (t
-	   (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs)))
-	   (when action
+	   (when prev-obs
+	     (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs))))
+	   (when prev-act
 	     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs))))))
     (values state-transitions id-ref-hash evidence-bns integer-index cur-obs cur-st cur-act)))
 
@@ -1785,6 +1791,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	with prev-st and prev-obs and prev-act
 	for slice in evidence-slices
 	do
+	   (when nil
+	     (format t "~%~%slice:~%~S" slice))
 	(multiple-value-setq (prog-statements backlinks evidence-bns i prev-obs prev-st prev-act)
 	  (make-temporal-episode-program eltm state-p
 					 :state (gethash "STATE" slice)
@@ -1798,6 +1806,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					 :prev-obs prev-obs
 					 :prev-act prev-act))
 	finally
+	   (format t "~%program statements:~%~S" prog-statements)
 	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks evidence-bns))))
 
 (defun py-test-hash ()

@@ -1452,7 +1452,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
-;; observability = percent of state observable
+;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
 (defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t))
   (let (partial-states cue bindings and bn priors)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
@@ -1684,8 +1684,34 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq i (+ i 1))
       finally
 	 (return state-transitions))))
+#| Side effects: evidence hash is destructively modified |#
 
-(defun calibrate-temporal ())
+;; model = temporal model from which to run inference
+;; from = integer representing starting time step
+;; to = integer representing ending time step
+;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
+;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
+(defun n-calibrate-temporal-model (model from to evidence-hash bic-p)
+  (labels ((calibrate-state-transition-model (temporal-inferences-hash)
+	     (loop
+		   while (not (= from to))
+		   do
+		   (setq cue (gethash from evidence-hash))
+		   (multiple-value-bind (recollection eme sol)
+		       (remember (list model) cue '+ 1 bic-p))
+		   (if (> from to)
+		       (setq from (- from 1))
+		       (setq from (+ from 1)))))
+	   ())
+  (let (temporal-inferences-hash (make-hash-table))
+    (loop
+	  with evidence
+	  while (not (= from to))
+	  do
+	  (setq evidence (gethash from evidence-hash))
+	  (if (> from to)
+	      (setq from (- from 1))
+	      (setq from (+ from 1)))))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))

@@ -597,9 +597,7 @@
 							 :initial-contents ,cpd-list))
 			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
 			      (return (cons ,factors ,edges))))))))
-       (if nil ;;(null ,body)
-	   (cons (make-array 0) (make-hash-table))
-	   (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil)))))
+       (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))
 
 (defun compile-program-from-file (prog-file &key args)
   (with-open-file (in (merge-pathnames prog-file) :direction :input

@@ -8,7 +8,7 @@
 ;; episode-type = episode field in which observation was made, be it, "observation", "state", or "state-transitions"
 (defun condition-model (eltm evidence-bn episode-type &key (backlinks (make-hash-table :test #'equal)) (keep-singletons nil) (soft-likelihoods nil))
   (let (new-episode new-bn)
-    (when t ;;nil
+    (when nil
       (format t "~%evidence-bn:")
       (print-bn evidence-bn))
     (multiple-value-bind (recollection eme sol)

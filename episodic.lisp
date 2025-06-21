@@ -1829,7 +1829,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					 :prev-obs prev-obs
 					 :prev-act prev-act))
 	finally
-	   (format t "~%program statements:~%~S" prog-statements)
+	   (when nil
+	     (format t "~%program statements:~%~S" prog-statements))
 	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks))))
 
 (defun py-test-hash ()

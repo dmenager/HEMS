@@ -1621,7 +1621,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       "state-transitions"
 		       :backlinks backlinks
 		       :keep-singletons t)
-    (when t
+    (when nil
       (format t "~%temporal evidence bn:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
@@ -1673,7 +1673,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when t
+		  (when nil
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
 		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
@@ -1691,7 +1691,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq j (+ j 1)))
 	   (setq i (+ i 1))
       finally
-	 (when t
+	 (when nil
 	   (loop
 	     for slice-idx being the hash-keys of state-transitions
 	       using (hash-value slice)

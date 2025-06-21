@@ -76,6 +76,8 @@
 	 'percept-node)
 	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "OBSERVATION")
 	 'observation-node)
+	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "ACTION")
+	 'action-node)
 	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "BELIEF")
 	 'relation-node)
 	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "STATE")

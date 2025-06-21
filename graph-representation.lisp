@@ -1680,7 +1680,14 @@
 		    (format t "~%normalized rule:~%~S" new-rule))
               (when (or (> (rule-probability new-rule) 1)
                         (< (rule-probability new-rule) 0))
-                (format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+		(print-cpd phi)
+		(format t "~%identifiers:~%~S~%normalizing rule:" (rule-based-cpd-identifiers phi))
+		(print-cpd-rule r1)
+		(format t "~%row:")
+		(map nil #'print-cpd-rule row)
+		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
+		(print-cpd-rule new-rule)
+		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
                 (error "Normalization error"))
               (setq new-rules (cons new-rule new-rules)))
     finally
@@ -4304,8 +4311,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id)
-  (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-	(format t "~%phi:~%~S~%vars to keep:~%~S" phi vars))
+  (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+    (format t "~%marginalizing phi:")
+    (print-cpd phi)
+    (format t "~%vars to keep:~%~S" vars))
   (loop
     with rules = (rule-based-cpd-rules phi)
     with new-rules
@@ -4317,9 +4326,11 @@ Roughly based on (Koller and Friedman, 2009) |#
     for r1 being the elements of rules
     for i from 0
     do
-       (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-		      (= 1 (rule-probability r1)))
-	     (format t "~%~%rule at index i = ~d~%~S~%global ignore rule indeces:~%~S" i r1 global-ignore-idxs))
+       (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
+	     (format t "~%~%rule at index i = ~d" i)
+	     (print-cpd-rule r1)
+	     ;;(format t "~%global ignore indeces:~%~S" global-ignore-idxs)
+	     )
        (setq marginalized-rule nil)
        (setq intersection1 nil)
        (loop
@@ -4332,8 +4343,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   do
 	      (setq intersection1 (cons (cons var vals) intersection1)))
        (cond ((not intersection1)
-	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			     (= 1 (rule-probability r1)))
+	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%adding rule to new rules because by default"))
 	      (setq marginalized-rule (copy-cpd-rule r1))
 	      (setf (rule-block marginalized-rule) (make-hash-table))
@@ -4352,13 +4362,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 		do
 		   (setf (gethash (car inter) (rule-conditions marginalized-rule))
 			 (cdr inter)))
-	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			     (= 1 (rule-probability r1)))
-		    (format t "~%initial marginalized rule:~%~S"marginalized-rule))
+	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
+		    (format t "~%initial marginalized rule:~%~S" marginalized-rule))
 	      (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
 	      ;;(setq num-rules (+ num-rules 1))
-	      (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-			     (= 1 (rule-probability r1)))
+	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%rule has intersection with keep vars"))
 	      (loop
 		with intersection2
@@ -4367,8 +4375,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 		for r2 being the elements of rules
 		for j from 0
 		when (not (= j i)) do
-		  (when nil t
-			(format t "~%  checking if r2 is compatible with marginalized rule. r2:~%  ~S" r2)
+		  (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+		    (format t "~%  checking if r2 is compatible with marginalized rule.~%  r2:")
+		    (print-cpd-rule r2 :indent "        ")
 			(format t "~%  local ignore:~%  ~S" local-ignore))
 		  (setq intersection2 nil)
 		  (loop
@@ -4422,22 +4431,30 @@ Roughly based on (Koller and Friedman, 2009) |#
 					    |#)))
 			   (setq num-conditions (hash-table-count (rule-conditions marginalized-rule)))
 			   (loop
+			     with vals
 			     for inter in intersection2
 			     do
+				(setq vals (gethash (car inter) (rule-conditions marginalized-rule)))
 				(setf (gethash (car inter) (rule-conditions marginalized-rule))
-				      (cdr inter)))
+				      (if vals
+					  (intersection vals (cdr inter))
+					  (cdr inter))))
 			   (if (> (hash-table-count (rule-conditions marginalized-rule)) num-conditions)
 			       (setq local-ignore (cons j global-ignore-idxs))
 			       (setq local-ignore (cons j local-ignore)))
-			   (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
-				      (= 1 (rule-probability r2)))
-			     (format t "~%  updated marginalized rule:~%  ~S" marginalized-rule)))))
+			   (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
+			     (format t "~%  updated marginalized rule:")
+			     (print-cpd-rule marginalized-rule :indent "        ")))))
 		finally
 		   (setq new-rules (cons marginalized-rule new-rules))
 		   (setq num-rules (+ num-rules 1))
 		   (setq global-ignore-idxs local-ignore)
-		   (when nil t
-			 (format t "~%updated new rules:~%~S~%updated global ignore rule indexes:~%~S" new-rules global-ignore-idxs)))))
+		   (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+		     (format t "~%updated new rules:")
+		     (map nil #'print-cpd-rule new-rules)
+		     ;;(format t "~%updated global ignore rule indexes:~%~S" global-ignore-idxs)
+		     ;;(break)
+		     ))))
     finally
        #|
        (when (not (rule-based-cpd-singleton-p phi))
@@ -4466,8 +4483,9 @@ Roughly based on (Koller and Friedman, 2009) |#
     |#
        (when (null new-rules)
 	 (error "No marginalized rules left."))
-       (when nil
-	 (format t "~%returning:~%~S" new-rules))
+       (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+	 (format t "~%returning:")
+	 (map nil #'print-cpd-rule new-rules))
        (return (make-array num-rules :initial-contents (reverse new-rules)))))
 
 
@@ -4682,7 +4700,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 3) (= j 6))
+  (when nil (and (= i 1) (= j 3))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4695,7 +4713,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
       finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 3) (= j 6))
+    (when nil (and (= i 1) (= j 3))
           (format t "~%neighbors minus j:~%~S~%i:~%~S"
                   (loop for nbr in nbrs-minus-j
                         when (rule-based-cpd-p nbr)
@@ -4707,9 +4725,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                   (cons (rule-based-cpd-identifiers (aref factors i))
                         (rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 3) (= j 6))
-          (format t "~%evidence-collected:~%~S~%sepset: ~S~%variables to eliminate: ~S" (cons (rule-based-cpd-identifiers reduced) (rule-based-cpd-rules reduced)) sepset
-                  (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
+    (when nil (and (= i 1) (= j 3))
+      (format t "~%evidence-collected:~%")
+      (print-cpd reduced)
+      (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
+              (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
     (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
 
 #| Compute final belief of a factor |#
@@ -4862,7 +4882,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil t (and (= j 3) (= k 9))
+              (when nil (and (= j 1) (= k 3))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4873,7 +4893,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil t (and (= j 3) (= k 9))
+	      (when nil t (and (= j 1) (= k 3))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -6129,10 +6149,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setf (gethash index (gethash index messages)) msg))))
       finally
          (setq initial-messages messages))
-    (when nil
+    (when nil t
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
       (format t "~%~%initial messages:~%~A" initial-messages)
-      (break)
+      ;;(break)
       )
     (setq estimates (calibrate-factor-graph all-factors op edges initial-messages lr))))
 

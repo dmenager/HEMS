@@ -1613,20 +1613,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = episodic long-term memory
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
-;; evidence-bns = hash table of evidence observed for state and observation schemas. Keys: integer index, Value: evidence network
-(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
+;; evidence-bns = A list of hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
   (multiple-value-bind (conditioned-temporal sol)
       (condition-model eltm
 		       temporal-evidence-bn
 		       "state-transitions"
 		       :backlinks backlinks
 		       :keep-singletons t)
-
     (when t
+      (format t "~%temporal evidence bn:~%")
+      (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
-      (break))
+      (break)
+      )
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
@@ -1639,12 +1641,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal)))
-	   (cond ((< i (array-dimension sol 0))
-		  (setq match (aref sol i))
-		  (setq evidence-bn (gethash (car match) evidence-bns)))
-		 (t
-		  (setq match nil)
-		  (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal)))))
+	   (setq evidence-bn (gethash (cond ((string-equal "state-node" (symbol-name (get-cpd-type cpd)))
+					     "STATE")
+					    ((string-equal "observation-node" (symbol-name (get-cpd-type cpd)))
+					     "OBSERVATION")
+					    ((string-equal "action-node" (symbol-name (get-cpd-type cpd)))
+					     "ACTION"))
+				      (nth j evidence-slices)))
+	   (when (null evidence-bn)
+	     (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal))))
 	   (setq dist-hash (make-hash-table :test #'equal))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
@@ -1671,9 +1676,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (when t
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
-		    (format t "~%node type: ~S~%Retrieval cue: " node-type)
+		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
 		    (print-bn evidence-bn)
-		    (format t "~%raw cue:~%~S" evidence-bn)
+		    ;;(format t "~%raw cue:~%~S" evidence-bn)
 		    (break))
 		  (multiple-value-bind (recollection eme)
 		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
@@ -1733,7 +1738,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; action = action name string
 ;; state-transitions = list of program statements
 ;; id-ref-hash = backlinks
-(defun make-temporal-episode-program (eltm state-p slice-idx &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0) (evidence-bns (make-hash-table :test #'equal)))
+(defun make-temporal-episode-program (eltm state-p slice-idx &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0))
   (let (obs-ref state-ref cur-st cur-obs cur-act cue)
     (when nil
       (format t "~%before"))
@@ -1749,7 +1754,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      :backlinks (make-hash-table :test #'equal)
 			      :count 1
 			      :lvl 1))
-      (setf (gethash integer-index evidence-bns) state)
       (setq integer-index (+ integer-index 1))
       (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
       (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
@@ -1766,7 +1770,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      :lvl 1))
       (when nil t
 	    (format t "~%retrieval cue for observation:~%~S" cue))
-      (setf (gethash integer-index evidence-bns) observation)
       (setq integer-index (+ integer-index 1))
       (setq obs-ref (new-retrieve-episode eltm cue nil :type "observation"))
       (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
@@ -1790,17 +1793,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when prev-act
     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs))))))
     |#
-    (values state-transitions id-ref-hash evidence-bns integer-index cur-obs cur-st cur-act)))
+    (values state-transitions id-ref-hash integer-index cur-obs cur-st cur-act)))
 
 #| Generates a retrieval cue for a temporal episode.
    Returns multiple values:
       1. temporal retrieval cue bn: Cons where first element is an array of CPDs, and second element is a hash table of edges
       2. hash table of backlinks
             key: episode id
-            value: eltm subtree
-      3. hash table of evidence-bns
-            key: integer index of variable in network
-            value: observed evidence bn |#
+            value: eltm subtree |#
 
 ;; eltm = episodic long-term memory
 ;; evidence-slices = list of hash tables of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence network
@@ -1810,14 +1810,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
 	with prog-statements and backlinks = (make-hash-table :test #'equal)
-	with evidence-bns = (make-hash-table) and i = 0
+	with i = 0
 	with prev-st and prev-obs and prev-act
 	for slice in evidence-slices
 	for slice-idx from 0
 	do
 	   (when nil
 	     (format t "~%~%slice:~%~S" slice))
-	(multiple-value-setq (prog-statements backlinks evidence-bns i prev-obs prev-st prev-act)
+	(multiple-value-setq (prog-statements backlinks i prev-obs prev-st prev-act)
 	  (make-temporal-episode-program eltm state-p slice-idx
 					 :state (gethash "STATE" slice)
 					 :observation (gethash "OBSERVATION" slice)
@@ -1825,13 +1825,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					 :state-transitions prog-statements
 					 :id-ref-hash backlinks
 					 :integer-index i
-					 :evidence-bns evidence-bns
 					 :prev-st prev-st
 					 :prev-obs prev-obs
 					 :prev-act prev-act))
 	finally
 	   (format t "~%program statements:~%~S" prog-statements)
-	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks evidence-bns))))
+	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks))))
 
 (defun py-test-hash ()
   (let ((ht (make-hash-table))

@@ -866,9 +866,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; x = episodic memory
 ;; y = retrieval cue to match with root of x
 ;; res = optimal common subgraph between cue and eltm, with associated cost
+;; type = type of the episodic memory content. Either, observation, state, or state transitions.
 ;; reject-list = list of episode ids to reject when merging
 ;; bicp-p = retrieval mode for using BIC or likelihood for structure mapping
-(defun new-match-cue (x y res reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+(defun new-match-cue (x y res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
   (cond ((null x)
 	 (values (list nil most-positive-fixnum nil -1 0 ) nil reject-list))
         ((reject-branch? x y reject-list :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case)
@@ -880,13 +881,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                 (values res t reject-list))))
         (t ;; when checking starts at the root
 	 (let (pattern base)
-	   (cond ((> (array-dimension (car (episode-observation y)) 0) 0)
+	   (cond ((string-equal type "observation") ;;(> (array-dimension (car (episode-observation y)) 0) 0)
 	     (setq pattern (episode-observation y))
 	     (setq base (episode-observation (car x))))
-	    ((> (array-dimension (car (episode-state y)) 0) 0)
+	    ((string-equal type "state") ;;(> (array-dimension (car (episode-state y)) 0) 0)
 	     (setq pattern (episode-state y))
 	     (setq base (episode-state (car x))))
-	    ((> (array-dimension (car (episode-state-transitions y)) 0) 0)
+	    ((string-equal type "state-transitions") ;;(> (array-dimension (car (episode-state-transitions y)) 0) 0)
 	     (setq pattern (episode-state-transitions y))
              (setq base (episode-state-transitions (car x))))
 	    (t
@@ -1044,7 +1045,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (return-from new-retrieve-episode (values nil nil nil depth most-positive-fixnum most-positive-fixnum nil reject-list)))
   ;; merge eltm and ep
   (multiple-value-bind (p-cost branch rejects)
-      (new-match-cue eltm cue res reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+      (new-match-cue eltm cue res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
     ;; for each child, check the match result
     (setq reject-list rejects)
     (when nil t
@@ -1452,7 +1453,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
-;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
+;; observability = percent of state observable
 (defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t))
   (let (partial-states cue bindings and bn priors)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
@@ -1612,19 +1613,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = episodic long-term memory
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
-;; evidence-bns = hash table of evidence observed for state and observation schemas. Keys: integer index, Value: evidence network
-(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
+;; evidence-bns = A list of hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
   (multiple-value-bind (conditioned-temporal sol)
       (condition-model eltm
 		       temporal-evidence-bn
 		       "state-transitions"
 		       :backlinks backlinks
 		       :keep-singletons t)
-    (when nil t
+    (when nil
+      (format t "~%temporal evidence bn:~%")
+      (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
-      (break))
+      (break)
+      )
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
@@ -1637,12 +1641,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal)))
-	   (cond ((< i (array-dimension sol 0))
-		  (setq match (aref sol i))
-		  (setq evidence-bn (gethash (car match) evidence-bns)))
-		 (t
-		  (setq match nil)
-		  (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal)))))
+	   (setq evidence-bn (gethash (cond ((string-equal "state-node" (symbol-name (get-cpd-type cpd)))
+					     "STATE")
+					    ((string-equal "observation-node" (symbol-name (get-cpd-type cpd)))
+					     "OBSERVATION")
+					    ((string-equal "action-node" (symbol-name (get-cpd-type cpd)))
+					     "ACTION"))
+				      (nth j evidence-slices)))
+	   (when (null evidence-bn)
+	     (setq evidence-bn (cons (make-array 0) (make-hash-table :test #'equal))))
 	   (setq dist-hash (make-hash-table :test #'equal))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
@@ -1669,9 +1676,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (when nil
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
-		    (format t "~%node type: ~S~%Retrieval cue: " node-type)
+		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
 		    (print-bn evidence-bn)
-		    (format t "~%raw cue:~%~S" evidence-bn))
+		    ;;(format t "~%raw cue:~%~S" evidence-bn)
+		    (break))
 		  (multiple-value-bind (recollection eme)
 		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
@@ -1683,6 +1691,28 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq j (+ j 1)))
 	   (setq i (+ i 1))
       finally
+	 (when nil
+	   (loop
+	     for slice-idx being the hash-keys of state-transitions
+	       using (hash-value slice)
+	     do
+		(format t "~%~%slice: ~d" slice-idx)
+		(loop
+		  for temporal-model-key being the hash-keys of slice
+		    using (hash-value distribution-hash)
+		  do
+		     (format t "~%~S" temporal-model-key)
+		     (loop
+		       for cond-key being the hash-keys of distribution-hash
+			 using (hash-value prob-rec)
+		       do
+			  (format t "~%outcome: ~S" cond-key)
+			  (format t "~%outcome probability: ~d" (car prob-rec))
+			  (format t "~%outcome:")
+			  (map nil #'(lambda (cpd)
+				       (when (rule-based-cpd-singleton-p cpd)
+					 (print-cpd cpd)))
+			       (cdr prob-rec))))))
 	 (return state-transitions))))
 #| Side effects: evidence hash is destructively modified |#
 
@@ -1733,14 +1763,19 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 
 ;; eltm = episodic long-term memory
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
+;; slice-idx = index of the temporal episode slice that is being made
 ;; observation = observation retrieval cue
 ;; state = state retrieval cue
 ;; action = action name string
 ;; state-transitions = list of program statements
 ;; id-ref-hash = backlinks
-(defun make-temporal-episode-program (eltm state-p &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0) (evidence-bns (make-hash-table :test #'equal)))
+(defun make-temporal-episode-program (eltm state-p slice-idx &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0))
   (let (obs-ref state-ref cur-st cur-obs cur-act cue)
+    (when nil
+      (format t "~%before"))
     (when state-p
+      (when nil
+	(format t "~%after"))
       (setq cur-st (gensym "STATE-"))
       (if (null state)
 	  (setq state (cons (make-array 0) (make-hash-table))))
@@ -1750,11 +1785,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      :backlinks (make-hash-table :test #'equal)
 			      :count 1
 			      :lvl 1))
-      (setf (gethash integer-index evidence-bns) state)
       (setq integer-index (+ integer-index 1))
       (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
       (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car state-ref)))))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" slice-idx)) :value ,(episode-id (car state-ref)))))))
     (when (null observation)
       (setq observation (cons (make-array 0) (make-hash-table))))
     (when observation
@@ -1767,37 +1801,37 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      :lvl 1))
       (when nil t
 	    (format t "~%retrieval cue for observation:~%~S" cue))
-      (setf (gethash integer-index evidence-bns) observation)
       (setq integer-index (+ integer-index 1))
       (setq obs-ref (new-retrieve-episode eltm cue nil :type "observation"))
       (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref)))))))
+      (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node ,(intern (format nil "OBSERVATION_~d" slice-idx)) :value ,(episode-id (car obs-ref)))))))
     (when action
       (setq cur-act (gensym "ACT-"))
       (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node action :value ,action)))))
+    #|
     (when (and observation state)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
     (when (and observation action)
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
     (cond (state-p
-	   (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st)))
-	   (when action
+	   (when prev-st
+	     (setq state-transitions (concatenate 'list state-transitions `(,prev-st --> ,cur-st))))
+	   (when prev-act
 	     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-st)))))
 	  (t
-	   (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs)))
-	   (when action
-	     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs))))))
-    (values state-transitions id-ref-hash evidence-bns integer-index cur-obs cur-st cur-act)))
+	   (when prev-obs
+	     (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs))))
+	   (when prev-act
+    (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs))))))
+    |#
+    (values state-transitions id-ref-hash integer-index cur-obs cur-st cur-act)))
 
 #| Generates a retrieval cue for a temporal episode.
    Returns multiple values:
       1. temporal retrieval cue bn: Cons where first element is an array of CPDs, and second element is a hash table of edges
       2. hash table of backlinks
             key: episode id
-            value: eltm subtree
-      3. hash table of evidence-bns
-            key: integer index of variable in network
-            value: observed evidence bn |#
+            value: eltm subtree |#
 
 ;; eltm = episodic long-term memory
 ;; evidence-slices = list of hash tables of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence network
@@ -1807,24 +1841,28 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
 	with prog-statements and backlinks = (make-hash-table :test #'equal)
-	with evidence-bns = (make-hash-table) and i = 0
+	with i = 0
 	with prev-st and prev-obs and prev-act
 	for slice in evidence-slices
+	for slice-idx from 0
 	do
-	(multiple-value-setq (prog-statements backlinks evidence-bns i prev-obs prev-st prev-act)
-	  (make-temporal-episode-program eltm state-p
+	   (when nil
+	     (format t "~%~%slice:~%~S" slice))
+	(multiple-value-setq (prog-statements backlinks i prev-obs prev-st prev-act)
+	  (make-temporal-episode-program eltm state-p slice-idx
 					 :state (gethash "STATE" slice)
 					 :observation (gethash "OBSERVATION" slice)
 					 :action (gethash "ACTION" slice)
 					 :state-transitions prog-statements
 					 :id-ref-hash backlinks
 					 :integer-index i
-					 :evidence-bns evidence-bns
 					 :prev-st prev-st
 					 :prev-obs prev-obs
 					 :prev-act prev-act))
 	finally
-	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks evidence-bns))))
+	   (when nil
+	     (format t "~%program statements:~%~S" prog-statements))
+	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks))))
 
 (defun py-test-hash ()
   (let ((ht (make-hash-table))
@@ -1990,8 +2028,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     ;; you have to put these hash keys in after you've done all the insertions for observations, states, and (eventually) actions. Otherwise, if you update id-ref-hash, then do further insertions, the episode id of the reference will change, making the key obsolte. Worse, the cpd vvbm will have the name of the new ref hash key, but the id ref hash will have the name of the old ref. So, look ups will fail.
 	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
-	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node state :value ,(episode-id (car st-ref)))))))
-	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node observation :value ,(episode-id (car obs-ref))))))
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" i)) :value ,(episode-id (car st-ref)))))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node ,(intern (format nil "OBSERVATION_~d" i)) :value ,(episode-id (car obs-ref))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node action :value ,act))))
 	     (when st
 	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))

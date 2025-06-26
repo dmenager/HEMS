@@ -1720,8 +1720,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; from = integer representing starting time step
 ;; to = integer representing ending time step
 ;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
+;; hidden-state-p = flag for if the temporal model has a state variable
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun n-calibrate-temporal-model (model from to evidence-hash bic-p)
+(defun n-calibrate-temporal-model (model from to evidence-hash hidden-state-p bic-p)
   (labels ((calibrate-state-transition-model (temporal-inferences-hash)
 	     (loop
 		   while (not (= from to))
@@ -1733,11 +1734,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setq from (- from 1))
 		       (setq from (+ from 1)))))
 	   ())
-  (let (temporal-inferences-hash (make-hash-table))
+    (let ((temporal-inferences-hash (make-hash-table))
+	  (num-slices (/ (array-dimension (car model) 0)
+			 (if hidden-state-p 3 2)))
+	  )
     (loop
 	  with evidence
 	  while (not (= from to))
 	  do
+	  
 	  (setq evidence (gethash from evidence-hash))
 	  (if (> from to)
 	      (setq from (- from 1))

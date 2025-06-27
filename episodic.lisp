@@ -1721,8 +1721,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; to = integer representing ending time step
 ;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
 ;; hidden-state-p = flag for if the temporal model has a state variable
+;; soft-likelihoods = flag for if we add very small padding to 0-valued probablities
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun n-calibrate-temporal-model (model from to evidence-hash hidden-state-p bic-p)
+(defun n-calibrate-temporal-model (model from to evidence-hash hidden-state-p soft-likelihoods bic-p)
   (labels ((calibrate-state-transition-model (temporal-inferences-hash)
 	     (loop
 		   while (not (= from to))
@@ -1733,12 +1734,34 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (if (> from to)
 		       (setq from (- from 1))
 		       (setq from (+ from 1)))))
-	   ())
+	   (make-index-list (from to)
+	     (loop for i from from to to collect i))))
     (let ((temporal-inferences-hash (make-hash-table))
 	  (num-slices (/ (array-dimension (car model) 0)
 			 (if hidden-state-p 3 2)))
 	  )
-    (loop
+      (loop
+	with slice1 and slice2 and evidence-slices and state-transitions
+	for (idx1 idx2) on (make-index-list from to)
+	do
+	   (setq slice1 (gethash idx1 evidence-hash))
+	   (setq slice2 (gethash idx2 evidence-hash))
+	   (when (null slice1)
+	     (setq slice1 (make-hash-table :test #'equal)))
+	   (when (null slice2)
+	     (setq slice2 (make-hash-table :test #'equal)))
+	   (setq evidence-slices (list slice1 slice2))
+	   (multiple-value-bind (evidence-bn backlinks)
+	       (make-temporal-episode-retrieval-cue
+		eltm*
+		evidence-slices
+		t)
+	     (when nil t
+		   (format t "~%temporal-bn:~%~S" evidence-bn)
+		   (print-bn evidence-bn)
+		   (break))
+	     (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods)))
+      (loop
 	  with evidence
 	  while (not (= from to))
 	  do

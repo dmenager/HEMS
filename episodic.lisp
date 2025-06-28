@@ -1714,6 +1714,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					 (print-cpd cpd)))
 			       (cdr prob-rec))))))
 	 (return state-transitions))))
+
 #| Side effects: evidence hash is destructively modified |#
 
 ;; model = temporal model from which to run inference
@@ -1735,6 +1736,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (if (> from to)
 		       (setq from (- from 1))
 		       (setq from (+ from 1)))))
+	   (sliding-groups (lst k)
+	     "Return a list of sublists, each of length K, sliding forward by K-1 elements.
+              Pads the last group with NIL if needed."
+	     (let ((result '()))
+	       (loop for i from 0 below (length lst) by (1- k)
+		     for group = (subseq lst i (min (+ i k) (length lst)))
+		     collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector))))
 	   (make-index-list (from to)
 	     (loop for i from from to to collect i))
 	   (init-messages (messages from to)
@@ -1772,7 +1780,41 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  slice)))
 	     messages)
 	   (forward-pass (messages)
+	     (let* ((mod-len (if hidden-state-p 3 2))
+		    (num-slices (/ (array-dimension (car model) 0) mod-len))
+		    (time-steps (make-index-list from to))
+		    evidence-slices
+		    state-transitions)
+	       (dolist (group (sliding-groups time-steps num-slices))
+		 (loop
+		   with slice
+		   for i from 0 below num-slices
+		   for idx = (aref group i)
+		   do
+		      (setq slice (gethash idx messages))
+		      (when (null slice)
+			(setq slice (make-hash-table :test #'equal)))
+		      (setq evidence-slices (cons slice evidence-slices))
+		   finally
+		      (setq evidence-slices (reverse evidence-slices)))
+		 (multiple-value-bind (evidence-bn backlinks)
+		     (make-temporal-episode-retrieval-cue
+		      eltm*
+		      evidence-slices
+		      t)
+		   (when nil t
+			 (format t "~%temporal-bn:~%~S" evidence-bn)
+			 (print-bn evidence-bn)
+			 (break))
+		   (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods))
+		   (loop
+		     for i from 0 below (- num-slices 1)
+		     for idx = (aref group i)
+		     do
+			(setf (gethash idx pass-evidence (gethash i state-transitions))))))
 	     (loop
+	       mod-len = (if hidden-state-p 3 2)
+	       with num-slices = 
 	       with pass-evidence = (make-hash-table)
 	       with slice1 and slice2 and evidence-slices and state-transitions
 	       for (idx1 idx2) on (make-index-list from to)

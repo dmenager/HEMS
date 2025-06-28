@@ -1735,37 +1735,103 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setq from (- from 1))
 		       (setq from (+ from 1)))))
 	   (make-index-list (from to)
-	     (loop for i from from to to collect i))))
-    (let ((temporal-inferences-hash (make-hash-table))
-	  (num-slices (/ (array-dimension (car model) 0)
-			 (if hidden-state-p 3 2)))
-	  )
-      (loop
-	with slice1 and slice2 and evidence-slices and state-transitions
-	for (idx1 idx2) on (make-index-list from to)
-	do
-	   (setq slice1 (gethash idx1 evidence-hash))
-	   (setq slice2 (gethash idx2 evidence-hash))
-	   (when (null slice1)
-	     (setq slice1 (make-hash-table :test #'equal)))
-	   (when (null slice2)
-	     (setq slice2 (make-hash-table :test #'equal)))
-	   (setq evidence-slices (list slice1 slice2))
-	   (multiple-value-bind (evidence-bn backlinks)
-	       (make-temporal-episode-retrieval-cue
-		eltm*
-		evidence-slices
-		t)
-	     (when nil t
-		   (format t "~%temporal-bn:~%~S" evidence-bn)
-		   (print-bn evidence-bn)
-		   (break))
-	     (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods)))
+	     (loop for i from from to to collect i))
+	   (init-messages (messages from to)
+	     (let ((idx-list (make-index-list from to)))
+	       (loop
+		 with marker and mod-len = (if hidden-state-p 3 2)
+		 with num-slices = (/ (array-dimension (car model) 0) mod-len)
+		 with slice and evidence-slice
+		 for i in idx-list
+		 do
+		    (setq evidence-slice (gethash i evidence-hash))
+		    (setq slice (make-hash-table :test #'equal))
+		    (setq marker (mod i (array-dimension (car model) 0)))
+		    (loop
+		      with cpd and cpd-type and evidence
+		      with dist-hash
+		      for j from (* marker num-slices) to (+ (* marker num-slices)
+							     (- mod-len 1))
+		      do
+			 (setq cpd (aref j (car model)))
+			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
+			 (setq evidence (gethash cpd-type evidence-slice))
+			 (setq dist-hash (make-hash-table :test #'equal))
+			 (loop
+			   with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			   with num-vvbm (length vvbm)
+			   for vvb in vvbm 
+			   do
+			      (if evidence
+				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) nil)))
+			   finally
+			      (setf (gethash cpd-type slice) dist-hash)))
+		    (setf (gethash i messages)
+			  slice)))
+	     messages))
+    (let ((messages (make-hash-table))
+	  (setq messages (init-messages messages from to))
+	  (loop
+	    with pass-evidence = (make-hash-table)
+	    with slice1 and slice2 and evidence-slices and state-transitions
+	    for (idx1 idx2) on (make-index-list from to)
+	    do
+	       (setq slice1 (gethash idx1 messages))
+	       (setq slice2 (gethash idx2 messages))
+	       
+	       ;; make a new slice for each possible outcome
+	       (loop
+		 for temporal-model-key being the hash-keys of slice
+		   using (hash-value distribution-hash)
+		 do
+		    (loop
+		      with probability and recollection
+		      for cond-key being the hash-keys of distribution-hash
+			using (hash-value prob-rec)
+		      do
+			 (setq probability (car prob-rec))
+			 (setq recollection (cdr prob-rec))))
+	       
+	       (when (null slice1)
+		 (setq slice1 (make-hash-table :test #'equal)))
+	       (when (null slice2)
+		 (setq slice2 (make-hash-table :test #'equal)))
+	       (setq evidence-slices (list slice1 slice2))
+	       (multiple-value-bind (evidence-bn backlinks)
+		   (make-temporal-episode-retrieval-cue
+		    eltm*
+		    evidence-slices
+		    t)
+		 (when nil t
+		       (format t "~%temporal-bn:~%~S" evidence-bn)
+		       (print-bn evidence-bn)
+		       (break))
+		 (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods))
+		 (setf (gethash idx1 pass-evidence (gethash 0 state-transitions)))
+		 (setf (gethash idx2 pass-evidence (gethash 1 state-transitions))))
+	    finally
+	       (return pass-evidence)
+
+	  (loop
+	    for slice-idx being the hash-keys of state-transitions
+	      using (hash-value slice)
+	    do
+	       (loop
+		 for temporal-model-key being the hash-keys of slice
+		   using (hash-value distribution-hash)
+		 do
+		    (loop
+		      with probability and recollection
+		      for cond-key being the hash-keys of distribution-hash
+			using (hash-value prob-rec)
+		      do
+			 (setq probability (car prob-rec))
+			 (setq recollection (cdr prob-rec)))))
       (loop
 	  with evidence
 	  while (not (= from to))
-	  do
-	  
+	  do	  
 	  (setq evidence (gethash from evidence-hash))
 	  (if (> from to)
 	      (setq from (- from 1))
@@ -1792,12 +1858,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = episodic long-term memory
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
 ;; slice-idx = index of the temporal episode slice that is being made
-;; observation = observation retrieval cue
-;; state = state retrieval cue
+;; observations = hash table: Key: string, Value: observation retrieval cue
+;; states = hash table: Key: string, Value: state retrieval cue
 ;; action = action name string
 ;; state-transitions = list of program statements
 ;; id-ref-hash = backlinks
-(defun make-temporal-episode-program (eltm state-p slice-idx &key observation state action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0))
+(defun make-temporal-episode-program (eltm state-p slice-idx &key observations states action state-transitions prev-st prev-obs prev-act (id-ref-hash (make-hash-table :test #'equal)) (integer-index 0))
   (let (obs-ref state-ref cur-st cur-obs cur-act cue)
     (when nil
       (format t "~%before"))
@@ -1805,18 +1871,26 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (when nil
 	(format t "~%after"))
       (setq cur-st (gensym "STATE-"))
-      (if (null state)
-	  (setq state (cons (make-array 0) (make-hash-table))))
-      (setq cue (make-episode :state state
-			      :observation (cons (make-array 0) (make-hash-table))
-			      :state-transitions (cons (make-array 0) (make-hash-table))
-			      :backlinks (make-hash-table :test #'equal)
-			      :count 1
-			      :lvl 1))
-      (setq integer-index (+ integer-index 1))
-      (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
-      (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
-      (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" slice-idx)) :value ,(episode-id (car state-ref)))))))
+      (loop
+	    with state and prob
+	    for outcome being the hash-keys of states
+	    using (hash-value prob-state)
+	    do
+	    (setq state (cdr prob-state))
+	    (setq prob (car prob-state))
+	    (if (null state)
+		(setq state (cons (make-array 0) (make-hash-table))))
+	    (setq cue (make-episode :state state
+				    :observation (cons (make-array 0) (make-hash-table))
+				    :state-transitions (cons (make-array 0) (make-hash-table))
+				    :backlinks (make-hash-table :test #'equal)
+				    :count 1
+				    :lvl 1))
+	    (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
+	    (setf (gethash (episode-id (car state-ref)) id-ref-hash) state-ref)
+	    collect (list :value (episode-id (car state-ref)) :probability prob :count 1) into values
+	    finally
+	    (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" slice-idx)) :values ,values))))))
     (when (null observation)
       (setq observation (cons (make-array 0) (make-hash-table))))
     (when observation

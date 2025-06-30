@@ -1780,6 +1780,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  slice)))
 	     messages)
 	   (forward-pass (messages)
+	     "Do a forward pass along the number of time steps, saving the result in pass-evidence."
 	     (let* ((mod-len (if hidden-state-p 3 2))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
 		    (time-steps (make-index-list from to))
@@ -1812,34 +1813,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     for idx = (aref group i)
 		     do
 			(setf (gethash idx pass-evidence (gethash i state-transitions))))))
-	     (loop
-	       mod-len = (if hidden-state-p 3 2)
-	       with num-slices = 
-	       with pass-evidence = (make-hash-table)
-	       with slice1 and slice2 and evidence-slices and state-transitions
-	       for (idx1 idx2) on (make-index-list from to)
-	       do
-		  (setq slice1 (gethash idx1 messages))
-		  (setq slice2 (gethash idx2 messages))
-		  (when (null slice1)
-		    (setq slice1 (make-hash-table :test #'equal)))
-		  (when (null slice2)
-		    (setq slice2 (make-hash-table :test #'equal)))
-		  (setq evidence-slices (list slice1 slice2))
-		  (multiple-value-bind (evidence-bn backlinks)
-		      (make-temporal-episode-retrieval-cue
-		       eltm*
-		       evidence-slices
-		       t)
-		    (when nil t
-			  (format t "~%temporal-bn:~%~S" evidence-bn)
-			  (print-bn evidence-bn)
-			  (break))
-		    (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods))
-		    (setf (gethash idx1 pass-evidence (gethash 0 state-transitions)))
-		    (setf (gethash idx2 pass-evidence (gethash 1 state-transitions))))
-	       finally
-		  (return pass-evidence))))
+	       pass-evidence))
     (let ((messages (make-hash-table)
 	    new-messages))
       (setq messages (init-messages messages from to))

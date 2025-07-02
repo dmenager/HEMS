@@ -5930,9 +5930,7 @@ Roughly based on (Koller and Friedman, 2009) |#
         (t nil)))
 
 (defun make-empty-graph ()
-  (multiple-value-bind (factors edges)
-      (state-to-graph nil nil)
-    (cons factors edges)))
+  (cons (make-array 0) (make-hash-table :test #'equal)))
 
 (defun add-hash-key-value-pair (hash-table key val)
   (setf (gethash key hash-table) val)

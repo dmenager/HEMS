@@ -4837,7 +4837,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          nil)
 	((and (null m1) (rule-based-cpd-p m2))
 	 nil)
-	((and (rule-based-cpd m1) (null m2))
+	((and (rule-based-cpd-p m1) (null m2))
 	 nil)
         ((and (rule-based-cpd-p m1) (rule-based-cpd-p m2))
          (cond ((not (= (array-dimension (rule-based-cpd-rules m1) 0)

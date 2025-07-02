@@ -1726,25 +1726,58 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; soft-likelihoods = flag for if we add very small padding to 0-valued probablities
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
 (defun calibrate-temporal-model (model from to n-passes evidence-hash hidden-state-p soft-likelihoods bic-p)
-  (labels ((calibrate-state-transition-model (temporal-inferences-hash)
+  (labels ((check-convergence (messages new-messages)
+	     "slice -> type [state, observation, action] -> distribution-hash [outcome_1,..., outcome_n] -> (prob, net)"
 	     (loop
-		   while (not (= from to))
+		   with slice2
+		   for slice-idx being the hash-keys of new-messages
+		   using (hash-value slice1)
 		   do
-		   (setq cue (gethash from evidence-hash))
-		   (multiple-value-bind (recollection eme sol)
-		       (remember (list model) cue '+ 1 bic-p))
-		   (if (> from to)
-		       (setq from (- from 1))
-		       (setq from (+ from 1)))))
+		   (setq slice2 (gethash slice-idx messages))
+		   (format t "~%~%slice: ~d" slice-idx)
+		   (loop
+			 with distribution-hash2
+			 for temporal-model-key being the hash-keys of slice1
+			 using (hash-value distribution-hash)
+			 do
+			 (format t "~%type: ~S" temporal-model-key)
+			 (setq distribution-hash2 (gethash temporal-model-key slice2))
+			 (loop
+			       with prob and rec and prob-rec2 and prob2 and rec2
+			       for cond-key being the hash-keys of distribution-hash
+			       using (hash-value prob-rec)
+			       do
+			       (setq prob (car prob-rec))
+			       (setq rec (cdr prob-rec))
+			       (setq prob-rec2 (gethash cond-key distribution-hash2))
+			       (setq prob2 (car prob-rec2))
+			       (setq rec2 (cdr prob-rec2))
+			       if (or (not prob-rec2)
+				      (not (= prob prob2)))
+			       do
+			       (return-from check-convergence nil)
+			       else do
+			       (loop
+				     for cpd1 being the elements of rec
+				     for cpd2 being the elements of rec2
+				     when (not (same-message-p cpd1 cpd2))do
+				     (return-from check-convergence nil))))
+		   finally
+		   (return t)))
+	   (check-convergence (messages new-messages)
+	     "Check if the messages have converged."
+	     (and (check-one-way-convergence messages new-messages)
+		  (check-one-way-convergence new-messages messages)))
 	   (sliding-groups (lst k)
 	     "Return a list of sublists, each of length K, sliding forward by K-1 elements.
               Pads the last group with NIL if needed."
-	     (let ((result '()))
-	       (loop for i from 0 below (length lst) by (1- k)
-		     for group = (subseq lst i (min (+ i k) (length lst)))
-		     collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector))))
+	     (loop for i from 0 below (length lst) by (1- k)
+		   for group = (subseq lst i (min (+ i k) (length lst)))
+		   collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector)))
 	   (make-index-list (from to)
-	     (loop for i from from to to collect i))
+	     (if (< from to)
+		 (loop for i from from to to collect i)
+		 (loop for i from from downto to collect i)))
 	   (init-messages (messages from to)
 	     (let ((idx-list (make-index-list from to)))
 	       (loop
@@ -1779,7 +1812,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (setf (gethash i messages)
 			  slice)))
 	     messages)
-	   (forward-pass (messages)
+	   (pass (messages forward-pass-p)
 	     "Do a forward pass along the number of time steps, saving the result in pass-evidence."
 	     (let* ((mod-len (if hidden-state-p 3 2))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
@@ -1797,7 +1830,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq slice (make-hash-table :test #'equal)))
 		      (setq evidence-slices (cons slice evidence-slices))
 		   finally
-		      (setq evidence-slices (reverse evidence-slices)))
+		      (if forward-pass-p ;;(< from to)
+			  (setq evidence-slices (reverse evidence-slices))))
 		 (multiple-value-bind (evidence-bn backlinks)
 		     (make-temporal-episode-retrieval-cue
 		      eltm*
@@ -1809,55 +1843,36 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (break))
 		   (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods))
 		   (loop
-		     for i from 0 below (- num-slices 1)
+		     for i from 0 below num-slices
 		     for idx = (aref group i)
 		     do
 			(setf (gethash idx pass-evidence (gethash i state-transitions))))))
 	       pass-evidence))
+	   (forward-pass (messages)
+	     (pass messages t))
+	   (backward-pass (messages)
+	     (pass messages nil)))
     (let ((messages (make-hash-table)
 	    new-messages))
       (setq messages (init-messages messages from to))
       (loop
-	with converged-p = nil and forward-pass-p = t
+	with converged-p = nil and forward-pass-p = (< from to)
 	for i from 1
 	while (and not-converged-p
 		   (= i n-passes))
 	do
-	   (if forward-pass-p
-	       (setq new-messages (forward-pass))
-	       (setq new-messages (backward-pass)))
-	   (if (check-convergence messages new-messages)
-	       (setq converged-p t)
-	       (setq forward-pass-p (not forward-pass-p)))
+	    (if forward-pass-p
+		(setq new-messages (forward-pass messages))
+		(setq new-messages (backward-pass messages)))
+	    (if (check-convergence messages new-messages)
+		(setq converged-p t)
+		(setq forward-pass-p (not forward-pass-p)))
+	    (setq messages new-messages)
 	finally
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")
 	       (format t "~%callibrated temporal model"))
-	   (return messages))
-	   
-	   (loop
-	    for slice-idx being the hash-keys of state-transitions
-	      using (hash-value slice)
-	    do
-	       (loop
-		 for temporal-model-key being the hash-keys of slice
-		   using (hash-value distribution-hash)
-		 do
-		    (loop
-		      with probability and recollection
-		      for cond-key being the hash-keys of distribution-hash
-			using (hash-value prob-rec)
-		      do
-			 (setq probability (car prob-rec))
-			 (setq recollection (cdr prob-rec)))))
-      (loop
-	  with evidence
-	  while (not (= from to))
-	  do	  
-	  (setq evidence (gethash from evidence-hash))
-	  (if (> from to)
-	      (setq from (- from 1))
-	      (setq from (+ from 1)))))))
+	   (return messages)))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))

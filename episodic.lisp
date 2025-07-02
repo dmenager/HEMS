@@ -1715,17 +1715,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			       (cdr prob-rec))))))
 	 (return state-transitions))))
 
-#| Side effects: evidence hash is destructively modified |#
+#| Assumes that the temporal models all have the same number of slices. |#
 
-;; model = temporal model from which to run inference
+;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
 ;; from = integer representing starting time step
 ;; to = integer representing ending time step
 ;; n-passes = max number of passes to conduct
-;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
 ;; hidden-state-p = flag for if the temporal model has a state variable
 ;; soft-likelihoods = flag for if we add very small padding to 0-valued probablities
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun calibrate-temporal-model (model from to n-passes evidence-hash hidden-state-p soft-likelihoods bic-p)
+(defun calibrate-temporal-model (evidence-hash from to n-passes hidden-state-p soft-likelihoods bic-p)
   (labels ((check-one-way-convergence (messages new-messages)
 	     "slice -> type [state, observation, action] -> distribution-hash [outcome_1,..., outcome_n] -> (prob, net)"
 	     (loop
@@ -1782,6 +1781,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (let ((idx-list (make-index-list from to)))
 	       (loop
 		 with marker and mod-len = (if hidden-state-p 3 2)
+		 with model = (episode-state-transitions (car eltm*))
 		 with num-slices = (/ (array-dimension (car model) 0) mod-len)
 		 with slice and evidence-slice
 		 for i in idx-list
@@ -1815,11 +1815,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (pass (messages forward-pass-p)
 	     "Do a forward pass along the number of time steps, saving the result in pass-evidence."
 	     (let* ((mod-len (if hidden-state-p 3 2))
+		    (model (episode-state-transitions (car eltm*)))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
 		    (time-steps (make-index-list from to))
 		    (pass-evidence (make-hash-table))
 		    state-transitions
-		    evidence-slices
+		    evidence-slices)
 	       (dolist (group (sliding-groups time-steps num-slices))
 		 (loop
 		   with slice
@@ -1831,7 +1832,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq slice (make-hash-table :test #'equal)))
 		      (setq evidence-slices (cons slice evidence-slices))
 		   finally
-		      (if forward-pass-p ;;(< from to)
+		      (if forward-pass-p
 			  (setq evidence-slices (reverse evidence-slices))))
 		 (multiple-value-bind (evidence-bn backlinks)
 		     (make-temporal-episode-retrieval-cue
@@ -1848,7 +1849,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     for idx = (aref group i)
 		     do
 			(setf (gethash idx pass-evidence)
-			      (gethash i state-transitions))))))
+			      (gethash i state-transitions)))))
 	       pass-evidence))
 	   (forward-pass (messages)
 	     (pass messages t))
@@ -1863,6 +1864,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	while (and (not converged-p)
 		   (= i n-passes))
 	do
+	   (when t
+	     (format t "~%~%iteration: ~d" i))
 	    (if forward-pass-p
 		(setq new-messages (forward-pass messages))
 		(setq new-messages (backward-pass messages)))

@@ -1726,7 +1726,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; soft-likelihoods = flag for if we add very small padding to 0-valued probablities
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
 (defun calibrate-temporal-model (model from to n-passes evidence-hash hidden-state-p soft-likelihoods bic-p)
-  (labels ((check-convergence (messages new-messages)
+  (labels ((check-one-way-convergence (messages new-messages)
 	     "slice -> type [state, observation, action] -> distribution-hash [outcome_1,..., outcome_n] -> (prob, net)"
 	     (loop
 		   with slice2
@@ -1755,13 +1755,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			       if (or (not prob-rec2)
 				      (not (= prob prob2)))
 			       do
-			       (return-from check-convergence nil)
+			       (return-from check-one-way-convergence nil)
 			       else do
 			       (loop
 				     for cpd1 being the elements of rec
 				     for cpd2 being the elements of rec2
 				     when (not (same-message-p cpd1 cpd2))do
-				     (return-from check-convergence nil))))
+				     (return-from check-one-way-convergence nil))))
 		   finally
 		   (return t)))
 	   (check-convergence (messages new-messages)
@@ -1795,13 +1795,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      for j from (* marker num-slices) to (+ (* marker num-slices)
 							     (- mod-len 1))
 		      do
-			 (setq cpd (aref j (car model)))
+			 (setq cpd (aref (car model) j))
 			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
 			 (setq evidence (gethash cpd-type evidence-slice))
 			 (setq dist-hash (make-hash-table :test #'equal))
 			 (loop
 			   with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-			   with num-vvbm (length vvbm)
+			   with num-vvbm = (length vvbm)
 			   for vvb in vvbm 
 			   do
 			      (if evidence
@@ -1817,8 +1817,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (let* ((mod-len (if hidden-state-p 3 2))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
 		    (time-steps (make-index-list from to))
+		    (pass-evidence (make-hash-table))
+		    state-transitions
 		    evidence-slices
-		    state-transitions)
 	       (dolist (group (sliding-groups time-steps num-slices))
 		 (loop
 		   with slice
@@ -1846,19 +1847,20 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     for i from 0 below num-slices
 		     for idx = (aref group i)
 		     do
-			(setf (gethash idx pass-evidence (gethash i state-transitions))))))
+			(setf (gethash idx pass-evidence)
+			      (gethash i state-transitions))))))
 	       pass-evidence))
 	   (forward-pass (messages)
 	     (pass messages t))
 	   (backward-pass (messages)
 	     (pass messages nil)))
-    (let ((messages (make-hash-table)
-	    new-messages))
+    (let ((messages (make-hash-table))
+	  new-messages)
       (setq messages (init-messages messages from to))
       (loop
 	with converged-p = nil and forward-pass-p = (< from to)
 	for i from 1
-	while (and not-converged-p
+	while (and (not converged-p)
 		   (= i n-passes))
 	do
 	    (if forward-pass-p

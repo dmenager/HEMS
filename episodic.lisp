@@ -1624,12 +1624,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
         finally
 	   (when nil t nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
-	   (let (evidence-table recollection)
+	   (let (evidence-table)
              (setq evidence-table (make-observations observed-factors))
 	     (when nil t
-	       (format t "~%evidence table:~%~S" evidence-table))
-             (setq recollection (loopy-belief-propagation bn evidence-table priors mode lr))
-             (return (values recollection eme sol)))))))
+		   (format t "~%evidence table:~%~S" evidence-table))
+             (multiple-value-bind (posterior-distribution posterior-marginals)
+		 (loopy-belief-propagation bn evidence-table priors mode lr)
+               (return (values posterior-distribution posterior-marginals eme sol))))))))
 
 #| Recollect a temporal experience.
    Returns list containing inferences for each slice of the temporal model.
@@ -1658,15 +1659,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with evidence-hash and dist-hash and i = 0 and j = 0
-      with slice and node-type
-      with match and state-transitions = (make-hash-table)
+      with evidence-hash and dist-hash and marginals-dist-hash and i = 0 and j = 0
+      with slice and marginals-slice and node-type
+      with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
       for cpd being the elements of temporal-bn
       when (singleton-cpd? cpd)
 	do
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
-	     (setq slice (make-hash-table :test #'equal)))
+	     (setq slice (make-hash-table :test #'equal))
+	     (setq marginals-slice (make-hash-table :test #'equal)))
 	   (setq evidence-hash (gethash (cond ((string-equal "state-node" (symbol-name (get-cpd-type cpd)))
 					     "STATE")
 					    ((string-equal "observation-node" (symbol-name (get-cpd-type cpd)))
@@ -1677,6 +1679,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
 	   (setq dist-hash (make-hash-table :test #'equal))
+	   (setq marginals-dist-hash (make-hash-table :test #'equal))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
 	     (setq node-type "ACTION"))
@@ -1709,20 +1712,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (print-bn evidence-bn)
 		    ;;(format t "~%raw cue:~%~S" evidence-bn)
 		    (break))
-		  (multiple-value-bind (recollection eme)
-		    (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
+		  (multiple-value-bind (posterior-distribution posterior-marginals eme)
+		      (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
-		  ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-		    (setf (gethash cond dist-hash) (cons prob (list recollection))))))
+		    ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
+		    (setf (gethash cond dist-hash) (cons prob (cons (make-array (length posterior-distribution) :initial-contents posterior-distribution) (make-hash-table))))
+		    (setf (gethash cond marginals-dist-hash) (cons prob (cons (make-array (length posterior-marginals) :initial-contents posterior-marginals) (make-hash-table)))))))
 	   (setf (gethash node-type slice) dist-hash)
+	   (setf (gethash node-type marginals-slice) marginals-dist-hash)
 	   (when (= marker (- mod-len 1))
 	     (setf (gethash j state-transitions) slice)
+	     (setf (gethash j marginals-state-transitions) marginals-slice)
 	     (setq j (+ j 1)))
 	   (setq i (+ i 1))
       finally
 	 (when nil
 	   (print-state-transitions state-transitions))
-	 (return state-transitions))))
+	 (return (values state-transitions marginals-state-transitions)))))
 
 #| Assumes that the temporal models all have the same number of slices. |#
 
@@ -1836,7 +1842,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
 		    (time-steps (make-index-list from to))
 		    (pass-evidence (make-hash-table))
-		    state-transitions
+		    (marginals-pass-evidence (make-hash-table))
 		    evidence-slices)
 	       (dolist (group (sliding-groups time-steps num-slices))
 		 (setq evidence-slices nil)
@@ -1865,20 +1871,25 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (format t "~%temporal-bn:~%~S" evidence-bn)
 			 (print-bn evidence-bn)
 			 (break))
-		   (setq state-transitions (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p))
-		   (loop
-		     for i from 0 below num-slices
-		     for idx = (aref group i)
-		     do
-			(setf (gethash idx pass-evidence)
-			      (gethash i state-transitions)))))
-	       pass-evidence))
+		   (multiple-value-bind (state-transitions marginals-state-transitions)
+		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
+		     (loop
+		       for i from 0 below num-slices
+		       for idx = (aref group i)
+		       do
+			  (setf (gethash idx pass-evidence)
+				(gethash i state-transitions))
+			  (setf (gethash idx marginals-pass-evidence)
+				(gethash i marginals-state-transitions))))))
+	       (values pass-evidence marginals-pass-evidence)))
 	   (forward-pass (messages)
 	     (pass messages t))
 	   (backward-pass (messages)
 	     (pass messages nil)))
     (let ((messages (make-hash-table))
-	  new-messages)
+	  marginals-messages
+	  new-messages
+	  new-marginals-messages)
       (setq messages (init-messages messages from to))
       (loop
 	with converged-p = nil and forward-pass-p = (< from to)
@@ -1890,17 +1901,21 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (format t "~%~%iteration: ~d" i)
 	     (print-state-transitions messages))
 	    (if forward-pass-p
-		(setq new-messages (forward-pass messages))
-		(setq new-messages (backward-pass messages)))
+		;;(setq new-messages (forward-pass messages))
+		(multiple-value-setq (new-messages new-marginals-messages)
+		  (forward-pass messages))
+		(multiple-value-setq (new-messages new-marginals-messages)
+		  (backward-pass messages)))
 	    (if (check-convergence messages new-messages)
 		(setq converged-p t)
 		(setq forward-pass-p (not forward-pass-p)))
 	    (setq messages new-messages)
+	    (setq marginals-messages new-marginals-messages)
 	finally
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")
 	       (format t "~%callibrated temporal model"))
-	   (return messages)))))
+	   (return (values messages marginals-messages))))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
@@ -1934,7 +1949,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (when nil
 	(format t "~%states:~%~S" states))
       (setq cur-st (gensym "STATE-"))
-      (when states
+      (when (and states
+		 (> (hash-table-count states) 0))
 	(loop
 	  with value-prob-hash = (make-hash-table :test #'equal) and old-prob and value
 	  with state and prob
@@ -1965,7 +1981,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       collect (list :value v :probability p :count 1) into values
 	       finally 
 		  (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" slice-idx)) :values ,values))))))))
-    (when observations
+    (when (and observations
+	       (> (hash-table-count observations) 0))
       (setq cur-obs (gensym "OBS-"))
       (loop
 	with value-prob-hash = (make-hash-table :test #'equal) and old-prob and value
@@ -1999,7 +2016,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     collect (list :value v :probability p :count 1) into values
 	     finally 
 		(setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node ,(intern (format nil "OBSERVATION_~d" slice-idx)) :values ,values)))))))
-    (when actions
+    (when (and actions
+	       (> (hash-table-count actions) 0))
       (setq cur-act (gensym "ACT-"))
       (loop
 	for action being the hash-keys of actions

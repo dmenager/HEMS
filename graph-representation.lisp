@@ -4948,8 +4948,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 		    (eq op #'+))	
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
-		 ;; when (rule-based-cpd-singleton-p (aref factors i))
-                  collect (compute-belief i factors edges messages)))
+		 when (rule-based-cpd-singleton-p (aref factors i))
+                   collect (compute-belief i factors edges messages) into posterior-marginals
+		  else
+		    collect (compute-belief i factors edges messages) into posterior-distribution
+		  finally
+		     (return (values posterior-distribution posterior-marginals))))
                ((or (eq op 'max)
 		    (eq op #'max))
                 (when nil
@@ -5987,7 +5991,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
-  (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages estimates)
+  (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages)
     ;;(setq factors-list (coerce (car state) 'list))
     (loop
       for factor being the elements of (car state)
@@ -6156,7 +6160,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%initial messages:~%~A" initial-messages)
       ;;(break)
       )
-    (setq estimates (calibrate-factor-graph all-factors op edges initial-messages lr))))
+    (calibrate-factor-graph all-factors op edges initial-messages lr)))
 
 #| Move assignment by 1 |#
 
@@ -7852,7 +7856,6 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq q-first-bindings (make-hash-table :test #'equal))
     (setq possible-candidates (get-possible-candidates p q))
     (setq p-dim 0)
-    (setq p-m 0)
     (setq q-dim 0)
     (setq q-m 0)
     (setq q-dif 0)
@@ -7873,7 +7876,6 @@ Roughly based on (Koller and Friedman, 2009) |#
       for i from 0 to (- (if p (array-dimension (car p) 0) 0) 1)
       do
          (setf (gethash (rule-based-cpd-dependent-id (aref (car p) i)) p-nodes) i)
-	 (setq p-m (max p-m (rule-based-cpd-count (aref (car p) i))))
       if (= (hash-table-count (rule-based-cpd-identifiers (aref (car p) i))) 1)
 	do
 	   (setq p-dim (+ p-dim 1))

@@ -1743,45 +1743,79 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (labels ((check-one-way-convergence (messages new-messages)
 	     "slice -> type [state, observation, action] -> distribution-hash [outcome_1,..., outcome_n] -> (prob, net)"
 	     (loop
-		   with slice2
-		   for slice-idx being the hash-keys of new-messages
-		   using (hash-value slice1)
-		   do
-		   (setq slice2 (gethash slice-idx messages))
-		   (format t "~%~%slice: ~d" slice-idx)
-		   (loop
-			 with distribution-hash2
-			 for temporal-model-key being the hash-keys of slice1
-			 using (hash-value distribution-hash)
-			 do
-			 (format t "~%type: ~S" temporal-model-key)
+	       with converged = t and conflicts
+	       with slice2
+	       for slice-idx being the hash-keys of new-messages
+		 using (hash-value slice1)
+	       when slice-idx
+		 do
+		    (setq slice2 (gethash slice-idx messages))
+		    (when nil
+		      (format t "~%~%slice: ~d" slice-idx))
+		    (loop
+		      with distribution-hash2
+		      for temporal-model-key being the hash-keys of slice1
+			using (hash-value distribution-hash)
+		      do
+			 (when nil
+			   (format t "~%type: ~S" temporal-model-key))
 			 (setq distribution-hash2 (gethash temporal-model-key slice2))
 			 (loop
-			       with prob and rec and prob-rec2 and prob2 and rec2
-			       for cond-key being the hash-keys of distribution-hash
-			       using (hash-value prob-rec)
-			       do
-			       (setq prob (car prob-rec))
-			       (setq rec (cdr prob-rec))
-			       (setq prob-rec2 (gethash cond-key distribution-hash2))
-			       (setq prob2 (car prob-rec2))
-			       (setq rec2 (cdr prob-rec2))
-			       if (or (not prob-rec2)
-				      (not (= prob prob2)))
-			       do
-			       (return-from check-one-way-convergence nil)
-			       else do
-			       (loop
-				     for cpd1 being the elements of rec
-				     for cpd2 being the elements of rec2
-				     when (not (same-message-p cpd1 cpd2))do
-				     (return-from check-one-way-convergence nil))))
-		   finally
-		   (return t)))
+			   with prob and rec and prob-rec2 and prob2 and rec2
+			   for cond-key being the hash-keys of distribution-hash
+			     using (hash-value prob-rec)
+			   do
+			      (setq prob (car prob-rec))
+			      (setq rec (cadr prob-rec))
+			      (setq prob-rec2 (gethash cond-key distribution-hash2))
+			      (setq prob2 (car prob-rec2))
+			      (setq rec2 (cadr prob-rec2))
+			   if (or (not prob-rec2)
+				  (not (= (read-from-string (format nil "~5$" prob))
+                                          (read-from-string (format nil "~5$" prob2)))))
+			     do
+				(setq converged nil)
+				(setq conflicts (cons (cons prob prob2) conflicts))
+				;;(return-from check-one-way-convergence nil)
+			   else do
+			     (loop
+			       for cpd1 being the elements of rec
+			       for cpd2 being the elements of rec2
+			       when (not (same-message-p cpd1 cpd2 :round t))
+				 do
+				    (setq converged nil)
+				    (setq conflicts (cons (cons cpd1 cpd2) conflicts))
+				    ;;(return-from check-one-way-convergence nil)
+			       )))
+	       finally
+		  (return conflicts)))
 	   (check-convergence (messages new-messages)
 	     "Check if the messages have converged."
-	     (and (check-one-way-convergence messages new-messages)
-		  (check-one-way-convergence new-messages messages)))
+	     (let (conflicts1 conflicts2)
+	       (setq conflicts1 (check-one-way-convergence messages new-messages))
+	       (setq conflicts2 (check-one-way-convergence new-messages messages))
+	       (when t
+		 (format t "~%~%num conflicts from messages to new messages: ~d" (length conflicts1))
+		 (loop
+		   for (c1 . c2) in conflicts1
+		   do
+		      (cond ((numberp c1)
+			     (format t "~%outcome probability conflict: ~d != ~d" c1 c2))
+			    (t
+			     (format t "~%rule conflict:")
+			     (print-cpd  c1)
+			     (print-cpd c2))))
+		 (format t "~%~%num conflicts from new messages to messages: ~d" (length conflicts2))
+		 (loop
+		   for (c1 . c2) in conflicts2
+		   do
+		      (cond ((numberp c1)
+			     (format t "~%outcome probability conflict: ~d != ~d" c1 c2))
+			    (t
+			     (format t "~%rule conflict:")
+			     (print-cpd  c1)
+			     (print-cpd c2)))))
+	       (not (or conflicts1 conflicts2))))
 	   (sliding-groups (lst k)
 	     "Return a list of sublists, each of length K, sliding forward by K-1 elements.
               Pads the last group with NIL if needed."
@@ -1867,10 +1901,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      eltm*
 		      evidence-slices
 		      t)  
-		   (when nil
-			 (format t "~%temporal-bn:~%~S" evidence-bn)
-			 (print-bn evidence-bn)
-			 (break))
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
 		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
 		     (loop
@@ -1899,7 +1929,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	do
 	   (when t
 	     (format t "~%~%iteration: ~d" i)
-	     (print-state-transitions messages))
+	     ;;(print-state-transitions messages)
+	     )
 	    (if forward-pass-p
 		;;(setq new-messages (forward-pass messages))
 		(multiple-value-setq (new-messages new-marginals-messages)
@@ -1915,6 +1946,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")
 	       (format t "~%callibrated temporal model"))
+	   (when t
+	     (print-state-transitions messages))
 	   (return (values messages marginals-messages))))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))

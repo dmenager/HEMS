@@ -1823,12 +1823,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   for group = (subseq lst i (min (+ i k) (length lst)))
 		   collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector)))
 		   ;;collect (make-array (length group) :initial-contents group)))
-	   (make-index-list (from to)
-	     (if (< from to)
-		 (loop for i from from to to collect i)
-		 (loop for i from from downto to collect i)))
-	   (init-messages (messages from to)
-	     (let ((idx-list (make-index-list from to)))
+	   (make-index-list (forward-pass-p)
+	     (cond ((and forward-pass-p (< from to))
+		    (loop for i from from to to collect i))
+		   ((and forward-pass-p (>= from to))
+		    (loop for i from to to from collect i))
+		   ((and (not forward-pass-p) (< from to))
+		    (loop for i from to downto from collect i))
+		   ((and (not forward-pass-p) (>= from to))
+		    (loop for i from from downto to collect i))))
+	   (init-messages (messages forward-pass-p)
+	     (let ((idx-list (make-index-list forward-pass-p)))
 	       (loop
 		 with marker and cpds-per-slice = (if hidden-state-p 3 2)
 		 with model = (episode-state-transitions (car eltm*))
@@ -1870,14 +1875,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  slice)))
 	     messages)
 	   (pass (messages forward-pass-p)
-	     "Do a forward pass along the number of time steps, saving the result in pass-evidence."
+	     "Do a forward/backward pass along the number of time steps, saving the result in pass-evidence."
 	     (let* ((mod-len (if hidden-state-p 3 2))
 		    (model (episode-state-transitions (car eltm*)))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
-		    (time-steps (make-index-list from to))
+		    (time-steps (make-index-list forward-pass-p))
 		    (pass-evidence (make-hash-table))
 		    (marginals-pass-evidence (make-hash-table))
 		    evidence-slices)
+	       (when nil
+		 (format t "~%time steps:~%~A" time-steps))
 	       (dolist (group (sliding-groups time-steps num-slices))
 		 (setq evidence-slices nil)
 		 (when t
@@ -1894,8 +1901,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq slice (make-hash-table :test #'equal)))
 		      (setq evidence-slices (cons slice evidence-slices))
 		   finally
-		      (if forward-pass-p
-			  (setq evidence-slices (reverse evidence-slices))))
+		      (when forward-pass-p
+			(setq evidence-slices (reverse evidence-slices))))
 		 (multiple-value-bind (evidence-bn backlinks)
 		     (make-temporal-episode-retrieval-cue
 		      eltm*
@@ -1917,22 +1924,21 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (backward-pass (messages)
 	     (pass messages nil)))
     (let ((messages (make-hash-table))
+	  (forward-pass-p (< from to))
 	  marginals-messages
 	  new-messages
 	  new-marginals-messages)
-      (setq messages (init-messages messages from to))
+      (setq messages (init-messages messages forward-pass-p))
       (loop
-	with converged-p = nil and forward-pass-p = (< from to)
+	with converged-p = nil
 	for i from 1
 	while (and (not converged-p)
 		   (not (= i n-passes)))
 	do
 	   (when t
-	     (format t "~%~%iteration: ~d" i)
-	     ;;(print-state-transitions messages)
+	     (format t "~%~%iteration: ~d~%forward-pass-p: ~a" i forward-pass-p)
 	     )
 	    (if forward-pass-p
-		;;(setq new-messages (forward-pass messages))
 		(multiple-value-setq (new-messages new-marginals-messages)
 		  (forward-pass messages))
 		(multiple-value-setq (new-messages new-marginals-messages)
@@ -1946,8 +1952,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")
 	       (format t "~%callibrated temporal model"))
+	   (remhash nil messages)
+	   (remhash nil marginals-messages)
 	   (when t
-	     (print-state-transitions messages))
+	     (format t "~%messages")
+	     (print-state-transitions messages)
+	     (format t "~%~%marginals")
+	     (print-state-transitions marginals-messages))
 	   (return (values messages marginals-messages))))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))

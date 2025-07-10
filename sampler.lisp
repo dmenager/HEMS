@@ -11,11 +11,11 @@
     (when nil
       (format t "~%evidence-bn:")
       (print-bn evidence-bn))
-    (multiple-value-bind (recollection eme sol)
+    (multiple-value-bind (posterior-distribution posterior-marginals eme sol)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type :soft-likelihoods soft-likelihoods)
       ;; verify in (remember) if the single observation node matches to the state transition models.
       (when nil (string-equal episode-type "state-transitions")
-	;;(format t "~%Posterior network:~%~S" recollection)
+	;;(format t "~%Posterior network:~%~S" posterior-distribution)
 	(format t "~%eme network:")
 	(cond ((string-equal episode-type "state-transitions")
 	       (print-bn (episode-state-transitions (car eme))))
@@ -27,9 +27,9 @@
 	    ;;(break)
 	    )
       (if keep-singletons
-	  (setq new-bn (cons (make-array (length recollection) :initial-contents recollection) (make-hash-table :test #'equal)))
+	  (setq new-bn (cons (make-array (length posterior-marginals) :initial-contents posterior-marginals) (make-hash-table :test #'equal)))
 	  (loop
-	    for cpd in recollection
+	    for cpd in posterior-distribution
 	    when (not (rule-based-cpd-singleton-p cpd)) collect cpd into bn
 	    and count cpd into len
 	    finally 

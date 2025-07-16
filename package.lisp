@@ -81,6 +81,7 @@
 	   #:bn-score
 	   #:print-tree-structure
 	   #:py-test-hash
-	   #:discrete-uniform))
+	   #:discrete-uniform
+	   #:make-messages))
 
 (in-package :hems)

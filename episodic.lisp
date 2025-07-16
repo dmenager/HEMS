@@ -1777,6 +1777,62 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (print-state-transitions state-transitions))
 	 (return (values state-transitions marginals-state-transitions)))))
 
+(defun make-messages (evidence-hash from to hidden-state-p)
+  (loop
+    with messages = (make-hash-table)
+    with idx-list = (loop for i from from to to collect i)
+    with marker and cpds-per-slice = (if hidden-state-p 3 2)
+    with model = (episode-state-transitions (car eltm*))
+    with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
+    with slice and evidence-slice
+    for cur-slice in idx-list
+    do
+       (setq evidence-slice (gethash cur-slice evidence-hash))
+       (if (null evidence-slice)
+	   (setq evidence-slice (make-hash-table :test #'equal)))
+       (setq slice (make-hash-table :test #'equal))
+       (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
+       (when nil (= cur-slice 25)
+	     (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
+		     cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
+       (loop
+	 with cpd and cpd-type and evidence
+	 with dist-hash
+	 for j from marker to (+ marker
+				 (- cpds-per-slice 1))
+	 do
+	    (when nil (= cur-slice 25)
+		  (format t "~%j: ~d" j))
+	    (setq cpd (aref (car model) j))
+	    (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
+	    (setq evidence (gethash cpd-type evidence-slice))
+	    (setq dist-hash (make-hash-table :test #'equal))
+	    (when nil (= cur-slice 25)
+		  (format t "~%cpd:")
+		  (print-cpd cpd)
+		  (format t "~%cpd type: ~S" cpd-type)
+		  (format t "~%evidence:")
+		  (print-bn evidence))
+	    (loop
+	      with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+	      with num-vvbm = (length vvbm)
+	      for vvb in vvbm
+	      do
+		 (if evidence
+		     (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+		     (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
+	      finally
+		 (setf (gethash cpd-type slice) dist-hash))
+	    (when nil (= cur-slice 25)
+		  (format t "~%dist hash:")
+		  (print-dist-hash dist-hash)
+		  ;;(break)
+		  ))
+       (setf (gethash cur-slice messages)
+	     slice)
+    finally
+       (return messages)))
+
 #| Assumes that the temporal models all have the same number of slices. |#
 
 ;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn

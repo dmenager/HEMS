@@ -1669,7 +1669,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       :backlinks backlinks
 		       :keep-singletons t
 		       :soft-likelihoods soft-likelihoods)
-    (when t
+    (when nil
       (format t "~%temporal evidence bn:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
@@ -1693,14 +1693,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       with evidence-hash and dist-hash and marginals-dist-hash and i = 0 and j = 0
       with slice and marginals-slice and node-type
       with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
+      with cpd2 and q-match
       for cpd being the elements of temporal-bn
       for idx from 0
-      when (singleton-cpd? cpd)
+      when (and (singleton-cpd? cpd)
+		(not (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd)))))
 	do
-	   (setq cpd (subst-cpd cpd
-				(aref (car temporal-evidence-bn)
-				      (cdr (aref sol idx)))
-				q-first-bindings))
+	   (setq q-match (cdr (aref sol idx)))
+	   (when q-match
+	     (setq cpd2 (aref (car temporal-evidence-bn) q-match))
+	     (setq cpd (subst-cpd cpd cpd2 q-first-bindings)))
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal))
@@ -1714,7 +1716,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				      (gethash j evidence-slices)))
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
-	   (when t
+	   (when nil
 	     (format t "~%j: ~d~%cpd:" j)
 	     (print-cpd cpd)
 	     ;;(format t "~%conditioned model backlinks:")
@@ -1738,7 +1740,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(when (null evidence-bn)
 		  (setq evidence-bn (make-empty-graph)))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
-		(when t
+		(when nil
 		  (format t "~%")
 		  (print-cpd-rule rule)
 		  (format t "~%cond: ~S~%backlinks:" cond)
@@ -1749,7 +1751,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when t
+		  (when nil
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
 		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
@@ -1891,7 +1893,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq evidence-slice (make-hash-table :test #'equal)))
 		    (setq slice (make-hash-table :test #'equal))
 		    (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
-		    (when (= cur-slice 25)
+		    (when nil (= cur-slice 25)
 		      (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
 			      cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
 		    (loop
@@ -1900,13 +1902,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      for j from marker to (+ marker
 					      (- cpds-per-slice 1))
 		      do
-			 (when (= cur-slice 25)
+			 (when nil (= cur-slice 25)
 			   (format t "~%j: ~d" j))
 			 (setq cpd (aref (car model) j))
 			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
 			 (setq evidence (gethash cpd-type evidence-slice))
 			 (setq dist-hash (make-hash-table :test #'equal))
-			 (when (= cur-slice 25)
+			 (when nil (= cur-slice 25)
 			   (format t "~%cpd:")
 			   (print-cpd cpd)
 			   (format t "~%cpd type: ~S" cpd-type)
@@ -1922,7 +1924,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
 			   finally
 			      (setf (gethash cpd-type slice) dist-hash))
-			 (when (= cur-slice 25)
+			 (when nil (= cur-slice 25)
 			   (format t "~%dist hash:")
 			   (print-dist-hash dist-hash)
 			   ;;(break)
@@ -1956,7 +1958,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      (setq slice (gethash idx messages))
 		      (when (null slice)
 			(setq slice (make-hash-table :test #'equal)))
-		      (when t
+		      (when nil
 			(format t "~%Content for:")
 			(print-slice slice))
 		      ;;(setq evidence-slices (cons slice evidence-slices))
@@ -1986,7 +1988,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     (break))
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
 		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
-		     (when t
+		     (when nil
 		       (format t "~%state transitions:")
 		       (print-state-transitions state-transitions)
 		       (break))
@@ -2043,7 +2045,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (format t "~%messages")
 	     (print-state-transitions messages)
 	     (format t "~%~%marginals")
-	     (print-state-transitions marginals-messages))
+	     (print-state-transitions marginals-messages)
+	     (break))
 	finally
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")

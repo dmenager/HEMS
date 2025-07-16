@@ -2120,11 +2120,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
 
 (defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods)
-  (let (alist)
-    (maphash #'(lambda (k v)
-		 (push (list k v) alist))
-	     (remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods))
-    (coerce alist 'vector)))
+  (let (alist marginal-alist)
+    (multiple-value-bind (messages marginal-messages)
+	(remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods)
+      (maphash #'(lambda (k v)
+		   (push (list k v) alist))
+	       messages)
+      (maphash #'(lambda (k v)
+		   (push (list k v) marginal-alist))
+	       marginal-messages))
+    (coerce alist 'vector)
+    (coerce marginal-alist 'vector)
+    (values alist marginal-alist)))
 
 #| Generates code that compiles to a temporal episode. 
    Returns multiple values. 

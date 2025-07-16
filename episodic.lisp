@@ -685,10 +685,10 @@
 		(print-bn (episode-observation ep) :indent large-indent :stream stream))
 	       (:state
 		(format stream "~%~a  State:" indent)
-		(print-bn (episode-observation ep) :indent large-indent :stream stream))
+		(print-bn (episode-state ep) :indent large-indent :stream stream))
 	       (:state-transitions
 		(format stream "~%~a  State Transitions:" indent)
-		(print-bn (episode-observation ep) :indent large-indent :stream stream))
+		(print-bn (episode-state-transitions ep) :indent large-indent :stream stream))
 	       (:backlinks
 		(format stream "~%~a  Backlinks:" indent)
 		(loop
@@ -702,6 +702,15 @@
 		(format stream "~%~a  Count: ~a" indent (episode-count ep)))
 	       (:temporal-p
 		(format stream "~%~a  Temporal-p: ~a" indent (episode-temporal-p ep))))))))
+
+(defun print-backlinks (backlinks)
+  (format t "~%~%Backlinks:")
+  (loop
+    for ep-id being the hash-keys of backlinks
+      using (hash-value subtree)
+    do
+       (format t "~%key: ~A" ep-id)
+       (print-episode (car subtree))))
 
 #| Rudamentary printer for showing the branching structure of eltm. |#
 
@@ -871,9 +880,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; bicp-p = retrieval mode for using BIC or likelihood for structure mapping
 (defun new-match-cue (x y res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
   (cond ((null x)
-	 (values (list nil most-positive-fixnum nil -1 0 ) nil reject-list))
+	 (values (list nil most-positive-fixnum nil -1 0 ) nil reject-list nil))
         ((reject-branch? x y reject-list :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case)
-	 (values (list nil most-positive-fixnum nil -1 0) nil (cons (episode-id (car x)) reject-list)))
+	 (values (list nil most-positive-fixnum nil -1 0) nil (cons (episode-id (car x)) reject-list) nil))
         (res
          (cond ((null (cdr x))
                 (values res nil reject-list))
@@ -894,10 +903,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (error "uh oh")))
 	   (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p :forbidden-types forbidden-types)
-	     (declare (ignore no-matches q-first-bindings))
-	     (when nil t
-	       (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S" sol cost bindings))
-	     (setq res (list sol cost bindings num-local-preds (array-dimension (car base) 0)))
+	     (declare (ignore no-matches))
+	     (when nil
+	       (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S~%q-first-bindings:~%~S" sol cost bindings q-first-bindings))
+	     (setq res (list sol cost bindings num-local-preds (array-dimension (car base) 0) q-first-bindings))
 	     (cond ((null (cdr x))
                     (values res nil reject-list))
                    ((cdr x)
@@ -1086,7 +1095,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (setq base-backlinks (episode-backlinks (car branch)))
 		 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
                      (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p :forbidden-types forbidden-types)
-		   (declare (ignore q-first-bindings no-matches))
+		   (declare (ignore no-matches))
 		   (when nil t
 		     (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S" sol cost bindings))
 		   (cond ((or first-passing-branch-p;;(= i 1)
@@ -1105,7 +1114,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (better-random-match? (list nil cost bindings nil num-local-preds (array-dimension (car base) 0)) best-child)
 				   ;;(= (reduce #'+ weighted-costs) best-child-weighted-cost)
 				   ))
-                          (setq res (list sol cost bindings num-local-preds (array-dimension (car base) 0)))
+                          (setq res (list sol cost bindings num-local-preds (array-dimension (car base) 0) q-first-bindings))
                           ;; if current best child is an episode, reject it before replacing it with current branch
 			  (when (and (car best-child) (= (episode-count (caar best-child)) 1)
                                      (not (episode-temporal-p (caar best-child))))
@@ -1113,7 +1122,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                           (setq best-child-cost cost)
 			  (when nil t
 			    (format t "~%branch is new best child"))
-                          (setq best-child (list branch cost bindings nil num-local-preds (array-dimension (car base) 0))))
+                          (setq best-child (list branch cost bindings nil num-local-preds (array-dimension (car base) 0) q-first-bindings)))
                          ((and (= (episode-count (car branch)) 1) (not (episode-temporal-p (car branch))))
 			  (setq reject-list (cons (episode-id (car branch)) reject-list))))))
                 (t
@@ -1128,7 +1137,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (<= (second p-cost) best-child-weighted-cost)))
            (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list (sixth p-cost)))
           ((and (or (eq #'= lvl-func) (eq '= lvl-func)) (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))
                 (if best-child (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl (caar best-child))) t)
 		(if best-child
@@ -1138,11 +1147,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		)
            (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list (sixth p-cost)))
           ((and lvl-func (not (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))) (null (car best-child)))
            (when nil t
              (format t "~%Returning ~A" (if (equal (episode-id (car eltm)) (car reject-list)) nil (car eltm))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) (episode-id (car eltm)) reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) (episode-id (car eltm)) reject-list (sixth p-cost)))
           ((and (not lvl-func)
 	        (or (and branch (better-random-match? (list nil (second p-cost) (third p-cost) nil (fourth p-cost) (fifth p-cost)) best-child))
 		    (and branch (= (second p-cost) (second best-child)))
@@ -1151,7 +1160,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		)
            (when nil t
              (format t "~%Returning ~A" (if (member (episode-id (car eltm)) reject-list :test #'equal) nil (episode-id (car eltm)))))
-           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list))
+           (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (third p-cost) depth (second p-cost) nil reject-list (sixth p-cost)))
           (t
            (when nil t
              (format t "~%Recursing on best child: ~A" (if (car best-child) (episode-id (caar best-child)))))
@@ -1442,6 +1451,31 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
    :count 1
    :lvl (if (equal (cons (make-array 0) (make-hash-table :test #'equal)) transitions) 1 2)))
 
+#| Print a distribution over possible values |#
+
+;; distribution-hash = hash table. key: var from var value block map (possible outcome). value: bn
+(defun print-dist-hash (distribution-hash)
+  (loop
+    for cond-key being the hash-keys of distribution-hash
+      using (hash-value prob-rec)
+    do
+       (format t "~%outcome: ~S" cond-key)
+       (format t "~%outcome probability: ~d" (car prob-rec))
+       (format t "~%beliefs:")
+       (map nil #'(lambda (cpd)
+		    (print-cpd cpd))
+	    (cadr prob-rec))))
+
+#| Print a slice |#
+
+;; slice = hash table. Key: ["STATE", "OBSERVATION", "ACTION"], value: distribution hash. distribution hash: hash table. key: var from var value block map (possible outcome). value: bn
+(defun print-slice (slice)
+  (loop
+    for temporal-model-key being the hash-keys of slice
+      using (hash-value distribution-hash)
+    do
+       (format t "~%~S" temporal-model-key)
+       (print-dist-hash distribution-hash)))
 
 #| Print inferred beliefs over time. |#
 
@@ -1452,21 +1486,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       using (hash-value slice)
     do
        (format t "~%~%slice: ~d" slice-idx)
-       (loop
-	 for temporal-model-key being the hash-keys of slice
-	   using (hash-value distribution-hash)
-	 do
-	    (format t "~%~S" temporal-model-key)
-	    (loop
-	      for cond-key being the hash-keys of distribution-hash
-		using (hash-value prob-rec)
-	      do
-		 (format t "~%outcome: ~S" cond-key)
-		 (format t "~%outcome probability: ~d" (car prob-rec))
-		 (format t "~%beliefs:")
-		 (map nil #'(lambda (cpd)
-			      (print-cpd cpd))
-		      (cadr prob-rec))))))
+       (print-slice slice)))
 
 #| Recollect an experience.
    Returns multiple values.
@@ -1515,12 +1535,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      :temporal-p nil
 		      :count 1
 		      :lvl 1))))
-    (multiple-value-bind (eme sol bindings depth cost)
+    (multiple-value-bind (eme sol bindings depth cost  dont-care reject-list q-first-bindings)
         (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
-               (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum))
+               (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum nil))
               (t
                (new-retrieve-episode eltm cue nil :bic-p bic-p :type type)))
-      (declare (ignore depth cost))
+      (declare (ignore depth cost dont-care))
       (when nil (not (string-equal type "state-transitions"))
 	(format t "~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
       (cond ((string-equal type "state-transitions")
@@ -1630,7 +1650,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (format t "~%evidence table:~%~S" evidence-table))
              (multiple-value-bind (posterior-distribution posterior-marginals)
 		 (loopy-belief-propagation bn evidence-table priors mode lr)
-               (return (values posterior-distribution posterior-marginals eme sol))))))))
+               (return (values posterior-distribution posterior-marginals eme sol bindings q-first-bindings))))))))
 
 #| Recollect a temporal experience.
    Returns list containing inferences for each slice of the temporal model.
@@ -1642,19 +1662,30 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-bns = A list of hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) hidden-state-p soft-likelihoods)
-  (multiple-value-bind (conditioned-temporal sol)
+  (multiple-value-bind (conditioned-temporal sol bindings q-first-bindings)
       (condition-model eltm
 		       temporal-evidence-bn
 		       "state-transitions"
 		       :backlinks backlinks
-		       :keep-singletons t)
-    (when nil
+		       :keep-singletons t
+		       :soft-likelihoods soft-likelihoods)
+    (when t
       (format t "~%temporal evidence bn:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
-      (break)
+      (format t "~%bindings:~%~A" bindings)
+      (format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
+      
+      (loop
+	for i being the hash-keys of evidence-slices
+	using (hash-value evidence-hash)
+	do
+	   (format t "~%slice: ~d" i)
+      (print-slice evidence-hash))
+      
+      ;;(break)
       )
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
@@ -1663,8 +1694,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       with slice and marginals-slice and node-type
       with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
       for cpd being the elements of temporal-bn
+      for idx from 0
       when (singleton-cpd? cpd)
 	do
+	   (setq cpd (subst-cpd cpd
+				(aref (car temporal-evidence-bn)
+				      (cdr (aref sol idx)))
+				q-first-bindings))
 	   (setq marker (mod i mod-len))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal))
@@ -1675,9 +1711,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					     "OBSERVATION")
 					    ((string-equal "action-node" (symbol-name (get-cpd-type cpd)))
 					     "ACTION"))
-				      (nth j evidence-slices)))
+				      (gethash j evidence-slices)))
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
+	   (when t
+	     (format t "~%j: ~d~%cpd:" j)
+	     (print-cpd cpd)
+	     ;;(format t "~%conditioned model backlinks:")
+	     ;;(print-backlinks (episode-backlinks conditioned-temporal))
+	     (format t "~%evidence hash table:")
+	     (print-dist-hash evidence-hash))
 	   (setq dist-hash (make-hash-table :test #'equal))
 	   (setq marginals-dist-hash (make-hash-table :test #'equal))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
@@ -1695,7 +1738,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(when (null evidence-bn)
 		  (setq evidence-bn (make-empty-graph)))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
-		(when nil
+		(when t
+		  (format t "~%")
 		  (print-cpd-rule rule)
 		  (format t "~%cond: ~S~%backlinks:" cond)
 		  (loop
@@ -1705,14 +1749,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when nil
+		  (when t
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
 		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
 		    (print-bn evidence-bn)
 		    ;;(format t "~%raw cue:~%~S" evidence-bn)
-		    (break))
-		  (multiple-value-bind (posterior-distribution posterior-marginals eme)
+		    (break)
+		    )
+		  (multiple-value-bind (posterior-distribution posterior-marginals eme )
 		      (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
 		    ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
@@ -1846,7 +1891,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq evidence-slice (make-hash-table :test #'equal)))
 		    (setq slice (make-hash-table :test #'equal))
 		    (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
-		    (when nil
+		    (when (= cur-slice 25)
 		      (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
 			      cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
 		    (loop
@@ -1855,12 +1900,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      for j from marker to (+ marker
 					      (- cpds-per-slice 1))
 		      do
-			 (when nil
+			 (when (= cur-slice 25)
 			   (format t "~%j: ~d" j))
 			 (setq cpd (aref (car model) j))
 			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
 			 (setq evidence (gethash cpd-type evidence-slice))
 			 (setq dist-hash (make-hash-table :test #'equal))
+			 (when (= cur-slice 25)
+			   (format t "~%cpd:")
+			   (print-cpd cpd)
+			   (format t "~%cpd type: ~S" cpd-type)
+			   (format t "~%evidence:")
+			   (print-bn evidence))
 			 (loop
 			   with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
 			   with num-vvbm = (length vvbm)
@@ -1870,7 +1921,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
 				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
 			   finally
-			      (setf (gethash cpd-type slice) dist-hash)))
+			      (setf (gethash cpd-type slice) dist-hash))
+			 (when (= cur-slice 25)
+			   (format t "~%dist hash:")
+			   (print-dist-hash dist-hash)
+			   ;;(break)
+			   ))
 		    (setf (gethash cur-slice messages)
 			  slice)))
 	     messages)
@@ -1879,40 +1935,68 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (let* ((mod-len (if hidden-state-p 3 2))
 		    (model (episode-state-transitions (car eltm*)))
 		    (num-slices (/ (array-dimension (car model) 0) mod-len))
+		    (slice-steps (loop for i from 0 below num-slices collect i))
 		    (time-steps (make-index-list forward-pass-p))
 		    (pass-evidence (make-hash-table))
 		    (marginals-pass-evidence (make-hash-table))
-		    evidence-slices)
+		    (evidence-slices (make-hash-table)))
 	       (when nil
 		 (format t "~%time steps:~%~A" time-steps))
 	       (dolist (group (sliding-groups time-steps num-slices))
-		 (setq evidence-slices nil)
+		 (setq evidence-slices (make-hash-table))
 		 (when t
 		   (format t "~%group: ~S" group))
 		 (loop
-		   with slice
+		   with slice and slice-idx
 		   for i from 0 below num-slices
 		   for idx = (aref group i)
 		   do
 		      (when t
-			(format t "~%slice: ~d" idx))
+			(format t "~%~%slice: ~d" idx))
 		      (setq slice (gethash idx messages))
 		      (when (null slice)
 			(setq slice (make-hash-table :test #'equal)))
-		      (setq evidence-slices (cons slice evidence-slices))
-		   finally
-		      (when forward-pass-p
-			(setq evidence-slices (reverse evidence-slices))))
+		      (when t
+			(format t "~%Content for:")
+			(print-slice slice))
+		      ;;(setq evidence-slices (cons slice evidence-slices))
+		      (if forward-pass-p
+			  (setq slice-idx i)
+			  (setq slice-idx (- (- num-slices 1) i)))
+		      (setf (gethash slice-idx evidence-slices) slice))
+		 (when nil
+		   (break))
 		 (multiple-value-bind (evidence-bn backlinks)
 		     (make-temporal-episode-retrieval-cue
 		      eltm*
 		      evidence-slices
 		      t)  
+		   (when nil
+		     (format t "~%evidence bn:")
+		     (print-bn evidence-bn)
+		     (format t "~%evidence slices")
+		     (loop
+		       for i being the hash-keys of evidence-slices
+			 using (hash-value evidence-hash)
+		       do
+			  (format t "~%slice: ~d" i)
+			  (print-slice evidence-hash))
+		     ;;(format t "~%backlinks:")
+		     ;;(print-backlinks backlinks)
+		     (break))
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
 		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
+		     (when t
+		       (format t "~%state transitions:")
+		       (print-state-transitions state-transitions)
+		       (break))
+		     (if (not forward-pass-p)
+			 (setq slice-steps (reverse slice-steps)))
 		     (loop
-		       for i from 0 below num-slices
-		       for idx = (aref group i)
+		       ;;for i from 0 below num-slices
+		       ;;for idx = (aref group i)
+		       for i in slice-steps
+		       for idx being the elements of group
 		       do
 			  (setf (gethash idx pass-evidence)
 				(gethash i state-transitions))
@@ -1929,6 +2013,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	  new-messages
 	  new-marginals-messages)
       (setq messages (init-messages messages forward-pass-p))
+      (when nil
+	(print-state-transitions messages)
+	(break))
       (loop
 	with converged-p = nil
 	for i from 1
@@ -1940,14 +2027,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     )
 	    (if forward-pass-p
 		(multiple-value-setq (new-messages new-marginals-messages)
-		  (forward-pass messages))
+		  (forward-pass messages)
+		  ;;(forward-pass marginals-messages)
+		  )
 		(multiple-value-setq (new-messages new-marginals-messages)
-		  (backward-pass messages)))
+		  (backward-pass messages)
+		  ;;(backward-ass marginals-messages)
+		  ))
 	    (if (check-convergence messages new-messages)
 		(setq converged-p t)
 		(setq forward-pass-p (not forward-pass-p)))
 	    (setq messages new-messages)
 	    (setq marginals-messages new-marginals-messages)
+	    (when t
+	     (format t "~%messages")
+	     (print-state-transitions messages)
+	     (format t "~%~%marginals")
+	     (print-state-transitions marginals-messages))
 	finally
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")
@@ -1996,7 +2092,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (when (and states
 		 (> (hash-table-count states) 0))
 	(loop
-	  with value-prob-hash = (make-hash-table :test #'equal) and old-prob and value
+	  with value-prob-hash = (make-hash-table :test #'equal) and old-prob
 	  with state and prob
 	  for outcome being the hash-keys of states
 	    using (hash-value prob-state)
@@ -2012,12 +2108,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				     :count 1
 				     :lvl 1))
 	     (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
-	     (setq value (episode-id (car state-ref)))
-	     (setf (gethash value id-ref-hash) state-ref)
-	     (setq old-prob (gethash value value-prob-hash))
+	     (setf (gethash outcome id-ref-hash) state-ref)
+	     (setq old-prob (gethash outcome value-prob-hash))
 	     (when (null old-prob)
 	       (setq old-prob 0))
-	     (setf (gethash value value-prob-hash) (+ old-prob prob))
+	     (setf (gethash outcome value-prob-hash) (+ old-prob prob))
 	  finally
 	     (loop
 	       for v being the hash-keys of value-prob-hash
@@ -2029,7 +2124,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (> (hash-table-count observations) 0))
       (setq cur-obs (gensym "OBS-"))
       (loop
-	with value-prob-hash = (make-hash-table :test #'equal) and old-prob and value
+	with value-prob-hash = (make-hash-table :test #'equal) and old-prob
 	with observation and prob
 	for outcome being the hash-keys of observations
 	  using (hash-value prob-obs)
@@ -2047,12 +2142,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when nil t
 		 (format t "~%retrieval cue for observation:~%~S" cue))
 	   (setq obs-ref (new-retrieve-episode eltm cue nil :type "observation"))
-	   (setq value (episode-id (car obs-ref)))
-	   (setf (gethash value id-ref-hash) obs-ref)
-	   (setq old-prob (gethash value value-prob-hash))
+	   (setf (gethash outcome id-ref-hash) obs-ref)
+	   (setq old-prob (gethash outcome value-prob-hash))
 	   (when (null old-prob)
 	     (setq old-prob 0))
-	   (setf (gethash value value-prob-hash) (+ old-prob prob))
+	   (setf (gethash outcome value-prob-hash) (+ old-prob prob))
 	finally
 	   (loop
 	     for v being the hash-keys of value-prob-hash
@@ -2095,7 +2189,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
             value: eltm subtree |#
 
 ;; eltm = episodic long-term memory
-;; evidence-slices = list of hash tables of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence hash table network
+;; evidence-slices = hash table. Key: integer. Value: hash table of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION", "ACTION"], Value: evidence hash table network
 ;;   evidence hash table:
 ;;     Key: episode id representing possible outcome
 ;;     Value: evidence network
@@ -2106,8 +2200,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (loop
 	with prog-statements and backlinks = (make-hash-table :test #'equal)
 	with prev-st and prev-obs and prev-act
-	for slice in evidence-slices
-	for slice-idx from 0
+	for slice-idx being the hash-keys of evidence-slices
+	using (hash-value slice)
+	;;for slice in evidence-slices
+	;;for slice-idx from 0
 	do
 	   (when nil
 	     (format t "~%~%slice:~%~S" slice))

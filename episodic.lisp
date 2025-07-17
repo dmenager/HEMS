@@ -1675,16 +1675,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
-      (format t "~%bindings:~%~A" bindings)
-      (format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
-      
+      ;;(format t "~%bindings:~%~A" bindings)
+      ;;(format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
+      #|
       (loop
 	for i being the hash-keys of evidence-slices
 	using (hash-value evidence-hash)
 	do
 	   (format t "~%slice: ~d" i)
       (print-slice evidence-hash))
-      
+      |#
       ;;(break)
       )
     (loop
@@ -1693,17 +1693,27 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       with evidence-hash and dist-hash and marginals-dist-hash and i = 0 and j = 0
       with slice and marginals-slice and node-type
       with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
-      with cpd2 and q-match
+      with cpd2 and p-match
       for cpd being the elements of temporal-bn
       for idx from 0
-      when (and (singleton-cpd? cpd)
-		(not (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd)))))
+      when (singleton-cpd? cpd)
 	do
-	   (setq q-match (cdr (aref sol idx)))
-	   (when q-match
-	     (setq cpd2 (aref (car temporal-evidence-bn) q-match))
-	     (setq cpd (subst-cpd cpd cpd2 q-first-bindings)))
 	   (setq marker (mod i mod-len))
+	   (loop
+	     named finder
+	     for binding being the elements of sol
+	     when (and (numberp (cdr binding))
+		       (= (cdr binding) idx))
+	       do
+		  (setq p-match (car binding))
+		  (return-from finder nil)
+	     finally
+		(setq p-match nil))
+	   (when nil
+	     (format t "~%idx: ~d~%p-match: ~d" idx p-match))
+	   (when p-match
+	     (setq cpd2 (aref (car temporal-evidence-bn) p-match))
+	     (setq cpd (subst-cpd cpd cpd2 q-first-bindings)))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal))
 	     (setq marginals-slice (make-hash-table :test #'equal)))
@@ -1728,6 +1738,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
 	     (setq node-type "ACTION"))
+	   (when (not (equal "ACTION" node-type))
 	   (loop
 	     with prob and cond
 	     with backlink-episode and evidence-bn
@@ -1757,14 +1768,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
 		    (print-bn evidence-bn)
 		    ;;(format t "~%raw cue:~%~S" evidence-bn)
-		    (break)
+		    ;;(break)
 		    )
 		  (multiple-value-bind (posterior-distribution posterior-marginals eme )
 		      (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
 		    ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 		    (setf (gethash cond dist-hash) (cons prob (cons (make-array (length posterior-distribution) :initial-contents posterior-distribution) (make-hash-table))))
-		    (setf (gethash cond marginals-dist-hash) (cons prob (cons (make-array (length posterior-marginals) :initial-contents posterior-marginals) (make-hash-table)))))))
+		    (setf (gethash cond marginals-dist-hash) (cons prob (cons (make-array (length posterior-marginals) :initial-contents posterior-marginals) (make-hash-table))))))))
 	   (setf (gethash node-type slice) dist-hash)
 	   (setf (gethash node-type marginals-slice) marginals-dist-hash)
 	   (when (= marker (- mod-len 1))
@@ -1921,11 +1932,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (not (or conflicts1 conflicts2))))
 	   (sliding-groups (lst k)
 	     "Return a list of sublists, each of length K, sliding forward by K-1 elements.
-              Pads the last group with NIL if needed."
+              Pads end of list with NIL as necessary."
 	     (loop for i from 0 below (length lst) by (1- k)
 		   for group = (subseq lst i (min (+ i k) (length lst)))
-		   collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector)))
-		   ;;collect (make-array (length group) :initial-contents group)))
+		   collect (coerce (append group (make-list (- k (length group)) :initial-element nil)) 'vector))
+	     #|
+	     (loop
+	       for i from 0 below (- (length lst) (1- k)) by (1- k)
+	       collect (coerce (subseq lst i (+ i k)) 'vector))
+	     |#)
 	   (make-index-list (forward-pass-p)
 	     (cond ((and forward-pass-p (< from to))
 		    (loop for i from from to to collect i))
@@ -2022,8 +2037,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  (setq slice-idx i)
 			  (setq slice-idx (- (- num-slices 1) i)))
 		      (setf (gethash slice-idx evidence-slices) slice))
-		 (when nil
-		   (break))
 		 (multiple-value-bind (evidence-bn backlinks)
 		     (make-temporal-episode-retrieval-cue
 		      eltm*
@@ -2066,7 +2079,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (backward-pass (messages)
 	     (pass messages nil)))
     (let ((messages (make-hash-table))
-	  (forward-pass-p (< from to))
+	  (forward-pass-p (<= from to))
 	  marginals-messages
 	  new-messages
 	  new-marginals-messages)
@@ -2097,7 +2110,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(setq forward-pass-p (not forward-pass-p)))
 	    (setq messages new-messages)
 	    (setq marginals-messages new-marginals-messages)
-	    (when t
+	    (when nil
 	     (format t "~%messages")
 	     (print-state-transitions messages)
 	     (format t "~%~%marginals")

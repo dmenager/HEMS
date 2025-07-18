@@ -1818,7 +1818,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	 (loop
 	   for idx being the hash-keys of evidence-hash
 	   do
-	   (format t "slice index: ~d "))
+	      (format t "slice index: ~d " idx))
 	 (format t "~%evidence slice:~%~S" evidence-slice)
 	 (print-slice evidence-slice))
        (if (null evidence-slice)

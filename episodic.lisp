@@ -1475,8 +1475,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       using (hash-value distribution-hash)
     do
        (format t "~%~S" temporal-model-key)
-       ;;(print-dist-hash distribution-hash)
-    ))
+       (print-dist-hash distribution-hash)))
 
 #| Print inferred beliefs over time. |#
 
@@ -1815,6 +1814,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (setq evidence-slice (gethash cur-slice evidence-hash))
        (when t
 	 (format t "~%HELLO!!!!")
+	 (format t "~%evidence slice:~%~S" evidence-slice)
 	 (print-slice evidence-slice))
        (if (null evidence-slice)
 	   (setq evidence-slice (make-hash-table :test #'equal)))

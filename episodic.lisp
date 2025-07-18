@@ -1822,8 +1822,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (loop
 	 with cpd and cpd-type and evidence
 	 with dist-hash
-	 for j from marker to (+ marker
-				 (- cpds-per-slice 1))
+	 ;;for j from marker to (+ marker (- cpds-per-slice 1))
+	 for j from 0 to (- (array-dimension (car model) 0) 1)
 	 do
 	    (when nil (= cur-slice 25)
 		  (format t "~%j: ~d" j))

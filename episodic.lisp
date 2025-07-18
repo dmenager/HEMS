@@ -1811,16 +1811,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     with slice and evidence-slice
     for cur-slice in idx-list
     do
-       
        (setq evidence-slice (gethash cur-slice evidence-hash))
-       (when t
-	 (format t "~%cur-slice: ~d~%" cur-slice)
-	 (loop
-	   for idx being the hash-keys of evidence-hash
-	   do
-	      (format t "slice index: ~d " idx))
-	 (format t "~%evidence slice:~%~S" evidence-slice)
-	 (print-slice evidence-slice))
        (if (null evidence-slice)
 	   (setq evidence-slice (make-hash-table :test #'equal)))
        (setq slice (make-hash-table :test #'equal))

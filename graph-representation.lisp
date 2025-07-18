@@ -6302,8 +6302,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;; hotbar test is domain-specific heuristic -- I could change the domain language to make sure hotbar percepts are encoded differently, but I don't have time for that right now. I need unique hotbar percepts, so that all of them don't get mashed together in the schema.
 	((and (percept-cpd-p p-cpd) (percept-cpd-p q-cpd) (not (equal "HOTBAR" (gethash 0 (rule-based-cpd-vars p-cpd)))))
 	 t)
+	((or (and (equal "ACTION" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "ACTION" (gethash 0 (rule-based-cpd-types q-cpd))))
+	     (and (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types q-cpd))))
+	     (and (equal "STATE" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "STATE" (gethash 0 (rule-based-cpd-types q-cpd)))))
+	 t)
         (t
-         (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
            (format t "~%~%p-cpd: ~S~%q-cpd: ~S" (rule-based-cpd-identifiers p-cpd) (rule-based-cpd-identifiers q-cpd)))
          (loop
            with p-val and p-match
@@ -6315,11 +6322,11 @@ Roughly based on (Koller and Friedman, 2009) |#
              (when p-match
                (if (gethash p-match (rule-based-cpd-identifiers p-cpd))
                    (setq p-val t)))
-             (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%q-parent: ~S~%p-parent match: ~S~%p-val: ~S" q-val p-match p-val))
              (cond ((and p-match (not p-val) q-val)
-                    (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                       (format t "~%fail. Returning.")
                       (break))
                     (return-from same-matched-parents nil))))
@@ -6334,18 +6341,18 @@ Roughly based on (Koller and Friedman, 2009) |#
                (setq no-matched-parents nil)
                (if (gethash q-match (rule-based-cpd-identifiers q-cpd))
                    (setq q-val t)))
-             (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%p-parent: ~S~%q-parent match: ~S~%q-val: ~S" p-val q-match q-val))
              (cond ((and q-match p-val (not q-val))
-                    (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                       (format t "~%fail. Returning.")
                       (break))
                     (return-from same-matched-parents nil)))
            finally
               (if (and nil no-matched-parents (> (hash-table-count (rule-based-cpd-identifiers q-cpd)) 1))
                   (return-from same-matched-parents nil)))
-         (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
            (format t "~%success.")
            ;;(break)
 	   )
@@ -6361,15 +6368,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-first-bindings = bindings hash table where elements of q are the keys
 (defun candidate-nodes (pnum p q possible-q-candidates bindings q-first-bindings &optional (heuristic nil) &aux p-cpd)
   (setq p-cpd (aref (car p) pnum))
-  (when nil (and (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+  (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
         (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
   (loop
     with q-cpd
     for i in possible-q-candidates
     do
        (setq q-cpd (aref (car q) i))
-       (when nil (and (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
-        (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
+       (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+        (format t "~%~%q-cpd:~%~S" (rule-based-cpd-identifiers q-cpd)))
     when (and (not (gethash (rule-based-cpd-dependent-id q-cpd) q-first-bindings))
               (same-matched-parents p-cpd q-cpd bindings q-first-bindings heuristic))
       collect i into candidates

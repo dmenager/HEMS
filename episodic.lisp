@@ -1669,7 +1669,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       :backlinks backlinks
 		       :keep-singletons t
 		       :soft-likelihoods soft-likelihoods)
-    (when print-special*
+    (when nil print-special*
       (format t "~%temporal evidence bn:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
@@ -1699,6 +1699,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       when (singleton-cpd? cpd)
 	do
 	   (setq marker (mod i mod-len))
+	   #|
 	   (loop
 	     named finder
 	     for binding being the elements of sol
@@ -1716,7 +1717,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq cpd (subst-cpd cpd cpd2 q-first-bindings))
 	     (format t "~%subst-cpd:")
 	     (print-cpd cpd))
-	   (when print-special*
+	   |#
+	   (when nil print-special*
 	     (format t "~%~%idx: ~d~%p-match: ~d" idx p-match))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal))
@@ -1730,7 +1732,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				      (gethash j evidence-slices)))
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
-	   (when print-special*
+	   (when nil print-special*
 	     (format t "~%j: ~d~%cpd:" j)
 	     (print-cpd cpd)
 	     ;;(format t "~%conditioned model backlinks:")
@@ -1750,17 +1752,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     do
 		(setq prob (rule-probability rule))
 		(setq cond (car (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions rule))))
-		(when print-special*
-		  (format t "~%rule:")
-		  (print-cpd-rule rule)
-		  (format t "~%cpd dependent id: ~S" (rule-based-cpd-dependent-id cpd))
-		  (format t "~%identifiers:~%~S~%cond: ~S" (rule-based-cpd-identifiers cpd) cond))
-		(setq cond (caar (nth cond (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
+	        (loop
+		  named finder
+		  for vvb in (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+		  when (= cond (cdar vvb))
+		    do
+		       (setq cond (caar vvb))
+		       (return-from finder nil))
 		(setq evidence-bn (cdr (gethash cond evidence-hash)))
 		(when (null evidence-bn)
 		  (setq evidence-bn (make-empty-graph)))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
-		(when print-special*
+		(when nil print-special*
 		  (format t "~%rule:")
 		  (print-cpd-rule rule)
 		  (format t "~%cond: ~S~%backlinks:" cond)
@@ -1771,7 +1774,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when print-special*
+		  (when nil print-special*
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
 		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
@@ -1792,7 +1795,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq j (+ j 1)))
 	   (setq i (+ i 1))
       finally
-	 (when print-special*
+	 (when nil print-special*
 	   (format t "~%returning messages:")
 	   (print-state-transitions state-transitions)
 	   (break))
@@ -1980,8 +1983,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (loop
 		      with cpd and cpd-type and evidence
 		      with dist-hash
-		      for j from marker to (+ marker
-					      (- cpds-per-slice 1))
+		      ;; for j from marker to (+ marker (- cpds-per-slice 1))
+		      for j from 0 to (- (array-dimension (car model) 0) 1)
 		      do
 			 (when nil (= cur-slice 25)
 			   (format t "~%j: ~d" j))
@@ -2036,8 +2039,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   do
 		      (when t
 			(format t "~%~%slice: ~d" idx))
-		      (when (= idx 26)
-			(setq print-special* t))
 		      (setq slice (gethash idx messages))
 		      (when (null slice)
 			(setq slice (make-hash-table :test #'equal)))
@@ -2122,12 +2123,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(setq forward-pass-p (not forward-pass-p)))
 	    (setq messages new-messages)
 	    (setq marginals-messages new-marginals-messages)
-	    (when nil
+	    (when t
 	     (format t "~%messages")
 	     (print-state-transitions messages)
 	     (format t "~%~%marginals")
 	     (print-state-transitions marginals-messages)
-	     (break))
+	     ;;(break)
+	     )
 	finally
 	   (if (= i n-passes)
 	       (format t "~%reached max inference passes")

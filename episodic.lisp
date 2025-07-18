@@ -1855,6 +1855,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (setf (gethash cur-slice messages)
 	     slice)
     finally
+       (when t
+	 (print-state-transitions messages))
        (return messages)))
 
 #| Assumes that the temporal models all have the same number of slices. |#

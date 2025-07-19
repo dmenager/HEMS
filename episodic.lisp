@@ -1690,7 +1690,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with evidence-hash and dist-hash and marginals-dist-hash and js = (loop for k being the hash-keys of evidence-slices collect k)
+      with evidence-hash and dist-hash and marginals-dist-hash and js = (loop for k being the hash-keys of evidence-slices collect k into keys
+									      finally (return (sort keys #'<)))
       with slice and marginals-slice and node-type
       with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
       with cpd2 and p-match

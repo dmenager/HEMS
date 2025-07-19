@@ -1855,8 +1855,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (setf (gethash cur-slice messages)
 	     slice)
     finally
-       (when t
-	 (print-state-transitions messages))
        (return messages)))
 
 #| Assumes that the temporal models all have the same number of slices. |#
@@ -1965,11 +1963,42 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (loop for i from to downto from collect i))
 		   ((and (not forward-pass-p) (>= from to))
 		    (loop for i from from downto to collect i))))
+	   (model-var-vvbms (model)
+	     (loop
+	       with vvbms-hash = (make-hash-table :test #'equal) 
+	       with cpds-per-slice = (if hidden-state-p 3 2)
+	       with num-cpds = (array-dimension (car model) 0)
+	       with num-slices = (/ num-cpds cpds-per-slice) and factors
+	       with cpd and cpd-type
+	       for i from 0 below cpds-per-slice
+	       do
+		  (setq cpd (aref (car model) i))
+		  (setq cpd-type (gethash 0 (rule-based-cpd-types cpd))) 
+		  (setf (gethash cpd-type vvbms-hash) nil)
+		  (loop
+		    with j = i
+		    with cpd2 and vvbm
+		    while (< j  (- num-cpds 1))
+		    do
+		       (setq cpd2 (aref (car model) j))
+		       (setq vvbm (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
+		       (loop
+			 with value
+			 for vvb in vvbm
+			 do
+			    (setq value (caar vvb))
+			    (when (not (member value (gethash cpd-type vvbms-hash) :test #'equal))
+			      (setf (gethash cpd-type vvbms-hash)
+				    (cons value (gethash cpd-type vvbms-hash)))))
+		       (setq j (+ j cpds-per-slice)))
+	       finally
+		  (return vvbms-hash)))
 	   (init-messages (messages forward-pass-p)
 	     (let ((idx-list (make-index-list forward-pass-p)))
 	       (loop
 		 with marker and cpds-per-slice = (if hidden-state-p 3 2)
 		 with model = (episode-state-transitions (car eltm*))
+		 with vvbms-hash = (model-var-vvbms model)
 		 with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
 		 with slice and evidence-slice
 		 for cur-slice in idx-list
@@ -1979,41 +2008,41 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(setq evidence-slice (make-hash-table :test #'equal)))
 		    (setq slice (make-hash-table :test #'equal))
 		    (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
-		    (when nil (= cur-slice 25)
+		    (when nil (= cur-slice 0)
 		      (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
 			      cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
 		    (loop
 		      with cpd and cpd-type and evidence
 		      with dist-hash
 		      ;; for j from marker to (+ marker (- cpds-per-slice 1))
-		      for j from 0 to (- (array-dimension (car model) 0) 1)
+		      for j from 0 below (array-dimension (car model) 0)
 		      do
-			 (when nil (= cur-slice 25)
+			 (when nil (= cur-slice 0)
 			   (format t "~%j: ~d" j))
 			 (setq cpd (aref (car model) j))
 			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
 			 (setq evidence (gethash cpd-type evidence-slice))
 			 (setq dist-hash (make-hash-table :test #'equal))
-			 (when nil (= cur-slice 25)
+			 (when nil (= cur-slice 0)
 			   (format t "~%cpd:")
 			   (print-cpd cpd)
 			   (format t "~%cpd type: ~S" cpd-type)
 			   (format t "~%evidence:")
 			   (print-bn evidence))
 			 (loop
-			   with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			   with vvbm = (gethash (gethash 0 (rule-based-cpd-types cpd)) vvbms-hash)
 			   with num-vvbm = (length vvbm)
 			   for vvb in vvbm
 			   do
 			      (if evidence
-				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
-				  (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
+				  (setf (gethash vvb dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+				  (setf (gethash vvb dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
 			   finally
 			      (setf (gethash cpd-type slice) dist-hash))
-			 (when nil (= cur-slice 25)
+			 (when nil (= cur-slice 0)
 			   (format t "~%dist hash:")
 			   (print-dist-hash dist-hash)
-			   ;;(break)
+			   (break)
 			   ))
 		    (setf (gethash cur-slice messages)
 			  slice)))
@@ -2044,7 +2073,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      (setq slice (gethash idx messages))
 		      (when (null slice)
 			(setq slice (make-hash-table :test #'equal)))
-		      (when nil
+		      (when nil print-special*
 			(format t "~%Content for:")
 			(print-slice slice))
 		      ;;(setq evidence-slices (cons slice evidence-slices))
@@ -2301,7 +2330,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	;;for slice-idx from 0
 	do
 	   (when nil
-	     (format t "~%~%slice:~%~S" slice))
+	     (format t "~%~%slice for retrieval cue:")
+	     (print-slice slice))
 	(multiple-value-setq (prog-statements backlinks prev-obs prev-st prev-act)
 	  (make-temporal-episode-program eltm state-p slice-idx
 					 :states (gethash "STATE" slice)
@@ -2315,7 +2345,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	finally
 	   (when nil
 	     (format t "~%program statements:~%~S" prog-statements)
-	     (break))
+	     ;;(break)
+	     )
 	(return (values (eval `(compile-program nil ,@prog-statements)) backlinks))))
 
 (defun py-test-hash ()

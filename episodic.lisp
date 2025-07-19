@@ -1690,7 +1690,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
       with marker and mod-len = (if hidden-state-p 3 2)
-      with evidence-hash and dist-hash and marginals-dist-hash and i = 0 and j = 0
+      with evidence-hash and dist-hash and marginals-dist-hash and js = (loop for k being the hash-keys of evidence-slices collect k)
       with slice and marginals-slice and node-type
       with match and state-transitions = (make-hash-table) and marginals-state-transitions = (make-hash-table)
       with cpd2 and p-match
@@ -1698,7 +1698,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       for idx from 0
       when (singleton-cpd? cpd)
 	do
-	   (setq marker (mod i mod-len))
+	   (setq marker (mod idx mod-len))
 	   #|
 	   (loop
 	     named finder
@@ -1729,11 +1729,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					     "OBSERVATION")
 					    ((string-equal "action-node" (symbol-name (get-cpd-type cpd)))
 					     "ACTION"))
-				      (gethash j evidence-slices)))
+				      (gethash (car js) evidence-slices)))
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
 	   (when nil print-special*
-	     (format t "~%j: ~d~%cpd:" j)
+	     (format t "~%j: ~d~%cpd:" (car js))
 	     (print-cpd cpd)
 	     ;;(format t "~%conditioned model backlinks:")
 	     ;;(print-backlinks (episode-backlinks conditioned-temporal))
@@ -1784,7 +1784,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (when nil print-special*
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
-		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " j node-type)
+		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " (car js) node-type)
 		    (print-bn evidence-bn)
 		    ;;(break)
 		    )
@@ -1797,10 +1797,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (setf (gethash node-type slice) dist-hash)
 	   (setf (gethash node-type marginals-slice) marginals-dist-hash)
 	   (when (= marker (- mod-len 1))
-	     (setf (gethash j state-transitions) slice)
-	     (setf (gethash j marginals-state-transitions) marginals-slice)
-	     (setq j (+ j 1)))
-	   (setq i (+ i 1))
+	     (setf (gethash (car js) state-transitions) slice)
+	     (setf (gethash (car js) marginals-state-transitions) marginals-slice)
+	     (setq js (cdr js)))
       finally
 	 (when nil print-special*
 	   (format t "~%returning messages:")
@@ -1808,12 +1807,44 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (break))
 	 (return (values state-transitions marginals-state-transitions)))))
 
+(defun model-var-vvbms (model)
+  (loop
+    with vvbms-hash = (make-hash-table :test #'equal) 
+    with cpds-per-slice = (if hidden-state-p 3 2)
+    with num-cpds = (array-dimension (car model) 0)
+    with num-slices = (/ num-cpds cpds-per-slice)
+    with cpd and cpd-type
+    for i from 0 below cpds-per-slice
+    do
+       (setq cpd (aref (car model) i))
+       (setq cpd-type (gethash 0 (rule-based-cpd-types cpd))) 
+       (setf (gethash cpd-type vvbms-hash) nil)
+       (loop
+	 with j = i
+	 with cpd2 and vvbm
+	 while (< j  (- num-cpds 1))
+	 do
+	    (setq cpd2 (aref (car model) j))
+	    (setq vvbm (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
+	    (loop
+	      with value
+	      for vvb in vvbm
+	      do
+		 (setq value (caar vvb))
+		 (when (not (member value (gethash cpd-type vvbms-hash) :test #'equal))
+		   (setf (gethash cpd-type vvbms-hash)
+			 (cons value (gethash cpd-type vvbms-hash)))))
+	    (setq j (+ j cpds-per-slice)))
+    finally
+       (return vvbms-hash)))
+
 (defun make-messages (evidence-hash from to hidden-state-p)
   (loop
     with messages = (make-hash-table)
     with idx-list = (loop for i from from to to collect i)
     with marker and cpds-per-slice = (if hidden-state-p 3 2)
     with model = (episode-state-transitions (car eltm*))
+    with vvbms-hash = (model-var-vvbms model)
     with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
     with slice and evidence-slice
     for cur-slice in idx-list
@@ -1845,7 +1876,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (format t "~%evidence:")
 		  (print-bn evidence))
 	    (loop
-	      with vvbm = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+	      with vvbm = (gethash (gethash 0 (rule-based-cpd-types cpd)) vvbms-hash)
 	      with num-vvbm = (length vvbm)
 	      for vvb in vvbm
 	      do
@@ -1975,7 +2006,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       with vvbms-hash = (make-hash-table :test #'equal) 
 	       with cpds-per-slice = (if hidden-state-p 3 2)
 	       with num-cpds = (array-dimension (car model) 0)
-	       with num-slices = (/ num-cpds cpds-per-slice) and factors
+	       with num-slices = (/ num-cpds cpds-per-slice)
 	       with cpd and cpd-type
 	       for i from 0 below cpds-per-slice
 	       do
@@ -2194,8 +2225,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (maphash #'(lambda (k v)
 		   (push (list k v) marginal-alist))
 	       marginal-messages))
-    (coerce alist 'vector)
-    (coerce marginal-alist 'vector)
+    (setq alist (coerce alist 'vector))
+    (setq marginal-alist (coerce marginal-alist 'vector))
     (values alist marginal-alist)))
 
 #| Generates code that compiles to a temporal episode. 

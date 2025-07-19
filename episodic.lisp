@@ -1741,6 +1741,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (print-dist-hash evidence-hash))
 	   (setq dist-hash (make-hash-table :test #'equal))
 	   (setq marginals-dist-hash (make-hash-table :test #'equal))
+	   (loop
+	     for c being the hash-keys of evidence-hash
+	       using (hash-value prob-obs)
+	     do
+		(setf (gethash c dist-hash) (cons 0 (cdr prob-obs)))
+		;; I need to have the marginals evidence hash to properly pre-fill marginals-dist-hash
+		(setf (gethash c marginals-dist-hash) (cons 0 (cdr prob-obs))))
 	   (setq node-type (gethash 0 (rule-based-cpd-types cpd)))
 	   (when (equal "PERCEPT" node-type)
 	     (setq node-type "ACTION"))

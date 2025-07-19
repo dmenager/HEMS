@@ -1807,7 +1807,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (break))
 	 (return (values state-transitions marginals-state-transitions)))))
 
-(defun model-var-vvbms (model)
+(defun model-var-vvbms (model hidden-state-p)
   (loop
     with vvbms-hash = (make-hash-table :test #'equal) 
     with cpds-per-slice = (if hidden-state-p 3 2)
@@ -1844,7 +1844,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     with idx-list = (loop for i from from to to collect i)
     with marker and cpds-per-slice = (if hidden-state-p 3 2)
     with model = (episode-state-transitions (car eltm*))
-    with vvbms-hash = (model-var-vvbms model)
+    with vvbms-hash = (model-var-vvbms model hidden-state-p)
     with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
     with slice and evidence-slice
     for cur-slice in idx-list

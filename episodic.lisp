@@ -1881,8 +1881,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	      for vvb in vvbm
 	      do
 		 (if evidence
-		     (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
-		     (setf (gethash (caar vvb) dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
+		     (setf (gethash vvb dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+		     (setf (gethash vvb dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
 	      finally
 		 (setf (gethash cpd-type slice) dist-hash))
 	    (when nil (= cur-slice 25)

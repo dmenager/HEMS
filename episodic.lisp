@@ -1675,8 +1675,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
       (format t "~%sol:~%~S" sol)
-      (format t "~%bindings:~%~A" bindings)
-      (format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
+      ;;(format t "~%bindings:~%~A" bindings)
+      ;;(format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
       #|
       (loop
 	for i being the hash-keys of evidence-slices
@@ -1685,7 +1685,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (format t "~%slice: ~d" i)
       (print-slice evidence-hash))
       |#
-      (break)
+      ;;(break)
       )
     (loop
       with temporal-bn = (car (episode-state-transitions conditioned-temporal))
@@ -1719,7 +1719,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (format t "~%subst-cpd:")
 	     (print-cpd cpd))
 	   |#
-	   (when nil print-special*
+	   (when nil (and print-special*
+		      (= (car js) 0))
 	     (format t "~%~%idx: ~d~%p-match: ~d" idx p-match))
 	   (when (= marker 0)
 	     (setq slice (make-hash-table :test #'equal))
@@ -1733,7 +1734,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				      (gethash (car js) evidence-slices)))
 	   (when (null evidence-hash)
 	     (setq evidence-hash (make-hash-table :test #'equal)))
-	   (when nil print-special*
+	   (when nil (and print-special*
+		      (= (car js) 0))
 	     (format t "~%j: ~d~%cpd:" (car js))
 	     (print-cpd cpd)
 	     ;;(format t "~%conditioned model backlinks:")
@@ -1771,7 +1773,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(when (null evidence-bn)
 		  (setq evidence-bn (make-empty-graph)))
 		(setq backlink-episode (car (gethash cond (episode-backlinks conditioned-temporal))))
-		(when nil print-special*
+		(when nil (and print-special*
+			   (= (car js) 0))
 		  (format t "~%rule:")
 		  (print-cpd-rule rule)
 		  (format t "~%cond: ~S~%backlinks:" cond)
@@ -1782,10 +1785,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when nil print-special*
+		  (when nil (and print-special*
+			     (= (car js) 0))
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
-		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue: " (car js) node-type)
+		    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue:" (car js) node-type)
 		    (print-bn evidence-bn)
 		    ;;(break)
 		    )
@@ -1793,11 +1797,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
 		    ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
+		    (when nil (and print-special*
+			       (= (car js) 0))
+		      (format t "~%posterior:")
+		      (print-bn (cons (make-array (length posterior-distribution) :initial-contents posterior-distribution) (make-hash-table)))
+		      ;;(break)
+		      )
 		    (setf (gethash cond dist-hash) (cons prob (cons (make-array (length posterior-distribution) :initial-contents posterior-distribution) (make-hash-table))))
 		    (setf (gethash cond marginals-dist-hash) (cons prob (cons (make-array (length posterior-marginals) :initial-contents posterior-marginals) (make-hash-table))))))))
 	   (setf (gethash node-type slice) dist-hash)
 	   (setf (gethash node-type marginals-slice) marginals-dist-hash)
 	   (when (= marker (- mod-len 1))
+	     (when nil (and print-special*
+			(= (car js) 0))
+	       (format t "~%adding slice for time step ~d:" (car js))
+	       (print-slice slice)
+	       (break))
 	     (setf (gethash (car js) state-transitions) slice)
 	     (setf (gethash (car js) marginals-state-transitions) marginals-slice)
 	     (setq js (cdr js)))
@@ -2053,8 +2068,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (loop
 		      with cpd and cpd-type and evidence
 		      with dist-hash
-		      ;; for j from marker to (+ marker (- cpds-per-slice 1))
-		      for j from 0 below (array-dimension (car model) 0)
+		      for j from marker to (+ marker (- cpds-per-slice 1))
+		      ;;for j from 0 below (array-dimension (car model) 0)
 		      do
 			 (when nil (= cur-slice 0)
 			   (format t "~%j: ~d" j))
@@ -2078,7 +2093,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  (setf (gethash vvb dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
 			   finally
 			      (setf (gethash cpd-type slice) dist-hash))
-			 (when nil (= cur-slice 0)
+			 (when nil(= cur-slice 0)
 			   (format t "~%dist hash:")
 			   (print-dist-hash dist-hash)
 			   (break)
@@ -2107,6 +2122,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   for i from 0 below num-slices
 		   for idx = (aref group i)
 		   do
+		      (if (null idx)
+			  (setq print-special* t)
+			  (setq print-special* nil))
 		      (when t
 			(format t "~%~%slice: ~d" idx))
 		      (setq slice (gethash idx messages))
@@ -2125,7 +2143,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      eltm*
 		      evidence-slices
 		      t)  
-		   (when nil
+		   (when nil print-special*
 		     (format t "~%evidence bn:")
 		     (print-bn evidence-bn)
 		     (format t "~%evidence slices")
@@ -2137,21 +2155,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  (print-slice evidence-hash))
 		     ;;(format t "~%backlinks:")
 		     ;;(print-backlinks backlinks)
-		     (break))
+		     ;;(break)
+		     )
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
 		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
-		     (when nil
+		     (when print-special*
 		       (format t "~%state transitions:")
 		       (print-state-transitions state-transitions)
-		       (break))
-		     (if (not forward-pass-p)
-			 (setq slice-steps (reverse slice-steps)))
+		       ;;(break)
+		       )
 		     (loop
 		       ;;for i from 0 below num-slices
 		       ;;for idx = (aref group i)
-		       for i in slice-steps
+		       for i in (if forward-pass-p slice-steps (reverse slice-steps))
 		       for idx being the elements of group
 		       do
+			  (when print-special*
+			    (format t "~%~%group (2nd): ~S~%state-trasitions index: ~d~%ordered state transitions slices: ~S~%pass-evidence-index: ~d" group i slice-steps idx))
 			  (setf (gethash idx pass-evidence)
 				(gethash i state-transitions))
 			  (setf (gethash idx marginals-pass-evidence)
@@ -2196,9 +2216,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    (when t
 	     (format t "~%messages")
 	     (print-state-transitions messages)
-	     (format t "~%~%marginals")
-	     (print-state-transitions marginals-messages)
-	     ;;(break)
+	     ;;(format t "~%~%marginals")
+	     ;;(print-state-transitions marginals-messages)
+	     (break)
 	     )
 	finally
 	   (if (= i n-passes)
@@ -2209,8 +2229,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when t
 	     (format t "~%messages")
 	     (print-state-transitions messages)
-	     (format t "~%~%marginals")
-	     (print-state-transitions marginals-messages))
+	     ;;(format t "~%~%marginals")
+	     ;;(print-state-transitions marginals-messages)
+	     )
 	   (return (values messages marginals-messages))))))
 
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))

@@ -4828,7 +4828,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; m1 = current message
 ;; m2 = updated message
-(defun same-message-p (m1 m2 &key round)
+(defun same-message-p (m1 m2 &key round (check-count t))
   (cond ((and (numberp m1) (numberp m2))
          (= m1 m2))
         ((and (numberp m1) (rule-based-cpd-p m2))
@@ -4846,12 +4846,12 @@ Roughly based on (Koller and Friedman, 2009) |#
                (t
                 (loop
                   for rule being the elements of (rule-based-cpd-rules m1)
-                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round)) (rule-based-cpd-rules m2))
+                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round :check-count check-count)) (rule-based-cpd-rules m2))
                     do
                        (return-from same-message-p nil))
                 (loop
                   for rule being the elements of (rule-based-cpd-rules m2)
-                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round)) (rule-based-cpd-rules m1))
+                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round :check-count check-count)) (rule-based-cpd-rules m1))
                     do
                        (return-from same-message-p nil))
                 t)))))

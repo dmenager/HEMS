@@ -1492,10 +1492,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
   (labels ((marginalize-bn (bn)
 	     (loop
 	       with arr = (make-array (array-dimension (car bn) 0))
-	       with keep and remove
+	       with keep and remove and copy-cpd
 	       for cpd being the elements of (car bn)
 	       for i from 0
 	       do
+		  (setq copy-cpd (copy-rule-based-cpd cpd))
 		  (setq keep (list (rule-based-cpd-dependent-id cpd)))
 		  (loop
 		    for id being the hash-keys of (rule-based-cpd-identifiers cpd)
@@ -1718,7 +1719,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       :backlinks backlinks
 		       :keep-singletons t
 		       :soft-likelihoods soft-likelihoods)
-    (when t nil print-special*
+    (when nil print-special*
       (format t "~%temporal evidence retrieval cue:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
@@ -1834,7 +1835,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when t nil (and print-special*
+		  (when nil (and print-special*
 			     (= (car js) 0))
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)

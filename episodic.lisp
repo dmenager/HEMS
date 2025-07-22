@@ -1835,7 +1835,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when nil (and print-special*
+		  (when t nil (and print-special*
 			     (= (car js) 0))
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)
@@ -1847,7 +1847,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 		    (declare (ignore eme))
 		    ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-		    (when nil (and print-special*
+		    (when t nil (and print-special*
 			       (= (car js) 0))
 		      (format t "~%posterior:")
 		      (print-bn (cons (make-array (length posterior-distribution) :initial-contents posterior-distribution) (make-hash-table)))

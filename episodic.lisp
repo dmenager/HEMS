@@ -1488,6 +1488,55 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (format t "~%~%slice: ~d" slice-idx)
        (print-slice slice)))
 
+(defun marginalize-messages (state-transitions)
+  (labels ((marginalize-bn (bn)
+	     (loop
+	       with arr = (make-array (array-dimension (car bn) 0))
+	       with keep and remove
+	       for cpd being the elements of (car bn)
+	       for i from 0
+	       do
+		  (setq keep (list (rule-based-cpd-dependent-id cpd)))
+		  (loop
+		    for id being the hash-keys of (rule-based-cpd-identifiers cpd)
+		    when (not (equal id (car keep)))
+		      collect id into rem
+		    finally
+		       (setq remove rem))
+		  (setf (aref arr i) (factor-operation cpd keep remove '+))
+	       finally
+		  (return (cons arr (cdr bn)))))
+	   (marginalize-dist-hash (distribution-hash)
+	     (loop
+	       with dist-hash = (make-hash-table :test #'equal)
+	       for cond-key being the hash-keys of distribution-hash
+		 using (hash-value prob-rec)
+	       do
+		  (setf (gethash cond-key dist-hash)
+			(cons (car prob-rec)
+			      (marginalize-bn (cdr prob-rec))))
+	       finally
+		  (return dist-hash)))
+	   (marginalize-slice (slice)
+	     (loop
+	       with slice-hash = (make-hash-table :test #'equal)
+	       for temporal-model-key being the hash-keys of slice
+		 using (hash-value distribution-hash)
+	       do
+		  (setf (gethash temporal-model-key slice-hash)
+			(marginalize-dist-hash distribution-hash))
+	       finally
+		  (return slice-hash))))
+    (loop
+      with marginalized-messages = (make-hash-table)
+      for slice-idx being the hash-keys of state-transitions
+	using (hash-value slice)
+      do
+	 (setf (gethash slice-idx marginalized-messages)
+	       (marginalize-slice slice))
+      finally
+	 (return marginalized-messages))))
+
 #| Recollect an experience.
    Returns multiple values.
    First value is a list twice as long as the number of variables in the network. The first half contains posterior CPDs and the last half contains marginalized singletons.
@@ -2122,9 +2171,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   for i from 0 below num-slices
 		   for idx = (aref group i)
 		   do
-		      (if (null idx)
-			  (setq print-special* t)
-			  (setq print-special* nil))
+		      (when nil
+			(if (null idx)
+			    (setq print-special* t)
+			    (setq print-special* nil)))
 		      (when t
 			(format t "~%~%slice: ~d" idx))
 		      (setq slice (gethash idx messages))
@@ -2159,7 +2209,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     )
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
 		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p)
-		     (when print-special*
+		     (when nil print-special*
 		       (format t "~%state transitions:")
 		       (print-state-transitions state-transitions)
 		       ;;(break)
@@ -2170,7 +2220,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       for i in (if forward-pass-p slice-steps (reverse slice-steps))
 		       for idx being the elements of group
 		       do
-			  (when print-special*
+			  (when nil print-special*
 			    (format t "~%~%group (2nd): ~S~%state-trasitions index: ~d~%ordered state transitions slices: ~S~%pass-evidence-index: ~d" group i slice-steps idx))
 			  (setf (gethash idx pass-evidence)
 				(gethash i state-transitions))
@@ -2194,26 +2244,24 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	with converged-p = nil
 	for i from 1
 	while (and (not converged-p)
-		   (not (= i n-passes)))
+		   (not (= i (+ n-passes 1))))
 	do
 	   (when t
 	     (format t "~%~%iteration: ~d~%forward-pass-p: ~a" i forward-pass-p)
 	     )
 	    (if forward-pass-p
 		(multiple-value-setq (new-messages new-marginals-messages)
-		  (forward-pass messages)
-		  ;;(forward-pass marginals-messages)
+		  (forward-pass (marginalize-messages messages))
 		  )
 		(multiple-value-setq (new-messages new-marginals-messages)
-		  (backward-pass messages)
-		  ;;(backward-ass marginals-messages)
+		  (backward-pass (marginalize-messages messages))
 		  ))
 	    (if (check-convergence messages new-messages)
 		(setq converged-p t)
 		(setq forward-pass-p (not forward-pass-p)))
 	    (setq messages new-messages)
 	    (setq marginals-messages new-marginals-messages)
-	    (when t
+	    (when nil
 	     (format t "~%messages")
 	     (print-state-transitions messages)
 	     ;;(format t "~%~%marginals")

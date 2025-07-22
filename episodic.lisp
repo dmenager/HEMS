@@ -1718,8 +1718,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       :backlinks backlinks
 		       :keep-singletons t
 		       :soft-likelihoods soft-likelihoods)
-    (when nil print-special*
-      (format t "~%temporal evidence bn:~%")
+    (when t nil print-special*
+      (format t "~%temporal evidence retrieval cue:~%")
       (print-bn temporal-evidence-bn)
       (format t"~%conditioned temporal model:~%")
       (print-bn (episode-state-transitions conditioned-temporal))
@@ -1834,7 +1834,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (format t "~%~S : ~S" key (episode-id (car subtree))))
 		  (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
 	        (when backlink-episode
-		  (when nil (and print-special*
+		  (when t nil (and print-special*
 			     (= (car js) 0))
 		    (format t "~%Remembering from:")
 		    (print-episode backlink-episode)

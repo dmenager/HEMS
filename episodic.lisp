@@ -1660,7 +1660,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    for rule being the elements of (rule-based-cpd-rules cpd)
 		    do
 		    (when (= (rule-probability rule) 0)
-		      (setf (rule-probability rule) 1/100)))
+		      (setf (rule-probability rule) 1/10)))
 	      (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
       (when nil
 	(format t "~%~%episode id: ~S~%bn:~%~S" (episode-id (car eme)) bn))

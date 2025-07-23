@@ -2138,6 +2138,44 @@
         (generate-cpd-step-sizes (rule-based-cpd-cardinalities phi1)))
   phi1)
 
+(defun make-trunc-cpd (cpd)
+  (let (trunc-cpd trunc-idents trunc-vars trunc-types trunc-vvbm trunc-cids trunc-qvars trunc-sva trunc-lower-approx-var-value-block-map)
+    (setq trunc-idents (make-hash-table :test #'equal))
+    (setf (gethash (rule-based-cpd-dependent-id cpd) trunc-idents) 0)
+    (setq trunc-vars (make-hash-table))
+    (setf (gethash 0 trunc-vars)
+          (gethash 0 (rule-based-cpd-vars cpd)))
+    (setq trunc-types (make-hash-table))
+    (setf (gethash 0 trunc-types)
+          (gethash 0 (rule-based-cpd-types cpd)))
+    (setq trunc-vvbm (make-hash-table))
+    (setf (gethash 0 trunc-vvbm)
+          (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+    (setq trunc-sva (make-hash-table))
+    (setf (gethash 0 trunc-sva)
+          (gethash 0 (rule-based-cpd-set-valued-attributes cpd)))
+    (setq trunc-lower-approx-var-value-block-map (make-hash-table))
+    (setf (gethash 0 trunc-lower-approx-var-value-block-map)
+          (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map cpd)))
+    (setq trunc-cids (make-hash-table))
+    (setf (gethash 0 trunc-cids)
+          (gethash 0 (rule-based-cpd-concept-ids cpd)))
+    (setq trunc-qvars (make-hash-table))
+    (setf (gethash 0 trunc-qvars)
+          (gethash 0 (rule-based-cpd-qualified-vars cpd)))
+    (setq trunc-cpd
+          (make-rule-based-cpd
+           :dependent-id (rule-based-cpd-dependent-id cpd)
+           :identifiers trunc-idents
+           :vars trunc-vars
+           :types trunc-types
+           :var-value-block-map trunc-vvbm
+           :set-valued-attributes trunc-sva
+           :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
+           :concept-ids trunc-cids
+           :qualified-vars trunc-qvars))
+    trunc-cpd))
+
 #| Update variable value map of variables in cpd that have already been merged |#
 
 ;; cpd = conditional probability density
@@ -2152,40 +2190,7 @@
     do
        (setq p-cpd (get-cpd-by-id identifier new-nodes))
        (when p-cpd
-         (setq trunc-idents (make-hash-table :test #'equal))
-         (setf (gethash (rule-based-cpd-dependent-id p-cpd) trunc-idents) 0)
-         (setq trunc-vars (make-hash-table))
-         (setf (gethash 0 trunc-vars)
-               (gethash 0 (rule-based-cpd-vars p-cpd)))
-         (setq trunc-types (make-hash-table))
-         (setf (gethash 0 trunc-types)
-               (gethash 0 (rule-based-cpd-types p-cpd)))
-         (setq trunc-vvbm (make-hash-table))
-         (setf (gethash 0 trunc-vvbm)
-               (gethash 0 (rule-based-cpd-var-value-block-map p-cpd)))
-         (setq trunc-sva (make-hash-table))
-         (setf (gethash 0 trunc-sva)
-               (gethash 0 (rule-based-cpd-set-valued-attributes p-cpd)))
-         (setq trunc-lower-approx-var-value-block-map (make-hash-table))
-         (setf (gethash 0 trunc-lower-approx-var-value-block-map)
-               (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map p-cpd)))
-         (setq trunc-cids (make-hash-table))
-         (setf (gethash 0 trunc-cids)
-               (gethash 0 (rule-based-cpd-concept-ids p-cpd)))
-         (setq trunc-qvars (make-hash-table))
-         (setf (gethash 0 trunc-qvars)
-               (gethash 0 (rule-based-cpd-qualified-vars p-cpd)))
-         (setq trunc-p-cpd
-               (make-rule-based-cpd
-                :dependent-id (rule-based-cpd-dependent-id p-cpd)
-                :identifiers trunc-idents
-                :vars trunc-vars
-                :types trunc-types
-                :var-value-block-map trunc-vvbm
-                :set-valued-attributes trunc-sva
-                :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
-                :concept-ids trunc-cids
-                :qualified-vars trunc-qvars))
+	 (setq trunc-p-cpd (make-trunc-cpd p-cpd))
          (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id cpd)))
                (format t "~%truncated p-cpd:~%~S" p-cpd))
          ;;(format t "~%marginalized p-cpd:~%~A" p-cpd)
@@ -3601,6 +3606,7 @@
 	      (t
                (push rule result)))))
     result))
+
 #| Perform a filter operation over rules
    Returns: a list of rules |#
 

@@ -1712,11 +1712,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
-  (labels ((smooth-posterior (posterior-distribution alpha)
+  (labels ((smooth-posterior (posterior-distribution alpha &key (mixture-type 'uniform))
 	     (loop
-	       with smoothed-cpd and probability
+	       with smoothed-cpd and probability with mixture-probs
 	       for cpd in posterior-distribution
 	       do
+		  (cond ((eq mixture-type 'discrete-uniform)
+			 )
+			((eq mixture-type 'discrete-normal-approximation))
+			(t
+			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation")))
 		  (setq probability (* alpha (/ 1 (length (gethash 0 (rule-based-cpd-var-value-block-map cpd))))))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop

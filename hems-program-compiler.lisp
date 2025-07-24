@@ -71,6 +71,50 @@
 		(list :value value :probability p :count nil))
 	    values)))
 
+(defun discrete-normal-approximation (&key values modes)
+  (labels ((parse-string-numerics (l)
+	     (mapcan #'(lambda (v)
+			 (let (parsed)
+			   (with-input-from-string (s v)
+			     (setq parsed (read s))
+			     (when (numberp parsed)
+			       (list parsed)))))
+		     l))
+	   (get-distances (domain)
+	     (mapcar #'(lambda (val)
+			 (cons val (apply #'min (mapcar #'(lambda (m) (abs (- m val))) modes))))
+		     domain))
+	   (get-unnormalized-distribution (distances std)
+	     (loop
+	       with prob
+	       for d in distances
+	       do
+	       (setq prob (* (/ 1 (* std (sqrt (* 2 pi))))
+			     (exp (* -1/2 (expt (/ (cdr d) std) 2)))))
+	       collect (cons (car d) prob) into unnormalized
+	       summing prob into total
+	       finally
+		  (return (values unnormalized total))))
+	   (get-distribution (distances std)
+	     (multiple-value-bind (unnormalized total)
+		 (get-unnormalized-distribution distances std)
+	       (mapcar #'(lambda (pair)
+			   (list :value  (write-to-string (car pair))
+				 :probability (/ (cdr pair) total)
+				 :count 1))
+		       unnormalized))))
+    (when t
+      (format t "~%values: ~S~%modes: ~S" values modes))
+    (when (null modes)
+      (error "Modes list must be non empty."))
+    (when (null values)
+      (error "Values list must be non empty."))
+    (when (not (subsetp modes values :test #'equal))
+      (error "Modes list needs to be a proper subset of values (case sensitive)."))
+    (setq values (parse-string-numerics values))
+    (setq modes (parse-string-numerics modes))
+    (get-distribution (get-distances values) (if (> (length modes) 1) (stdev modes) 1))))
+
 (defun get-cpd-type (ref-cpd)
   (cond ((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "PERCEPT")
 	 'percept-node)

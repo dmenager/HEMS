@@ -1714,50 +1714,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
   (labels ((smooth-posterior (posterior-distribution alpha)
 	     (loop
-	       with uniform-cpd and smoothed-cpd
+	       with smoothed-cpd and probability
 	       for cpd in posterior-distribution
 	       do
-		  (when t
-		    (format t "~%alpha: ~d~%posterior before:"alpha)
-		    (print-cpd cpd))
-		  (setf (rule-based-cpd-count cpd) 1)
-		  (setq uniform-cpd (make-trunc-cpd cpd))
-		  (setf (rule-based-cpd-count uniform-cpd) 1)
+		  (setq probability (* alpha (/ 1 (length (gethash 0 (rule-based-cpd-var-value-block-map cpd))))))
+		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop
-		    with vvbms = (gethash 0 (rule-based-cpd-var-value-block-map uniform-cpd))
-		    with denom = (length vvbms)
-		    with rule
-		    for vvbm in vvbms
-		    for i from 1
-		    do
-		       (setq rule (make-rule :id (gensym "RULE-")
-					     :conditions (make-hash-table :test #'equal)
-					     :probability (* alpha (/ 1 denom))
-					     :block (make-hash-table)
-					     :certain-block (make-hash-table)
-					     :count 1))
-		       (setf (gethash (rule-based-cpd-dependent-id uniform-cpd)
-				      (rule-conditions rule))
-			     (list (cdar vvbm)))
-		       (setf (gethash (cdar vvbm) (rule-block rule)) (cdar vvbm))
-		       (setf (gethash (cdar vvbm) (rule-certain-block rule)) (cdar vvbm))
-		    collect rule  into rules
-		    finally
-		       (setf (rule-based-cpd-rules uniform-cpd)
-			     (make-array i :initial-contents rules)))
-		  (loop
-		    for rule being the elements of (rule-based-cpd-rules cpd)
+		    for rule being the elements of (rule-based-cpd-rules smoothed-cpd)
 		    do
 		       (setf (rule-probability rule)
-			     (* (rule-probability rule)
-				(- 1 alpha)))
-		       (setf (rule-count rule) 1))
-		  (setq smoothed-cpd (factor-filter cpd uniform-cpd #'+))
-		  (setq smoothed-cpd (normalize-rule-probabilities smoothed-cpd (rule-based-cpd-dependent-id smoothed-cpd)))
-		  (when t
-		    (format t "~%smoothed:")
-		    (print-cpd smoothed-cpd)
-		    (break))
+			     (+ (* (rule-probability rule)
+				   (- 1 alpha))
+				probability)))
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))
@@ -2240,47 +2208,55 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (setq alphas (make-hash-table))
 		 (loop
 		   with slice and slice-idx
-		   with biggest-smaller-obs = -1 and smallest-bigger-obs = most-positive-fixnum
+		   with smallest-negative-delta = most-negative-fixnum and smallest-positive-delta = most-positive-fixnum
+		   with biggest-smaller-obs and smallest-bigger-obs
 		   with denom and alpha
 		   for i from 0 below num-slices
 		   for idx = (aref group i)
 		   do
-		      (setq biggest-smaller-obs -1)
-		      (setq smallest-bigger-obs most-positive-fixnum)
-		      (setq alpha nil)
-		      (loop
-			for obs-idx being the hash-keys of evidence-hash
-			do
-			   (when (and (< obs-idx idx)
-				      (> obs-idx biggest-smaller-obs))
-			     (setq biggest-smaller-obs obs-idx))
-			   (when (and (>= obs-idx idx)
-				      (< obs-idx smallest-bigger-obs))
-			     (setq smallest-bigger-obs obs-idx)))
-		      (cond ((and (not (= -1 biggest-smaller-obs))
-				  (not (= most-positive-fixnum smallest-bigger-obs)))
-			     (setq denom (abs (- biggest-smaller-obs smallest-bigger-obs)))
-			     (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
-						 (abs (- smallest-bigger-obs idx)))
-					    denom)))
-			    ((and (= -1 biggest-smaller-obs)
-				  (not (= most-positive-fixnum smallest-bigger-obs)))
-			     (setq denom (abs (- (min from to) smallest-bigger-obs)))
-			     (setq alpha (/ (min (abs (- (min from to) idx))
-						 (abs (- smallest-bigger-obs idx)))
-					    denom)))
-			    ((and (not (= -1 biggest-smaller-obs))
-				  (= most-positive-fixnum smallest-bigger-obs))
-			     (setq denom (abs (- (max from to) biggest-smaller-obs)))
-			     (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
-						 (abs (- (max from to) idx)))
-					    denom)))
-			    (t
-			     (setq denom (abs (- from to)))
-			     (setq alpha (/ (min (abs (- (min from to) idx))
-						 (abs (- (max from to) idx)))
-					    denom))))
-		      (when t
+		      (setq alpha 0)
+		      (setq smallest-bigger-obs nil)
+		      (setq biggest-smaller-obs nil)
+		      (when idx
+			(loop
+			  with keys = (sort (loop for k being the hash-keys of evidence-hash collect k) #'<)
+			  for k in keys
+			  do
+			     (cond ((< k idx)
+				    (setq biggest-smaller-obs k))
+				   ((and (= k idx)
+					 (null biggest-smaller-obs))
+				    (setq biggest-smaller-obs k))
+				   ((and (= k idx)
+					 biggest-smaller-obs)
+				    (setq smallest-bigger-obs k))
+				   ((and (> k idx)
+					 (null smallest-bigger-obs))
+				    (setq smallest-bigger-obs k))))
+			(cond ((and biggest-smaller-obs
+				    smallest-bigger-obs)
+			       (setq denom (abs (- biggest-smaller-obs smallest-bigger-obs)))
+			       (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
+						   (abs (- smallest-bigger-obs idx)))
+					      denom)))
+			      ((and (null biggest-smaller-obs)
+				    smallest-bigger-obs)
+			       (setq denom (abs (- (min from to) smallest-bigger-obs)))
+			       (setq alpha (/ (min (abs (- (min from to) idx))
+						   (abs (- smallest-bigger-obs idx)))
+					      denom)))
+			      ((and biggest-smaller-obs
+				    (null smallest-bigger-obs))
+			       (setq denom (abs (- (max from to) biggest-smaller-obs)))
+			       (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
+						   (abs (- (max from to) idx)))
+					      denom)))
+			      (t
+			       (setq denom (abs (- from to)))
+			       (setq alpha (/ (min (abs (- (min from to) idx))
+						   (abs (- (max from to) idx)))
+					      denom)))))
+		      (when nil
 			(format t "~%latest prior evidence idx: ~d~%earliest posterior evidence idx: ~d~%denom: ~d~%alpha: ~d" biggest-smaller-obs smallest-bigger-obs denom alpha))
 		      (when nil
 			(if (null idx)

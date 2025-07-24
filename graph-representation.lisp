@@ -3124,7 +3124,7 @@
 				   (format t "~%num conditions: ~d" (hash-table-count (rule-conditions new-rule)))))
 				(t
 				 (print-cpd cpd)
-				 (error "No more condi1tion from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)))))
+				 (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0) ;;(not (null (rule-block new-rule)))
                                (= (hash-table-count (rule-avoid-list new-rule)) 0) ;;(null (rule-avoid-list new-rule))
@@ -4085,7 +4085,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi1 = conditional probability density 1
 ;; phi2 = conditional probability density 2
 ;; op = operation to apply to factor (* or +)
-(defun factor-filter (phi1 phi2 &optional (op '*))
+(defun factor-filter (phi1 phi2 &optional (op '*) &key (local-coverings-p t))
   (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
          (return-from factor-filter phi2))
         ((and (numberp phi2) (rule-based-cpd-p phi1))
@@ -4138,10 +4138,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                                            (make-array (length new-rules)
                                                        :initial-contents new-rules))))
           (t
-           (setq new-phi (get-local-coverings
-                          (update-cpd-rules new-phi
-                                            (make-array (length new-rules)
-                                                        :initial-contents new-rules))))))
+	   (if local-coverings-p
+               (setq new-phi (get-local-coverings
+                              (update-cpd-rules new-phi
+						(make-array (length new-rules)
+                                                            :initial-contents new-rules))))
+	       (setq new-phi (update-cpd-rules new-phi
+						(make-array (length new-rules)
+                                                            :initial-contents new-rules))))))
     (cond ((eq op '*)
            (setf (rule-based-cpd-rules new-phi)
                  (make-array (length new-rules) :initial-contents new-rules))

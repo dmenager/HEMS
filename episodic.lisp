@@ -1763,15 +1763,18 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (cond ((string-equal mixture-type "discrete-uniform")
 			 (setq mixture-probs (discrete-uniform :values values)))
 			((string-equal mixture-type "discrete-normal-approximation")
-			 (let* ((marginalized (factor-operation cpd
-								(list (rule-based-cpd-dependent-id cpd))
-								(loop
-								  for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
-								  when (not (equal ident (rule-based-cpd-dependent-id cpd)))
-								    collect ident into remove
-								  finally
-								     (return remove))
-								'+))
+			 (let* ((marginalized
+				  (normalize-rule-probabilities
+				   (factor-operation cpd
+						     (list (rule-based-cpd-dependent-id cpd))
+						     (loop
+						       for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+						       when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+							 collect ident into remove
+						       finally
+							  (return remove))
+						     '+)
+				   (rule-based-cpd-dependent-id cpd)))
 				(modes (get-modes marginalized delta)))
 			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))
 			   (when t

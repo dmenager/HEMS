@@ -82,7 +82,8 @@
 		     l))
 	   (get-distances (domain)
 	     (mapcar #'(lambda (val)
-			 (cons val (apply #'min (mapcar #'(lambda (m) (abs (- m val))) modes))))
+			 ;;(cons val (apply #'min (mapcar #'(lambda (m) (abs (- m val))) modes)))
+			 (cons val (abs (- val (apply #'max modes)))))
 		     domain))
 	   (get-unnormalized-distribution (distances std)
 	     (loop

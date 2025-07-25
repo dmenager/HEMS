@@ -4085,7 +4085,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi1 = conditional probability density 1
 ;; phi2 = conditional probability density 2
 ;; op = operation to apply to factor (* or +)
-(defun factor-filter (phi1 phi2 &optional (op '*) &key (local-coverings-p t))
+(defun factor-filter (phi1 phi2 &optional (op '*))
   (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
          (return-from factor-filter phi2))
         ((and (numberp phi2) (rule-based-cpd-p phi1))
@@ -4138,12 +4138,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                                            (make-array (length new-rules)
                                                        :initial-contents new-rules))))
           (t
-	   (if local-coverings-p
-               (setq new-phi (get-local-coverings
+	   (setq new-phi (get-local-coverings
                               (update-cpd-rules new-phi
-						(make-array (length new-rules)
-                                                            :initial-contents new-rules))))
-	       (setq new-phi (update-cpd-rules new-phi
 						(make-array (length new-rules)
                                                             :initial-contents new-rules))))))
     (cond ((eq op '*)

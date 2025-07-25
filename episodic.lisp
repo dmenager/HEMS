@@ -1712,7 +1712,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
-  (labels ((get-modes (cpd delta)
+  (labels ((find-vvbm-by-idx-val (val vvbms)
+	     (loop
+	       named finder
+	       for vvbm in vvbms
+	       when (equal (cdar vvbm) val)
+		 do
+		    (return-from finder (caar vvbm))))
+	   (get-modes (cpd delta)
 	     "Return the highest value and all values within DELTA of it in one pass."
 	     (loop
 	       named mode-finder
@@ -1720,14 +1727,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       with dep-id = (rule-based-cpd-dependent-id cpd) and vvbms = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
 	       with max-prob = (cons nil -1) and res
 	       with sorted-rules = (sort rules #'(lambda (a b)
-						   (> (with-input-from-string (s (caar (nth (car (gethash dep-id (rule-conditions a)))
-											    vvbms)))
+						   (> (with-input-from-string (s (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions a))) vvbms))
 							(let ((num (read s)))
 							  (if (numberp num)
 							      (rule-probability a)
 							      -1)))
-						      (with-input-from-string (s (caar (nth (car (gethash dep-id (rule-conditions b)))
-											    vvbms)))
+						      (with-input-from-string (s (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions b))) vvbms))
 							(let ((num (read s)))
 							  (if (numberp num)
 							      (rule-probability b)
@@ -1735,16 +1740,21 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       for rule being the elements of sorted-rules
 	       do
 		  (cond ((> (rule-probability rule) (cdr max-prob))
-			 (setq max-prob (cons (caar (nth (car (gethash dep-id (rule-conditions rule)))
-							 vvbms))
+			 (setq max-prob (cons (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)
 					      (rule-probability rule)))
-			 (setq res (list (caar (nth (car (gethash dep-id (rule-conditions rule)))
-						    vvbms)))))
+			 (setq res (list (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)))
+			 (when nil
+			   (format t "~%new max prob:")
+			   (print-cpd-rule rule)
+			   (format t "~%modes: ~S" res)))
 			((and (>= (rule-probability rule) (- (cdr max-prob) delta)))
 			 (setq res (cons
-				    (caar (nth (car (gethash dep-id (rule-conditions rule)))
-					       vvbms))
-				    res)))
+				    (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)
+				    res))
+			 (when nil
+			   (format t "~%found rule in existing mode:")
+			   (print-cpd-rule rule)
+			   (format t "~%modes: ~S" res)))
 			((and (< (rule-probability rule) (- (cdr max-prob) delta)))
 			 (return-from mode-finder (remove-duplicates res :test #'equal))))
 	       finally
@@ -1777,7 +1787,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (rule-based-cpd-dependent-id cpd)))
 				(modes (get-modes marginalized delta)))
 			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))
-			   (when t
+			   (when nil
 			     (format t "~%~%cpd:")
 			     (print-cpd cpd)
 			     (format t "~%mixture distribution")
@@ -1805,28 +1815,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions r))
 			     (list idx))
 		       (setf (aref mixture-rules i) r))
-		  (when t
+		  (when nil
 		    (format t "~%mixture rules:")
 		    (map nil #'print-cpd-rule mixture-rules))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
-
-		  (when t
-		    (format t "~%~%rule-by-rule smoothing results"))
 		  (loop
 		    with var
 		    for r1 being the elements of (rule-based-cpd-rules smoothed-cpd)
 		    do
-		       (when t
-			 (format t "~%rule1:")
-			 (print-cpd-rule r1))
 		       (loop
 			 named filter
 			 for r2 being the elements of mixture-rules
-			 do
-			    (when t
-			      (format t "~%rule2:")
-			      (print-cpd-rule r2)
-			      (format t "~%compatible-p?: ~S" (compatible-rule-p r1 r2 nil nil)))
 			 when (compatible-rule-p r1 r2 nil nil)
 			   do
 			      (setf (rule-probability r1)
@@ -1834,7 +1833,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					  (- 1 alpha))
 				       (* alpha (rule-probability r2))))
 			      (return-from filter nil)))
-		  (when t
+		  (when nil
 		    (format t "~%~%smoothed cpd:")
 		    (print-cpd smoothed-cpd))
 	       collect smoothed-cpd into smoothed
@@ -1972,8 +1971,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			    (print-bn evidence-bn)
 			    ;;(break)
 			    )
-		      (when t
-			(format t "~%calling (remember) from (remember-temporal)"))
 		      (multiple-value-bind (posterior-distribution posterior-marginals eme )
 			  (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 			(declare (ignore eme))
@@ -1986,8 +1983,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					      (make-hash-table)))
 			      ;;(break)
 			      )
-			(when t
-			  (format t "~%smoothing posterior"))
 			;; smooth the posterior here.
 			(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
 			(setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
@@ -2177,7 +2172,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (let (conflicts1 conflicts2)
 	       (setq conflicts1 (check-one-way-convergence messages new-messages))
 	       (setq conflicts2 (check-one-way-convergence new-messages messages))
-	       (when t
+	       (when nil
 		 (format t "~%~%num conflicts from messages to new messages: ~d" (length conflicts1))
 		 (loop
 		   for (c1 . c2) in conflicts1
@@ -2477,7 +2472,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (format t "~%callibrated temporal model"))
 	   (remhash nil messages)
 	   (remhash nil marginals-messages)
-	   (when t
+	   (when nil
 	     (format t "~%messages")
 	     (print-state-transitions messages)
 	     ;;(format t "~%~%marginals")

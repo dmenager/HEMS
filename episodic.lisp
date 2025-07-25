@@ -1804,14 +1804,28 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions r))
 			     (list idx))
 		       (setf (aref mixture-rules i) r))
+		  (when t
+		    (format t "~%mixture rules:")
+		    (map nil #'print-cpd-rule mixture-rules))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
+
+		  (when t
+		    (format t "~%~%rule-by-rule smoothing results"))
 		  (loop
 		    with var
 		    for r1 being the elements of (rule-based-cpd-rules smoothed-cpd)
 		    do
+		       (when t
+			 (format t "~%rule1:")
+			 (print-cpd-rule r1))
 		       (loop
 			 named filter
 			 for r2 being the elements of mixture-rules
+			 do
+			    (when t
+			      (format t "~%rule2:")
+			      (print-cpd-rule r2)
+			      (format t "~%compatible-p?: ~S" (compatible-rule-p r1 r2 nil nil)))
 			 when (compatible-rule-p r1 r2 nil nil)
 			   do
 			      (setf (rule-probability r1)
@@ -1819,6 +1833,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					  (- 1 alpha))
 				       (* alpha (rule-probability r2))))
 			      (return-from filter nil)))
+		  (when t
+		    (format t "~%~%smoothed cpd:")
+		    (print-cpd smoothed-cpd))
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))

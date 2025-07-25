@@ -1712,75 +1712,96 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
-  (labels ((max-and-nearby (rules delta)
+  (labels ((get-modes (cpd delta)
 	     "Return the highest value and all values within DELTA of it in one pass."
-	     (let ((max-val nil)
-		   (result '()))
-	       (loop
-		 with max-prob = (cons nil -1) and res
-		 with sorted-rules = (sort rules #'(lambda (a b)
-						     (> (with-input-from-string (s (rule-condition a))
-							  (let ((num (read s)))
-							    (if (numberp num)
-								(rule-probability a)
-								-1)))
-							(with-input-from-string (s (rule-condition b))
-							  (let ((num (read s)))
-							    (if (numberp num)
-								(rule-probability b)
-								-1))))))
-		 for rule being the elements of sorted-rules
-		 do
-		    (when (> (rule-probability rule) (cdr max-prob))
-		      (setq max-prob (cons (rule-conditions rule))(rule-probability prob))
-		 )
-	       (dolist (num numbers)
-		 (cond
-		   ;; First element or new max: reset list
-		   ((or (null max-val) (> prob (+ delta max-val)))
-		    (setq max-val (cons (rule-condition rule) prob)
-			  result (list (cons (rule-condition rule) prob))))
-		   ;; Within delta of current max
-		   ((and (<= (- max-val prob) delta)
-			 (/= prob max-val))
-		    (push prob result))))
-	       ;; Final pass to re-add max if not already
-	       (remove-duplicates (cons max-val result)))))
-	   (smooth-posterior (posterior-distribution alpha &key (mixture-type 'uniform))
+	     (loop
+	       named mode-finder
+	       with rules = (rule-based-cpd-rules cpd)
+	       with dep-id = (rule-based-cpd-dependent-id cpd) and vvbms = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+	       with max-prob = (cons nil -1) and res
+	       with sorted-rules = (sort rules #'(lambda (a b)
+						   (> (with-input-from-string (s (caar (nth (car (gethash dep-id (rule-conditions a)))
+											    vvbms)))
+							(let ((num (read s)))
+							  (if (numberp num)
+							      (rule-probability a)
+							      -1)))
+						      (with-input-from-string (s (caar (nth (car (gethash dep-id (rule-conditions b)))
+											    vvbms)))
+							(let ((num (read s)))
+							  (if (numberp num)
+							      (rule-probability b)
+							      -1))))))
+	       for rule being the elements of sorted-rules
+	       do
+		  (cond ((> (rule-probability rule) (cdr max-prob))
+			 (setq max-prob (cons (caar (nth (car (gethash dep-id (rule-conditions rule)))
+							 vvbms))
+					      (rule-probability rule)))
+			 (setq res (list (caar (nth (car (gethash dep-id (rule-conditions rule)))
+						    vvbms)))))
+			((and (>= (rule-probability rule) (- (cdr max-prob) delta)))
+			 (setq res (cons
+				    (caar (nth (car (gethash dep-id (rule-conditions rule)))
+					       vvbms))
+				    res)))
+			((and (< (rule-probability rule) (- (cdr max-prob) delta)))
+			 (return-from mode-finder (remove-duplicates res :test #'equal))))
+	       finally
+		  (return-from mode-finder (remove-duplicates res :test #'equal))))
+	   (smooth-posterior (posterior-distribution alpha &key (mixture-type "discrete-uniform") (delta .01))
 	     (loop
 	       with values
-	       with smoothed-cpd and probability with mixture-probs
+	       with smoothed-cpd and probability with mixture-probs and mixture-rules
+	       with vvbms
 	       for cpd in posterior-distribution
 	       do
+		  (setq vvbms (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
 		  (setq values (mapcar #'(lambda (vvbm)
 					   (caar vvbm))
 				       (gethash 0 (rule-based-cpd-var-value-block-map cpd))))
-		  (cond ((eq mixture-type 'discrete-uniform)
-			 (setq mixure-probs (discrete-uniform :values values)))
-			((eq mixture-type 'discrete-normal-approximation)
+		  (cond ((string-equal mixture-type "discrete-uniform")
+			 (setq mixture-probs (discrete-uniform :values values)))
+			((string-equal mixture-type "discrete-normal-approximation")
 			 (let* ((marginalized (factor-operation cpd
-							       (list (rule-based-cpd-dependent-id cpd))
-							       (loop
-								 for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
-								 when (not (equal ident (rule-based-cpd-dependent-id cpd)))
-								   collect ident into remove
-								 finally
-								    (return remove))
-							       '+))
-				(rules (rule-based-cpd-rules marginalized))
-				((modes (max-and-nearby rules .01))))
-			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes)))
+								(list (rule-based-cpd-dependent-id cpd))
+								(loop
+								  for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+								  when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+								    collect ident into remove
+								  finally
+								     (return remove))
+								'+))
+				(modes (get-modes marginalized delta)))
+			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))))
 			(t
-			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation")))
+			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation" mixture-type)))
+		  (setq mixture-rules (make-array (length mixture-probs)))
+		  (loop
+		    with r
+		    for value in mixture-probs
+		    for i from 0
+		    do
+		       (setq r (make-rule :id "RULE-"
+					  :conditions (make-hash-table :test #'equal)
+					  :probability (getf value :probability)))
+		       (setf (aref mixture-rules i) r))
 		  (setq probability (* alpha (/ 1 (length (gethash 0 (rule-based-cpd-var-value-block-map cpd))))))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop
-		    for rule being the elements of (rule-based-cpd-rules smoothed-cpd)
+		    with var
+		    for r1 being the elements of (rule-based-cpd-rules smoothed-cpd)
 		    do
-		       (setf (rule-probability rule)
-			     (+ (* (rule-probability rule)
-				   (- 1 alpha))
-				probability)))
+		       (loop
+			 named filter
+			 for r2 being the elements of mixture-rules
+			 when (compatible-rule-p r1 r2 nil nil)
+			   do
+			      (setf (rule-probability r1)
+				    (+ (* (rule-probability r1)
+					  (- 1 alpha))
+				       (* alpha (rule-probability r2))))
+			      (return-from filter nil)))
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))
@@ -1929,8 +1950,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      ;;(break)
 			      )
 			;; smooth the posterior here.
-			(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas)))
-			(setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas)))
+			(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
+			(setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
 			(setf (gethash cond dist-hash)
 			      (cons prob
 				    (cons (make-array (length posterior-distribution)

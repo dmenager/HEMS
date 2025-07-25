@@ -103,7 +103,7 @@
 				 :probability (/ (cdr pair) total)
 				 :count 1))
 		       unnormalized))))
-    (when t
+    (when nil
       (format t "~%values: ~S~%modes: ~S" values modes))
     (when (null modes)
       (error "Modes list must be non empty."))

@@ -1787,13 +1787,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation" mixture-type)))
 		  (setq mixture-rules (make-array (length mixture-probs)))
 		  (loop
-		    with r
+		    with r with idx
 		    for value in mixture-probs
 		    for i from 0
 		    do
 		       (setq r (make-rule :id "RULE-"
 					  :conditions (make-hash-table :test #'equal)
 					  :probability (getf value :probability)))
+		       (loop
+			 named looper
+			 for vvbm in vvbms
+			 when (equal value (caar vvbm))
+			   do
+			      (setq idx (cdar vvbm))
+			      (return-from looper nil))
+		       (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions r))
+			     (list idx))
 		       (setf (aref mixture-rules i) r))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop

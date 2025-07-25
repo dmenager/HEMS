@@ -1794,10 +1794,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setq r (make-rule :id "RULE-"
 					  :conditions (make-hash-table :test #'equal)
 					  :probability (getf value :probability)))
+		       (setq idx nil)
 		       (loop
 			 named looper
 			 for vvbm in vvbms
-			 when (equal value (caar vvbm))
+			 when (equal (getf value :value) (caar vvbm))
 			   do
 			      (setq idx (cdar vvbm))
 			      (return-from looper nil))

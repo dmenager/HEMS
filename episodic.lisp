@@ -1937,6 +1937,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			    (print-bn evidence-bn)
 			    ;;(break)
 			    )
+		      (when t
+			(format t "~%calling (remember) from (remember-temporal)"))
 		      (multiple-value-bind (posterior-distribution posterior-marginals eme )
 			  (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
 			(declare (ignore eme))
@@ -1949,6 +1951,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					      (make-hash-table)))
 			      ;;(break)
 			      )
+			(when t
+			  (format t "~%smoothing posterior"))
 			;; smooth the posterior here.
 			(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
 			(setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))

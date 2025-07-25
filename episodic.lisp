@@ -1773,7 +1773,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 								     (return remove))
 								'+))
 				(modes (get-modes marginalized delta)))
-			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))))
+			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))
+			   (when t
+			     (format t "~%~%cpd:")
+			     (print-cpd cpd)
+			     (format t "~%mixture distribution")
+			     (print-cpd marginalized)
+			     (format t "~%mixture distribution modes:~%~S~%mixture distribution probabilities:~%~A" modes mixture-probs))))
 			(t
 			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation" mixture-type)))
 		  (setq mixture-rules (make-array (length mixture-probs)))
@@ -1786,7 +1792,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					  :conditions (make-hash-table :test #'equal)
 					  :probability (getf value :probability)))
 		       (setf (aref mixture-rules i) r))
-		  (setq probability (* alpha (/ 1 (length (gethash 0 (rule-based-cpd-var-value-block-map cpd))))))
 		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop
 		    with var

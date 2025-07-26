@@ -2138,6 +2138,44 @@
         (generate-cpd-step-sizes (rule-based-cpd-cardinalities phi1)))
   phi1)
 
+(defun make-trunc-cpd (cpd)
+  (let (trunc-cpd trunc-idents trunc-vars trunc-types trunc-vvbm trunc-cids trunc-qvars trunc-sva trunc-lower-approx-var-value-block-map)
+    (setq trunc-idents (make-hash-table :test #'equal))
+    (setf (gethash (rule-based-cpd-dependent-id cpd) trunc-idents) 0)
+    (setq trunc-vars (make-hash-table))
+    (setf (gethash 0 trunc-vars)
+          (gethash 0 (rule-based-cpd-vars cpd)))
+    (setq trunc-types (make-hash-table))
+    (setf (gethash 0 trunc-types)
+          (gethash 0 (rule-based-cpd-types cpd)))
+    (setq trunc-vvbm (make-hash-table))
+    (setf (gethash 0 trunc-vvbm)
+          (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+    (setq trunc-sva (make-hash-table))
+    (setf (gethash 0 trunc-sva)
+          (gethash 0 (rule-based-cpd-set-valued-attributes cpd)))
+    (setq trunc-lower-approx-var-value-block-map (make-hash-table))
+    (setf (gethash 0 trunc-lower-approx-var-value-block-map)
+          (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map cpd)))
+    (setq trunc-cids (make-hash-table))
+    (setf (gethash 0 trunc-cids)
+          (gethash 0 (rule-based-cpd-concept-ids cpd)))
+    (setq trunc-qvars (make-hash-table))
+    (setf (gethash 0 trunc-qvars)
+          (gethash 0 (rule-based-cpd-qualified-vars cpd)))
+    (setq trunc-cpd
+          (make-rule-based-cpd
+           :dependent-id (rule-based-cpd-dependent-id cpd)
+           :identifiers trunc-idents
+           :vars trunc-vars
+           :types trunc-types
+           :var-value-block-map trunc-vvbm
+           :set-valued-attributes trunc-sva
+           :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
+           :concept-ids trunc-cids
+           :qualified-vars trunc-qvars))
+    trunc-cpd))
+
 #| Update variable value map of variables in cpd that have already been merged |#
 
 ;; cpd = conditional probability density
@@ -2152,40 +2190,7 @@
     do
        (setq p-cpd (get-cpd-by-id identifier new-nodes))
        (when p-cpd
-         (setq trunc-idents (make-hash-table :test #'equal))
-         (setf (gethash (rule-based-cpd-dependent-id p-cpd) trunc-idents) 0)
-         (setq trunc-vars (make-hash-table))
-         (setf (gethash 0 trunc-vars)
-               (gethash 0 (rule-based-cpd-vars p-cpd)))
-         (setq trunc-types (make-hash-table))
-         (setf (gethash 0 trunc-types)
-               (gethash 0 (rule-based-cpd-types p-cpd)))
-         (setq trunc-vvbm (make-hash-table))
-         (setf (gethash 0 trunc-vvbm)
-               (gethash 0 (rule-based-cpd-var-value-block-map p-cpd)))
-         (setq trunc-sva (make-hash-table))
-         (setf (gethash 0 trunc-sva)
-               (gethash 0 (rule-based-cpd-set-valued-attributes p-cpd)))
-         (setq trunc-lower-approx-var-value-block-map (make-hash-table))
-         (setf (gethash 0 trunc-lower-approx-var-value-block-map)
-               (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map p-cpd)))
-         (setq trunc-cids (make-hash-table))
-         (setf (gethash 0 trunc-cids)
-               (gethash 0 (rule-based-cpd-concept-ids p-cpd)))
-         (setq trunc-qvars (make-hash-table))
-         (setf (gethash 0 trunc-qvars)
-               (gethash 0 (rule-based-cpd-qualified-vars p-cpd)))
-         (setq trunc-p-cpd
-               (make-rule-based-cpd
-                :dependent-id (rule-based-cpd-dependent-id p-cpd)
-                :identifiers trunc-idents
-                :vars trunc-vars
-                :types trunc-types
-                :var-value-block-map trunc-vvbm
-                :set-valued-attributes trunc-sva
-                :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
-                :concept-ids trunc-cids
-                :qualified-vars trunc-qvars))
+	 (setq trunc-p-cpd (make-trunc-cpd p-cpd))
          (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id cpd)))
                (format t "~%truncated p-cpd:~%~S" p-cpd))
          ;;(format t "~%marginalized p-cpd:~%~A" p-cpd)
@@ -3119,7 +3124,7 @@
 				   (format t "~%num conditions: ~d" (hash-table-count (rule-conditions new-rule)))))
 				(t
 				 (print-cpd cpd)
-				 (error "No more condi1tion from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)))))
+				 (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0) ;;(not (null (rule-block new-rule)))
                                (= (hash-table-count (rule-avoid-list new-rule)) 0) ;;(null (rule-avoid-list new-rule))
@@ -3601,6 +3606,7 @@
 	      (t
                (push rule result)))))
     result))
+
 #| Perform a filter operation over rules
    Returns: a list of rules |#
 
@@ -4132,10 +4138,10 @@ Roughly based on (Koller and Friedman, 2009) |#
                                            (make-array (length new-rules)
                                                        :initial-contents new-rules))))
           (t
-           (setq new-phi (get-local-coverings
-                          (update-cpd-rules new-phi
-                                            (make-array (length new-rules)
-                                                        :initial-contents new-rules))))))
+	   (setq new-phi (get-local-coverings
+                              (update-cpd-rules new-phi
+						(make-array (length new-rules)
+                                                            :initial-contents new-rules))))))
     (cond ((eq op '*)
            (setf (rule-based-cpd-rules new-phi)
                  (make-array (length new-rules) :initial-contents new-rules))
@@ -4828,7 +4834,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; m1 = current message
 ;; m2 = updated message
-(defun same-message-p (m1 m2 &key round)
+(defun same-message-p (m1 m2 &key round (check-count t))
   (cond ((and (numberp m1) (numberp m2))
          (= m1 m2))
         ((and (numberp m1) (rule-based-cpd-p m2))
@@ -4846,12 +4852,12 @@ Roughly based on (Koller and Friedman, 2009) |#
                (t
                 (loop
                   for rule being the elements of (rule-based-cpd-rules m1)
-                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round)) (rule-based-cpd-rules m2))
+                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round :check-count check-count)) (rule-based-cpd-rules m2))
                     do
                        (return-from same-message-p nil))
                 (loop
                   for rule being the elements of (rule-based-cpd-rules m2)
-                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round)) (rule-based-cpd-rules m1))
+                  when (notany #'(lambda (r) (same-rule-p rule r m1 m2 :check-count nil :round round :check-count check-count)) (rule-based-cpd-rules m1))
                     do
                        (return-from same-message-p nil))
                 t)))))
@@ -6302,8 +6308,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;; hotbar test is domain-specific heuristic -- I could change the domain language to make sure hotbar percepts are encoded differently, but I don't have time for that right now. I need unique hotbar percepts, so that all of them don't get mashed together in the schema.
 	((and (percept-cpd-p p-cpd) (percept-cpd-p q-cpd) (not (equal "HOTBAR" (gethash 0 (rule-based-cpd-vars p-cpd)))))
 	 t)
+	((or (and (equal "ACTION" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "ACTION" (gethash 0 (rule-based-cpd-types q-cpd))))
+	     (and (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types q-cpd))))
+	     (and (equal "STATE" (gethash 0 (rule-based-cpd-types p-cpd)))
+		  (equal "STATE" (gethash 0 (rule-based-cpd-types q-cpd)))))
+	 t)
         (t
-         (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
            (format t "~%~%p-cpd: ~S~%q-cpd: ~S" (rule-based-cpd-identifiers p-cpd) (rule-based-cpd-identifiers q-cpd)))
          (loop
            with p-val and p-match
@@ -6315,11 +6328,11 @@ Roughly based on (Koller and Friedman, 2009) |#
              (when p-match
                (if (gethash p-match (rule-based-cpd-identifiers p-cpd))
                    (setq p-val t)))
-             (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%q-parent: ~S~%p-parent match: ~S~%p-val: ~S" q-val p-match p-val))
              (cond ((and p-match (not p-val) q-val)
-                    (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                       (format t "~%fail. Returning.")
                       (break))
                     (return-from same-matched-parents nil))))
@@ -6334,18 +6347,18 @@ Roughly based on (Koller and Friedman, 2009) |#
                (setq no-matched-parents nil)
                (if (gethash q-match (rule-based-cpd-identifiers q-cpd))
                    (setq q-val t)))
-             (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%p-parent: ~S~%q-parent match: ~S~%q-val: ~S" p-val q-match q-val))
              (cond ((and q-match p-val (not q-val))
-                    (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
                       (format t "~%fail. Returning.")
                       (break))
                     (return-from same-matched-parents nil)))
            finally
               (if (and nil no-matched-parents (> (hash-table-count (rule-based-cpd-identifiers q-cpd)) 1))
                   (return-from same-matched-parents nil)))
-         (when nil (and heuristic (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
            (format t "~%success.")
            ;;(break)
 	   )
@@ -6361,15 +6374,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-first-bindings = bindings hash table where elements of q are the keys
 (defun candidate-nodes (pnum p q possible-q-candidates bindings q-first-bindings &optional (heuristic nil) &aux p-cpd)
   (setq p-cpd (aref (car p) pnum))
-  (when nil (and (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+  (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
         (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
   (loop
     with q-cpd
     for i in possible-q-candidates
     do
        (setq q-cpd (aref (car q) i))
-       (when nil (and (= cycle* 21) (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
-        (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
+       (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+        (format t "~%~%q-cpd:~%~S" (rule-based-cpd-identifiers q-cpd)))
     when (and (not (gethash (rule-based-cpd-dependent-id q-cpd) q-first-bindings))
               (same-matched-parents p-cpd q-cpd bindings q-first-bindings heuristic))
       collect i into candidates

@@ -83,7 +83,8 @@
 	   (get-distances (domain)
 	     (mapcar #'(lambda (val)
 			 ;;(cons val (apply #'min (mapcar #'(lambda (m) (abs (- m val))) modes)))
-			 (cons val (abs (- val (apply #'max modes)))))
+			 ;;(cons val (abs (- val (apply #'max modes))))
+			 (cons val (abs (- val (mean modes)))))
 		     domain))
 	   (get-unnormalized-distribution (distances std)
 	     (loop
@@ -114,7 +115,8 @@
       (error "Modes list needs to be a proper subset of values (case sensitive)."))
     (setq values (parse-string-numerics values))
     (setq modes (parse-string-numerics modes))
-    (get-distribution (get-distances values) (if (> (length modes) 1) (stdev modes) 1))))
+    (cons '(:value "NA" :probability 0.0 :count 1)
+	  (get-distribution (get-distances values) (if (> (length modes) 1) (stdev modes) 1)))))
 
 (defun get-cpd-type (ref-cpd)
   (cond ((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "PERCEPT")

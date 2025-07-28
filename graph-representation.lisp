@@ -1635,15 +1635,16 @@
 ;; input-cpdp = generalized boolean stating whether the input distribution shows values for NA or not. (CPD or nil)
 ;; output-cpdp = generalized boolean stating whether the output distribution is shows values for NA or not. (CPD or nil)
 (defun normalize-rule-probabilities (phi new-dep-id)
-  (when nil t
-    (format t "~%~%normalizing phi:~%~S" phi))
+  (when nil print-special*
+    (format t "~%~%normalizing phi:")
+    (print-cpd phi))
   (loop
     with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
     with rules = (rule-based-cpd-rules phi)
     with new-rules and block = 0 and new-rule
     for r1 being the elements of rules
     do
-       (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+       (when nil print-special*  nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
          (format t "~%normalizing rule:~%~S" r1))
          (loop
            with copy-rule = (copy-cpd-rule r1)
@@ -1651,11 +1652,15 @@
            for i in (gethash dep-id-pos (rule-based-cpd-var-values phi))
            do
               (setf (gethash new-dep-id (rule-conditions copy-rule)) (list i))
-              ;;(setq compatible-rules (get-compatible-rules phi phi copy-rule :check-count nil))
-              (setq compatible-rule (car (get-compatible-rules phi phi copy-rule :find-all nil)))
-              ;;(setq compatible-rule (car compatible-rules))
-              (when nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
-                    (format t "~%getting rule for assignment:~%~S~%candidatate matches:~%~S~%selection:~%~S" (rule-conditions copy-rule) compatible-rules compatible-rule))
+	      (setq compatible-rules (get-compatible-rules phi phi copy-rule :find-all nil))
+              (setq compatible-rule (car compatible-rules))
+              (when nil print-special* (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+                    (format t "~%getting rule for assignment:")
+		    (print-cpd-rule copy-rule)
+		    (format t "~%candidatate matches:")
+		    (map nil #'print-cpd-rule compatible-rules)
+		    (format t "~%selection:")
+		    (print-cpd-rule compatible-rule))
            when (or (null (rule-count compatible-rule))
                     (>= (rule-count compatible-rule) 0)
 		    )
@@ -1673,11 +1678,12 @@
               (setf (rule-block new-rule) (make-hash-table))
               (setf (gethash block (rule-block new-rule)) block)
               (setq block (+ block 1))
-	      (when nil t nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
+	      (when nil print-special* nil (and (equal "TOWER546" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%~%row:")
 		    (mapcar #'print-cpd-rule row)
 		    (format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
-		    (format t "~%normalized rule:~%~S" new-rule))
+		    (format t "~%normalized rule:")
+		    (print-cpd-rule new-rule))
               (when (or (> (rule-probability new-rule) 1)
                         (< (rule-probability new-rule) 0))
 		(print-cpd phi)
@@ -1689,7 +1695,10 @@
 		(print-cpd-rule new-rule)
 		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
                 (error "Normalization error"))
-              (setq new-rules (cons new-rule new-rules)))
+              (setq new-rules (cons new-rule new-rules))
+	      (when nil print-special*
+		(format t "~%block: ~d~%new rules:" block)
+		(map nil #'print-cpd-rule new-rules)))
     finally
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
   phi)

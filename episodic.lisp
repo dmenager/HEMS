@@ -1767,7 +1767,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       with vvbms
 	       for cpd in posterior-distribution
 	       do
-		  (when t
+		  (when nil
 		    (format t "~%cpd:")
 		    (print-cpd cpd))
 		  (setq marginalized-cpd
@@ -1780,7 +1780,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					    finally
 					       (return remove))
 					  '+))
-		  (when t
+		  (when nil
 		    (format t "~% marginalized cpd:")
 		    (print-cpd marginalized-cpd))
 		  (setq mixture-cpd
@@ -1810,7 +1810,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       0))
 	       |#
 		  (setq mixture-rules (make-array (length mixture-probs)))
-		  (when t
+		  (when nil
 		    (format t "~%mixture probs:~%~S" mixture-probs))
 		  (loop
 		    with r with idx
@@ -1832,7 +1832,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			     (list idx))
 		       (setf (aref mixture-rules i) r))
 		  (setf (rule-based-cpd-rules mixture-cpd) mixture-rules)
-		  (when t
+		  (when nil
 		    (format t "~%mixture cpd:")
 		    (print-cpd mixture-cpd)
 		    ;;(map nil #'print-cpd-rule mixture-rules)
@@ -1854,11 +1854,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				       (* alpha (rule-probability r2))))
 			     (return-from filter nil)))
 		   |#
-		  (when t
+		  (when nil
 		    (format t "~%~%unnormalized cpd:")
 		    (print-cpd smoothed-cpd))
 		  (setq smoothed-cpd (normalize-rule-probabilities smoothed-cpd (rule-based-cpd-dependent-id smoothed-cpd)))
-		  (when t
+		  (when nil
 		    (format t "~%normalized cpd:")
 		    (print-cpd smoothed-cpd)
 		    (break))

@@ -585,11 +585,11 @@
   ;;(format t "~%reject list: ~A~%root id: ~A" reject-list (if x (episode-id (car x))))
   (let (pattern base func)
     (when x
-      (cond ((string-equal type "observation") ;;(> (array-dimension (car (episode-observation y)) 0) 0)
+      (cond ((string-equal type "observation")
 	     (setq pattern (episode-observation y))
 	     (setq base (episode-observation (car x)))
 	     (setq func #'episode-observation))
-	    ((string-equal type "state") ;;(> (array-dimension (car (episode-state y)) 0) 0)
+	    ((string-equal type "state")
 	     (setq pattern (episode-state y))
 	     (setq base (episode-state (car x)))
 	     (setq func #'episode-state))
@@ -597,7 +597,7 @@
 	     (setq pattern (episode-action y))
 	     (setq base (episode-action (car x)))
 	     (setq func #'episode-action))
-	    ((string-equal type "state-transitions") ;;(> (array-dimension (car (episode-state-transitions y)) 0) 0)
+	    ((string-equal type "state-transitions")
 	     (setq pattern (episode-state-transitions y))
              (setq base (episode-state-transitions (car x)))
 	     (setq func #'episode-state-transitions))
@@ -3218,7 +3218,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (mapcar #'(lambda (e)
                 (pdf-helper-ray e id))
             (cdr eps))))
-
 
 #| Graphically display the episodic memory |#
 

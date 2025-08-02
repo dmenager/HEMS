@@ -6747,8 +6747,9 @@ Roughly based on (Koller and Friedman, 2009) |#
      with num-local-preds = 0
      for (p-node . qp) in n
      do
-	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
-		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))	       
+	(cond ((or (string-equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
+		   (string-equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
+		   (string-equal "ACTION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))	       
 	       (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
 		     (qp-refs (when qp
 				(mapcan #'(lambda (vvbm)

@@ -5409,8 +5409,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 	(map nil #'(lambda (rule)
 			   (print-cpd-rule rule))
 		   new-rules))
-      (setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
-      ;;(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+      ;;(setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
+      (setq cpd (get-local-coverings
+		 (update-cpd-rules cpd
+				   (make-array (length new-rules) :initial-contents new-rules))))
       )
     cpd))
 

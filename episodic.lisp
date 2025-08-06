@@ -597,7 +597,7 @@
 	     (setq pattern (episode-action y))
 	     (setq base (episode-action (car x)))
 	     (setq func #'episode-action))
-	    ((string-equal type "state-transitions")
+	    ((string-equal type "state-transitions") 
 	     (setq pattern (episode-state-transitions y))
              (setq base (episode-state-transitions (car x)))
 	     (setq func #'episode-state-transitions))

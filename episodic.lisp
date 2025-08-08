@@ -58,8 +58,9 @@
     (make-episode
      :id ep-id
      :index-episode-id ep-id
-     :observation (cons (make-array 0) (make-hash-table :test #'equal))
-     :state (cons (make-array 0) (make-hash-table :test #'equal))
+     :observation (make-empty-graph) 
+     :state (make-empty-graph)
+     :action (make-empty-graph)
      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
      :backlinks (make-hash-table :test #'equal)
      :count 0
@@ -216,14 +217,23 @@
       for (p-match . q-match) being the elements of mappings
       with node and nodes and p-cpd
       do
-         (when (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id (aref p p-match))))
-               (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S~%bindings:~%~S" (aref p p-match) (if q-match (aref q q-match)) bindings))
+         (when nil t (equal (rule-based-cpd-dependent-id (aref p p-match)) "AGENT_890")
+           (format t "~%~%p-cpd before subst:")
+	   (print-cpd (aref p p-match))
+	   (format t "~%q-match:")
+	   (if q-match
+	       (print-cpd (aref q q-match))
+	       (format t "~%NIL"))
+	   (format t "~%bindings:~%~S" bindings))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id (aref p p-match))))
-               (format t "~%p-cpd after subst:~%~S" p-cpd))
-         (when (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id (aref p p-match))))
+         (when nil t (equal (rule-based-cpd-dependent-id (aref p p-match)) "AGENT_890")
+           (format t "~%p-cpd after subst:")
+	   (print-cpd p-cpd)
+	   ;;(break)
+	   )
+         (when nil (equal (rule-based-cpd-dependent-id (aref p p-match)) "AGENT_890")
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
-               ;;(break)
+               (break)
 	       )
          (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
 	 ;;(format t "~%p-match:~%~S~%subst p-match:~%~S~%q-match:~%~S~%node:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)) node)
@@ -234,8 +244,8 @@
       for (dummy-match . unmatched-q) in unmatched
       with dm and node
       do
-         (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id dummy-match)))
-               (format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q)))
+         (when nil (equal (rule-based-cpd-dependent-var dummy-match) "MAX_PRODUCTIVITY")
+           (format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
          (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
          (when nil (and (equal "NO_OP7332" (rule-based-cpd-dependent-id dummy-match)))
@@ -284,34 +294,6 @@
        (setq no-matches (list (make-na-matches-for-unmatched-cpds (episode-decompositions y) (episode-decompositions x) (car sol) (car decomp-bindings) q-first-bindings p-nodes)))
        (setq merged (car (combine-states (list (episode-decompositions x)) (list (episode-decompositions y)) (episode-count x) sol no-matches decomp-bindings)))
        (return merged)))
-
-#| Combine episodes together to make probabilistic description |#
-
-;; ep1 = existing episode in memory
-;; ep2 = new episode
-;; mappings = matching with bindings (for each state) from ep2 nodes to ep1 nodes
-;; unmatched = list of cpd-index pairs. Each index represents an unmatched element in ep1 and cpd represents a dummy match
-;; bindings = bindings
-(defun combine (ep1 ep2 mappings unmatched bindings)
-  ;;(format t "~%schema decopositions:~%~S~%num:~%~d~%episode decopositions:~%~S~%num:~%~d~%decomp bindings:~%~S" (episode-decompositions ep1) (episode-num-decompositions ep1) (episode-decompositions ep2) (episode-num-decompositions ep2) decomp-bindings)
-  (make-episode :id (episode-id ep1)
-                :index-episode-id (episode-index-episode-id ep1)
-                :parent (if (episode-parent ep1) (episode-parent ep1))
-                :count (+ (episode-count ep1) (episode-count ep2))
-                :lvl (max (episode-lvl ep1) (episode-lvl ep2))
-                :id-ref-map
-                (loop
-                  with new-id-ref-map  = (copy-hash-table (episode-id-ref-map ep1) :reference-values t)
-                  for id being the hash-keys of (episode-id-ref-map ep2)
-                    using (hash-value ref)
-                  do
-                     (setf (gethash id new-id-ref-map) ref)
-                  finally
-                     (return new-id-ref-map))
-                :num-decompositions (max (episode-num-decompositions ep1) (episode-num-decompositions ep2))
-                :states (combine-states (episode-states ep1) (episode-states ep2) (episode-count ep1) mappings unmatched bbindings)
-                :decompositions (merge-decompositions ep1 ep2 decomp-bindings)
-                :abstraction-ptrs (episode-abstraction-ptrs ep1)))
 
 #| Combine episodes together to make probabilistic description |#
 
@@ -2863,8 +2845,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (setq ep (make-episode :id ep-id
                                   :index-episode-id ep-id
                                   :observation (copy-bn o)
-				  :state (cons (make-array 0) (make-hash-table :test #'equal))
-				  :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+				  :state (make-empty-graph)
+				  :action (make-empty-graph)
+				  :state-transitions (make-empty-graph) 
 				  :backlinks (make-hash-table :test #'equal)
 				  :count 1
                                   :lvl 1))
@@ -2876,9 +2859,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (setq ep-id (symbol-name (gensym "EPISODE-")))
                (setq ep (make-episode :id ep-id
                                       :index-episode-id ep-id
-				      :observation (cons (make-array 0) (make-hash-table :test #'equal))
+				      :observation (make-empty-graph) ;;(cons (make-array 0) (make-hash-table :test #'equal))
                                       :state (copy-bn s)
-				      :state-transitions (cons (make-array 0) (make-hash-table :test #'equal))
+				      :action (make-empty-graph)
+				      :state-transitions (make-empty-graph) ;;(cons (make-array 0) (make-hash-table :test #'equal))
 				      :backlinks (make-hash-table :test #'equal)
 				      :count 1
                                       :lvl 1))
@@ -2970,10 +2954,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
       )))
 
 #| Python wrapper for pushing new experience into event memory |#
-(defun py-push-to-ep-buffer(&key (observation nil) (state nil) (actionname nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
+(defun py-push-to-ep-buffer(&key (observation nil) (state nil) (action nil) (bicp t) (insertp nil) (temporalp t) (hiddenstatep nil))
   (let (ret)
     (setq ret (handler-bind ((condition #'condition-handler))
-		(new-push-to-ep-buffer :observation observation :state state :action-name actionname :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep)))
+		(new-push-to-ep-buffer :observation observation :state state :action action :bic-p bicp :insertp insertp :temporal-p temporalp :hidden-state-p hiddenstatep)))
     ret))
 
 (defun print-h-buffer ()

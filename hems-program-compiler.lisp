@@ -642,8 +642,8 @@
 				(return-from compile-hems-program (compile-hems-program ,hash ,new-body ,invariant-list nil ,edge-type)))
 			      (setq ,factors (make-array (hash-table-count ,hash)
 							 :initial-contents ,cpd-list))
-			      (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
-			      (return (cons ,factors ,edges))))))))
+			       (setq ,edges (make-graph-edges ,factors :edge-type ,edge-type))
+			       (return (cons ,factors ,edges))))))))
        (compile-hems-program (make-hash-table :test #'equal) ',body ',invariant-list t nil))))
 
 (defun compile-program-from-file (prog-file &key args)

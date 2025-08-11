@@ -15,12 +15,26 @@
 	(setf res (funcall compute-value key var-args-lst)))))
 |#
 
+#| Index into proper Bayesian network field in episode|#
+
+;; episode = episode
+;; type = string indicating which field to index into episode
+(defun get-episode-bn (episode type)
+  (cond ((string-equal type "state-transitions")
+         (episode-state-transitions episode))
+	((string-equal type "observation")
+	 (episode-observation episode))
+	((string-equal type "state")
+         (episode-state episode))
+	(t
+	 (error "Unsupported type: ~A" type))
+	((string-equal type "action")
+	 (episode-action episode))))
+
 ;; return hash table that maps each node id of episode onto its cpd
-(defun get-cpd-from-id-aux (episode)
+(defun get-cpd-from-id-aux (episode type)
   (loop
-    with bn = (if (episode-temporal-p episode)
-		  (episode-state-transitions episode)
-		  (episode-observation episode))
+    with bn = (get-episode-bn episode type)
     with hash = (make-hash-table :test #'equal)
     for cpd being the elements of (car bn)
     do
@@ -29,20 +43,16 @@
        (return hash)))
 
 ;; TODO: use edges hash in network to get more efficient
-(defun get-parents-aux (episode)
+(defun get-parents-aux (episode type)
   (loop
     with parents-hash = (make-hash-table :test #'equal)
     with cpd1-ident
-    for cpd1 being the elements of (car (if (episode-temporal-p episode)
-					    (episode-state-transitions episode)
-					    (episode-observation episode)))
+    for cpd1 being the elements of (car (get-episode-bn episode type))
     do
        (setq cpd1-ident (rule-based-cpd-dependent-id cpd1))
        (loop
 	 with idx
-	 for cpd2 being the elements of (car (if (episode-temporal-p episode)
-						 (episode-state-transitions episode)
-						 (episode-observation episode)))
+	 for cpd2 being the elements of (car (get-episode-bn episode type))
 	 do
 	    (setq idx (gethash (rule-based-cpd-dependent-id cpd2)
 			       (rule-based-cpd-identifiers cpd1)))
@@ -67,10 +77,8 @@
 (defun get-cpd-values (cpd)
   (gethash 0 (rule-based-cpd-var-values cpd)))
 
-(defun get-nodes (episode)
-  (car (if (episode-temporal-p episode)
-	   (episode-state-transitions episode)
-	   (episode-observation episode))))
+(defun get-nodes (episode type)
+  (car (get-episode-bn episode type)))
 
 (defun get-prob (cpd assns)
   (let ((rule (make-rule
@@ -79,7 +87,7 @@
       with val and compatible-rule
       for binding in assns
       do
-	 (setf (gethash (car binding) (rule-conditions rule)) (cdr binding))
+	 (setf (gethash (car binding) (rule-conditions rule)) (cdr (list binding)))
       finally
 	 (setq compatible-rule (car (get-compatible-rules cpd cpd rule :find-all nil)))
 	 (when nil
@@ -172,44 +180,38 @@
 
 #| returns the posterior distribution of episode's bn given a set of observations |# 
 ;; obs = array of cpds
-(defun infer-posterior (cpds-hash episode obs)
+(defun infer-posterior (cpds-hash episode obs type)
   (let ((observation (make-hash-table :test #'equal))
-	(net (if (episode-temporal-p episode)
-		 (episode-state-transitions episode)
-		 (episode-observation episode))))
+	(net (get-episode-bn episode type)))
     (multiple-value-bind (sol no-matches cost bindings)
 	(new-maximum-common-subgraph obs net (make-hash-table) (make-hash-table))
       (declare (ignore sol no-matches cost))
       (loop
-	 with mapped-id
-	 for cpd being the elements of (car obs)
-	 do
+	with mapped-id
+	for cpd being the elements of (car obs)
+	do
 	   (setq mapped-id (gethash (rule-based-cpd-dependent-id cpd) bindings))
 	   (when mapped-id
 	     (setf (gethash mapped-id observation) (list (cons (caar (second (gethash 0 (rule-based-cpd-var-value-block-map cpd)))) 1))))
-	 finally
+	finally
 	   (return
 	     (loop
-		with cpd and val
-		with evidence = (make-hash-table :test #'equal)
-		with res
-		for cpd-id being the hash-keys of observation
-		using (hash-value var)
-		do
+	       with cpd and val
+	       with evidence = (make-hash-table :test #'equal)
+	       with res
+	       for cpd-id being the hash-keys of observation
+		 using (hash-value var)
+	       do
 		  (setq cpd (gethash cpd-id cpds-hash))
-		;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
+		  ;;(setq val (caar (nth val-idx (gethash 0 (rule-based-cpd-var-value-block-map cpd)))))
 		  (setf (gethash cpd-id evidence) var)
-		finally
-		  (setq res (loopy-belief-propagation net evidence '+ 1))
-		  (return (loop
-			     for cpd in res
-			     when (rule-based-cpd-singleton-p cpd)
-			     collect cpd into singletons
-			     else
-			     collect cpd into net
-			     finally
-			       (return (list net singletons observation))))))))))
-
+	       finally
+		  (multiple-value-bind (bn priors)
+		      (compile-bn-priors net)
+		    (multiple-value-bind (posterior posterior-marginals)
+			(loopy-belief-propagation bn evidence priors '+ 1)
+		      (return (list posterior posterior-marginals observation))))))))))
+  
 
 ;; assns = assignments we want to know the posterior probability of (bindings) 
 ;; obs = hash-table of observed assignments
@@ -245,7 +247,7 @@
 	   (loop
 	     for (ident . val) in assns
 	     do
-		(setf (gethash ident (rule-conditions rule)) val))
+		(setf (gethash ident (rule-conditions rule)) (list val)))
 	   (loop
 	     with prob = 1 and summed-prob
 	     with obs-posterior = (getf bn :net)
@@ -302,15 +304,15 @@
 
 ; Entropy of bayesian net
 ; H_P(X) = \sum_i H_P(X_i | Pa_i^G)
-(defun H[bn] (episode observations)
+(defun H[bn] (episode observations type)
   (loop
-    with parents = (get-parents-aux episode)
-    with cpds = (get-cpd-from-id-aux episode)
-    with res = (infer-posterior cpds episode observations)
+    with parents = (get-parents-aux episode type)
+    with cpds = (get-cpd-from-id-aux episode type)
+    with res = (infer-posterior cpds episode observations type)
     with net = (first res) and singletons = (second res) and obs = (third res)
     ;; bn is everything that is constant for all remaining computations
     with bn = (list :net net :singletons singletons :cpds cpds :parents parents :obs obs) 
-    for node being the elements of (get-nodes episode)
+    for node being the elements of (get-nodes episode type)
     ;;do
     ;;   (format t "~%H[~A|Pa] = ~d~%" (rule-based-cpd-dependent-id node) (H[X!Pa] bn node)) 
     sum (H[X!Pa] bn node) into entropy
@@ -320,10 +322,10 @@
 (defun condition-handler (condition)
   (log-message (list "~%~%lisp backtrace:~%~A~%error:~%~S" (sb-debug:list-backtrace) condition) "log.txt" :if-exists :supersede))
 
-(defun get-entropy (episode observations)
+(defun get-entropy (episode observations type)
   (multiple-value-bind (net entropy)
       (handler-bind ((condition #'condition-handler))
-	(H[bn] episode observations))
+	(H[bn] episode observations type))
     (log-message (list "~%entropy value: ~d" entropy) "log.txt")
     (values net entropy)))
 
@@ -341,11 +343,11 @@ c3 = (percept-node HEARTRATE :value "high")
 c4 = (percept-node O2SAT :value "normal")
 c5 = (relation-node AMPUTATION :value "T" :kb-concept-id "INJURY")
 c6 = (percept-node TAG :value "minimal")
-c5 -> c1
-c5 -> c2
-c5 -> c3
-c5 -> c4
-c5 -> c6
+c5 --> c1
+c5 --> c2
+c5 --> c3
+c5 --> c4
+c5 --> c6
 ))
   (multiple-value-bind (net entropy)
       (hems:get-entropy

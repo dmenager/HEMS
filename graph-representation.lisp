@@ -5986,6 +5986,55 @@ Roughly based on (Koller and Friedman, 2009) |#
 			 :singleton-p t
 			 :lvl (rule-based-cpd-lvl cpd))))
 
+#| Compile hems program in CPD prior field across the bayesian network |#
+
+;; net = Bayesian network
+(defun compile-bn-priors (net)
+  (let ((priors (make-hash-table :test #'equal))
+	bn)
+    (setq bn (copy-bn net))
+      ;; update schema domain on all bn cpds that include prior variables
+      (loop
+	with prior-cpd and bindings = (make-hash-table :test #'equal)
+	for cpd1 being the elements of (car bn)
+	when (rule-based-cpd-prior cpd1)
+	do
+	   (setq prior-cpd
+		 (aref (car (eval `(compile-program nil
+				     c1 = ,(rule-based-cpd-prior cpd1))))
+		       0))
+	   (setf (rule-based-cpd-singleton-p prior-cpd) t)
+	   (when nil
+	     (format t "~%prior:~%")
+	     (print-cpd prior-cpd))
+	   ;; make bindings
+	   (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
+		 (rule-based-cpd-dependent-id cpd1))
+	   (loop
+	     for value in (getf (rule-based-cpd-prior cpd1) :values)
+	     do
+		(setf (gethash (getf value :value) bindings)
+		      (getf value :value)))
+	   (setq prior-cpd (subst-cpd prior-cpd cpd1 bindings))
+	   (cpd-update-schema-domain cpd1 prior-cpd nil)
+	   ;; update the domain of CPD1 in downstream cpds
+	   (loop
+	     for cpd2 being the elements of (car bn)
+	     for i from 0
+	     when (and (gethash (rule-based-cpd-dependent-id cpd1)
+				(rule-based-cpd-identifiers cpd2))
+		       (not (equal (rule-based-cpd-dependent-id cpd1)
+				   (rule-based-cpd-dependent-id cpd2))))
+	       do
+		  (setf (aref (car bn) i)
+			(cpd-update-existing-vvms cpd2 bindings (list cpd1)))
+		  (when nil
+		    (format t "~%updated downstream cpd:~%")
+		    (print-cpd (aref (car bn) i))
+		    (break)))
+	   (setf (gethash (rule-based-cpd-dependent-id cpd1) priors) prior-cpd))
+    (values bn priors)))
+
 #| Perfrom probabilistic inference over bayesian network |#
 
   ;; state = bayesian network of the state represented as a graph of cpds

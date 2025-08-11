@@ -2435,10 +2435,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     )
 	   (return (values messages marginals-messages))))))
 
-(defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil) (infernum 0))
+(defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods :infer-num infernum))
 
-(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods (alphas (make-hash-table)))
+(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods (alphas (make-hash-table)) (infernum 0))
   (let (alist marginal-alist)
     (multiple-value-bind (messages marginal-messages)
 	(remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods :alphas alphas)

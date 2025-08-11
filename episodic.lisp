@@ -1661,7 +1661,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
-(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (infer-num 0) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
   (labels ((find-vvbm-by-idx-val (val vvbms)
 	     (loop
 	       named finder
@@ -1939,8 +1939,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(multiple-value-bind (net entropy)
 			    (get-entropy backlink-episode evidence-bn node-type)
 			  (declare (ignore net))
-			  ;; time-step, temporal-episode-id,cpd-type,outcome, entropy 
-			  (log-message (list "~d,~A,~A,~A,~d~%" (car js) (episode-id conditioned-temporal) (gethash 0 (rule-based-cpd-types cpd)) cond entropy) "entropy.csv"))			
+			  ;; iner-number,time-step, temporal-episode-id,cpd-type,outcome, entropy 
+			  (log-message (list "~d,~d,~A,~A,~A,~d~%" infer-num (car js) (episode-id conditioned-temporal) (gethash 0 (rule-based-cpd-types cpd)) cond entropy) "entropy.csv"))			
 			(setf (gethash cond dist-hash)
 			      (cons prob
 				    (cons (make-array (length posterior-distribution)
@@ -2435,8 +2435,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     )
 	   (return (values messages marginals-messages))))))
 
-(defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
-  (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
+(defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil) (infernum 0))
+  (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods :infer-num infernum))
 
 (defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods (alphas (make-hash-table)))
   (let (alist marginal-alist)

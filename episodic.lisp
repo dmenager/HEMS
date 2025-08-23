@@ -1767,11 +1767,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       with vvbms
 	       for cpd in posterior-distribution
 	       do
-		  (when nil
-		    (format t "~%cpd:")
+		   (when t
+		     (format t "~%~%cpd:")
 		    (print-cpd cpd))
 		  (setq marginalized-cpd
-			(factor-operation cpd
+			(factor-operation (copy-rule-based-cpd cpd)
 					  (list (rule-based-cpd-dependent-id cpd))
 					  (loop
 					    for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
@@ -1857,11 +1857,26 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (when nil
 		    (format t "~%~%unnormalized cpd:")
 		    (print-cpd smoothed-cpd))
-		  (setq smoothed-cpd (normalize-rule-probabilities smoothed-cpd (rule-based-cpd-dependent-id smoothed-cpd)))
-		  (when nil
-		    (format t "~%normalized cpd:")
-		    (print-cpd smoothed-cpd)
-		    (break))
+		  (setq smoothed-cpd (normalize-rule-probabilities
+				      (factor-operation (copy-rule-based-cpd smoothed-cpd)
+							(list (rule-based-cpd-dependent-id smoothed-cpd))
+							(loop
+							  for ident being the hash-keys of (rule-based-cpd-identifiers smoothed-cpd)
+							  when (not (equal ident (rule-based-cpd-dependent-id smoothed-cpd)))
+							    collect ident into remove
+							  finally
+							     (return remove))
+							'+)
+				      (rule-based-cpd-dependent-id smoothed-cpd)))
+		   (when t
+		     (format t "~%orignal posterior (should be repeat of first cpd print):")
+		     (print-cpd cpd)
+		     (format t "~%mixture cpd:")
+		     (print-cpd mixture-cpd)
+		     (format t "~%normalized cpd:")
+		     (print-cpd smoothed-cpd)
+		     ;;(break)
+		     )
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))

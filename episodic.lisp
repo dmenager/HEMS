@@ -1655,7 +1655,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 #| Recollect a temporal experience.
    Returns list containing inferences for each slice of the temporal model.
    Slice is a hash table. Key: CPD Type, Value: posterior distribution hash table.
-   Posterior distribution hash table: Key: backlink id :value posterior state/observation model|#
+   Posterior distribution hash table: Key: backlink id :value posterior state/observation model |#
 
 ;; eltm = episodic long-term memory
 ;; temporal-evidence-bn = evidence network on the temporal model
@@ -1712,46 +1712,62 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (smooth-posterior (posterior-distribution alpha &key (mixture-type "discrete-uniform") (delta .01))
 	     (loop
 	       with values
+	       with mixture-cpd and marginalized-cpd
 	       with smoothed-cpd and probability with mixture-probs and mixture-rules
 	       with vvbms
 	       for cpd in posterior-distribution
 	       do
-		  (setq vvbms (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+		   (when t
+		     (format t "~%~%cpd:")
+		    (print-cpd cpd))
+		  (setq marginalized-cpd
+			(factor-operation (copy-rule-based-cpd cpd)
+					  (list (rule-based-cpd-dependent-id cpd))
+					  (loop
+					    for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+					    when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+					      collect ident into remove
+					    finally
+					       (return remove))
+					  '+))
+		  (when nil
+		    (format t "~% marginalized cpd:")
+		    (print-cpd marginalized-cpd))
+		  (setq mixture-cpd
+			(normalize-rule-probabilities
+			 marginalized-cpd
+			 (rule-based-cpd-dependent-id marginalized-cpd)))
+		  (setq vvbms (gethash 0 (rule-based-cpd-var-value-block-map mixture-cpd)))
 		  (setq values (mapcar #'(lambda (vvbm)
 					   (caar vvbm))
-				       (gethash 0 (rule-based-cpd-var-value-block-map cpd))))
+				       (gethash 0 (rule-based-cpd-var-value-block-map mixture-cpd))))
 		  (cond ((string-equal mixture-type "discrete-uniform")
 			 (setq mixture-probs (discrete-uniform :values values)))
 			((string-equal mixture-type "discrete-normal-approximation")
-			 (let* ((marginalized
-				  (normalize-rule-probabilities
-				   (factor-operation cpd
-						     (list (rule-based-cpd-dependent-id cpd))
-						     (loop
-						       for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
-						       when (not (equal ident (rule-based-cpd-dependent-id cpd)))
-							 collect ident into remove
-						       finally
-							  (return remove))
-						     '+)
-				   (rule-based-cpd-dependent-id cpd)))
-				(modes (get-modes marginalized delta)))
-			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))
-			   (when nil
+			 (setq mixture-probs (discrete-normal-approximation :values values :modes (get-modes mixture-cpd delta)))
+		         (when nil
 			     (format t "~%~%cpd:")
 			     (print-cpd cpd)
 			     (format t "~%mixture distribution")
-			     (print-cpd marginalized)
-			     (format t "~%mixture distribution modes:~%~S~%mixture distribution probabilities:~%~A" modes mixture-probs))))
+			     (print-cpd mixture-cpd)
+			     (format t "~%mixture distribution modes:~%~S~%mixture distribution probabilities:~%~A" (get-modes mixture-cpd delta) mixture-probs)))
 			(t
 			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation" mixture-type)))
+	       #|
+		  (setq mixture-cpd (aref (car (eval `(compile-program nil
+	       v = (,(get-cpd-type cpd) ,(intern (rule-based-cpd-dependent-var cpd))
+	       :values ,mixture-probs))))
+	       0))
+	       |#
 		  (setq mixture-rules (make-array (length mixture-probs)))
+		  (when nil
+		    (format t "~%mixture probs:~%~S" mixture-probs))
 		  (loop
 		    with r with idx
 		    for value in mixture-probs
 		    for i from 0
 		    do
-		       (setq r (make-rule :id "RULE-"
+		       (setq r (make-rule :id (gensym "RULE-")
 					  :conditions (make-hash-table :test #'equal)
 					  :probability (getf value :probability)))
 		       (setq idx nil)
@@ -1765,10 +1781,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions r))
 			     (list idx))
 		       (setf (aref mixture-rules i) r))
+		  (setf (rule-based-cpd-rules mixture-cpd) mixture-rules)
 		  (when nil
-		    (format t "~%mixture rules:")
-		    (map nil #'print-cpd-rule mixture-rules))
-		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
+		    (format t "~%mixture cpd:")
+		    (print-cpd mixture-cpd)
+		    ;;(map nil #'print-cpd-rule mixture-rules)
+		    )
+		   (setq smoothed-cpd (factor-filter cpd mixture-cpd '*))
+		   #|(setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
 		  (loop
 		    with var
 		    for r1 being the elements of (rule-based-cpd-rules smoothed-cpd)
@@ -1782,10 +1802,31 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				    (+ (* (rule-probability r1)
 					  (- 1 alpha))
 				       (* alpha (rule-probability r2))))
-			      (return-from filter nil)))
+			     (return-from filter nil)))
+		   |#
 		  (when nil
-		    (format t "~%~%smoothed cpd:")
+		    (format t "~%~%unnormalized cpd:")
 		    (print-cpd smoothed-cpd))
+		  (setq smoothed-cpd (normalize-rule-probabilities
+				      (factor-operation (copy-rule-based-cpd smoothed-cpd)
+							(list (rule-based-cpd-dependent-id smoothed-cpd))
+							(loop
+							  for ident being the hash-keys of (rule-based-cpd-identifiers smoothed-cpd)
+							  when (not (equal ident (rule-based-cpd-dependent-id smoothed-cpd)))
+							    collect ident into remove
+							  finally
+							     (return remove))
+							'+)
+				      (rule-based-cpd-dependent-id smoothed-cpd)))
+		   (when t
+		     (format t "~%orignal posterior (should be repeat of first cpd print):")
+		     (print-cpd cpd)
+		     (format t "~%mixture cpd:")
+		     (print-cpd mixture-cpd)
+		     (format t "~%normalized cpd:")
+		     (print-cpd smoothed-cpd)
+		     ;;(break)
+		     )
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))
@@ -1796,7 +1837,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 :backlinks backlinks
 			 :keep-singletons t
 			 :soft-likelihoods soft-likelihoods)
-      (when nil print-special*
+      (when nil
 	    (format t "~%temporal evidence retrieval cue:~%")
 	    (print-bn temporal-evidence-bn)
 	    (format t"~%conditioned temporal model:~%")

@@ -2403,10 +2403,18 @@
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
                    (loop
+		     with vvb
                      for val in vals
                      do
-                        (setf (gethash i (second (nth val vvbm))) i))))
-            (when nil (and (equal "HAND565" (rule-based-cpd-dependent-id cpd)))
+			(loop
+			  named finder
+			  for vv in vvbm
+			  when (= val (cdar vv))
+			    do
+			       (setq vvb vv)
+			       (return-from finder nil))
+                        (setf (gethash i (second vvb)) i))))
+            (when (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
                   (format t "~%Updated vvbms:~%~S" vvbm)))
        (when nil (and (equal "HAND565" (rule-based-cpd-dependent-id cpd)))
              (break))
@@ -2838,12 +2846,19 @@
        (setq vvbm (gethash (gethash attribute (rule-based-cpd-identifiers cpd))
 			   (rule-based-cpd-var-value-block-map cpd)))
        (loop
-	 with attribute-block = (make-hash-table)
+	 with attribute-block = (make-hash-table) and vvb
 	 for value in values
 	 when (and (not (equal attribute avoid))
 		   (not (member value avoid-values)))
 	   do
-	      (setq attribute-block (hash-union attribute-block (second (nth value vvbm)) :output-hash-p t))
+	      (loop
+		named finder
+		for vv in vvbm
+		when (= value (cdar vv))
+		  do
+		     (setq vvb vv)
+		     (return-from finder nil))
+	      (setq attribute-block (hash-union attribute-block (second vvb) :output-hash-p t))
 	 finally
 	    (if certain-p
 		(setq att-block (convert-to-certain-block attribute-block values vvbm))
@@ -3130,8 +3145,8 @@
                             (find-subset-with-max certain-tog tog junk cpd case-constraints goal new-rule universe concept-block :reject-conditions reject-conditions)
 			  (cond (condition
 				 (when (and (> (length (gethash (car condition) (rule-conditions new-rule))) 1))
-				   (format t "~%Making set-valued rule")
-				   ;;(print-cpd-rule new-rule)
+				   (format t "~%~%Making set-valued rule")
+				   (print-cpd-rule new-rule)
 				   ;;(break)
 				   )
 				 (setq new-rule copy-rule)

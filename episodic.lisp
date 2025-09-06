@@ -1712,6 +1712,86 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (smooth-posterior (posterior-distribution alpha &key (mixture-type "discrete-uniform") (delta .01))
 	     (loop
 	       with values
+	       with smoothed-cpd and probability with mixture-probs and mixture-rules
+	       with vvbms
+	       for cpd in posterior-distribution
+	       do
+		  (setq vvbms (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+		  (setq values (mapcar #'(lambda (vvbm)
+					   (caar vvbm))
+				       (gethash 0 (rule-based-cpd-var-value-block-map cpd))))
+		  (cond ((string-equal mixture-type "discrete-uniform")
+			 (setq mixture-probs (discrete-uniform :values values)))
+			((string-equal mixture-type "discrete-normal-approximation")
+			 (let* ((marginalized
+				  (normalize-rule-probabilities
+				   (factor-operation cpd
+						     (list (rule-based-cpd-dependent-id cpd))
+						     (loop
+						       for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+						       when (not (equal ident (rule-based-cpd-dependent-id cpd)))
+							 collect ident into remove
+						       finally
+							  (return remove))
+						     '+)
+				   (rule-based-cpd-dependent-id cpd)))
+				(modes (get-modes marginalized delta)))
+			   (setq mixture-probs (discrete-normal-approximation :values values :modes modes))
+			   (when nil
+			     (format t "~%~%cpd:")
+			     (print-cpd cpd)
+			     (format t "~%mixture distribution")
+			     (print-cpd marginalized)
+			     (format t "~%mixture distribution modes:~%~S~%mixture distribution probabilities:~%~A" modes mixture-probs))))
+			(t
+			 (error "Unsupported mixture distrubution ~S. Must be either 'discrete-uniform or 'discrete-normal-approximation" mixture-type)))
+		  (setq mixture-rules (make-array (length mixture-probs)))
+		  (loop
+		    with r with idx
+		    for value in mixture-probs
+		    for i from 0
+		    do
+		       (setq r (make-rule :id "RULE-"
+					  :conditions (make-hash-table :test #'equal)
+					  :probability (getf value :probability)))
+		       (setq idx nil)
+		       (loop
+			 named looper
+			 for vvbm in vvbms
+			 when (equal (getf value :value) (caar vvbm))
+			   do
+			      (setq idx (cdar vvbm))
+			      (return-from looper nil))
+		       (setf (gethash (rule-based-cpd-dependent-id cpd) (rule-conditions r))
+			     (list idx))
+		       (setf (aref mixture-rules i) r))
+		  (when nil
+		    (format t "~%mixture rules:")
+		    (map nil #'print-cpd-rule mixture-rules))
+		  (setq smoothed-cpd (copy-rule-based-cpd cpd :rule-counts 1))
+		  (loop
+		    with var
+		    for r1 being the elements of (rule-based-cpd-rules smoothed-cpd)
+		    do
+		       (loop
+			 named filter
+			 for r2 being the elements of mixture-rules
+			 when (compatible-rule-p r1 r2 nil nil)
+			   do
+			      (setf (rule-probability r1)
+				    (+ (* (rule-probability r1)
+					  (- 1 alpha))
+				       (* alpha (rule-probability r2))))
+			      (return-from filter nil)))
+		  (when nil
+		    (format t "~%~%smoothed cpd:")
+		    (print-cpd smoothed-cpd))
+	       collect smoothed-cpd into smoothed
+	       finally
+		  (return smoothed)))
+	   (smooth-posterior-multiplicative (posterior-distribution alpha &key (mixture-type "discrete-uniform") (delta .01))
+	     (loop
+	       with values
 	       with mixture-cpd and marginalized-cpd
 	       with smoothed-cpd and probability with mixture-probs and mixture-rules
 	       with vvbms

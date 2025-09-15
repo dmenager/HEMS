@@ -3276,7 +3276,7 @@
 		   ;; DHM: Can I push the T(G) computation up a level, then at the end of this loop go through the T(G) iteratively removing the covered goal from the blocks?
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
-                   (when t print-special* (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
+                   (when nil t print-special* (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3296,9 +3296,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
+				 (when nil t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
+				 (when nil t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3314,7 +3314,7 @@
                                (= (hash-table-count (rule-avoid-list new-rule)) 0)
 			       (> (hash-table-count (rule-certain-block new-rule)) 0))                          
                           ;; remove extraneous conditions, but make sure that pruned rule isn't compatible with existing rules!!
-                          (when t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+                          (when nil t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
                             ;;(break)
 				(format t "~%~%testing for redundant conditions!~%rule:")
 				(print-cpd-rule new-rule))
@@ -3364,7 +3364,7 @@
 			  |#
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
+			  (when nil t print-special* t nil (and (equal "TIME_509" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)
@@ -3397,7 +3397,7 @@
                                 (format t "~%rule-set:~%~S~%rule-set block:~%~S~%goal:~%~S" rule-set rule-set-block goal))
                           (setq goal (block-difference goal rule-set-block :output-hash-p t))
                           (setq junk nil)
-                          (when t print-special*
+                          (when nil t print-special*
                             (format t "~%updated goal:~%~S~%****************************~%" goal)
 			    (setq print-special* nil)
 			    ;;(break)
@@ -4486,7 +4486,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id)
-  (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+  (when (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi))
     (format t "~%marginalizing phi:")
     (print-cpd phi)
     (format t "~%vars to keep:~%~S" vars))
@@ -4501,7 +4501,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     for r1 being the elements of rules
     for i from 0
     do
-       (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
+       (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi)))
 	     (format t "~%~%rule at index i = ~d" i)
 	     (print-cpd-rule r1)
 	     ;;(format t "~%global ignore indeces:~%~S" global-ignore-idxs)
@@ -4518,12 +4518,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   do
 	      (setq intersection1 (cons (cons var vals) intersection1)))
        (cond ((not intersection1)
-	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
-		    (format t "~%adding rule to new rules because by default"))
+	      (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi)))
+		(format t "~%adding rule to new rules because by default"))
 	      (setq marginalized-rule (copy-cpd-rule r1))
 	      (setf (rule-block marginalized-rule) (make-hash-table))
 	      (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
-	      ;;(setq num-rules (+ num-rules 1))
+	      (setq new-rules (cons marginalized-rule new-rules))
+	      (setq num-rules (+ num-rules 1))
 	      )
 	     ((and intersection1 (not (member i global-ignore-idxs)))
 	      (setq rule-bag (list r1))
@@ -4537,12 +4538,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 		do
 		   (setf (gethash (car inter) (rule-conditions marginalized-rule))
 			 (cdr inter)))
-	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
-		    (format t "~%initial marginalized rule:~%~S" marginalized-rule))
+	      (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi)))
+		(format t "~%initial marginalized rule:~%~S" marginalized-rule))
 	      (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
 	      ;;(setq num-rules (+ num-rules 1))
-	      (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
-		    (format t "~%rule has intersection with keep vars"))
+	      (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi)))
+		(format t "~%rule has intersection with keep vars"))
 	      (loop
 		with intersection2
 		with local-ignore = global-ignore-idxs
@@ -4550,10 +4551,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		for r2 being the elements of rules
 		for j from 0
 		when (not (= j i)) do
-		  (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+		  (when (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi))
 		    (format t "~%  checking if r2 is compatible with marginalized rule.~%  r2:")
 		    (print-cpd-rule r2 :indent "        ")
-			(format t "~%  local ignore:~%  ~S" local-ignore))
+		    (format t "~%  local ignore:~%  ~S" local-ignore))
 		  (setq intersection2 nil)
 		  (loop
 		    named inter
@@ -4575,17 +4576,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 				 (funcall op 1
 					  #|
 					  (if (rule-count marginalized-rule)
-					      (rule-count marginalized-rule)
-					      1)
+					  (rule-count marginalized-rule)
+					  1)
 					  (if (rule-count r2)
-					      (rule-count r2)
-					      1)
+					  (rule-count r2)
+					  1)
 					  |#)))
 			 (when nil t
-			   (format t "~%  compatible by default.~%  updated marginalized rule:~%  ~S" marginalized-rule)))
+			       (format t "~%  compatible by default.~%  updated marginalized rule:~%  ~S" marginalized-rule)))
 			(t
 			 (when (compatible-rule-p r2 marginalized-rule phi phi)
-			   (when nil (and (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var phi))
+			   (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-var phi))
 				      (= 1 (rule-probability r2)))
 			     (format t "~%  r2 is compatible with marginalized rule.~%  marginalized-rule:~%  ~S~%  r1:~%  ~S~%  r2:~%  ~S" marginalized-rule r1 r2))
 			   (setq rule-bag (cons r2 rule-bag))
@@ -4599,10 +4600,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 					    #|
 					    (if (rule-count marginalized-rule)
 					    (rule-count marginalized-rule)
-						1)
+					    1)
 					    (if (rule-count r2)
-						(rule-count r2)
-						1)
+					    (rule-count r2)
+					    1)
 					    |#)))
 			   (setq num-conditions (hash-table-count (rule-conditions marginalized-rule)))
 			   (loop
@@ -4617,14 +4618,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 			   (if (> (hash-table-count (rule-conditions marginalized-rule)) num-conditions)
 			       (setq local-ignore (cons j global-ignore-idxs))
 			       (setq local-ignore (cons j local-ignore)))
-			   (when nil (and (equal "TIME_3989" (rule-based-cpd-dependent-id phi)))
+			   (when (and (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi)))
 			     (format t "~%  updated marginalized rule:")
 			     (print-cpd-rule marginalized-rule :indent "        ")))))
 		finally
 		   (setq new-rules (cons marginalized-rule new-rules))
 		   (setq num-rules (+ num-rules 1))
 		   (setq global-ignore-idxs local-ignore)
-		   (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+		   (when (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi))
 		     (format t "~%updated new rules:")
 		     (map nil #'print-cpd-rule new-rules)
 		     ;;(format t "~%updated global ignore rule indexes:~%~S" global-ignore-idxs)
@@ -4658,7 +4659,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     |#
        (when (null new-rules)
 	 (error "No marginalized rules left."))
-       (when nil (equal "TIME_3989" (rule-based-cpd-dependent-id phi))
+       (when (equal "ACTION_0_1328" (rule-based-cpd-dependent-id phi))
 	 (format t "~%returning:")
 	 (map nil #'print-cpd-rule new-rules))
        (return (make-array num-rules :initial-contents (reverse new-rules)))))

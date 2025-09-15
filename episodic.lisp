@@ -1267,21 +1267,26 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; factors = observed factors
 (defun make-observations (factors &aux (evidence (make-hash-table :test #'equal)))
   (loop
-    with idx and var
-     for factor being the elements in factors
-     do
+    with idxs and var
+    for factor being the elements in factors
+    do
        (setf (gethash (rule-based-cpd-dependent-id factor) evidence) nil)
        (loop
-        named indexer
-        for rule being the elements of (rule-based-cpd-rules factor)
-          do
-             (setq idx (car (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule))))
-	    (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
-	    (when (null var)
-	      (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
-	    (setf (gethash (rule-based-cpd-dependent-id factor) evidence)
-		  (cons (cons var (rule-probability rule))
-			(gethash (rule-based-cpd-dependent-id factor) evidence)))))
+         named indexer
+         for rule being the elements of (rule-based-cpd-rules factor)
+         do
+	    (setq idxs (gethash (rule-based-cpd-dependent-id factor) (rule-conditions rule)))
+	    (when (null idxs)
+	      (setq idxs (gethash 0 (rule-based-cpd-var-values factor))))
+	    (loop
+	      for idx in idxs
+	      do
+		 (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
+		 (when (null var)
+		   (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
+		 (setf (gethash (rule-based-cpd-dependent-id factor) evidence)
+		       (cons (cons var (rule-probability rule))
+			     (gethash (rule-based-cpd-dependent-id factor) evidence))))))
   evidence)
 
 #| Make partially observed retrieval cue |#

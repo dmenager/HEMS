@@ -1667,50 +1667,46 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (infer-num 0) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
-  (labels ((find-vvbm-by-idx-val (val vvbms)
+  (labels ((find-vvbm-by-idx-val (vals vvbms acc)
 	     (loop
-	       named finder
 	       for vvbm in vvbms
-	       when (equal (cdar vvbm) val)
+	       when (and (not (= (cdar vvbm) 0))
+			 (or (member (cdar vvbm) vals)
+			     (null vals)))
 		 do
-		    (return-from finder (caar vvbm))))
+		    (setq acc (cons (read-from-string (caar vvbm)) acc)))
+	     acc)
 	   (get-modes (cpd delta)
 	     "Return the highest value and all values within DELTA of it in one pass."
 	     (loop
 	       named mode-finder
 	       with rules = (rule-based-cpd-rules cpd)
 	       with dep-id = (rule-based-cpd-dependent-id cpd) and vvbms = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
-	       with max-prob = (cons nil -1) and res
+	       with max-prob = -1 and res
 	       with sorted-rules = (sort rules #'(lambda (a b)
-						   (> (with-input-from-string (s (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions a))) vvbms))
-							(let ((num (read s)))
-							  (if (numberp num)
-							      (rule-probability a)
-							      -1)))
-						      (with-input-from-string (s (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions b))) vvbms))
-							(let ((num (read s)))
-							  (if (numberp num)
-							      (rule-probability b)
-							      -1))))))
+						   (>
+						    (if (find-vvbm-by-idx-val (gethash dep-id (rule-conditions a)) vvbms nil)
+							(rule-probability a)
+							-1)
+						    (if (find-vvbm-by-idx-val (gethash dep-id (rule-conditions b)) vvbms nil)
+							(rule-probability b)
+							-1))))
 	       for rule being the elements of sorted-rules
 	       do
-		  (cond ((> (rule-probability rule) (cdr max-prob))
-			 (setq max-prob (cons (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)
-					      (rule-probability rule)))
-			 (setq res (list (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)))
+		  (cond ((> (rule-probability rule) max-prob)
+			 (setq max-prob (rule-probability rule))
+			 (setq res (find-vvbm-by-idx-val (gethash dep-id (rule-conditions rule)) vvbms nil))
 			 (when nil
 			   (format t "~%new max prob:")
 			   (print-cpd-rule rule)
 			   (format t "~%modes: ~S" res)))
-			((and (>= (rule-probability rule) (- (cdr max-prob) delta)))
-			 (setq res (cons
-				    (find-vvbm-by-idx-val (car (gethash dep-id (rule-conditions rule))) vvbms)
-				    res))
+			((and (>= (rule-probability rule) (- max-prob delta)))
+			 (setq res (find-vvbm-by-idx-val (gethash dep-id (rule-conditions rule)) vvbms res))
 			 (when nil
 			   (format t "~%found rule in existing mode:")
 			   (print-cpd-rule rule)
 			   (format t "~%modes: ~S" res)))
-			((and (< (rule-probability rule) (- (cdr max-prob) delta)))
+			((and (< (rule-probability rule) (- max-prob delta)))
 			 (return-from mode-finder (remove-duplicates res :test #'equal))))
 	       finally
 		  (return-from mode-finder (remove-duplicates res :test #'equal))))

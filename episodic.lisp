@@ -1674,10 +1674,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (or (member (cdar vvbm) vals)
 			     (null vals)))
 		 do
-		    (setq acc (cons (read-from-string (caar vvbm)) acc)))
+		    (setq acc (cons (caar vvbm) acc)))
 	     acc)
 	   (get-modes (cpd delta)
 	     "Return the highest value and all values within DELTA of it in one pass."
+	     (when nil
+	       (format t "~%~%getting modes of:")
+	       (map nil #'print-cpd-rule (rule-based-cpd-rules cpd)))
 	     (loop
 	       named mode-finder
 	       with rules = (rule-based-cpd-rules cpd)

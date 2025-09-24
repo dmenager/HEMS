@@ -4248,7 +4248,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       ;;(mapcar #'print-cpd-rule new-rules)
       ;;(break)
       )
-    #|
+    
     (cond ((eq op '*)
            (setq new-phi (update-cpd-rules new-phi
                                            (make-array (length new-rules)
@@ -4258,31 +4258,25 @@ Roughly based on (Koller and Friedman, 2009) |#
                               (update-cpd-rules new-phi
 						(make-array (length new-rules)
                                                             :initial-contents new-rules))))))
-    |#
+  
+    #|
     (setq new-phi (get-local-coverings
                               (update-cpd-rules new-phi
 						(make-array (length new-rules)
                                                             :initial-contents new-rules)
 						:check-prob-sum (not (or (eq op '*) (eq #'* op))))))
     
-    #|
-    (cond ((eq op '*)
-           (setf (rule-based-cpd-rules new-phi)
-                 (make-array (length new-rules) :initial-contents new-rules))
-	   (when nil (and (or (eq op '*)
-			      (eq op #'*))
-			  (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
-		 (format t "~%unnormalized result:")
-		 (print-cpd new-phi))
-           (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
-           ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
-           )
-          (t
-           ;; update-cpd-rules done in get-local-coverings
-           (when nil (and nil print-special* (equal "STATE_VAR2_290" (rule-based-cpd-dependent-id new-phi)))
-                 (check-cpd new-phi :check-uniqueness nil :check-prob-sum (if (rule-based-cpd-singleton-p new-phi) nil t) :check-count-prob-agreement (if (rule-based-cpd-singleton-p new-phi) nil t) :check-counts (if (rule-based-cpd-singleton-p new-phi) nil t)))
-           ))
     |#
+    
+    (when (eq op '*)
+      (when nil (and (or (eq op '*)
+			 (eq op #'*))
+		     (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
+	    (format t "~%unnormalized result:")
+	    (print-cpd new-phi))
+      (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
+      ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
+      )
     (when nil (and (or (eq op '*)
 		   (eq op #'*))
 	       (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
@@ -6288,16 +6282,18 @@ Roughly based on (Koller and Friedman, 2009) |#
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages)
     ;;(setq factors-list (coerce (car state) 'list))
     (loop
+      with new-factor
       for factor being the elements of (car state)
-       do
-	 (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var factor))
-	   (format t "~%~%prior probabilities for:~%~A~%rules:~%~A" (rule-based-cpd-identifiers factor) (rule-based-cpd-rules factor)))
+      do
+	 (setq new-factor (get-local-coverings factor))
+	 (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var new-factor))
+	   (format t "~%~%prior probabilities for:~%~A~%rules:~%~A" (rule-based-cpd-identifiers new-factor) (rule-based-cpd-rules new-factor)))
 	 (loop
-	   for rule being the elements of (rule-based-cpd-rules factor)
+	   for rule being the elements of (rule-based-cpd-rules new-factor)
 	   do
 	      (setf (rule-probability rule) (float (rule-probability rule)))
-	      (setf (rule-count rule) (float (rule-count rule))))
-	 (setq factors-list (cons factor factors-list))
+	      (setf (rule-count rule) 1.0))
+	 (setq factors-list (cons new-factor factors-list))
       finally
 	 (setq factors-list (reverse factors-list)))
     (when nil t 
@@ -6356,7 +6352,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when nil 
 	   (format t "~%factor:~%~S~%singleton:~%~S" factor singleton)
 	   (break))
-      collect singleton into singletons
+      collect (get-local-coverings (update-cpd-rules singleton (rule-based-cpd-rules singleton))) into singletons
       finally (setq singleton-factors-list singletons))
     (when nil t
       (format t "~%singleton factors:~%~S:~%num elements: ~d" singleton-factors-list (length singleton-factors-list)))
@@ -6438,7 +6434,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :qualified-vars (rule-based-cpd-qualified-vars factor)
 						 :cardinalities (rule-based-cpd-cardinalities factor)
 						 :var-value-block-map (rule-based-cpd-var-value-block-map factor)
+						 :lower-approx-var-value-block-map (rule-based-cpd-lower-approx-var-value-block-map factor)
 						 :step-sizes (rule-based-cpd-step-sizes factor)
+						 :var-values (rule-based-cpd-var-values factor)
 						 :rules rules
 						 :singleton-p t
 						 :lvl (rule-based-cpd-lvl factor)))
@@ -6446,7 +6444,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		    (format t "~%final rules:~%~A" rules))
 		  (when (null (gethash index messages))
 		    (setf (gethash index messages) (make-hash-table)))
-		  (setf (gethash index (gethash index messages)) msg))))
+		  (setf (gethash index (gethash index messages)) (get-local-coverings (update-cpd-rules msg (rule-based-cpd-rules msg)))))))
       finally
          (setq initial-messages messages))
     (when nil t

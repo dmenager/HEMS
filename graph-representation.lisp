@@ -3846,6 +3846,9 @@
                do
                   (setq no-match-r2 (copy-cpd-rule no-match-r1))
                   (setf (rule-probability no-match-r2) 0)
+		  (if (rule-based-cpd-singleton-p cpd2)
+		      (setf (rule-count no-match-r1) nil)
+		      (setf (rule-count no-match-r2) 0))
 		  (loop
 		    for att being the hash-keys of (rule-conditions no-match-r2)
 		      using (hash-value vals)

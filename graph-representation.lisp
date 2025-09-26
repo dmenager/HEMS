@@ -3846,9 +3846,11 @@
                do
                   (setq no-match-r2 (copy-cpd-rule no-match-r1))
                   (setf (rule-probability no-match-r2) 0)
+		  #|
 		  (if (rule-based-cpd-singleton-p cpd2)
 		      (setf (rule-count no-match-r1) nil)
 		      (setf (rule-count no-match-r2) 0))
+		  |#
 		  (loop
 		    for att being the hash-keys of (rule-conditions no-match-r2)
 		      using (hash-value vals)
@@ -4215,11 +4217,11 @@ Roughly based on (Koller and Friedman, 2009) |#
   (let (var-union types idents concept-ids qvars values cardinalities steps var-value-block-map sva lower-vvbms new-phi new-rules)
     (multiple-value-setq (idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms values)
       (ordered-union phi1 phi2))
-    (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+    (when nil(and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
     (when nil (and (or (eq op '*)
 		   (eq op #'*))
-	       (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
+	       (equal (rule-based-cpd-dependent-id phi1) "EPOSITION_PREV_219"))
       (format t "~%~%phi1:")
       (print-cpd phi1)
       (format t "~%phi2:")
@@ -4942,7 +4944,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 1) (= j 7))
+  (when (and (= i 1) (= j 10))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4967,7 +4969,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   (cons (rule-based-cpd-identifiers (aref factors i))
                         (rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 1) (= j 7))
+    (when (and (= i 1) (= j 10))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -6253,6 +6255,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		      (getf value :value)))
 	   (setq prior-cpd (subst-cpd prior-cpd cpd1 bindings))
 	   (cpd-update-schema-domain cpd1 prior-cpd nil)
+	   (setq cpd1 (update-cpd-rules cpd1 (rule-based-cpd-rules cpd1)))
 	   ;; update the domain of CPD1 in downstream cpds
 	   (loop
 	     for cpd2 being the elements of (car bn)
@@ -6288,7 +6291,14 @@ Roughly based on (Koller and Friedman, 2009) |#
       with new-factor
       for factor being the elements of (car state)
       do
+	 (when (rule-based-cpd-prior factor)
+	   (format t "~%~%factor:")
+	   (print-cpd factor))
 	 (setq new-factor (get-local-coverings factor))
+	 (when (rule-based-cpd-prior factor)
+	   (format t "~%new factor:")
+	   (print-cpd new-factor)
+	   (break))
 	 (when nil (equal "WORKER_AGENT_REPUTATION" (rule-based-cpd-dependent-var new-factor))
 	   (format t "~%~%prior probabilities for:~%~A~%rules:~%~A" (rule-based-cpd-identifiers new-factor) (rule-based-cpd-rules new-factor)))
 	 (loop
@@ -6309,6 +6319,14 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (gethash (rule-based-cpd-dependent-id factor) priors)
 	do
 	   (setq singleton (gethash (rule-based-cpd-dependent-id factor) priors))
+	   (when nil
+	   ;;(format t "~%~%factor:~%~S~%singleton:~%~S" factor singleton)
+	   (format t "~%~%factor:")
+	   (print-cpd factor)
+	   (format t "~%singleton (from prior):")
+	   (print-cpd singleton)
+	   ;;(break)
+	   )
       else do
          (setq dep-id (rule-based-cpd-dependent-id factor))
          (setq id (make-hash-table :test #'equal))
@@ -6352,11 +6370,12 @@ Roughly based on (Koller and Friedman, 2009) |#
                                               :rules rules
                                               :singleton-p t
                                               :lvl lvl))
-	 (when nil 
-	   (format t "~%factor:~%~S~%singleton:~%~S" factor singleton)
-	   (break))
       collect (get-local-coverings (update-cpd-rules singleton (rule-based-cpd-rules singleton))) into singletons
-      finally (setq singleton-factors-list singletons))
+      finally (setq singleton-factors-list singletons)
+	      (when nil
+		(format t "~%~%singletons:")
+		(mapcar #'print-cpd singletons)
+		(break)))
     (when nil t
       (format t "~%singleton factors:~%~S:~%num elements: ~d" singleton-factors-list (length singleton-factors-list)))
     (setq all-factors-list (append factors-list singleton-factors-list))
@@ -6402,7 +6421,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq rule (make-rule :id (gensym "RULE-")
 					:conditions (make-hash-table :test #'equal)
 					:probability (cdr var-prob)
-					:count 1.0))
+					:count 1))
 		  (setf (gethash (rule-based-cpd-dependent-id factor)
 				 (rule-conditions rule))
 			(list value))

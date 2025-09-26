@@ -4944,7 +4944,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when (and (= i 1) (= j 10))
+  (when nil (and (= i 1) (= j 10))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4969,7 +4969,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   (cons (rule-based-cpd-identifiers (aref factors i))
                         (rule-based-cpd-rules (aref factors i)))))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when (and (= i 1) (= j 10))
+    (when nil (and (= i 1) (= j 10))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -6291,11 +6291,11 @@ Roughly based on (Koller and Friedman, 2009) |#
       with new-factor
       for factor being the elements of (car state)
       do
-	 (when (rule-based-cpd-prior factor)
+	 (when nil (rule-based-cpd-prior factor)
 	   (format t "~%~%factor:")
 	   (print-cpd factor))
 	 (setq new-factor (get-local-coverings factor))
-	 (when (rule-based-cpd-prior factor)
+	 (when nil (rule-based-cpd-prior factor)
 	   (format t "~%new factor:")
 	   (print-cpd new-factor)
 	   (break))

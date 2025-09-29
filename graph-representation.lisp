@@ -1636,6 +1636,20 @@
     finally
         (return (values idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms vals))))
 
+#| Round a floating point number. Returns float. |#
+
+;; v = float to round
+;; n = number of significant digits
+(defun fround-to-n-digits (v &optional (n 0))
+  ;; These declarations are really to show intent: FLOAT is not enough
+  ;; to optimize although perhaps a good type-inferencing compiler can
+  ;; work out that this takes double->double &c.
+  (declare (type float v)
+           (type (integer 0) n))
+  (let ((10^-n (expt 10 (- n))))
+    (* (fround v 10^-n)
+       10^-n)))
+
 #| Normalize factor rules to maintain probability measure.
    Returns: Destructively modified phi|#
 
@@ -1679,7 +1693,7 @@
               (setq norm-const (apply #'+ (mapcar #'rule-probability row)))
 	      (setq new-rule (copy-cpd-rule r1))
               (setf (rule-probability new-rule) (if (> norm-const 0)
-                                                    (/ (rule-probability r1) norm-const)
+						    (/ (rule-probability r1) norm-const)
                                                     0))
 	      (when (rule-count r1)
 		(setq row-count (apply #'max (mapcar #'rule-count row)))
@@ -2399,7 +2413,7 @@
 ;; new-rules = array of new rules to replace current rules
 (defun update-cpd-rules (cpd new-rules &key (disambiguate-p nil) (check-uniqueness nil) (check-prob-sum t))
   (setf (rule-based-cpd-rules cpd) new-rules)
-  (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum)
+  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum)
   (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
         (format t "~%~%updating cpd rules for cpd:~%~S" cpd))
   (setq cpd (reset-attribute-and-concept-blocks cpd))
@@ -4125,7 +4139,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when nil t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
     (loop
       with check-num-rules = (cond ((and nil check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -4149,7 +4163,11 @@
          (cond ((null compatible-rule)
                 (format t "~%no compatible rule for assignment:~%~S~%cpd:~%~S" index-rule cpd)
                 (error "check compatible rules"))
-               ((and check-uniqueness (> (length compatible-rule) 1))
+	       ((some #'(lambda (r) (< (rule-probability r) 0)) compatible-rule)
+		(format t "~%cpd:~%~S~%negative rule probability:" cpd)
+		(map nil #'print-cpd-rule compatible-rule)
+		(error "~%check rule probability"))
+	       ((and check-uniqueness (> (length compatible-rule) 1))
                 (format t "~%multiple rules fire for assignment:~%~S~%cpd:~%~S~%compatible rules:~%~S" index-rule cpd compatible-rule)
                 (error "check compatible rules"))
                ((and (not check-uniqueness)
@@ -4310,7 +4328,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                      )
                ;;(check-cpd ph2 :check-uniqueness nil)
                (setq new-phi2 (cpd-update-schema-domain new-phi2 ph1 new-nodes :q-first-bindings q-first-bindings))
-               (check-cpd new-phi2 :check-uniqueness nil :check-rule-count nil)
+               ;;(check-cpd new-phi2 :check-uniqueness nil :check-rule-count nil)
                (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id new-phi2)))
                  (format t "~%intermediate schema2:~%~S~%rules:" new-phi2)
                  (loop
@@ -4383,7 +4401,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
                      (format t "~%~%original episode:~%~S~%transformed episode:~%~S~%phi1-copy:~%~S~%generated schema:~%~S"phi1 new-phi1 phi1-copy new-phi2)
                      (break))
-               (check-cpd new-phi1 :check-uniqueness nil :check-counts nil)
+               ;;(check-cpd new-phi1 :check-uniqueness nil :check-counts nil)
                (factor-filter new-phi2 new-phi1 '+))))
           (t
            (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
@@ -4944,7 +4962,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 1) (= j 10))
+  (when nil (and (= i 14) (= j 5))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4957,19 +4975,19 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
       finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 1) (= j 3))
-          (format t "~%neighbors minus j:~%~S~%i:~%~S"
-                  (loop for nbr in nbrs-minus-j
-                        when (rule-based-cpd-p nbr)
-                          collect (cons (rule-based-cpd-identifiers nbr) (rule-based-cpd-rules nbr)) into nbrs
-                        else
-                          collect nbr into nbrs
-                        finally
-                           (return nbrs))
-                  (cons (rule-based-cpd-identifiers (aref factors i))
-                        (rule-based-cpd-rules (aref factors i)))))
+    (when nil (and (= i 14) (= j 5))
+          (format t "~%neighbors minus j:")
+          (loop for nbr in nbrs-minus-j
+                when (rule-based-cpd-p nbr)
+		  do
+		     (print-cpd nbr)
+                else
+		  do
+		     (format t "~%non-cpd neighbor: ~S" nbr))
+	  (format t "~%~%i:")
+	  (print-cpd (aref factors i)))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 1) (= j 10))
+    (when nil (and (= i 14) (= j 5))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -5130,7 +5148,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (and (= j 1) (= k 3))
+              (when nil (= k 14) nil (and (= j 1) (= k 3))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -6319,13 +6337,13 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (gethash (rule-based-cpd-dependent-id factor) priors)
 	do
 	   (setq singleton (gethash (rule-based-cpd-dependent-id factor) priors))
-	   (when nil
+	   (when nil (equal "EPOSITION_231" (rule-based-cpd-dependent-id factor))
 	   ;;(format t "~%~%factor:~%~S~%singleton:~%~S" factor singleton)
 	   (format t "~%~%factor:")
 	   (print-cpd factor)
 	   (format t "~%singleton (from prior):")
 	   (print-cpd singleton)
-	   ;;(break)
+	   (break)
 	   )
       else do
          (setq dep-id (rule-based-cpd-dependent-id factor))
@@ -6396,8 +6414,10 @@ Roughly based on (Koller and Friedman, 2009) |#
       do
 	 (setq factor (aref singleton-factors i))
 	 (setq var-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
-         (when nil
-           (format t "~%~%singleton factor:~%~A~%id in evidence?: ~A" (rule-based-cpd-identifiers factor) var-probs))
+         (when nil (equal "EPOSITION_231" (rule-based-cpd-dependent-id factor))
+           (format t "~%~%singleton factor:")
+	   (print-cpd factor)
+	   (format t "~%id in evidence?: ~A" var-probs))
          (when var-probs
 	   (setq rules (make-array (length (gethash 0 (rule-based-cpd-var-values factor)))))
 	   (setq index (+ i (array-dimension factors 0)))
@@ -6417,6 +6437,13 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(when value
 		  (setq seen (cons value seen))
 		  (setq remaining-prob (- remaining-prob (cdr var-prob)))
+		  #|
+		  (when (< remaining-prob 0)
+		    (format t "~%singleton:")
+		    (print-cpd factor)
+		    (format t "~%var probs:~%~S~%remaining prob: ~d" var-probs remaining-prob)
+		    (error "remaining prob is less than 0!"))
+		  |#
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
 		  (setq rule (make-rule :id (gensym "RULE-")
 					:conditions (make-hash-table :test #'equal)
@@ -6431,7 +6458,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 			(break))
 		  (setq j (+ j 1)))		
 	      finally
-		(when seen
+		 (when seen
+		   (when (< remaining-prob 0)
+		     (setq remaining-prob 0))
 		  (loop
 		     with fill-ins = (set-difference (gethash 0 (rule-based-cpd-var-values factor))
 						     seen)

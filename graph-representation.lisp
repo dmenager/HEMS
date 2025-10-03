@@ -2367,45 +2367,6 @@
                  (format t "~%value block:~%~S~%updated lower approximation:~%~S" (cadr vvb) (cadr lower)))))
   cpd)
 
-#| Get local characteristic sets for each variable in CPD |#
-
-;; cpd = conditional probability distribution
-(defun cpd-add-characteristic-sets (cpd)
-  (when nil
-    (format t "~%~%updating cpd characteristic sets"))
-  (loop
-    for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
-      using (hash-value idx)
-    do
-       (setf (gethash idx (rule-based-cpd-characteristic-sets cpd))
-             (make-array (array-dimension (rule-based-cpd-rules cpd) 0)))
-       (setf (gethash idx (rule-based-cpd-characteristic-sets-values cpd))
-             (make-array (array-dimension (rule-based-cpd-rules cpd) 0)))
-       (loop
-         for i from 0 to (- (array-dimension (rule-based-cpd-rules cpd) 0) 1)
-         do
-            (when nil
-              (format t "~%~%ident: ~S~%i: ~d" ident i))
-            (loop
-              with c-set and a-x-set
-              for vvb in (gethash idx (rule-based-cpd-var-value-block-map cpd))
-              when (gethash i (cadr vvb)) ;;(member i (cadr vvb))
-                do
-                   (when nil
-                     (format t "~%vvb:~%~S~%c-set before update:~%~S" vvb c-set))
-                   (setq c-set (union c-set (cadr vvb)))
-                   (setq a-x-set (union (nth (cdar vvb) (gethash idx (rule-based-cpd-set-valued-attributes cpd))) a-x-set))
-                   (when nil
-                     (format t "~%c-set after update:~%~S" c-set))
-              finally
-                 (setf (aref (gethash idx (rule-based-cpd-characteristic-sets cpd)) i)
-                       c-set)
-                 (setf (aref (gethash idx (rule-based-cpd-characteristic-sets-values cpd)) i)
-                       a-x-set)
-                 (when nil
-                   (format t "~%identifier: ~S~%index: ~d~%new characteristic set:~%~S" ident i c-set)))))
-  (cpd-add-lower-approximations cpd))
-
 #| Change cpd rules, attribute blocks, and concept-blocks.
    Returns: CPD with updated variable-value blocks, updated concept blocks, and updated lower approximations |#
 
@@ -3122,137 +3083,6 @@
   (setf (gethash att (gethash case case-constraints))
         (cons sva (gethash att (gethash case case-constraints))))
   case-constraints)
-
-#| Initialize case constraints using initial rules |#
-
-;; cpd = rule-based cpd
-(defun init-case-constraints (cpd)
-  (when nil nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-        (format t "~%~%initializing case constraints"))
-  (loop
-    with case-constraints = (make-hash-table)
-    for rule being the elements of (rule-based-cpd-rules cpd)
-    do
-       (loop
-         for case being the hash-keys of (rule-block rule)
-         do
-            (when nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                  (format t "~%~%case ~d:" case))
-            (when (null (gethash case case-constraints))
-              (setf (gethash case case-constraints) (make-hash-table :test #'equal)))
-            (loop
-              with idx and rule-sva
-              for att being the hash-keys of (rule-conditions rule)
-                using (hash-value val)
-	      when (and (= (aref (rule-based-cpd-cardinalities cpd)
-			    (gethash att (rule-based-cpd-identifiers cpd)))
-			   2)
-			(> (rule-count rule) 0))
-	      do
-                 (setq idx (gethash att (rule-based-cpd-identifiers cpd)))
-                 (if (listp val)
-                     (setq rule-sva (nth (second val) (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))))
-                     (setq rule-sva (nth val (gethash idx (rule-based-cpd-set-valued-attributes cpd)))))
-                 (when nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                       (format t "~%~%attribute in rule: ~S" att)
-                       (format t "~%rule sva: ~S" rule-sva))
-                 (loop
-                   for sva in (gethash idx (rule-based-cpd-set-valued-attributes cpd))
-                   for svna in (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))
-                   do
-		      (when nil
-			(format t "~%sva:~%~S~%svna:~%~S" sva svna))
-                      (cond ((intersection sva rule-sva)
-                             (setq case-constraints (add-case-constraint case att sva case-constraints)))
-                            ((intersection svna rule-sva)
-                             (setq case-constraints (add-case-constraint case att svna case-constraints)))))))
-    finally
-       (return case-constraints)))
-
-#| Constrain space of possible conditions per rule |#
-
-;; cpd = conditional probability distribution
-;; rule = rule in rule-based-cpd
-;; case-constraints = hash table of constraints that a rule must satisfy for each covered case
-(defun update-case-constraints (cpd rule case-constraints)
-  (labels ((add-case-constraint (case att sva case-constraints)
-             (setf (gethash att (gethash case case-constraints))
-                   (cons sva (gethash att (gethash case case-constraints))))
-             case-constraints)
-           (remove-case-constraint (case att sva case-constraints)
-	     (when nil t
-	       (format t "~%case: ~d case constraints before remove:~%~S~%item to remove: ~S" case (gethash att (gethash case case-constraints)) sva))
-             (setf (gethash att (gethash case case-constraints))
-                   (remove sva (gethash att (gethash case case-constraints)) :test #'equal))
-	     (when nil t
-	       (format t "~%updated case constraints:~%~S" (gethash att (gethash case case-constraints)))
-	       (break))
-             case-constraints)
-	   )
-    (when nil t (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-          (format t "~%~%Updating case constraints based on rule:~%~S~%uncertain block:~%~S" rule (hash-difference (rule-block rule) (rule-certain-block rule) nil :output-hash-p t)))
-    (loop
-      with uncertain-block = (hash-difference (rule-block rule) (rule-certain-block rule) nil :output-hash-p t)
-      for case being the hash-keys of (rule-block rule)
-      ;;when (member case (rule-certain-block rule))
-      ;;  do
-      ;;     (remhash case case-constraints)
-      ;;else when (not (member case (rule-certain-block rule)))
-        do
-           (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                 (format t "~%~%case ~d:" case))
-           (when (null (gethash case case-constraints))
-             (setf (gethash case case-constraints) (make-hash-table :test #'equal)))
-           (loop
-             with idx and rule-sva
-             for att being the hash-keys of (rule-conditions rule)
-               using (hash-value val)
-             do
-                (setq idx (gethash att (rule-based-cpd-identifiers cpd)))
-                (if (listp val)
-                    (setq rule-sva (nth (second val) (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))))
-                    (setq rule-sva (nth val (gethash idx (rule-based-cpd-set-valued-attributes cpd)))))
-                (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                      (format t "~%~%attribute in rule: ~S" att)
-                      (format t "~%rule sva: ~S" rule-sva))
-                (loop
-                  for value-block in (gethash idx (rule-based-cpd-var-value-block-map cpd))
-                  for sva in (gethash idx (rule-based-cpd-set-valued-attributes cpd))
-                  for negated-value-block in (gethash idx (rule-based-cpd-negated-vvbms cpd))
-                  for svna in (gethash idx (rule-based-cpd-set-valued-negated-attributes cpd))
-                  do
-                     (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                           (format t "~%   value-block: ~S~%   sva: ~S~%   svna: ~S" value-block sva svna))
-		     ;; can I add a condition in the cond that would check to see if block of att is in the rule block but not the certain block
-		     (cond ((and (hash-intersection uncertain-block (second value-block))
-				 (not (intersection sva rule-sva))
-                                 (gethash case (second value-block)))
-                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                                  (format t "~%   adding ~S constraint to ~A for case ~d" sva att case))
-			    (setq case-constraints (add-case-constraint case att sva case-constraints)))
-                           ((and (gethash case (rule-certain-block rule))
-                                 (intersection sva rule-sva)
-                                 (member sva (gethash att (gethash case case-constraints))))
-                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                                  (format t "~%   removing ~S constraint to ~A for case ~d" sva att case))
-                            (setq case-constraints (remove-case-constraint case att sva case-constraints))))
-                     (cond ((and (hash-intersection uncertain-block (second value-block))
-				 (not (intersection svna rule-sva))
-                                 (gethash case (second negated-value-block)))
-                            (when nil t nil(and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                                  (format t "~%   adding ~S constraint to ~A for case ~d" svna att case))
-                            (setq case-constraints (add-case-constraint case att svna case-constraints)))
-                           ((and (gethash case (rule-certain-block rule))
-                                 (intersection svna rule-sva)
-                                 (member svna (gethash att (gethash case case-constraints))))
-                            (when nil t nil (and (equal "Y548" (rule-based-cpd-dependent-id cpd)))
-                                  (format t "~%   removing ~S constraint to ~A for case ~d" svna att case))
-                            (setq case-constraints (remove-case-constraint case att svna case-constraints)))))
-                (when (null (gethash att (gethash case case-constraints)))
-                  (remhash att (gethash case case-constraints))))
-           (when (= (hash-table-count (gethash case case-constraints)) 0)
-             (remhash case case-constraints)))
-    case-constraints))
 
 #| Exploit local structure in CPD to induce minimal rule set |#
 
@@ -4374,6 +4204,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                    using (hash-value idx)
                  when (not (equal att (rule-based-cpd-dependent-id phi1)))
                    do
+		      ;; DHM: This call to nth is suspicious. Probably needs to be removed/refactored to loop since vvbm isn't guaranteed to be ordered
                       (setq var (caar (nth 1 (gethash idx (rule-based-cpd-var-value-block-map phi1)))))
                       (when nil (and (equal (rule-based-cpd-dependent-id phi1) "TWO_HUNDRED_FOURTEEN_1_271"))
                             (format t "~%~%episode parent: ~S assignment: ~S"att var))
@@ -7073,50 +6904,60 @@ Roughly based on (Koller and Friedman, 2009) |#
      do
 	(cond ((or (equal "OBSERVATION" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))))
 		   (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) p-node)))))	       
-	       (let ((p-ref (caar (second (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node))))))
+	       (let ((p-refs (mapcan #'(lambda (vvbm)
+					 (when (not (equal "NA" (caar vvbm)))
+					   (list (caar vvbm))))
+				     (gethash 0 (rule-based-cpd-var-value-block-map (aref (car p) p-node)))))
 		     (qp-refs (when qp
 				(mapcan #'(lambda (vvbm)
 					    (when (not (equal "NA" (caar vvbm)))
 					      (list (caar vvbm))))
 					(gethash 0 (rule-based-cpd-var-value-block-map (aref (car q) qp)))))))
 		 (loop
-		   named probber
-		   with res and prob
-		   with max-res = nil and max-prob = 1/2 and best-qp-ref
 		   for qp-ref in qp-refs
 		   do
-		      (when nil
-			(format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
-			;;(break)
-			)
-		      (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
-		      (if res
-			  (setq prob (/ (episode-count (car
-							(gethash p-ref p-refs-map)))
-					(episode-count (car
-							(gethash qp-ref qp-refs-map)))))
-			  (setq prob 0))
-		      (when nil t
-			    (format t "~%pq-ref is an ancestor of p-ref?: ~S" (if res t nil))
-			    (break))
-		      (when (> prob max-prob)
-			(setq max-res res)
-			(setq max-prob prob)
-			(setq best-qp-ref qp-ref))		      
-		   finally
-		      (cond (max-res
-			     (setf (gethash p-ref bindings) best-qp-ref)
-			     (setf (gethash best-qp-ref q-first-bindings) p-ref)
-			     (setq q-likelihood (* q-likelihood (/ (episode-count (car
-										   (gethash p-ref p-refs-map)))
-								   (episode-count (car
-										   (gethash best-qp-ref qp-refs-map))))))
-			    
-			     ;;(setq q-likelihood (* q-likelihood max-prob))
-			     (setq num-local-preds (+ num-local-preds 1)))
-			    (t
-			     ;;(setq num-local-preds 0)
-			     (setq q-likelihood (* q-likelihood 0)))))))
+		      (loop
+			with res and prob
+			with max-res = nil and max-prob = 1/2 and best-p-ref
+			for p-ref in p-refs
+			do
+			   (when t
+			     (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
+			     ;;(break)
+			     )
+			   
+			   (setq res (get-common-episode-class (car (gethash p-ref p-refs-map)) (car (gethash qp-ref qp-refs-map))))
+			   (if res
+			       (setq prob (/ (episode-count (car
+							     (gethash p-ref p-refs-map)))
+					     (episode-count (car
+							     (gethash qp-ref qp-refs-map)))))
+			       (setq prob 0))
+			   (when t
+				 (format t "~%pq-ref is an ancestor of p-ref?: ~S~%prob: ~d~%max-prob~%best-p-ref: ~S" (if res t nil) prob max-prob best-p-ref)
+				 ;;(break)
+				 )
+			   (when (> prob max-prob)
+			     (setq max-res res)
+			     (setq max-prob prob)
+			     (setq best-p-ref p-ref)
+			     (when t
+			       (format t "~%p-ref is new best p-ref.")))		      
+			finally
+			   (cond (max-res
+				  (setf (gethash best-p-ref bindings) qp-ref)
+				  (setf (gethash qp-ref q-first-bindings) best-p-ref)
+				  (setq q-likelihood (* q-likelihood (/ (episode-count (car
+											(gethash best-p-ref p-refs-map)))
+									(episode-count (car
+											(gethash qp-ref qp-refs-map))))))
+				  
+				  ;;(setq q-likelihood (* q-likelihood max-prob))
+				  (setq num-local-preds (+ num-local-preds 1))
+				  (setq p-refs (remove best-p-ref p-refs :test #'equal)))
+				 (t
+				  ;;(setq num-local-preds 0)
+				  (setq q-likelihood (* q-likelihood 0))))))))
 	      (t
 	       (setq kost (cost (aref (car p) p-node)
 				(if qp (aref (car q) qp) nil)

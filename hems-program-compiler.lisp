@@ -228,14 +228,18 @@
 				   (setq count-val 0))
 			       (setq values (cons (list :value "NA" :probability 0 :count count-val) values))))
 			   (loop
+			     with greatest-idx-val = 1 and idx
 			     with rule and rules = (make-array (length values))
 			     with value and prob and count
 			     for value-list in values
-			     for idx from 0
+			     ;;for idx from 0
 			     do
 				(setq value (getf value-list :value))
 				(setq prob (getf value-list :probability))
 				(setq count (getf value-list :count))
+				(if (equal "NA" value)
+				    (setq idx 0)
+				    (setq idx greatest-idx-val))
 				(setq rule (make-rule
 					    :id (gensym "RULE-")
 					    :conditions (make-hash-table :test #'equal)
@@ -252,6 +256,8 @@
 				       (error "Numeric value, ~A, not yet supported in node definition list. Expected string." value))
 				      (t
 				       (error "Unsupported value, ~A, for 'value' in node definition list.~%Received type ~A. Expected string or numeric." value (type-of value))))
+				(if (not (equal "NA" value))
+				    (setq greatest-idx-val (+ greatest-idx-val 1)))
 			     finally
 				(setf (rule-based-cpd-rules cpd) rules))
 			   (n-cpd-add-book-keeping-variables cpd vvbm sva vals)

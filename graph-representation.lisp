@@ -6246,7 +6246,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (setq factor (aref singleton-factors i))
 	 (setq var-probs (gethash (rule-based-cpd-dependent-id factor) evidence))
          (when nil (equal "EPOSITION_231" (rule-based-cpd-dependent-id factor))
-           (format t "~%~%singleton factor:")
+           (format t "~%~%singleton factor:~%~S~%"factor)
 	   (print-cpd factor)
 	   (format t "~%id in evidence?: ~A" var-probs))
          (when var-probs
@@ -6265,7 +6265,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					 :test #'equal :key #'car)))
 		(when nil
 		  (format t "~%observed variable: ~A~%var-prob: ~A~%observed variable value: ~A" (rule-based-cpd-dependent-id factor) var-prob value))
-		(when value
+		(when (and value (not (member value seen :test #'equal)))
 		  (setq seen (cons value seen))
 		  (setq remaining-prob (- remaining-prob (cdr var-prob)))
                   ;;(format t "~%index: ~d~%offset: ~d~%value: ~d" index offset value)
@@ -6916,12 +6916,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 		 (loop
 		   for qp-ref in qp-refs
 		   do
+		      (when nil t
+			(format t "~%p-refs:")
+			(loop
+			  for p-ref in p-refs
+			  do
+			     (format t "p-ref: ~S tree: ~S" p-ref (episode-id (car (gethash p-ref p-refs-map))))))
 		      (loop
 			with res and prob
-			with max-res = nil and max-prob = 1/2 and best-p-ref
+			with max-res = nil and max-prob = 0 and best-p-ref
 			for p-ref in p-refs
 			do
-			   (when t
+			   (when nil t
 			     (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
 			     ;;(break)
 			     )
@@ -6933,15 +6939,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 					     (episode-count (car
 							     (gethash qp-ref qp-refs-map)))))
 			       (setq prob 0))
-			   (when t
-				 (format t "~%pq-ref is an ancestor of p-ref?: ~S~%prob: ~d~%max-prob~%best-p-ref: ~S" (if res t nil) prob max-prob best-p-ref)
+			   (when nil t
+				 (format t "~%pq-ref is an ancestor of p-ref?: ~S~%prob: ~d~%max-prob ~d~%best-p-ref: ~S" (if res t nil) prob max-prob best-p-ref)
 				 ;;(break)
 				 )
 			   (when (> prob max-prob)
 			     (setq max-res res)
 			     (setq max-prob prob)
 			     (setq best-p-ref p-ref)
-			     (when t
+			     (when nil t
 			       (format t "~%p-ref is new best p-ref.")))		      
 			finally
 			   (cond (max-res

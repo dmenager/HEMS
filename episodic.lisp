@@ -1284,10 +1284,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (setq var (caar (assoc idx (gethash 0 (rule-based-cpd-var-value-block-map factor)) :key #'cdr)))
 		 (when (null var)
 		   (error "Variable look-up failed on vvbm:~%~S~%idx: ~d" (gethash 0 (rule-based-cpd-var-value-block-map factor)) idx))
-		 (when (assoc var (gethash (rule-based-cpd-dependent-id factor) evidence) :test #'equal)
+		 (when nil (assoc var (gethash (rule-based-cpd-dependent-id factor) evidence) :test #'equal)
 		   (format t "~%Duplicates are not supported in evidence list!")
 		   (format t "~%evidence:~%~S~%var to add: ~S" (gethash (rule-based-cpd-dependent-id factor) evidence) var)
-		   (format t "~%cpd:")
+		   (format t "~%cpd:~%~S" factor)
 		   (print-cpd factor)
 		   (break))
 		 (setf (gethash (rule-based-cpd-dependent-id factor) evidence)
@@ -1639,14 +1639,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (rule-based-cpd-identifiers (aref (car bn) q-match))
 		       (episode-id (car eme))
 		       bindings))
-	     (when (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id (aref (car bn) q-match)))
+	     (when nil (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id (aref (car bn) q-match)))
 	       (format t "~%~%p-copy before subst:~%~S"p-copy)
 	       (print-cpd p-copy)
 	       (format t "~%q-cpd:~%~S" (aref (car bn) q-match))
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%bindings:~%~S" bindings))
              (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
-	     (when (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id p-copy))
+	     (when nil (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id p-copy))
 	       (format t "~%subst p-copy:")
 	       (print-cpd p-copy))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
@@ -1658,7 +1658,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
 					 dep-id)))
-	     (when (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id p-copy))
+	     (when nil (equal "OBSERVATION_0_1289" (rule-based-cpd-dependent-id p-copy))
 	       (format t "~%observed factor (marginalized subst p-copy):")
 	       (print-cpd observed-factor))
              (setq observed-factors (cons observed-factor observed-factors)))
@@ -2882,7 +2882,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (when insertp
       (loop
 	with state-transitions = nil
-        with ep and ep-id and obs-ref and st-ref and obs-name and st-name
+        with ep and ep-id and obs-ref and st-ref
         with cur-st and cur-obs and cur-act and prev-act and prev-st and prev-obs and st-bn and id-ref-hash = (make-hash-table :test #'equal)
         for (o s act) in (gethash 0 (getf episode-buffer* :obs))
 	for i from 0
@@ -2899,7 +2899,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
            (format t "~%inserting observation, ~A" (episode-id ep))
 	   (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p :type "OBSERVATION"))
-	   (setq obs-name (episode-id (car obs-ref)))
+	   (eltm-to-pdf)
+	   ;;(break)
 	   (when temporal-p
 	     (when st
 	       (setq ep-id (symbol-name (gensym "EPISODE-")))
@@ -2914,43 +2915,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (format t "~%inserting state, ~A" (episode-id ep))
 	       (multiple-value-setq (eltm* st-ref)
 		 (new-insert-episode eltm* ep nil :bic-p bic-p :type "STATE"))
-	       (setq st-name (episode-id (car st-ref)))
-	       (loop
-	       named finder
-	       with foundp = nil
-	       for ref being the hash-keys of id-ref-hash
-		 using (hash-value tree)
-	       do
-		  (when (equal (episode-id (car st-ref))
-			       (episode-id (car tree)))
-		    (setq foundp t)
-		    (setq st-name ref)
-		    (return-from finder nil))
-	       finally
-		  (when (not foundp)
-		    (setf (gethash st-name id-ref-hash) st-ref))))
+	       (setf (gethash (episode-id (car st-ref)) id-ref-hash) st-ref))
 	     (when st
 	       (setq cur-st (gensym "STATE-")))
 	     (setq cur-obs (gensym "OBS-"))
 	     (setq cur-act (gensym "ACT-"))	     
 	     ;; you have to put these hash keys in after you've done all the insertions for observations, states, and (eventually) actions. Otherwise, if you update id-ref-hash, then do further insertions, the episode id of the reference will change, making the key obsolte. Worse, the cpd vvbm will have the name of the new ref hash key, but the id ref hash will have the name of the old ref. So, look ups will fail.
-	     (loop
-	       named finder
-	       with foundp = nil
-	       for ref being the hash-keys of id-ref-hash
-		 using (hash-value tree)
-	       do
-		  (when (equal (episode-id (car obs-ref))
-			       (episode-id (car tree)))
-		    (setq foundp t)
-		    (setq obs-name ref)
-		    (return-from finder nil))
-	       finally
-		  (when (not foundp)
-		    (setf (gethash obs-name id-ref-hash) obs-ref)))
+	     (setf (gethash (episode-id (car obs-ref)) id-ref-hash) obs-ref)
 	     (when st
-	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" i)) :value ,st-name)))))
-	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node ,(intern (format nil "OBSERVATION_~d" i)) :value ,obs-name))))
+	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st = (state-node ,(intern (format nil "STATE_~d" i)) :value ,(episode-id (car st-ref)))))))
+	     (setq state-transitions (concatenate 'list state-transitions `(,cur-obs = (observation-node ,(intern (format nil "OBSERVATION_~d" i)) :value ,(episode-id (car obs-ref))))))
 	     (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node ,(intern (format nil "ACTION_~d" i))  :value ,act))))
 	     (when st
 	       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
@@ -2978,7 +2952,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   ;;(format t "~%state transition model:~%~A" st-bn)
 		   (format t "~%~S" `(compile-program nil ,@state-transitions))
 		   (print-bn st-bn)
-	       (break))
+		   ;;(break)
+		   )
              ;; make temporal episode from state transitions
              (setq ep-id (symbol-name (gensym "EPISODE-")))
              (setq ep (make-episode :id ep-id
@@ -2991,14 +2966,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :count 1
                                     :lvl 2))
 	     (format t "~%Inserting transition model, ~A" (episode-id ep))
-	     (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p :type "STATE-TRANSITIONS"))))
+	     (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p :type "STATE-TRANSITIONS"))
+	     (eltm-to-pdf)
+	     ;;(break)
+	     ))
       ;; clear buffer
       (clear-episodic-cache 0)
       #|
       (setf (gethash 1 (getf episode-buffer* :obs))
       (nreverse (cons (list ref (copy-observation (car (episode-states (car ref))))) (nreverse (gethash 1 (getf episode-buffer* :obs))))))
       |#
-      ;;(eltm-to-pdf)
+      (eltm-to-pdf)
       ;;(break)
       )))
 

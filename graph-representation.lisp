@@ -3167,14 +3167,6 @@
                      ;;(print-tog tog)
                      ;;(break)
                      )
-		   (setq h (make-hash-table))
-		   (setf (gethash 7 h) 7)
-		   (setf (gethash 8 h) 8)
-		   (cond ((and (= (hash-table-count (hash-difference goal h  cpd :output-hash-p t)) 0)
-			       (= (hash-table-count (hash-difference h goal cpd :output-hash-p t)) 0))
-			  (setq print-special* nil))
-			 (t
-			  (setq print-special* nil)))
                    (loop
                      with reject-conditions and continue = t
                      while (or (= (hash-table-count (rule-conditions new-rule)) 0)
@@ -6916,7 +6908,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 		 (loop
 		   for qp-ref in qp-refs
 		   do
-		      (when nil t
+		      (when nil print-special*
+			(format t "~%~%qp-ref: ~S tree: ~S" qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
 			(format t "~%p-refs:")
 			(loop
 			  for p-ref in p-refs
@@ -6927,7 +6920,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 			with max-res = nil and max-prob = 0 and best-p-ref
 			for p-ref in p-refs
 			do
-			   (when nil t
+			   (when nil print-special*
 			     (format t "~%~%cpd type: ~S~%p-ref: ~S~%p-episode: ~S~%qp-ref: ~d~%q episode: ~S" (gethash 0 (rule-based-cpd-types (aref (car p) p-node))) p-ref (episode-id (car (gethash p-ref p-refs-map))) qp-ref (episode-id (car (gethash qp-ref qp-refs-map))))
 			     ;;(break)
 			     )
@@ -6939,15 +6932,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 					     (episode-count (car
 							     (gethash qp-ref qp-refs-map)))))
 			       (setq prob 0))
-			   (when nil t
+			   (when nil print-special*
 				 (format t "~%pq-ref is an ancestor of p-ref?: ~S~%prob: ~d~%max-prob ~d~%best-p-ref: ~S" (if res t nil) prob max-prob best-p-ref)
 				 ;;(break)
 				 )
-			   (when (> prob max-prob)
+			   (when (or (> prob max-prob)
+				     (and (= prob max-prob)
+					  (equal p-ref qp-ref)))
 			     (setq max-res res)
 			     (setq max-prob prob)
 			     (setq best-p-ref p-ref)
-			     (when nil t
+			     (when nil print-special*
 			       (format t "~%p-ref is new best p-ref.")))		      
 			finally
 			   (cond (max-res

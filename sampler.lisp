@@ -42,6 +42,9 @@
 	    ((string-equal episode-type "state")
 	     (setf (episode-state new-episode) new-bn))
 	    ((string-equal episode-type "state-transitions")
+	     (when print-special*
+	       (format t "~%~%unconditioned model:")
+	       (print-bn (episode-state-transitions new-episode)))
 	     (setf (episode-state-transitions new-episode) new-bn))
 	    (t
 	     (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type)))

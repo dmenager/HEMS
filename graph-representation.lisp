@@ -2730,7 +2730,7 @@
       for ident being the hash-keys of tog
 	using (hash-value att-blocks)
       do
-	 (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -2748,7 +2748,7 @@
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
                for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+	      (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%condition value in rule?:~A" condition-block intersection
 			(member (cdar condition-block)
@@ -2759,7 +2759,7 @@
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
              do
-		(when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+		(when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 		      (format t "~%pass 1!"))
 		(setq num-conflicts (hash-table-count (rule-avoid-list rule)))
 		(setq copy-rule (copy-cpd-rule rule))
@@ -2779,7 +2779,7 @@
 					  :output-hash-p t))
 		(when (and (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
 			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts))
-		 (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+		 (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
 		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
@@ -2810,7 +2810,7 @@
 				     (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
 		  (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						 (* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
-		  (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+		  (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 		    (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
 		  (cond ((> p 0)
 			 (when (> info-gain best-pos-info-gain)
@@ -2818,7 +2818,7 @@
 			   (setq best-entropy new-entropy)
 			   (setq best-pos-condition condition)
 			   (setq best-pos-rule (copy-cpd-rule copy-rule))
-			   (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+			   (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 			     (format t "~%updated rule:~%~S" copy-rule))))
 			((> upper-bound-p 0)
 			 (let (uncertain-after intersection-size condition-conflicts)
@@ -2826,7 +2826,7 @@
 						  (hash-intersection (rule-block copy-rule) goal :output-hash-p t)))
 			   (setq intersection-size (hash-table-count intersection))
 			   (setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
-			   (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+			   (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 			     (format t "~%num condition conflicts (to concept block): ~d~%intersection size: ~d" condition-conflicts intersection-size))
 			   (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
@@ -2854,7 +2854,7 @@
 			     (setq best-zero-rule (copy-cpd-rule copy-rule))
 			     (setq best-intersection intersection-size)
 			     (setq best-condition-conflicts condition-conflicts)
-			     (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+			     (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
 	 (cond (best-pos-condition
@@ -2863,7 +2863,7 @@
 	       (best-zero-condition
 		(setq best-condition best-zero-condition)
 		(setq best-rule best-zero-rule)))
-	 (when (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and print-special* (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 

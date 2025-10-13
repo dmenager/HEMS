@@ -1610,6 +1610,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq bn (episode-observation (car eme))))
 	    ((string-equal type "state")
 	     (setq bn (episode-state (car eme)))))
+      (setq bn (copy-bn bn))
       (multiple-value-setq (bn priors)
 	(compile-bn-priors bn))
       (when soft-likelihoods
@@ -1623,14 +1624,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (when (= (rule-probability rule) 0)
 		      (setf (rule-probability rule) 1/1000)))
 	      (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
-      (when (and (string-equal type "state-transitions"))
+      (when nil (and (string-equal type "state-transitions"))
 	;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
 	(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
 	(print-bn bn))
+      (when t
+	(format t "~%~%sol: ~S" sol))
       (loop
         for (p-match . q-match) being the elements of sol
         with p-copy and observed-factors and observed-factor and num-assignments
         with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
+	with new-nodes
         do
            (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
            (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
@@ -1641,17 +1645,24 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (rule-based-cpd-identifiers (aref (car bn) q-match))
 		       (episode-id (car eme))
 		       bindings))
-	     (when (and (string-equal type "state-transitions"))
-	       (format t "~%~%p-copy before subst:~%~S"p-copy)
+	     (when t nil (and (string-equal type "state-transitions"))
+	       (format t "~%~%p-match: ~d~%q-match: ~d~%p-copy before subst:" p-match q-match)
 	       (print-cpd p-copy)
-	       (format t "~%q-cpd:~%~S" (aref (car bn) q-match))
+	       (format t "~%q-cpd:~%~S")
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%bindings:~%~S" bindings))
              (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
-	     (when (and (string-equal type "state-transitions"))
+	     (when t nil (and (string-equal type "state-transitions"))
 	       (format t "~%subst p-copy:")
 	       (print-cpd p-copy))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
+	     ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
+	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.
+	     (setf (aref (car bn) q-match)
+		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))
+	     (setf (aref (car bn) q-match)
+		   (cpd-update-schema-domain (aref (car bn) q-match) p-copy new-nodes :q-first-bindings q-first-bindings))
+	     (setq new-nodes (cons (aref (car bn) q-match) new-nodes))
 	     (loop
 	       for ident being the hash-keys of (rule-based-cpd-identifiers p-copy)
 	       when (not (equal ident dep-id))
@@ -1660,9 +1671,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
 					 dep-id)))
-	     (when (and (string-equal type "state-transitions"))
+	     (when t nil (and (string-equal type "state-transitions"))
 	       (format t "~%observed factor (marginalized subst p-copy):")
-	       (print-cpd observed-factor))
+	       (print-cpd observed-factor)
+	       (format t "~%updated q-cpd:")
+	       (print-cpd (aref (car bn) q-match))
+	       (break))
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
 	   (when nil t nil (not (string-equal type "state-transitions"))
@@ -1825,7 +1839,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       with vvbms
 	       for cpd in posterior-distribution
 	       do
-		   (when t
+		   (when nil
 		     (format t "~%~%cpd:")
 		    (print-cpd cpd))
 		  (setq marginalized-cpd
@@ -1926,7 +1940,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 							     (return remove))
 							'+)
 				      (rule-based-cpd-dependent-id smoothed-cpd)))
-		   (when t
+		   (when nil 
 		     (format t "~%orignal posterior (should be repeat of first cpd print):")
 		     (print-cpd cpd)
 		     (format t "~%mixture cpd:")
@@ -1938,7 +1952,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       collect smoothed-cpd into smoothed
 	       finally
 		  (return smoothed))))
-    (when t
+    (when nil
       (format t "~%in remember temporal"))
     (multiple-value-bind (conditioned-temporal sol bindings q-first-bindings)
 	(condition-model eltm
@@ -2475,8 +2489,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					      denom)))))
 		      (when nil
 			(format t "~%latest prior evidence idx: ~d~%earliest posterior evidence idx: ~d~%denom: ~d~%alpha: ~d" biggest-smaller-obs smallest-bigger-obs denom alpha))
-		      (when nil
-			(if (null idx)
+		      (when t
+			(if (and (not (null idx))
+				 (= idx 2))
 			    (setq print-special* t)
 			    (setq print-special* nil)))
 		      (when t
@@ -2501,20 +2516,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (when t print-special*
 		     (format t "~%temporal retrieval cue:")
 		     (print-bn evidence-bn)
+		     #|
 		     (format t "~%~%generated by the following observations:")
 		     (loop
 		       for i being the hash-keys of evidence-slices
 			 using (hash-value evidence-hash)
 		       do
-			  (format t "~%slice: ~d" i)
-			  (print-slice evidence-hash))
+			  (format t "~%observations for slice: ~d" i)
+		     (print-slice evidence-hash))
+		     |#
 		     ;;(format t "~%backlinks:")
 		     ;;(print-backlinks backlinks)
 		     ;;(break)
 		     )
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
-		       (remember-temporal eltm* evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p :alphas alphas)
-		     (when t print-special*
+		       (remember-temporal (list (car eltm*)) evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p :alphas alphas)
+		     (when nil print-special*
 		       (format t "~%state transitions:")
 		       (print-state-transitions state-transitions)
 		       (break)
@@ -2554,9 +2571,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when t
 	     (format t "~%~%iteration: ~d~%forward-pass-p: ~a" i forward-pass-p)
 	     )
-	   (if (= i 2)
-	       (setq print-special* t)
-	       (setq print-special* nil))
 	    (if forward-pass-p
 		(multiple-value-setq (new-messages new-marginals-messages)
 		  (forward-pass (marginalize-messages messages))
@@ -2636,23 +2650,24 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	  with state and prob
 	  for outcome being the hash-keys of states
 	    using (hash-value prob-state)
-	  do
-	     (setq state (cdr prob-state))
-	     (setq prob (car prob-state))
-	     (when (null state)
-	       (setq state (cons (make-array 0) (make-hash-table))))
-	     (setq cue (make-episode :state state
-				     :observation (cons (make-array 0) (make-hash-table))
-				     :state-transitions (cons (make-array 0) (make-hash-table))
-				     :backlinks (make-hash-table :test #'equal)
-				     :count 1
-				     :lvl 1))
-	     (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
-	     (setf (gethash outcome id-ref-hash) state-ref)
-	     (setq old-prob (gethash outcome value-prob-hash))
-	     (when (null old-prob)
-	       (setq old-prob 0))
-	     (setf (gethash outcome value-prob-hash) (+ old-prob prob))
+	  ;;when (not (equal "NA" outcome))
+	    do
+	       (setq state (cdr prob-state))
+	       (setq prob (car prob-state))
+	       (when (null state)
+		 (setq state (cons (make-array 0) (make-hash-table))))
+	       (setq cue (make-episode :state state
+				       :observation (cons (make-array 0) (make-hash-table))
+				       :state-transitions (cons (make-array 0) (make-hash-table))
+				       :backlinks (make-hash-table :test #'equal)
+				       :count 1
+				       :lvl 1))
+	       (setq state-ref (new-retrieve-episode eltm cue nil :type "state"))
+	       (setf (gethash outcome id-ref-hash) state-ref)
+	       (setq old-prob (gethash outcome value-prob-hash))
+	       (when (null old-prob)
+		 (setq old-prob 0))
+	       (setf (gethash outcome value-prob-hash) (+ old-prob prob))
 	  finally
 	     (loop
 	       for v being the hash-keys of value-prob-hash
@@ -2668,25 +2683,26 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	with observation and prob
 	for outcome being the hash-keys of observations
 	  using (hash-value prob-obs)
-	do
-	   (setq observation (cdr prob-obs))
-	   (when (null observation)
-	     (setq observation (cons (make-array 0) (make-hash-table))))
-	   (setq prob (car prob-obs))
-	   (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))
-				   :observation observation
-				   :state-transitions (cons (make-array 0) (make-hash-table))
-				   :backlinks (make-hash-table :test #'equal)
-				   :count 1
-				   :lvl 1))
-	   (when nil t
-		 (format t "~%retrieval cue for observation:~%~S" cue))
-	   (setq obs-ref (new-retrieve-episode eltm cue nil :type "observation"))
-	   (setf (gethash outcome id-ref-hash) obs-ref)
-	   (setq old-prob (gethash outcome value-prob-hash))
-	   (when (null old-prob)
-	     (setq old-prob 0))
-	   (setf (gethash outcome value-prob-hash) (+ old-prob prob))
+	;;when (not (equal "NA" outcome))
+	  do
+	     (setq observation (cdr prob-obs))
+	     (when (null observation)
+	       (setq observation (cons (make-array 0) (make-hash-table))))
+	     (setq prob (car prob-obs))
+	     (setq cue (make-episode :state (cons (make-array 0) (make-hash-table))
+				     :observation observation
+				     :state-transitions (cons (make-array 0) (make-hash-table))
+				     :backlinks (make-hash-table :test #'equal)
+				     :count 1
+				     :lvl 1))
+	     (when nil t
+		   (format t "~%retrieval cue for observation:~%~S" cue))
+	     (setq obs-ref (new-retrieve-episode eltm cue nil :type "observation"))
+	     (setf (gethash outcome id-ref-hash) obs-ref)
+	     (setq old-prob (gethash outcome value-prob-hash))
+	     (when (null old-prob)
+	       (setq old-prob 0))
+	     (setf (gethash outcome value-prob-hash) (+ old-prob prob))
 	finally
 	   (loop
 	     for v being the hash-keys of value-prob-hash
@@ -2703,10 +2719,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	collect (list :value action :probability (car prob-act) :count 1) into values
 	finally
 	   (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node ,(intern (format nil "ACTION_~d" slice-idx)) :values ,values))))))
-    #|
-    (when (and observation state)
+ 
+    (when (and (and observations
+		    (> (hash-table-count observations) 0))
+	       (and states
+		 (> (hash-table-count states) 0)))
       (setq state-transitions (concatenate 'list state-transitions `(,cur-st --> ,cur-obs))))
-    (when (and observation action)
+    (when (and (and observations
+		    (> (hash-table-count observations) 0))
+	       (and actions
+		    (> (hash-table-count actions) 0)))
       (setq state-transitions (concatenate 'list state-transitions `(,cur-obs --> ,cur-act))))
     (cond (state-p
 	   (when prev-st
@@ -2718,7 +2740,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setq state-transitions (concatenate 'list state-transitions `(,prev-obs --> ,cur-obs))))
 	   (when prev-act
     (setq state-transitions (concatenate 'list state-transitions `(,prev-act --> ,cur-obs))))))
-    |#
+    
     (values state-transitions id-ref-hash cur-obs cur-st cur-act)))
 
 #| Generates a retrieval cue for a temporal episode.
@@ -2735,7 +2757,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;;     Value: evidence network
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
 (defun make-temporal-episode-retrieval-cue (eltm evidence-slices state-p)
-  (when print-special*
+  (when t print-special*
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
     with prog-arr = (make-array (hash-table-count evidence-slices)) and program-statements
@@ -2765,7 +2787,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (reduce #'(lambda (a b)
 			 (concatenate 'list a b))
 		     prog-arr))
-       (when print-special*
+       (when t print-special*
 	 (format t "~%program arr~%~S~%program statements:~%~S" prog-arr program-statements))
        (return (values (eval `(compile-program nil ,@program-statements)) backlinks))))
 

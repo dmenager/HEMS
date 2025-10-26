@@ -1641,14 +1641,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (error "uh oh! Unsupported episode field type. Expected \"state\", \"observation\", or \"state-transitions\". Received: ~S" type)))
       (multiple-value-setq (bn priors)
 	(compile-bn-priors bn))
-      (when nil (and (string-equal type "state-transitions"))
+      (when nil print-special* nil (and (string-equal type "state-transitions"))
 	;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
 	(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
 	(print-bn bn)
 	(format t "~%cue:")
-	(print-bn cue))
-      (when nil
-	(format t "~%~%sol: ~S" sol))
+	(print-episode cue))
+      (when nil print-special*
+	(format t "~%~%sol: ~S" sol)
+	(break))
       (loop
         for (p-match . q-match) being the elements of (sort sol #'< :key #'cdr)
         with p-copy and observed-factors and observed-factor and num-assignments
@@ -1735,7 +1736,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; eltm = episodic long-term memory
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
-;; evidence-slices = hash table. Key: integer Key: hash tables of evidence observed for state and observation schemas. Keys: ["STATE", "OBSERVATION"], Value: evidence network
+;; evidence-slices = hash table. Key: integer Value: hash table of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION"], Value: evidence network
 (defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (infer-num 0) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods)
   (labels ((find-vvbm-by-idx-val (vals vvbms acc)
 	     (loop
@@ -1999,7 +2000,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 :backlinks backlinks
 			 :keep-singletons t
 			 :soft-likelihoods soft-likelihoods)
-      (when print-special*
+      (when nil print-special*
 	    (format t "~%temporal evidence retrieval cue:~%")
 	    (print-bn temporal-evidence-bn)
 	    (format t"~%conditioned temporal model:~%")
@@ -2056,6 +2057,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (when (= marker 0)
 	       (setq slice (make-hash-table :test #'equal))
 	       (setq marginals-slice (make-hash-table :test #'equal)))
+	     (when nil
+	       (format t "~%j: ~d~%evidence-slices:~%~%~S" (car js) evidence-slices))
 	     (setq evidence-hash (gethash (cond ((string-equal "state-node" (symbol-name (get-cpd-type cpd)))
 						 "STATE")
 						((string-equal "observation-node" (symbol-name (get-cpd-type cpd)))
@@ -2122,7 +2125,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			    (print-episode backlink-episode)
 			    (format t "~%slice: ~d~%node type: ~S~%Retrieval cue:" (car js) node-type)
 			    (print-bn evidence-bn)
-			    ;;(break)
+			    (break)
 			    )
 		      (multiple-value-bind (posterior-distribution posterior-marginals)
 			  (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
@@ -2551,7 +2554,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      eltm*
 		      evidence-slices
 		      t)  
-		   (when print-special*
+		   (when nil print-special*
 		     (format t "~%temporal retrieval cue:")
 		     (print-bn evidence-bn)
 		     #|
@@ -2757,7 +2760,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	collect (list :value action :probability (car prob-act) :count 1) into values
 	finally
 	   (setq state-transitions (concatenate 'list state-transitions `(,cur-act = (action-node ,(intern (format nil "ACTION_~d" slice-idx)) :values ,values))))))
- #|
+#| 
     (when (and (and observations
 		    (> (hash-table-count observations) 0))
 	       (and states

@@ -1816,7 +1816,7 @@
 ;; phi1 = conditional probability density from base
 ;; phi2 = conditional probability density from pattern
 (defun cpd-update-schema-domain (phi1 phi2 new-nodes &key (q-first-bindings (make-hash-table :test #'equal)))
-  (when (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+  (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
     (format t "~%~%updating schema:")
     (print-cpd phi1)
     (format t "~%with episode:")
@@ -1835,7 +1835,7 @@
        (setq cid2 (gethash idx (rule-based-cpd-concept-ids phi2)))
        (setq qvar2 (gethash idx (rule-based-cpd-qualified-vars phi2)))
        (setq pos (gethash ident2 (rule-based-cpd-identifiers phi1)))
-       (when (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+       (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
              (format t "~%~%identifier in episode: ~A~%position of identifier in schema: ~d" ident2 pos))
        (cond (pos
               (setq vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
@@ -1844,7 +1844,7 @@
               (setq vals1 (gethash pos (rule-based-cpd-var-values phi1)))
               (setq var2s (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
                                 #'< :key #'cdar))
-              (when (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+              (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
                     (format t "~%schema vvbm:~%~S~%episode vvbm:~%~S" vvbm1 vvbm2))
               (loop
                 with var2 and insert-pos
@@ -1860,7 +1860,7 @@
                    ;;(setq sva1 (reverse (cons (list (cdr binding)) (reverse sva1))))
                    (setq vvbm1 (insert-after vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq sva1 (insert-after sva1 insert-pos (list (cdr binding))))
-                   (when (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+                   (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
                          (format t "~%updated schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding:~%~S" vvbm1 vvbm2 var2s var2 binding))
                    (setq lower-vvbm1 (insert-after lower-vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq vals1 (insert-after vals1 insert-pos (cdr binding)))

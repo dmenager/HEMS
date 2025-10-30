@@ -1724,6 +1724,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (format t "~%evidence table:~%~S" evidence-table)
 	       (format t "~%model:")
 	       (print-bn bn))
+	     (setq print-special* nil)
              (multiple-value-bind (posterior-distribution posterior-marginals)
 		 (loopy-belief-propagation bn evidence-table priors mode lr)
                (return (values posterior-distribution posterior-marginals eme sol bindings q-first-bindings))))))))
@@ -2494,6 +2495,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  with keys = (sort (loop for k being the hash-keys of evidence-hash collect k) #'<)
 			  for k in keys
 			  do
+			     (when nil
+			       (format t "~%k: ~s~%idx: ~s~%biggest-smaller-obs: ~S~%smallest-bigger-obs: ~S" k idx biggest-smaller-obs smallest-bigger-obs))
 			     (cond ((< k idx)
 				    (setq biggest-smaller-obs k))
 				   ((and (= k idx)
@@ -2505,6 +2508,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   ((and (> k idx)
 					 (null smallest-bigger-obs))
 				    (setq smallest-bigger-obs k))))
+			(when nil
+			  (format t "~%~%final biggest-smaller-obs: ~S~%final smallest-bigger-obs: ~S" biggest-smaller-obs smallest-bigger-obs))
 			(cond ((and biggest-smaller-obs
 				    smallest-bigger-obs)
 			       (setq denom (abs (- biggest-smaller-obs smallest-bigger-obs)))
@@ -2520,9 +2525,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			      ((and biggest-smaller-obs
 				    (null smallest-bigger-obs))
 			       (setq denom (abs (- (max from to) biggest-smaller-obs)))
-			       (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
-						   (abs (- (max from to) idx)))
-					      denom)))
+			       (cond ((= denom 0)
+				      (setq alpha 0))
+				     (t
+				      (setq alpha (/ (min (abs (- biggest-smaller-obs idx))
+							  (abs (- (max from to) idx)))
+						     denom)))))
 			      (t
 			       (setq denom (abs (- from to)))
 			       (setq alpha (/ (min (abs (- (min from to) idx))
@@ -2530,7 +2538,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					      denom)))))
 		      (when nil
 			(format t "~%latest prior evidence idx: ~d~%earliest posterior evidence idx: ~d~%denom: ~d~%alpha: ~d" biggest-smaller-obs smallest-bigger-obs denom alpha))
-		      (when t
+		      (when nil
 			(if (and (not (null idx))
 				 (= idx 2))
 			    (setq print-special* t)
@@ -2798,7 +2806,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;;     Value: evidence network
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
 (defun make-temporal-episode-retrieval-cue (eltm evidence-slices state-p)
-  (when print-special*
+  (when nil print-special*
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
     with prog-arr = (make-array (hash-table-count evidence-slices)) and program-statements
@@ -2808,7 +2816,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     for slice-idx from 0 below (hash-table-count evidence-slices)
     do
        (setq slice (gethash slice-idx evidence-slices))
-       (when print-special*
+       (when nil print-special*
 	 (format t "~%~%slice idx for retrieval cue: ~d" slice-idx)
 	 (print-slice slice))
        (multiple-value-setq (prog-statements backlinks prev-obs prev-st prev-act)
@@ -2827,7 +2835,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (reduce #'(lambda (a b)
 			 (concatenate 'list a b))
 		     prog-arr))
-       (when print-special*
+       (when nil print-special*
 	 (format t "~%program arr~%~S~%program statements:~%~S" prog-arr program-statements))
        (return (values (eval `(compile-program nil ,@program-statements)) backlinks))))
 

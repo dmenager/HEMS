@@ -1630,7 +1630,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                (new-retrieve-episode eltm cue nil :bic-p bic-p :type type)))
       (declare (ignore depth cost dont-care))
       (when nil (not (string-equal type "state-transitions"))
-	(format t "~%~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
+	    (format t "~%~%Did observation node successfully match to existing temporal episode?~%sol:~%~S" sol))      
       (cond ((string-equal type "state-transitions")
 	     (setq bn (episode-state-transitions (car eme))))
 	    ((string-equal type "observation")
@@ -1641,15 +1641,16 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (error "uh oh! Unsupported episode field type. Expected \"state\", \"observation\", or \"state-transitions\". Received: ~S" type)))
       (multiple-value-setq (bn priors)
 	(compile-bn-priors bn))
-      (when nil print-special* nil (and (string-equal type "state-transitions"))
+      (when (and print-special* (string-equal type "state-transitions"))
 	;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
 	(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
 	(print-bn bn)
 	(format t "~%cue:")
 	(print-episode cue))
-      (when nil print-special*
+      (when (and print-special* (string-equal type "state-transitions"))
 	(format t "~%~%sol: ~S" sol)
-	(break))
+	;;(break)
+	)
       (loop
         for (p-match . q-match) being the elements of (sort sol #'< :key #'cdr)
         with p-copy and observed-factors and observed-factor and num-assignments
@@ -1665,14 +1666,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (rule-based-cpd-identifiers (aref (car bn) q-match))
 		       (episode-id (car eme))
 		       bindings))
-	     (when nil (and (string-equal type "state-transitions"))
+	     (when (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%~%p-match: ~d~%q-match: ~d~%p-copy before subst:" p-match q-match)
 	       (print-cpd p-copy)
 	       (format t "~%q-cpd:")
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%bindings:~%~S" bindings))
              (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
-	     (when nil (and (string-equal type "state-transitions"))
+	     (when (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%subst p-copy:")
 	       (print-cpd p-copy))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
@@ -1693,7 +1694,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
 					 dep-id)))
-	     (when nil (and (string-equal type "state-transitions"))
+	     (when (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%observed factor (marginalized subst p-copy):")
 	       (print-cpd observed-factor)
 	       (format t "~%updated q-cpd:")
@@ -1702,7 +1703,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       )
              (setq observed-factors (cons observed-factor observed-factors)))
         finally
-	   (when nil t nil (not (string-equal type "state-transitions"))
+	   (when nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
 	   (when soft-likelihoods
 	     (loop
@@ -1720,7 +1721,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       ))
 	   (let (evidence-table)
              (setq evidence-table (make-observations observed-factors))
-	     (when nil
+	     (when (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%evidence table:~%~S" evidence-table)
 	       (format t "~%model:")
 	       (print-bn bn))
@@ -2001,7 +2002,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 :backlinks backlinks
 			 :keep-singletons t
 			 :soft-likelihoods soft-likelihoods)
-      (when nil print-special*
+      (when t print-special*
 	    (format t "~%temporal evidence retrieval cue:~%")
 	    (print-bn temporal-evidence-bn)
 	    (format t"~%conditioned temporal model:~%")
@@ -2017,7 +2018,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    (format t "~%slice: ~d" i)
 	    (print-slice evidence-hash))
 	    |#
-	    (break)
+	    ;;(break)
 	    )
       (loop
 	with temporal-bn = (car (episode-state-transitions conditioned-temporal))
@@ -2170,7 +2171,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (setf (gethash (car js) marginals-state-transitions) marginals-slice)
 	       (setq js (cdr js)))
 	finally
-	   (when nil print-special*
+	   (when t print-special*
 		 (format t "~%returning messages:")
 		 (print-state-transitions state-transitions)
 		 (break))
@@ -2487,9 +2488,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   for i from 0 below num-slices
 		   for idx = (aref group i)
 		   do
-		      (setq alpha 0)
+		      (setq alpha 0.0)
 		      (setq smallest-bigger-obs nil)
-		      (setq biggest-smaller-obs nil)
+		      (setq biggest-smaller-obs nil)		      
 		      (when idx
 			(loop
 			  with keys = (sort (loop for k being the hash-keys of evidence-hash collect k) #'<)
@@ -2536,6 +2537,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			       (setq alpha (/ (min (abs (- (min from to) idx))
 						   (abs (- (max from to) idx)))
 					      denom)))))
+		      (when t
+			(setq alpha 0.13))
 		      (when nil
 			(format t "~%latest prior evidence idx: ~d~%earliest posterior evidence idx: ~d~%denom: ~d~%alpha: ~d" biggest-smaller-obs smallest-bigger-obs denom alpha))
 		      (when nil
@@ -2620,6 +2623,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when t
 	     (format t "~%~%iteration: ~d~%forward-pass-p: ~a" i forward-pass-p)
 	     )
+	   (if (= i 2)
+	       (setq print-special* t)
+	       (setq print-special* nil))
 	    (if forward-pass-p
 		(multiple-value-setq (new-messages new-marginals-messages)
 		  (forward-pass (marginalize-messages messages))
@@ -2630,14 +2636,17 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    (if (check-convergence messages new-messages)
 		(setq converged-p t)
 		(setq forward-pass-p (not forward-pass-p)))
+	    (when t
+	      (format t "~%~%old messages:")
+	      (print-state-transitions messages))
 	    (setq messages new-messages)
 	    (setq marginals-messages new-marginals-messages)
 	    (when t
-	     (format t "~%messages")
+	     (format t "~%~%messages:")
 	     (print-state-transitions messages)
 	     ;;(format t "~%~%marginals")
 	     ;;(print-state-transitions marginals-messages)
-	     ;;(break)
+	     (break)
 	     )
 	finally
 	   (if (= i n-passes)
@@ -2806,7 +2815,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;;     Value: evidence network
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
 (defun make-temporal-episode-retrieval-cue (eltm evidence-slices state-p)
-  (when nil print-special*
+  (when print-special*
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
     with prog-arr = (make-array (hash-table-count evidence-slices)) and program-statements
@@ -2835,8 +2844,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (reduce #'(lambda (a b)
 			 (concatenate 'list a b))
 		     prog-arr))
-       (when nil print-special*
-	 (format t "~%program arr~%~S~%program statements:~%~S" prog-arr program-statements))
+       (when print-special*
+	 (format t "~%program arr~%~S~%program statements:~%~S" prog-arr program-statements)
+	 (break))
        (return (values (eval `(compile-program nil ,@program-statements)) backlinks))))
 
 (defun py-test-hash ()

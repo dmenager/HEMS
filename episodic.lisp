@@ -1641,13 +1641,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (error "uh oh! Unsupported episode field type. Expected \"state\", \"observation\", or \"state-transitions\". Received: ~S" type)))
       (multiple-value-setq (bn priors)
 	(compile-bn-priors bn))
-      (when (and print-special* (string-equal type "state-transitions"))
+      (when nil (and print-special* (string-equal type "state-transitions"))
 	;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
 	(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
 	(print-bn bn)
 	(format t "~%cue:")
 	(print-episode cue))
-      (when (and print-special* (string-equal type "state-transitions"))
+      (when nil (and print-special* (string-equal type "state-transitions"))
 	(format t "~%~%sol: ~S" sol)
 	;;(break)
 	)
@@ -1666,14 +1666,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		       (rule-based-cpd-identifiers (aref (car bn) q-match))
 		       (episode-id (car eme))
 		       bindings))
-	     (when (and print-special* (string-equal type "state-transitions"))
+	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%~%p-match: ~d~%q-match: ~d~%p-copy before subst:" p-match q-match)
 	       (print-cpd p-copy)
 	       (format t "~%q-cpd:")
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%bindings:~%~S" bindings))
              (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
-	     (when (and print-special* (string-equal type "state-transitions"))
+	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%subst p-copy:")
 	       (print-cpd p-copy))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
@@ -1694,7 +1694,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
 					 dep-id)))
-	     (when (and print-special* (string-equal type "state-transitions"))
+	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%observed factor (marginalized subst p-copy):")
 	       (print-cpd observed-factor)
 	       (format t "~%updated q-cpd:")
@@ -1721,11 +1721,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       ))
 	   (let (evidence-table)
              (setq evidence-table (make-observations observed-factors))
-	     (when (and print-special* (string-equal type "state-transitions"))
+	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%evidence table:~%~S" evidence-table)
 	       (format t "~%model:")
 	       (print-bn bn))
-	     (setq print-special* nil)
              (multiple-value-bind (posterior-distribution posterior-marginals)
 		 (loopy-belief-propagation bn evidence-table priors mode lr)
                (return (values posterior-distribution posterior-marginals eme sol bindings q-first-bindings))))))))
@@ -2003,23 +2002,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 :keep-singletons t
 			 :soft-likelihoods soft-likelihoods)
       (when nil print-special*
-	    (format t "~%temporal evidence retrieval cue:~%")
-	    (print-bn temporal-evidence-bn)
-	    (format t"~%conditioned temporal model:~%")
-	    (print-bn (episode-state-transitions conditioned-temporal))
-	    (format t "~%bindings:~%~S~%sol:~%~S" bindings sol)
-	    ;;(format t "~%bindings:~%~A" bindings)
-	    ;;(format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
-	    #|
-	    (loop
-	    for i being the hash-keys of evidence-slices
-	    using (hash-value evidence-hash)
-	    do
-	    (format t "~%slice: ~d" i)
-	    (print-slice evidence-hash))
-	    |#
-	    ;;(break)
-	    )
+	(format t "~%temporal evidence retrieval cue:~%")
+	(print-bn temporal-evidence-bn)
+	(format t"~%conditioned temporal model:~%")
+	(print-bn (episode-state-transitions conditioned-temporal))
+	(format t "~%bindings:~%~S~%sol:~%~S" bindings sol)
+	;;(format t "~%bindings:~%~A" bindings)
+	;;(format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
+	#|
+	(loop
+	for i being the hash-keys of evidence-slices
+	using (hash-value evidence-hash)
+	do
+	(format t "~%slice: ~d" i)
+	(print-slice evidence-hash))
+	|#
+	;;(break)
+	)
       (loop
 	with temporal-bn = (car (episode-state-transitions conditioned-temporal))
 	with marker and mod-len = (if hidden-state-p 3 2)
@@ -2114,9 +2113,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				(setq c (caar vvb))
 				(return-from finder nil))
 			 (setf (gethash c dist-hash)
-			       (cons prob (cdr (gethash c dist-hash))))
+			       (cons prob (make-empty-graph)))
 			 (setf (gethash c marginals-dist-hash)
-			       (cons prob (cdr (gethash c marginals-dist-hash)))))))
+			       (cons prob (make-empty-graph))))))
 	     (when (not (equal "ACTION" node-type))
 	       (loop
 		 with prob and c and cond
@@ -2663,9 +2662,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when t
 	     (format t "~%~%iteration: ~d~%forward-pass-p: ~a" i forward-pass-p)
 	     )
-	   (if (= i 2)
-	       (setq print-special* t)
-	       (setq print-special* nil))
+	   (when nil
+	     (if (= i 2)
+		 (setq print-special* t)
+		 (setq print-special* nil)))
 	    (if forward-pass-p
 		(multiple-value-setq (new-messages new-marginals-messages)
 		  (forward-pass (marginalize-messages messages))
@@ -2683,7 +2683,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (print-state-transitions messages)
 	     ;;(format t "~%~%marginals")
 	     ;;(print-state-transitions marginals-messages)
-	     (break)
+	     ;;(break)
 	     )
 	finally
 	   (if (= i n-passes)
@@ -2852,7 +2852,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;;     Value: evidence network
 ;; state-p = flag for whether or not the temporal model has a hidden state or not
 (defun make-temporal-episode-retrieval-cue (eltm evidence-slices state-p)
-  (when print-special*
+  (when nil print-special*
 	(format t "~%~%making temporal episode retrieval cue"))
   (loop
     with prog-arr = (make-array (hash-table-count evidence-slices)) and program-statements
@@ -2881,7 +2881,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (reduce #'(lambda (a b)
 			 (concatenate 'list a b))
 		     prog-arr))
-       (when print-special*
+       (when nil print-special*
 	 (format t "~%program arr~%~S~%program statements:~%~S" prog-arr program-statements)
 	 (break))
        (return (values (eval `(compile-program nil ,@program-statements)) backlinks))))

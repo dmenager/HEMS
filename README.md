@@ -50,23 +50,48 @@ Quicklisp is a library manager for Common Lisp. It downloads and installs librar
 * `split-sequence`
 * `uiop` (comes with ASDF)
 * `cl-ppcre`
-This codebase is written and testing using SBCL. Other versions of Common Lisp may work, but we provide no guarantees. This software also depends on quicklisp for installing other Common Lisp packages. A full list of external dependencies may be found in hems.asd.
 
-Python programs can use HEMS by importing cl4py into their projects. See the /examples folder for details.
+If you use Quicklisp, these will be pulled automatically when you load `:hems`.
+### External Tools
+For visualization, HEMS uses Graphviz’s `dot` program via `uiop:run-program` (see `(eltm-to-pdf)` in `episodic.lisp`).
 
-## Install
-HEMS is written in Common Lisp. As such, it depends on SBCL in order to execute the program. On Unix system, installing SBCL can be done with the package manager, and on Windows, it can be downloaded and installed following this link: https://www.sbcl.org/platform-table.html. Note that on Unix-based systems, the package manager might have an older version of SBCL, so it may be advantageous to install the newest version from this link as well. 
+To install Graphviz:
+* Ubuntu/Debian: `sudo apt-get install graphviz`
+* macOS (Homebrew): `brew install graphviz`
+* Windows: Install Graphviz from the official website and ensure `dot.exe` is in your `PATH`.
 
-Once SBCL is installed, we recommend installing HEMS with the quicklisp library manager. It can be installed at https://www.quicklisp.org/beta/. Once it is installed, run the following commands in the terminal to make HEMS quicklisp installable.
+Without `dot` installed, `(eltm-to-pdf)` and related ELTM visualization utilities will fail.
+
+### Python (Optional)
+Those wishing to utilize HEMS in Python programs will need:
+* Python 3.x
+* [cl4py](https://github.com/marcoheisig/cl4py) for calling HEMS functions from Python
+* An accessible SBCL binary for cl4py to launch.
+
+See the *Python Interoperability* section below for more details.
+
+## Installation
+1. Install SBCL
+
+   Follow the instructions at: https://www.sbcl.org/platform-table.html
+
+3. Install Quicklisp
+
+   Instructions at: https://www.quicklisp.org/beta/
+4. Clone HEMS into Quicklisp local projects
 ```
-$ cd ~/quicklisp/local-projects
-$ git clone https://github.com/dmenager/HEMS.git
+cd ~/quicklisp/local-projects
+git clone https://github.com/dmenager/HEMS.git
 ```
-Then, in your Lisp program, or the REPL, simply run:
+5. Load the HEMS system
+
+   In a Lisp REPL run:
 ```
 (ql:quickload :hems)
 ```
-to include the HEMS package in your code.
+6. Install Graphviz (Optional)
+
+   If you plan to use `(eltm-to-pdf)` or other visualization utilities, install Graphviz as described above so that the `dot` binary is available.
 
 ## Usage
 
@@ -92,18 +117,18 @@ Observations from sensors are encoded using the `percept-node` type. The first a
 `relation-node`s encode relations for exerting causal influence among the observed perceptions. These represent unobserved, but inferred, beliefs that are true in the environment so the `:value` field must be set to "T" if true. False inferences/relations should not be described in the observed state.
 
 ```
-c1 -> c2
-c1 -> c3
-c1 -> c4
-c1 -> c5
-c1 -> c6
-c1 -> c7
-c1 -> c8
-c1 -> c9
-c10 -> c1
-c11 -> c1
-c12 -> c1
-c13 -> c1
+c1 --> c2
+c1 --> c3
+c1 --> c4
+c1 --> c5
+c1 --> c6
+c1 --> c7
+c1 --> c8
+c1 --> c9
+c10 --> c1
+c11 --> c1
+c12 --> c1
+c13 --> c1
 ```
 Arrows define connections between nodes. The only supported connection type is a directed edge. For example, `c1 -> c2` denotes an edge eminating from `c1` flowing to `c2`.
 
@@ -123,18 +148,18 @@ Lastly, passing this program to the HEMS compiler returns a Bayesian network. In
 		c11 = (relation-node 2nd_degree_burn :value "T" :kb-concept-id "CNPT-11")
 		c12 = (relation-node 3rd_degree_burn :value "T" :kb-concept-id "CNPT-12")
 		c13 = (relation-node unconscious :value "T" :kb-concept-id "CNPT-13")
-		c1 -> c2
-		c1 -> c3
-		c1 -> c4
-		c1 -> c5
-		c1 -> c6
-		c1 -> c7
-		c1 -> c8
-		c1 -> c9
-		c10 -> c1
-		c11 -> c1
-		c12 -> c1
-		c13 -> c1))
+		c1 --> c2
+		c1 --> c3
+		c1 --> c4
+		c1 --> c5
+		c1 --> c6
+		c1 --> c7
+		c1 --> c8
+		c1 --> c9
+		c10 --> c1
+		c11 --> c1
+		c12 --> c1
+		c13 --> c1))
 ```
 In Python, the program should be output to a file, then compiled from the file in the following manner:
 ```
@@ -148,7 +173,7 @@ Observations encoded in this way are degenerate Bayesian networks since they are
 Arbitrarily many Bayesian networks may be compiled by following the above procedure. Inserting them into memory involves making a call to `push-to-ep-buffer` for each network. In Common Lisp, we can write:
 ```
 (map nil #'(lambda (bn)
-	(push-to-ep-buffer :state bn :insert-episode-p t))
+	(new-push-to-ep-buffer :state bn :insert-episode-p t))
      (list bn1 bn2 bn3 bn4 bn5))
 ```
 to sequentially insert five Bayesian networks. 
@@ -156,7 +181,7 @@ to sequentially insert five Bayesian networks.
 For Python programs, this is:
 ```
 for bn in [bn1, bn2, bn3, bn4, bn5]:
-    hems.push_to_ep_buffer(state=bn, insertp=True)
+    hems.py_push_to_ep_buffer(state=bn, insertp=True)
 ```
 Given a retrieval cue, HEMS retrieves the most similar event memory element from memory and performs probabilistic inference conditioning the inference process on the elements from the cue. The retrieval cue is specified in the same manner as the observations. For example, one possible retrieval cue might be some partial observation of the state:
 ```

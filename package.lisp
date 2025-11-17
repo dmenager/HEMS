@@ -80,6 +80,8 @@
 	   #:g-squared-test
 	   #:bn-score
 	   #:print-tree-structure
+	   #:print-cpd
+	   #:print-cpd-rule
 	   #:py-test-hash
 	   #:discrete-uniform
 	   #:make-messages))

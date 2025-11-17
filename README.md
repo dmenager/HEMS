@@ -1,18 +1,55 @@
 # HEMS
-An implementation of the Hybrid Event Memory System (HEMS) by Menager et al.. HEMS performs clustering and classification of structured representations, namely Bayesian networks, to enable event cognition for intelligent agents. It stores observations, represented as DAGs, at the lowest level of an event hierarchy, and learns generalizations on top of them to form a probabilistic taxonomy of events. Learning occurs in an online, and incremental fashion, so the system learns continually, forming new generalizations by composing pre-existing ones together. Learning and performance are interleaved, so predictive power improves as examples are encountered.
+An implementation of the Hybrid Event Memory System (HEMS) by Menager et al.. HEMS performs clustering and classification of structured representations, specifically Bayesian networks, to enable event cognition for intelligent agents. It stores observations, represented as DAGs, at the lowest level of an event hierarchy, and learns generalizations on top of them to form a probabilistic taxonomy of events. Learning occurs in an online, and incremental fashion:the system continually updates its event hierarchy, composing new generalizations out of pre-existing ones. Learning and performance are interleaved, so predictive power improves as examples are encountered.
 
 Contributions of the work are as follows:
 * Novel hybrid theory of event memory combines exemplar-based and schema-based perspectives on event memory to explain the full range of human event memory usage;
 * Computational implementation of this theory that enables constructing event memory-enabled intelligent agents;
 * Modeling and demonstrating the full range of event memory phenomena inlcuding: sucessful remembering, misremembering, and confabulation;
 * Novel rule-based representation for compactly storing probability distributions to enable efficient state estimation under various partial observability conditions; and
-* Novel easy-to-use programming language for specifying probabilistic programs.
+* Probabilistic program DSL for specifying Bayesian networks using an easy-to-read notation based on node declarations and edge statements.
 
 Further details on the system's theoretical claims and technical details may be found in the /papers directory.
 
-This page is currently under construction.
+Note: This repository is still under development; APIs may evolve, but the examples below reflect the current codebase.
+
+## Repository layout
+Core pieces of the system include:
+* `package.lisp` – Package definition and public API exports.
+
+* `graph-representation.lisp` – Internal data structures for Bayesian networks, rule-based CPDs, and related utilities.
+
+* `hems-program-compiler.lisp` – Compiler for the HEMS probabilistic program DSL (percept-node, relation-node, edge syntax, etc.).
+
+* `episodic.lisp` – Episodic buffer, event hierarchy (ELTM), retrieval (remember, remember-temporal), and ELTM visualization (eltm-to-pdf).
+
+* `sampler.lisp` – Sampling utilities.
+
+* `metrics.lisp`, performance-stats.lisp – Scoring and evaluation utilities (e.g., bn-score, G² tests).
+
+* `serializer.lisp` – Serialization utilities for saving and loading learned structures.
+
+* `segmentation.lisp` – Event segmentation over experience.
+
+* `ep-log.lisp` – Logging utilities for episodic memory.
+
+* `papers/` – Theoretical and empirical writeups.
 
 ## Requirements
+### SBCL
+SBCL is the primary supported implementation (the system is developed and tested with SBCL).
+* On Unix-like systems, install via your package manager _or_ from the [SBCL website
+](https://www.sbcl.org/platform-table.html) for the latest version.
+* On Windows, installers are available via the same link.
+
+Other Common Lisp implementations _may_ work but are not actively supported.
+### Quicklisp
+Quicklisp is a library manager for Common Lisp. It downloads and installs libraries and manages dependencies.
+
+### Lisp libraries
+* `alexandria`
+* `split-sequence`
+* `uiop` (comes with ASDF)
+* `cl-ppcre`
 This codebase is written and testing using SBCL. Other versions of Common Lisp may work, but we provide no guarantees. This software also depends on quicklisp for installing other Common Lisp packages. A full list of external dependencies may be found in hems.asd.
 
 Python programs can use HEMS by importing cl4py into their projects. See the /examples folder for details.

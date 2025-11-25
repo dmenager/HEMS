@@ -1572,7 +1572,9 @@
 			   (print-cpd-rule rule :indent big-indent :stream stream :idx i))
 		   (rule-based-cpd-rules cpd)
 		   (loop
-		     for i from 0 below (array-dimension (rule-based-cpd-rules cpd) 0)
+		     for i from 0 below (if (rule-based-cpd-rules cpd)
+					    (array-dimension (rule-based-cpd-rules cpd) 0)
+					    -1)
 		     collect i)))
 	     (:singleton-p
 	      (format stream "~%~a  Singleton-p: ~a" indent (rule-based-cpd-singleton-p cpd))))))))
@@ -4821,78 +4823,16 @@ Roughly based on (Koller and Friedman, 2009) |#
 	    finally
 	      (return (reverse (cons item (reverse lst))))))))
 
-#| Make a ruleset for describing the conditional probability distribution
-
-;; cpd = conditional probability distribution
-;; assn = assignment with probability 1
-(defun make-initial-rules (cpd assn)
-  (labels ((invert-assignment-at-index (assn idx invert-map)
-             (setf (aref assn idx)
-                   (cdr (assoc (aref assn idx)
-                               invert-map)))
-             assn)
-           (make-initial-rule (asn prob case count)
-             (let (rule)
-               (setq rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                     :conditions (make-hash-table :test #'equal)
-                                     :probability prob
-                                     :block (make-hash-table) ;;(list case)
-                                     :certain-block (make-hash-table) ;;(list case)
-                                     :count count))
-               (setf (gethash case (rule-block rule)) case)
-               (setf (gethash case (rule-certain-block rule)) case)
-               (loop
-                 for attribute being the hash-keys of (rule-based-cpd-identifiers cpd)
-                   using (hash-value pos)
-                 when (< pos (array-dimension asn 0))
-                   do
-                      (setf (gethash attribute (rule-conditions rule)) (aref asn pos)))
-               rule)))
-    (let (assn-0)
-      (setq assn-0 (copy-array assn))
-      (if (= (aref assn 0) 0)
-          (setf (aref assn-0 0) 1)
-          (setf (aref assn-0 0) 0))
-      (loop
-        with var-value-prob-map = '((0 . 1) (1 . 0))
-        with rules and case = 0 and rule
-        for assignment in (list assn assn-0)
-        for prob in (list 1 0)
-        do
-           (setq rule (make-initial-rule assignment prob case 1))
-           (setq rules (cons rule rules))
-           (setq case (+ case 1))
-           (when (> (array-dimension assignment 0) 1)
-             (setq assignment (invert-assignment-at-index (copy-array assignment)
-                                                          (- (array-dimension assignment 0) 1)
-                                                          var-value-prob-map))
-             (when (or (and (= prob 0) (not (= (aref assignment 0) 1)))
-                       (and (= prob 1) (not (= (aref assignment 0) 0))))
-               (setq assignment (invert-assignment-at-index assignment 0 var-value-prob-map)))
-             (setq rule (make-initial-rule assignment prob case 0))
-             (setq rules (cons rule rules))
-             (setq case (+ case 1)))
-           (loop
-             for i from (- (array-dimension assignment 0) 1) downto 2
-             do
-                (setq assignment (invert-assignment-at-index (subseq assignment 0 i) (- i 1) var-value-prob-map))
-                (setq rule (make-initial-rule assignment prob case 0))
-                (setq rules (cons rule rules))
-                (setq case (+ case 1)))
-        finally
-           (return (make-array case :initial-contents (nreverse rules)))))))
-|#
-
 #| Make a ruleset for describing the conditional probability distribution |#
 
 ;; cpd = conditional probability distribution
 ;; assn = assignment with probability 1
 (defun make-initial-rules (cpd assn)
-  (labels ((invert-assignment-at-index (assn idx invert-map)
-             (setf (aref assn idx)
-                   (cdr (assoc (aref assn idx)
-                               invert-map)))
-             assn)
+  (labels ((invert-assignment-at-index (asn idx invert-map)
+             (setf (aref asn idx)
+		   (gethash (parse-integer (format nil "1~{~a~}" (aref asn idx)))
+			    (gethash idx invert-map)))
+             asn)
            (make-initial-rule (asn prob case count)
              (let (rule)
                (setq rule (make-rule :id (symbol-name (gensym "RULE-"))
@@ -4909,15 +4849,36 @@ Roughly based on (Koller and Friedman, 2009) |#
                  when (< pos (array-dimension asn 0))
                    do
                       (setf (gethash attribute (rule-conditions rule))
-                            (list (aref asn pos))))
+                            (aref asn pos)))
                rule)))
-    (let (assn-0)
-      (setq assn-0 (copy-array assn))
-      (if (= (aref assn 0) 0)
-          (setf (aref assn-0 0) 1)
-          (setf (aref assn-0 0) 0))
+    (when nil 
+      (format t "~%making initial rules for:")
+      (print-cpd cpd)
+      (format t "~%~%assn: ~S" assn))
+    (let (assn-0
+	  (inversion-map (make-hash-table)))
       (loop
-        with var-value-prob-map = '((0 . 1) (1 . 0))
+	with anti-assn and anti-pair-hash
+	for as being the elements of assn
+	for i from 0
+	do
+	   (setq anti-pair-hash (make-hash-table))
+	   (setq anti-assn (set-difference (gethash i (rule-based-cpd-var-values cpd))
+					   (aref assn i)))
+	   (setf (gethash
+		  (parse-integer (format nil "1~{~a~}" as))
+		  anti-pair-hash)
+		 anti-assn)
+	   (setf (gethash
+		  (parse-integer (format nil "1~{~a~}" anti-assn))
+		  anti-pair-hash)
+		 as)
+	   (setf (gethash i inversion-map) anti-pair-hash))
+      (setq assn-0 (copy-array assn))
+      (setf (aref assn-0 0)
+	    (gethash (parse-integer (format nil "1~{~a~}" (aref assn 0)))
+		     (gethash 0 inversion-map)))
+      (loop
         with rules and case = 0 and rule
         for assignment in (list assn assn-0)
         for prob in (list 1 0)
@@ -4928,21 +4889,25 @@ Roughly based on (Koller and Friedman, 2009) |#
            (when (> (array-dimension assignment 0) 1)
              (setq assignment (invert-assignment-at-index (copy-array assignment)
                                                           (- (array-dimension assignment 0) 1)
-                                                          var-value-prob-map))
-             (when (or (and (= prob 0) (not (= (aref assignment 0) 1)))
-                       (and (= prob 1) (not (= (aref assignment 0) 0))))
-               (setq assignment (invert-assignment-at-index assignment 0 var-value-prob-map)))
+                                                          inversion-map))
+             (when (or (and (= prob 0) (not (member 1 (aref assignment 0))))
+                       (and (= prob 1) (not (member 0 (aref assignment 0)))))
+               (setq assignment (invert-assignment-at-index assignment 0 inversion-map)))
              (setq rule (make-initial-rule assignment prob case 0))
              (setq rules (cons rule rules))
              (setq case (+ case 1)))
            (loop
              for i from (- (array-dimension assignment 0) 1) downto 2
              do
-                (setq assignment (invert-assignment-at-index (subseq assignment 0 i) (- i 1) var-value-prob-map))
+                (setq assignment (invert-assignment-at-index (subseq assignment 0 i) (- i 1) inversion-map))
                 (setq rule (make-initial-rule assignment prob case 0))
                 (setq rules (cons rule rules))
                 (setq case (+ case 1)))
         finally
+	   (when nil
+	     (format t "~%initial rules:")
+	     (mapcar #'print-cpd-rule (reverse rules))
+	     (break))
            (return (make-array case :initial-contents (nreverse rules)))))))
 
 #| Make a ruleset for describing the conditional probability distribution. Does not create any 0-count rules
@@ -5004,7 +4969,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with factor-rules and assn
     for factor in factors-list
     do
-       (setq assn (make-array (hash-table-count (rule-based-cpd-vars factor)) :initial-element 1))
+       (setq assn (make-array (hash-table-count (rule-based-cpd-vars factor)) :initial-element (list 1)))
        (setq factor-rules (make-initial-rules factor assn))
     collect (update-cpd-rules factor factor-rules :check-uniqueness t)
       into final
@@ -7172,11 +7137,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                                  (setq zeros (cons i zeros))))
                           (setq i (+ i 1))))
                 finally
-                   (setq assn (make-array (hash-table-count idents) :initial-element 1))
+                   (setq assn (make-array (hash-table-count idents) :initial-element (list 1)))
                    (loop
                      for zero in zeros
                      do
-                        (setf (aref assn zero) 0))
+                        (setf (aref assn zero) (list 0)))
                    ;; make hash table for assignment
                    ;;(setq cards (make-array (hash-table-count idents) :initial-element 2))
                    (setq cards (get-var-cardinalities vvbm))

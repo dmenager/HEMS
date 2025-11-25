@@ -82,6 +82,7 @@
 	   #:print-tree-structure
 	   #:print-cpd
 	   #:print-cpd-rule
+	   #:print-bn
 	   #:py-test-hash
 	   #:discrete-uniform
 	   #:make-messages))

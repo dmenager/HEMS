@@ -231,9 +231,8 @@
 			  (t
 			   (raise-identifier-type-error (second node-def))))
 		    (loop
-		      with found-cpd and found-id found-var and found-type and found-cid and found-vvbm and found sva and found-vals
+		      with found-cpd
 		      for argument in arguments
-		      for i from 1
 		      do
 			 (setq found-cpd (gethash argument nodes-hash))
 			 (when (null found-cpd)
@@ -245,13 +244,6 @@
 					     domains))
 			 (setq parents (cons (rule-based-cpd-dependent-id found-cpd)
 					     parents))
-			 (setf (gethash (rule-based-cpd-dependent-id found-cpd) identifiers) i)
-			 (setf (gethash i vars))
-			 (setf (gethash i types-hash))
-			 (setf (gethash i cids))
-			 (setf (gethash i vvbm))
-			 (setf (gethash i sva))
-			 (setf (gethash i vals))
 		      finally
 			 (setq domains (reverse domains))
 			 (setq parents (reverse parents)))
@@ -316,6 +308,12 @@
 				   (setf (gethash parent-id (rule-conditions rule)) (list value)))
 			      (setf (aref rules j) rule))
 		      finally
+			 (loop
+			   with modifier-cpd
+			   for argument in arguments
+			   do
+			      (setq modifier-cpd (gethash argument nodes-hash))
+			      (setq cpd (modify-cpd cpd modifier-cpd :compute-new-rules-p nil)))
 			 (setf (rule-based-cpd-rules cpd) rules)))
 		   ((or (string-equal "PERCEPT-NODE" (symbol-name (car node-def)))
 			(string-equal "OBSERVATION-NODE" (symbol-name (car node-def)))

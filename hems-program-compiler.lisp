@@ -130,9 +130,27 @@
 	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "STATE")
 	 'state-node)))
 
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
-(defun make-bn-node (node-def)
-  (labels ((n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
+(defun make-bn-node (node-def nodes-hash)
+  (labels ((alistp (alist)
+	     (and (listp alist)
+		  (every #'consp alist)))
+	   (cartesian-product (lists)
+	     (reduce #'(lambda (acc domain)
+			 (mapcan #'(lambda (partial)
+				     (mapcar #'(lambda (val)
+						 (append partial (list val)))
+					     domain))
+				 acc))
+		     lists
+		     :initial-value (list nil)))
+	   (enumerate-assignments (vars domains)
+	     (let ((tuples (cartesian-product domains)))
+	       (mapcar #'(lambda (values)
+			   (mapcar #'cons vars values))
+		       tuples)))
+	   (n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
 	     (when (null (gethash 0 vvbm))
 	       (setf (gethash 0 vvbm) nil))
 	     (when (null (gethash 0 sva))
@@ -181,18 +199,124 @@
 		 (values (getf node-def :values)) ;;(percept-node p :values ((a . 1) (b . 2)))
 		 (arguments (getf node-def :arguments))
 		 (generator (getf node-def :generator))
+		 (parents)
+		 (domains)
 		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments))
 		 (node-def-kwds (remove-if-not #'keywordp node-def))
 		 (unsupported))
 	     (setq unsupported (set-difference node-def-kwds supported-keywords :test #'equal))
 	     (when unsupported
 	       (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
+	     (setq type (symbol-name (second node-def)))
+	     (setf (rule-based-cpd-dependent-var cpd) type)
+	     (setf (gethash 0 vars) type)
+	     (setf (rule-based-cpd-vars cpd) vars)
+	     (setq type-identifier (symbol-name (gensym (concatenate 'string type "_"))))
+	     (setf (rule-based-cpd-dependent-id cpd) type-identifier)
+	     (setf (gethash type-identifier identifiers) 0)
+	     (setf (rule-based-cpd-identifiers cpd) identifiers)
+	     (setf (rule-based-cpd-types cpd) types-hash)
+	     (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
+	     (setf (rule-based-cpd-count cpd) 1)
 	     (cond ((or (string-equal "FUNCTIONAL-NODE" (symbol-name (car node-def))))
-		    (cond ((and (null value)
-				(null values))
-			   (error "No 'value' or 'values' field found in node definition list.~%Received: ~S" node-def))
-			  ((and value values)
-			   (error "Found 'value' and 'values' field in node definition, but they are mutually exclusive.~%Received: ~S" node-def))))
+		    (cond ((or value values)
+			   (error "'value' and 'values' fields not supported for functional node definition.~%Received: ~S" node-def))
+			  ((null generator)
+			   (error "Missing ':generator' function for functional node definition. Received: ~S" node-def))
+			  ((null arguments)
+			   (error "Missing function arguments ':arguments' for functional node definition. Received: ~S" node-def)))
+		    (cond ((and (symbolp (second node-def))
+				(not (null (second node-def))))
+			   (setf (gethash 0 types-hash) "BELIEF"))
+			  (t
+			   (raise-identifier-type-error (second node-def))))
+		    (loop
+		      with found-cpd and found-id found-var and found-type and found-cid and found-vvbm and found sva and found-vals
+		      for argument in arguments
+		      for i from 1
+		      do
+			 (setq found-cpd (gethash argument nodes-hash))
+			 (when (null found-cpd)
+			   (error "Reference to ~A before declaration. Found in functional arguments list ~{~A~^ ~} ." argument arguments))
+			 (setq domains (cons (mapcar #'caar
+						     (gethash 0
+							      (rule-based-cpd-var-value-block-map
+							       found-cpd)))
+					     domains))
+			 (setq parents (cons (rule-based-cpd-dependent-id found-cpd)
+					     parents))
+			 (setf (gethash (rule-based-cpd-dependent-id found-cpd) identifiers) i)
+			 (setf (gethash i vars))
+			 (setf (gethash i types-hash))
+			 (setf (gethash i cids))
+			 (setf (gethash i vvbm))
+			 (setf (gethash i sva))
+			 (setf (gethash i vals))
+		      finally
+			 (setq domains (reverse domains))
+			 (setq parents (reverse parents)))
+		    (loop
+		      with prob-row
+		      with domain
+		      with assns = (enumerate-assignments arguments domains)
+		      with rules = (make-array (length assns))
+		      for assn in assns
+		      for j form 0
+		      do
+			 (setq prob-row (apply (eval `(lambda ,arguments
+							,generator))
+					       (mapcar #'cdr assn)))
+			 (when (null prob-row)
+			   (error "Functional node generator: Expected non-empty probability distribution associated with assignment ~A. Received nil." assn))
+			 (when (not (alistp prob-row))
+			   (error "Functional node generator: Expected type association list for the probability distribution associated with assignment ~A, not ~A" assn prob-row))
+			 (when (not (assoc "NA" prob-row :test #'string-equal))
+			   (setq prob-row (cons (cons "NA" 0) prob-row)))
+			 ;; TODO: check if there exists a duplicate entry.
+			 (when (null domain)
+			   (loop
+			     for dom in (mapcar #'car prob-row)
+			     for i from 0
+			     collect (cons dom i) into dmn
+			     finally
+			     (setq domain dmn)))
+			 (when (or (not (null (set-difference prob-row domain
+							      :key #'car
+							      :test #'string-equal)))
+				   (not (= (length domain)
+					   (length row-prob))))
+			   (error "Functional node generator: Malformed probability distribution associated with assignment ~A. Expected row of size ~d. Received ~d~%row: ~A" assn row-len (length prob-row) prob-row))
+			 (loop
+			   with rule
+			   for (asn . prob) in prob-row
+			   do
+			      (setq rule (make-rule
+					  :id (gensym "RULE-")
+					  :conditions (make-hash-table :test #'equal)
+					  :probability prob
+					  :certain-block (make-hash-table)
+					  :count (length prob-row)))
+			      (setf (gethash type-identifier (rule-conditions rule))
+				    (list (cdr
+					   (assoc asn domain
+					    :test #'string-equal))))
+			      (loop
+				with parent-id and parent-cpd
+				with value
+				for (parent . string-value) in assn
+				do
+				   (setq parent-cpd (gethash parent nodes-hash))
+				   (setq parent-id (rule-based-cpd-dependent-id parent-cpd))
+				   (setq value
+					 (cdr (assoc string-value
+						     (gethash 0
+							      (rule-based-cpd-var-value-block-map parent-cpd))
+						     :key caar
+						     :test #'string-equal)))
+				   (setf (gethash parent-id (rule-conditions rule)) (list value)))
+			      (setf (aref rules j) rule))
+		      finally
+			 (setf (rule-based-cpd-rules cpd) rules)))
 		   ((or (string-equal "PERCEPT-NODE" (symbol-name (car node-def)))
 			(string-equal "OBSERVATION-NODE" (symbol-name (car node-def)))
 			(string-equal "RELATION-NODE" (symbol-name (car node-def)))
@@ -215,6 +339,7 @@
 				  (setf (gethash 0 types-hash) "STATE"))
 				 ((equal "ACTION-NODE" (symbol-name (car node-def)))
 				  (setf (gethash 0 types-hash) "ACTION")))
+			   #|
 			   (setq type (symbol-name (second node-def)))
 			   (setf (rule-based-cpd-dependent-var cpd) type)
 			   (setf (gethash 0 vars) type)
@@ -226,6 +351,7 @@
 			   (setf (rule-based-cpd-types cpd) types-hash)
 			   (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
 			   (setf (rule-based-cpd-count cpd) 1)
+			   |#
 			   (when value
 			     (setq values (list (list :value "NA" :probability 0 :count 0)
 						(list :value value :probability 1 :count 1))))
@@ -588,13 +714,13 @@
 					 (when (gethash (first ,args) ,hash)
 					   (warn "Attempting to overwrite value for identifyer ~A in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (setf (gethash (first ,args) ,hash)
-					       (make-bn-node (third ,args))))
+					       (make-bn-node (third ,args) ,hash)))
 					(t
 					 (error "Expected assignment to node definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((equal (symbol-name '~) (symbol-name (second ,args)))
 				  (cond ((listp (third ,args))
 					 (when (not (gethash (first ,args) ,hash))
-					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
+					   (error "Reference to ~A before declaration in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (let* ((raw-symbol (first (third ,args)))
 						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
 							   (error "~A does not name a defined function" raw-symbol)))

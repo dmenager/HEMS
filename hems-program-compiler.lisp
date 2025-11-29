@@ -307,7 +307,7 @@
 				   (not (= (length domain)
 					   (length prob-row))))
 			   (error "Functional node generator: Malformed probability distribution associated with assignment ~A. Expected row of size ~d. Received ~d~%row: ~A" assn (length domain) (length prob-row) prob-row))
-			 (when t
+			 (when nil t
 			   (format t "~%~%prob-row:~%~S~%domain:~%~S" prob-row domain))
 			 (loop
 			   with rule
@@ -318,8 +318,8 @@
 					  :conditions (make-hash-table :test #'equal)
 					  :probability prob
 					  :certain-block (make-hash-table)
-					  :count (length prob-row)))
-			      (when t
+					  :count (- (length prob-row) 1)))
+			      (when nil t
 				(format t "~%asn: ~S~%domain match: ~S" asn (assoc asn domain
 					    :test #'string-equal)))
 			      (setf (gethash type-identifier (rule-conditions rule))
@@ -334,12 +334,12 @@
 				   (setq parent-cpd (gethash parent nodes-hash))
 				   (setq parent-id (rule-based-cpd-dependent-id parent-cpd))
 				   (setq value
-					 (cdr (assoc string-value
+					 (cdar (assoc string-value
 						     (gethash 0
 							      (rule-based-cpd-var-value-block-map parent-cpd))
 						     :key #'car
 						     :test #'string-equal)))
-				   (when t
+				   (when nil t
 				     (format t "~%~%parent: ~S~%string value: ~S~%parent vvbm:~%~Smatch: ~S" parent string-value (rule-based-cpd-var-value-block-map parent-cpd)
 					     (assoc string-value
 						     (gethash 0
@@ -358,7 +358,8 @@
 			      (setq cpd (modify-cpd cpd modifier-cpd :compute-new-rules-p nil)))
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
-			 (when t
+			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
+			 (when nil t
 			   (format t "~%functional cpd:~%~S~%" cpd)
 			   (print-cpd cpd)
 			   (break))))

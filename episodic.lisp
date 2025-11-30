@@ -3035,7 +3035,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (print-bn (episode-observation ep))
 	   (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p :type "OBSERVATION"))
-	   (eltm-to-pdf)
+	   ;;(eltm-to-pdf)
 	   ;;(break)
 	   (when temporal-p
 	     (when st
@@ -3103,7 +3103,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                                     :lvl 2))
 	     (format t "~%Inserting transition model, ~A" (episode-id ep))
 	     (setq eltm* (new-insert-episode eltm* ep nil :bic-p bic-p :type "STATE-TRANSITIONS"))
-	     (eltm-to-pdf)
+	     ;;(eltm-to-pdf)
 	     ;;(break)
 	     ))
       ;; clear buffer

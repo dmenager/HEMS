@@ -261,7 +261,7 @@
 		      with prob-row
 		      with domain
 		      with assns = (enumerate-assignments arguments parent-domains)
-		      with print = (format t "~%~%assns:~%~S" assns)
+		      ;;with print = (format t "~%~%assns:~%~S" assns)
 		      with rules
 		      for assn in assns
 		      for j from 0
@@ -359,10 +359,11 @@
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
 			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
-			 (when nil t
+			 (when nil
 			   (format t "~%functional cpd:~%~S~%" cpd)
 			   (print-cpd cpd)
-			   (break))))
+			   (break))
+			 (return cpd)))
 		   ((or (string-equal "PERCEPT-NODE" (symbol-name (car node-def)))
 			(string-equal "OBSERVATION-NODE" (symbol-name (car node-def)))
 			(string-equal "RELATION-NODE" (symbol-name (car node-def)))

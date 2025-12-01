@@ -3032,7 +3032,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  :count 1
                                   :lvl 1))
            (format t "~%inserting observation, ~A" (episode-id ep))
-	   (print-bn (episode-observation ep))
+	   ;;(print-bn (episode-observation ep))
 	   (multiple-value-setq (eltm* obs-ref)
              (new-insert-episode eltm* ep nil :bic-p bic-p :type "OBSERVATION"))
 	   ;;(eltm-to-pdf)

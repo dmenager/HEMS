@@ -199,9 +199,10 @@
 		 (values (getf node-def :values)) ;;(percept-node p :values ((a . 1) (b . 2)))
 		 (arguments (getf node-def :arguments))
 		 (generator (getf node-def :generator))
+		 (functional-type (getf node-def :type))
 		 (parents)
 		 (parent-domains)
-		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments))
+		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments :type))
 		 (node-def-kwds (remove-if-not #'keywordp node-def))
 		 (unsupported))
 	     (setq unsupported (set-difference node-def-kwds supported-keywords :test #'equal))
@@ -233,13 +234,27 @@
 			   (error "'value' and 'values' fields not supported for functional node definition.~%Received: ~S" node-def))
 			  ((null generator)
 			   (error "Missing ':generator' function for functional node definition. Received: ~S" node-def))
-			  ((null arguments)
+			  (nil (null arguments)
 			   (error "Missing function arguments ':arguments' for functional node definition. Received: ~S" node-def)))
 		    (cond ((and (symbolp (second node-def))
 				(not (null (second node-def))))
-			   (setf (gethash 0 types-hash) "BELIEF"))
+			   (setf (gethash 0 types-hash) "BELIEF")
+			   (cond ((string-equal "PERCEPT" functional-type)
+				  (setf (gethash 0 types-hash) "PERCEPT"))
+				 ((string-equal "OBSERVATION" functional-type)
+				  (setf (gethash 0 types-hash) "OBSERVATION"))
+				 ((string-equal "RELATION" functional-type)
+				  (setf (gethash 0 types-hash) "BELIEF"))
+				 ((string-equal "STATE" functional-type)
+				  (setf (gethash 0 types-hash) "STATE"))
+				 ((string-equal "ACTION" functional-type)
+				  (setf (gethash 0 types-hash) "ACTION"))
+				 (t
+				  (error "Unsupported functional type: ~A" functional-type))))
 			  (t
 			   (raise-identifier-type-error (second node-def))))
+		    (setf (rule-based-cpd-characteristic-sets cpd) (make-hash-table))
+		    (setf (rule-based-cpd-characteristic-sets-values cpd) (make-hash-table))
 		    (loop
 		      with found-cpd
 		      for argument in arguments
@@ -350,12 +365,21 @@
 			      
 			   (setq rules (cons rule rules)))
 		      finally
-			 (loop
-			   with modifier-cpd
-			   for argument in arguments
-			   do
-			      (setq modifier-cpd (gethash argument nodes-hash))
-			      (setq cpd (modify-cpd cpd modifier-cpd :compute-new-rules-p nil)))
+			 (cond (arguments
+				(loop
+				  with modifier-cpd
+				  for argument in arguments
+				  do
+				     (setq modifier-cpd (gethash argument nodes-hash))
+				     (setq cpd (modify-cpd cpd modifier-cpd :compute-new-rules-p nil))))
+			       (t
+				(setf (rule-based-cpd-cardinalities cpd)
+				      (generate-cpd-cardinalities
+				       (rule-based-cpd-var-value-block-map cpd)))
+				(setf (rule-based-cpd-step-sizes cpd)
+				      (generate-cpd-step-sizes
+				       (rule-based-cpd-cardinalities cpd)))))
+			 
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
 			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
@@ -465,6 +489,7 @@
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expected type of non-nil symbol." recieved))
 
+#|
 (defun directed-edge (cpd1 cpd2 causal-discovery)
   (let ((cpd1-copy (make-rule-based-cpd
 		    :dependent-id (rule-based-cpd-dependent-id cpd1)
@@ -499,8 +524,7 @@
     (setf (gethash (rule-based-cpd-dependent-id cpd1)
 		   (rule-conditions rule))
 	  (list 1))
-    (setf (aref (rule-based-cpd-rules cpd1-copy) 1) rule)
-    
+    (setf (aref (rule-based-cpd-rules cpd1-copy) 1) rule)    
     (setf (gethash (rule-based-cpd-dependent-id cpd1-copy)
 		   (rule-based-cpd-identifiers cpd1-copy))
 	  0)
@@ -520,7 +544,38 @@
 	  (gethash 0 (rule-based-cpd-var-values cpd1)))
     (if (> (length (gethash 0 (rule-based-cpd-var-values cpd1))) 2)
 	(error "multiple variable values currently unsupported"))
-    (modify-cpd cpd2 cpd1-copy :causal-discovery causal-discovery)))
+(modify-cpd cpd2 cpd1-copy :causal-discovery causal-discovery)))
+|#
+
+#| Condition one cpd by another cpd via a directed edge.
+   Returns: CPD|#
+
+;; cpd1 = from cpd
+;; cpd2 = to cpd
+(defun directed-edge (cpd1 cpd2 causal-discovery)
+  (let ((marginal-cpd1 (factor-operation
+			cpd1
+			(list (rule-based-cpd-dependent-id cpd1))
+			(loop
+			  for ident being the hash-keys of (rule-based-cpd-identifiers cpd1)
+			    using (hash-value pos)
+			  when (> pos 0)
+			    collect ident into remove
+			  finally
+			     (return remove))
+			'+
+			:rule-count
+			(- (length
+			    (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
+			   1))))
+    (when nil t
+      (format t "~%~%cpd1")
+      (print-cpd cpd1)
+      (format t "~%marginalized cpd1")
+      (print-cpd marginal-cpd1)
+      ;;(break)
+      )
+    (modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)))
 
 #| Sort a list of factors in topological order. Returns a list. |#
 

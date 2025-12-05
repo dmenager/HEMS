@@ -131,7 +131,11 @@
 	 'state-node)))
 
 
+#| Construct a random variable from node declaration in HEMS program.
+   Returns: CPD|#
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
+;; nodes-hash = hash table. key: program variable. value: CPD
 (defun make-bn-node (node-def nodes-hash)
   (labels ((alistp (alist)
 	     (and (listp alist)
@@ -262,16 +266,31 @@
 			 (setq found-cpd (gethash argument nodes-hash))
 			 (when (null found-cpd)
 			   (error "Reference to ~A before declaration. Found in functional arguments list ~{~A~^ ~} ." argument arguments))
-			 (setq parent-domains (cons (mapcar #'caar
-						     (gethash 0
-							      (rule-based-cpd-var-value-block-map
-							       found-cpd)))
-					     parent-domains))
+			 (if nil ;;(rule-based-cpd-prior found-cpd)
+			     (loop
+			       with need-na-p = t and val
+			       for value-list in (getf (rule-based-cpd-prior found-cpd) :values)
+			       do
+				  (setq val (getf value-list :value))
+				  (when (string-equal val "NA")
+				    (setq need-na-p nil))
+			       collect val into parent-domain
+			       finally
+				  (when need-na-p
+				    (setq parent-domain (cons "NA" parent-domain)))
+				  (setq parent-domains (cons parent-domain parent-domains)))
+			     (setq parent-domains (cons (mapcar #'caar
+								(gethash 0
+									 (rule-based-cpd-var-value-block-map
+									  found-cpd)))
+							parent-domains)))
 			 (setq parents (cons (rule-based-cpd-dependent-id found-cpd)
 					     parents))
 		      finally
 			 (setq parent-domains (reverse parent-domains))
-			 (setq parents (reverse parents)))
+			 (setq parents (reverse parents))
+			 (when t
+			   (format t "~%parent-domains:~%~S" parent-domains)))
 		    (loop
 		      with prob-row
 		      with domain
@@ -361,8 +380,7 @@
 							      (rule-based-cpd-var-value-block-map parent-cpd))
 						     :key #'car
 						     :test #'string-equal)))
-				   (setf (gethash parent-id (rule-conditions rule)) (list value)))
-			      
+				   (setf (gethash parent-id (rule-conditions rule)) (list value)))			      
 			   (setq rules (cons rule rules)))
 		      finally
 			 (cond (arguments
@@ -378,8 +396,7 @@
 				       (rule-based-cpd-var-value-block-map cpd)))
 				(setf (rule-based-cpd-step-sizes cpd)
 				      (generate-cpd-step-sizes
-				       (rule-based-cpd-cardinalities cpd)))))
-			 
+				       (rule-based-cpd-cardinalities cpd)))))			 
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
 			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
@@ -485,6 +502,59 @@
 		    (error "Unsupported type, ~A for node definition list." (car node-def))))))
 	  (t
 	   (raise-identifier-type-error (car node-def))))))
+
+#| Update CPD domain with contents from prior.
+   Returns: CPD|#
+
+;; cpd = conditional probability distribution
+;; nodes-hash = hash table. key: program variable. value: CPD
+(defun compile-cpd-prior (cpd nodes-hash)
+  (let (prior-cpd
+	(bindings (make-hash-table :test #'equal)))
+    (when (rule-based-cpd-prior cpd)
+      (setq prior-cpd
+	    (aref (car (eval `(compile-program nil
+				c1 = ,(rule-based-cpd-prior cpd))))
+		  0))
+      (setf (rule-based-cpd-singleton-p prior-cpd) t)
+      (when nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
+		    (equal (rule-based-cpd-dependent-id cpd) "TIME_509"))
+	    (format t "~%~%prior:~%")
+	    (print-cpd prior-cpd)
+	    (format t "~%cpd:")
+	    (print-cpd cpd))
+      ;; make bindings
+      (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
+	    (rule-based-cpd-dependent-id cpd))
+      (loop
+	for value in (getf (rule-based-cpd-prior cpd) :values)
+	do
+	   (setf (gethash (getf value :value) bindings)
+		 (getf value :value)))
+      (setq prior-cpd (subst-cpd prior-cpd cpd bindings))
+      (setq cpd (cpd-update-schema-domain cpd prior-cpd nil))
+      (setq cpd (update-cpd-rules cpd (rule-based-cpd-rules cpd)))
+      (loop
+	for var being the hash-keys of nodes-hash
+	using (hash-value cpd2)
+	for i from 0
+	when (and (gethash (rule-based-cpd-dependent-id cpd)
+			   (rule-based-cpd-identifiers cpd2))
+		  (not (equal (rule-based-cpd-dependent-id cpd)
+			      (rule-based-cpd-dependent-id cpd2))))
+	  do
+	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
+			    (equal (rule-based-cpd-dependent-id cpd1) "TIME_PREV_506"))
+		   (format t "~%updating downstream cpd.")
+		   (setq print-special* t))
+	     (setf (gethash var nodes-hash)
+		   (cpd-update-existing-vvms cpd2 bindings (list cpd)))
+	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
+			    (equal (rule-based-cpd-dependent-id cpd1) "TIME_PREV_506"))
+		   (format t "~%bindings:~%~S~%updated downstream cpd:~%" bindings)
+		   (print-cpd (aref (car bn) i))
+		   (break)))))
+  cpd)
 
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expected type of non-nil symbol." recieved))
@@ -827,15 +897,19 @@
 					   (error "Reference to ~A before declaration in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (let* ((raw-symbol (first (third ,args)))
 						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
-							   (error "~A does not name a defined function" raw-symbol)))
+							      (error "~A does not name a defined function" raw-symbol)))
 						(,prior-args (apply prior-fn
-								   (loop
-								     for (key arg) on (cdr (third ,args)) by #'cddr
-								     append (list key arg)))))
-					 (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
-					       (list (get-cpd-type (gethash (first ,args) ,hash))
-						     'prior
-						     :values ,prior-args))))
+								    (loop
+								      for (key arg) on (cdr (third ,args)) by #'cddr
+								      append (list key arg)))))
+					   (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
+						 (list (get-cpd-type (gethash (first ,args) ,hash))
+						       'prior
+						       :values ,prior-args))
+					   (setf (gethash (first ,args) ,hash)
+						 (compile-cpd-prior
+						  (gethash (first ,args) ,hash)
+						  ,hash))))
 					(t
 					 (error "Expected distributional identity to prior definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((or (equal "---" (symbol-name (second ,args)))

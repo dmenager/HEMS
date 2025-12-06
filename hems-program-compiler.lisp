@@ -517,7 +517,7 @@
 				c1 = ,(rule-based-cpd-prior cpd))))
 		  0))
       (setf (rule-based-cpd-singleton-p prior-cpd) t)
-      (when nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
+      (when t nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
 		    (equal (rule-based-cpd-dependent-id cpd) "TIME_509"))
 	    (format t "~%~%prior:~%")
 	    (print-cpd prior-cpd)
@@ -532,8 +532,17 @@
 	   (setf (gethash (getf value :value) bindings)
 		 (getf value :value)))
       (setq prior-cpd (subst-cpd prior-cpd cpd bindings))
-      (setq cpd (cpd-update-schema-domain cpd prior-cpd nil))
+      (setq cpd (cpd-update-schema-domain (copy-rule-based-cpd cpd) prior-cpd nil))
+      (when t
+	(format t "~%prior cpd:")
+	(print-cpd prior-cpd)
+	(format t "~%intermediate cpd:")
+	(print-cpd cpd))
       (setq cpd (update-cpd-rules cpd (rule-based-cpd-rules cpd)))
+      (when t
+	(format t "~%bindings:~%~S~%updated cpd:" bindings)
+	(print-cpd cpd)
+	(break))
       (loop
 	for var being the hash-keys of nodes-hash
 	using (hash-value cpd2)
@@ -544,13 +553,13 @@
 			      (rule-based-cpd-dependent-id cpd2))))
 	  do
 	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
-			    (equal (rule-based-cpd-dependent-id cpd1) "TIME_PREV_506"))
+			    (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506"))
 		   (format t "~%updating downstream cpd.")
 		   (setq print-special* t))
 	     (setf (gethash var nodes-hash)
 		   (cpd-update-existing-vvms cpd2 bindings (list cpd)))
 	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
-			    (equal (rule-based-cpd-dependent-id cpd1) "TIME_PREV_506"))
+			    (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506"))
 		   (format t "~%bindings:~%~S~%updated downstream cpd:~%" bindings)
 		   (print-cpd (aref (car bn) i))
 		   (break)))))

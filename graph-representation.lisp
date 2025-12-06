@@ -1761,23 +1761,30 @@
                               (rule-count existing-rule))))
               (compatible-rule-p rule existing-rule phi phi))
       do
-         (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
+         (when t nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
            (format t "~%~%existing rule is compatible with new rule.~%Splitting existing rule:")
            (print-cpd-rule existing-rule)
            (format t "~%new rule:")
-           (print-cpd-rule rule))
+           (print-cpd-rule rule)
+	   (format t "~%binding: ~S" binding))
          (loop
-           with split-rule = (copy-cpd-rule existing-rule)
+           with split-rule = (let ((tmp (copy-cpd-rule existing-rule)))
+			       (remhash ident (rule-conditions tmp))
+			       tmp)
            for (binding2 block) in vvbm
            when (not (equal (car binding2) (car binding)))
              do
+		(when t
+		  (format t "~%(car binding2): ~S~%(car binding): ~S" binding2 binding))
                 (when (null (gethash ident (rule-conditions split-rule)))
                   (setf (gethash ident (rule-conditions split-rule)) nil))
-                (setf (gethash ident (rule-conditions split-rule))
-                      (cons (cdr binding2)
-                            (gethash ident (rule-conditions split-rule))))
+		(when (not (member (cdr binding2)
+				   (gethash ident (rule-conditions split-rule))))
+		  (setf (gethash ident (rule-conditions split-rule))
+			(cons (cdr binding2)
+                              (gethash ident (rule-conditions split-rule)))))
            finally
-              (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
+              (when t (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
                 (format t "~%split rule:")
                 (print-cpd-rule split-rule)
                 ;;(format t "~%compatible rules:")
@@ -1786,7 +1793,7 @@
               (setq split-rules (cons split-rule split-rules)))
     else
       do
-         (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
+         (when t (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
                (format t "~%~%existing rule is NOT compatible with new rule. Inserting existing rule:")
                (print-cpd-rule existing-rule))
          (setq split-rules (cons existing-rule split-rules))
@@ -1818,7 +1825,7 @@
 ;; phi1 = conditional probability density from base
 ;; phi2 = conditional probability density from pattern
 (defun cpd-update-schema-domain (phi1 phi2 new-nodes &key (q-first-bindings (make-hash-table :test #'equal)))
-  (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+  (when t nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
     (format t "~%~%updating schema:")
     (print-cpd phi1)
     (format t "~%with episode:")
@@ -1846,7 +1853,7 @@
               (setq vals1 (gethash pos (rule-based-cpd-var-values phi1)))
               (setq var2s (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
                                 #'< :key #'cdar))
-              (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+              (when t nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
                     (format t "~%schema vvbm:~%~S~%episode vvbm:~%~S" vvbm1 vvbm2))
               (loop
                 with var2 and insert-pos
@@ -1862,7 +1869,7 @@
                    ;;(setq sva1 (reverse (cons (list (cdr binding)) (reverse sva1))))
                    (setq vvbm1 (insert-after vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq sva1 (insert-after sva1 insert-pos (list (cdr binding))))
-                   (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
+                   (when t nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
                          (format t "~%updated schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding:~%~S" vvbm1 vvbm2 var2s var2 binding))
                    (setq lower-vvbm1 (insert-after lower-vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq vals1 (insert-after vals1 insert-pos (cdr binding)))
@@ -1879,11 +1886,11 @@
                                (when nil (and (equal "OBSERVATION_VAR2_210" (rule-based-cpd-dependent-id phi1)))
                                      (format t "~%new rule:~%~S~%existing rule:~%~S" new-rule rule))
                                (when (notany #'(lambda (r) (same-rule-p new-rule r phi1 phi1)) new-rules)
-                                 (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
+                                 (when t nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
                                        (format t "~%~%binding: ~S~%new rule:~%~S~%existing rule:~%~S" binding new-rule rule))
                                  (setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
                                  (setq new-rules (cons new-rule new-rules)))
-                               (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
+                               (when t nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
                                      (format t "~%new rules:")
                                      (map nil #'print-cpd-rule new-rules)
                                      ;;(format t "~%new rules:~%~S" new-rules)

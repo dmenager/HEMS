@@ -289,7 +289,7 @@
 		      finally
 			 (setq parent-domains (reverse parent-domains))
 			 (setq parents (reverse parents))
-			 (when t
+			 (when nil
 			   (format t "~%parent-domains:~%~S" parent-domains)))
 		    (loop
 		      with prob-row
@@ -511,18 +511,34 @@
 (defun compile-cpd-prior (cpd nodes-hash)
   (let (prior-cpd
 	(bindings (make-hash-table :test #'equal)))
+    (setq cpd (factor-operation
+	       cpd
+	       (list (rule-based-cpd-dependent-id cpd))
+	       (loop
+		 for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+		   using (hash-value pos)
+		 when (> pos 0)
+		   collect ident into remove
+		 finally
+		    (return remove))
+	       '+
+	       :rule-count
+	       (- (length
+		   (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+		  1)))
     (when (rule-based-cpd-prior cpd)
       (setq prior-cpd
 	    (aref (car (eval `(compile-program nil
 				c1 = ,(rule-based-cpd-prior cpd))))
 		  0))
       (setf (rule-based-cpd-singleton-p prior-cpd) t)
-      (when t nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
+      (when nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
 		    (equal (rule-based-cpd-dependent-id cpd) "TIME_509"))
 	    (format t "~%~%prior:~%")
 	    (print-cpd prior-cpd)
 	    (format t "~%cpd:")
 	    (print-cpd cpd))
+      
       ;; make bindings
       (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
 	    (rule-based-cpd-dependent-id cpd))
@@ -533,13 +549,13 @@
 		 (getf value :value)))
       (setq prior-cpd (subst-cpd prior-cpd cpd bindings))
       (setq cpd (cpd-update-schema-domain (copy-rule-based-cpd cpd) prior-cpd nil))
-      (when t
+      (when nil
 	(format t "~%prior cpd:")
 	(print-cpd prior-cpd)
 	(format t "~%intermediate cpd:")
 	(print-cpd cpd))
       (setq cpd (update-cpd-rules cpd (rule-based-cpd-rules cpd)))
-      (when t
+      (when nil
 	(format t "~%bindings:~%~S~%updated cpd:" bindings)
 	(print-cpd cpd)
 	(break))
@@ -561,7 +577,7 @@
 	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
 			    (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506"))
 		   (format t "~%bindings:~%~S~%updated downstream cpd:~%" bindings)
-		   (print-cpd (aref (car bn) i))
+		   (print-cpd cpd2)
 		   (break)))))
   cpd)
 

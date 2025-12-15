@@ -93,6 +93,15 @@ git clone https://github.com/dmenager/HEMS.git
 
    If you plan to use `(eltm-to-pdf)` or other visualization utilities, install Graphviz as described above so that the `dot` binary is available.
 
+## Core Concepts
+Observations are encoded as Bayesian networks using a lightweight DSL:
+* Node constructors (used inside `(compile-program)`):
+	* `(percept-node)` represents observable variables (e.g., sensor readings)
+ 	* `(relation-node)` represents inferred or latent relations (beliefs) that exert causal influence.
+  * Additional nodes for temporal reasoning (`observation-node`,`action-node`,and `state-node`) and functional constraints (`(functional-node)` exist. More details are forthcoming.
+* Edges:
+	* `c1 --> c2` declares a directed edge from `c1` to `c2`.
+
 ## Usage
 
 ### Specifying observations as DAGs for HEMS.

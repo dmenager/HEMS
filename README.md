@@ -6,7 +6,7 @@ Contributions of the work are as follows:
 * Computational implementation of this theory that enables constructing event memory-enabled intelligent agents;
 * Modeling and demonstrating the full range of event memory phenomena inlcuding: sucessful remembering, misremembering, and confabulation;
 * Novel rule-based representation for compactly storing probability distributions to enable efficient state estimation under various partial observability conditions; and
-* Probabilistic program DSL for specifying Bayesian networks using an easy-to-read notation based on node declarations and edge statements.
+* Declarative DSL for specifying Bayesian networks using an easy-to-read notation based on node definitions and edge statements.
 
 Further details on the system's theoretical claims and technical details may be found in the /papers directory.
 
@@ -100,7 +100,13 @@ Observations are encoded as Bayesian networks using a lightweight DSL:
  	* `(relation-node)` represents inferred or latent relations (beliefs) that exert causal influence.
   * Additional nodes for temporal reasoning (`observation-node`,`action-node`,and `state-node`) and functional constraints (`(functional-node)` exist. More details are forthcoming.
 * Edges:
-	* `c1 --> c2` declares a directed edge from `c1` to `c2`.
+	* `c1 --> c2` defines a directed edge from `c1` to `c2`.
+* Variable prior definitions
+* 	In more advanced programs, priror distributions (e.g., `(discrete-uniform)`) can be attached to instantiated variables using `~`:
+```
+c2 = (percept-node b :value "10")
+c2 ~ (discrete-uniform :values ("10" "20" "30" "40"))
+```
 
 ## Usage
 
@@ -139,7 +145,7 @@ c11 --> c1
 c12 --> c1
 c13 --> c1
 ```
-Arrows define connections between nodes. The only supported connection type is a directed edge. For example, `c1 -> c2` denotes an edge eminating from `c1` flowing to `c2`.
+Arrows define connections between nodes. The only supported connection type is a directed edge. For example, `c1 --> c2` denotes an edge eminating from `c1` flowing to `c2`.
 
 Lastly, passing this program to the HEMS compiler returns a Bayesian network. In Common Lisp, the program statements can be directly supplied to the compiler in the following way:
 ```

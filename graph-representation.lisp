@@ -2872,11 +2872,11 @@
 					  (< new-covered-negs best-zero-new-negs))
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
-					  (< condition-entropy best-entropy))
+					  (< condition-entropy best-condition-entropy))
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
-					  (= condition-entropy best-entropy)
+					  (= condition-entropy best-condition-entropy)
 					  (< (hash-table-count (second condition-block)) best-block-size))
 				     |#
 				     #|

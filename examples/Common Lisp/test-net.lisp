@@ -140,7 +140,10 @@
       for obs in (list bn1 bn2 bn3)
       for i from 0
       do
-	 (new-push-to-ep-buffer :observation obs :hidden-state-p nil :insertp t :temporal-p nil)	 
+	 (new-push-to-ep-buffer :observation obs :hidden-state-p nil :insertp t :temporal-p nil)
+	 (format t "~%observation:")
+	 (hems:print-bn obs)
+	 (break)
       finally
 	 (hems:eltm-to-pdf)
 	 (hems:print-bn (episode-observation (car hems:eltm*))))))

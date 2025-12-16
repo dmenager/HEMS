@@ -101,7 +101,7 @@
 	     (multiple-value-bind (unnormalized total)
 		 (get-unnormalized-distribution distances std)
 	       (mapcar #'(lambda (pair)
-			   (list :value  (write-to-string (car pair))
+			   (list :value (write-to-string (car pair))
 				 :probability (/ (cdr pair) total)
 				 :count 1))
 		       unnormalized))))

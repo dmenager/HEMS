@@ -2407,7 +2407,8 @@
 ;; new-rules = array of new rules to replace current rules
 (defun update-cpd-rules (cpd new-rules &key (disambiguate-p nil) (check-uniqueness nil) (check-prob-sum t))
   (setf (rule-based-cpd-rules cpd) new-rules)
-  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum)
+  (when nil (equal "EPOSITION" (rule-based-cpd-dependent-var cpd))
+    (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum))
   (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
         (format t "~%~%updating cpd rules for cpd:~%~S" cpd))
   (setq cpd (reset-attribute-and-concept-blocks cpd))
@@ -2764,7 +2765,7 @@
       for ident being the hash-keys of tog
 	using (hash-value att-blocks)
       do
-	 (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+	 (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -2782,7 +2783,7 @@
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
                for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+	      (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%condition value in rule?:~A" condition-block intersection
 			(member (cdar condition-block)
@@ -2793,7 +2794,7 @@
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
              do
-		(when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+		(when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 		      (format t "~%pass 1!"))
 		(setq num-conflicts (hash-table-count (rule-avoid-list rule)))
 		(setq copy-rule (copy-cpd-rule rule))
@@ -2813,7 +2814,7 @@
 					  :output-hash-p t))
 		(when (and (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
 			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts))
-		 (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+		 (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
 		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
@@ -2844,7 +2845,7 @@
 				     (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
 		  (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						 (* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
-		  (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+		  (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 		    (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
 		  (cond ((> p 0)
 			 (when (> info-gain best-pos-info-gain)
@@ -2852,7 +2853,7 @@
 			   (setq best-entropy new-entropy)
 			   (setq best-pos-condition condition)
 			   (setq best-pos-rule (copy-cpd-rule copy-rule))
-			   (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+			   (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 			     (format t "~%updated rule:~%~S" copy-rule))))
 			((> upper-bound-p 0)
 			 (let (uncertain-after
@@ -2865,20 +2866,29 @@
 			   ;;(setq condition-concept-intersection (hash-intersection (second condition-block) concept-block :output-hash-p t))
 			   (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
 								      (hash-table-count (second condition-block)))))
-			   (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+			   (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 			     (format t "~%new covered negs: ~d~%intersection size: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs intersection-size condition-entropy (hash-table-count (second condition-block))))
 			   (when (or (> upper-bound-info-gain best-zero-ub-ig)
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (< condition-entropy best-condition-entropy))
+				     #|
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (= condition-entropy best-condition-entropy)
+					  (< (hash-table-count (second condition-block)) best-block-size))
+				     |#
+				     
+				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (< new-covered-negs best-zero-new-negs))
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
 					  (< condition-entropy best-condition-entropy))
-				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
 					  (= condition-entropy best-condition-entropy)
 					  (< (hash-table-count (second condition-block)) best-block-size))
 				     |#
+				     
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
@@ -2902,7 +2912,7 @@
 			     (setq best-condition-conflicts condition-conflicts)
 			     (setq best-block-size (hash-table-count (second condition-block)))
 			     (setq best-condition-entropy condition-entropy)
-			     (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+			     (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
 	 (cond (best-pos-condition
@@ -2911,7 +2921,7 @@
 	       (best-zero-condition
 		(setq best-condition best-zero-condition)
 		(setq best-rule best-zero-rule)))
-	 (when (and print-special* (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+	 (when (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 
@@ -3044,10 +3054,10 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                   (return t))))
-    (when (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+    (when nil (and (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 	  (format t "~%~%getting local covering for:")
 	  (print-cpd cpd)
-	  ;;(break)
+	  (break)
       )
     (loop
       with universe =
@@ -3087,25 +3097,26 @@
 		   ;; DHM: Can I push the T(G) computation up a level, then at the end of this loop go through the T(G) iteratively removing the covered goal from the blocks?
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
-                   (when (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+                   (if (and nil (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd))
+			    (= (length '(25  26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44))
+			       (hash-table-count goal))
+			    (loop
+			      named looper
+			      for lil-g in '(25  26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44)
+			      if (not (gethash lil-g goal))
+				do
+				   (return-from looper nil)
+			      finally
+				 (return t)))
+		       (setq print-special* t)
+		       (setq print-special* nil))
+		   (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
                      ;;(print-tog tog)
                      ;;(break)
                      )
-		   (if (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd))) #|(and (= (length '(1 2))
-			       (hash-table-count goal))
-			    (loop
-			      named looper
-			      for lil-g in '(1 2)
-			      if (not (gethash lil-g goal))
-				do
-				   (return-from looper nil)
-			      finally
-				 (return t)))|#
-		       (setq print-special* t)
-		       (setq print-special* nil))
                    (loop
                      with reject-conditions and continue = t
                      while (or (= (hash-table-count (rule-conditions new-rule)) 0)
@@ -3119,9 +3130,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3154,7 +3165,7 @@
 				 (remhash attribute (rule-conditions new-rule)))
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when (and (equal "ROAD_DIST_1_243" (rule-based-cpd-dependent-id cpd)))
+			  (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)

@@ -71,7 +71,7 @@
 		(list :value value :probability p :count nil))
 	    values)))
 
-(defun discrete-normal-approximation (&key values modes)
+(defun discrete-normal-approximation (&key values modes stdev)
   (labels ((parse-string-numerics (l)
 	     (mapcan #'(lambda (v)
 			 (let (parsed)
@@ -116,7 +116,11 @@
     (setq values (parse-string-numerics values))
     (setq modes (parse-string-numerics modes))
     (cons '(:value "NA" :probability 0.0 :count 1)
-	  (get-distribution (get-distances values) (if (> (length modes) 1) (stdev modes) 1)))))
+	  (get-distribution (get-distances values)
+			    (cond (stdev
+				   stdev)
+				  (t
+				   (if (> (length modes) 1) (stdev modes) 1)))))))
 
 (defun get-cpd-type (ref-cpd)
   (cond ((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "PERCEPT")
@@ -150,10 +154,14 @@
 		     lists
 		     :initial-value (list nil)))
 	   (enumerate-assignments (vars domains)
-	     (let ((tuples (cartesian-product domains)))
-	       (mapcar #'(lambda (values)
-			   (mapcar #'cons vars values))
-		       tuples)))
+	     (let ((tuples (cartesian-product domains))
+		   ret)
+	       (setq ret (mapcar #'(lambda (values)
+				     (mapcar #'cons vars values))
+				 tuples))
+	       (if ret
+		   ret
+		   (list nil))))
 	   (n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
 	     (when (null (gethash 0 vvbm))
 	       (setf (gethash 0 vvbm) nil))
@@ -266,24 +274,11 @@
 			 (setq found-cpd (gethash argument nodes-hash))
 			 (when (null found-cpd)
 			   (error "Reference to ~A before declaration. Found in functional arguments list ~{~A~^ ~} ." argument arguments))
-			 (if nil ;;(rule-based-cpd-prior found-cpd)
-			     (loop
-			       with need-na-p = t and val
-			       for value-list in (getf (rule-based-cpd-prior found-cpd) :values)
-			       do
-				  (setq val (getf value-list :value))
-				  (when (string-equal val "NA")
-				    (setq need-na-p nil))
-			       collect val into parent-domain
-			       finally
-				  (when need-na-p
-				    (setq parent-domain (cons "NA" parent-domain)))
-				  (setq parent-domains (cons parent-domain parent-domains)))
-			     (setq parent-domains (cons (mapcar #'caar
-								(gethash 0
-									 (rule-based-cpd-var-value-block-map
-									  found-cpd)))
-							parent-domains)))
+		         (setq parent-domains (cons (mapcar #'caar
+							    (gethash 0
+								     (rule-based-cpd-var-value-block-map
+								      found-cpd)))
+						    parent-domains))
 			 (setq parents (cons (rule-based-cpd-dependent-id found-cpd)
 					     parents))
 		      finally
@@ -399,7 +394,7 @@
 				       (rule-based-cpd-cardinalities cpd)))))			 
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
-			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
+			 ;;(setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
 			 (when nil
 			   (format t "~%functional cpd:~%~S~%" cpd)
 			   (print-cpd cpd)

@@ -42,9 +42,23 @@
 	   (return a-list))
       hash))
 
+(defun hash-rule-conditions (conditions)
+  (if (listp conditions)
+      (loop
+	with hash-table =
+			(if (stringp (caar conditions))
+			    (make-hash-table :test #'equal)
+			    (make-hash-table))
+	for (att . set-values) in conditions
+	do
+	   (setf (gethash att hash-table) set-values)
+	finally
+	   (return hash-table))
+      conditions))
+
 (defun hash-rule (rule)
   (setf (rule-conditions rule)
-	(a-list-to-hash (rule-conditions rule)))
+	(hash-rule-conditions (rule-conditions rule)))
   (setf (rule-block rule)
 	(a-list-to-hash (rule-block rule)))
   (if (listp (rule-certain-block rule))

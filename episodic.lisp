@@ -2186,8 +2186,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   ;;(break)
 				   )
 			     ;; smooth the posterior here.
-			     (setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
-			     (setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
+			     ;;(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
+			     ;;(setq posterior-marginals (smooth-posterior posterior-marginals (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
 			     #|
 			     (multiple-value-bind (net entropy)
 			     (get-entropy backlink-episode evidence-bn node-type)

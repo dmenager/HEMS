@@ -582,7 +582,7 @@
 	  for i from 0
 	  do
 	  (new-push-to-ep-buffer :observation obs :hidden-state-p nil :insertp t :temporal-p nil)
-	  (hems:eltm-to-pdf)
+0	  (hems:eltm-to-pdf)
 	  (hems:print-bn (episode-observation (car hems:eltm*)))
 	  ;;(break)
 	  )))

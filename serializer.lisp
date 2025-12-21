@@ -240,27 +240,28 @@
 
 (defun unhash-eltm (eltm)
   (loop
-    with branch and episode and visited
-    with stack = (list eltm)
-    while stack
-    do
-       (setq branch (car stack))
-       (setq episode (car branch))
-       (setq stack (rest stack))
-       (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
-       ;;(format t "~%visiting: ~S" (episode-id episode))
-       (loop
-	 for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
-	 do
-	    (nunhash-cpds (funcall slot episode)))
-       ;;(format t "~%episode:~%~S"episode)
-       (setq visited (cons (episode-id episode) visited))
-       (loop
-	 for child in (rest branch)
-	 when (not (member (episode-id (car child)) visited
-			   :test #'equal))
-	   do
-	      (setq stack (cons child stack))))
+	with branch and episode and visited
+	with stack = (list eltm)
+	while stack
+	do
+	(setq branch (car stack))
+	(setq episode (car branch))
+	(setq stack (rest stack))
+	(when (episode-p episode)
+	  (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
+	  ;;(format t "~%visiting: ~S" (episode-id episode))
+	  (loop
+		for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
+		do
+		(nunhash-cpds (funcall slot episode)))
+	  ;;(format t "~%episode:~%~S"episode)
+	  (setq visited (cons (episode-id episode) visited))
+	  (loop
+		for child in (rest branch)
+		when (not (member (episode-id (car child)) visited
+				  :test #'equal))
+		do
+		(setq stack (cons child stack)))))
   eltm)
 
 #| Save contents of event memory to file which can be read later |#

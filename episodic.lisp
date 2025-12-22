@@ -2310,6 +2310,41 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     finally
        (return messages)))
 
+#|  Returns hash table. Key: cpd type, Value: unioned domains of cpds of this type.|#
+
+;; model = temporal bayesian network
+;; hidden-state-p = flag for if the state transition model has a hidden state
+(defun model-var-vvbms-2 (model hidden-state-p)
+  (loop
+	with vvbms-hash = (make-hash-table :test #'equal) 
+	with cpds-per-slice = (if hidden-state-p 3 2)
+	with num-cpds = (array-dimension (car model) 0)
+	with num-slices = (/ num-cpds cpds-per-slice)
+	with cpd and cpd-type
+	for i from 0 below cpds-per-slice
+	do
+	(setq cpd (aref (car model) i))
+	(setq cpd-type (gethash 0 (rule-based-cpd-types cpd))) 
+	(setf (gethash cpd-type vvbms-hash) nil)
+	(loop
+	      with j = i
+	      with cpd2 and vvbm
+	      while (< j  (- num-cpds 1))
+	      do
+	      (setq cpd2 (aref (car model) j))
+	      (setq vvbm (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
+	      (loop
+		    with value
+		    for vvb in vvbm
+		    do
+		    (setq value (caar vvb))
+		    (when (not (member value (gethash cpd-type vvbms-hash) :test #'equal))
+		      (setf (gethash cpd-type vvbms-hash)
+			    (cons value (gethash cpd-type vvbms-hash)))))
+	      (setq j (+ j cpds-per-slice)))
+	finally
+	(return vvbms-hash)))
+
 #| Assumes that the temporal models all have the same number of slices. |#
 
 ;; evidence-hash = hash table. key: integer representing time step. value: slice. slice: hash table. key: ["STATE", "OBSERVATION", "ACTION"], value: bn
@@ -2422,42 +2457,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (loop for i from to downto from collect i))
 		   ((and (not forward-pass-p) (>= from to))
 		    (loop for i from from downto to collect i))))
-	   (model-var-vvbms (model)
-	     (loop
-	       with vvbms-hash = (make-hash-table :test #'equal) 
-	       with cpds-per-slice = (if hidden-state-p 3 2)
-	       with num-cpds = (array-dimension (car model) 0)
-	       with num-slices = (/ num-cpds cpds-per-slice)
-	       with cpd and cpd-type
-	       for i from 0 below cpds-per-slice
-	       do
-		  (setq cpd (aref (car model) i))
-		  (setq cpd-type (gethash 0 (rule-based-cpd-types cpd))) 
-		  (setf (gethash cpd-type vvbms-hash) nil)
-		  (loop
-		    with j = i
-		    with cpd2 and vvbm
-		    while (< j  (- num-cpds 1))
-		    do
-		       (setq cpd2 (aref (car model) j))
-		       (setq vvbm (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
-		       (loop
-			 with value
-			 for vvb in vvbm
-			 do
-			    (setq value (caar vvb))
-			    (when (not (member value (gethash cpd-type vvbms-hash) :test #'equal))
-			      (setf (gethash cpd-type vvbms-hash)
-				    (cons value (gethash cpd-type vvbms-hash)))))
-		       (setq j (+ j cpds-per-slice)))
-	       finally
-		  (return vvbms-hash)))
 	   (init-messages (messages forward-pass-p)
 	     (let ((idx-list (make-index-list forward-pass-p)))
 	       (loop
 		 with marker and cpds-per-slice = (if hidden-state-p 3 2)
 		 with model = (episode-state-transitions (car eltm*))
-		 with vvbms-hash = (model-var-vvbms model)
+		 with vvbms-hash = (model-var-vvbms model hidden-state-p)
 		 with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
 		 with slice and evidence-slice
 		 for cur-slice in idx-list

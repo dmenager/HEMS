@@ -5652,7 +5652,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 #| Compile hems program in CPD prior field across the bayesian network |#
 
 ;; net = Bayesian network
-(defun compile-bn-priors (net hash)
+(defun compile-bn-priors (net)
   (let ((priors (make-hash-table :test #'equal))
 	bn)
     (setq bn (copy-bn net))
@@ -7740,7 +7740,65 @@ Roughly based on (Koller and Friedman, 2009) |#
       (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t)
     (declare (ignore sol no-matches))
     score))
-
+#|
+(defun temporal-bn-score (p q q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+  (labels ((init-messages (messages forward-pass-p)
+	     (let ((idx-list (make-index-list forward-pass-p)))
+	       (loop
+		 with marker and cpds-per-slice = (if hidden-state-p 3 2)
+		 with model = (episode-state-transitions q)
+		 with vvbms-hash = (model-var-vvbms model)
+		 with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
+		 with slice and evidence-slice
+		 for cur-slice in ()idx-list
+		 do
+		    (setq evidence-slice (gethash cur-slice evidence-hash))
+		    (if (null evidence-slice)
+			(setq evidence-slice (make-hash-table :test #'equal)))
+		    (setq slice (make-hash-table :test #'equal))
+		    (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
+		    (when nil (= cur-slice 0)
+		      (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
+			      cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
+		    (loop
+		      with cpd and cpd-type and evidence
+		      with dist-hash
+		      for j from marker to (+ marker (- cpds-per-slice 1))
+		      ;;for j from 0 below (array-dimension (car model) 0)
+		      do
+			 (when nil (= cur-slice 0)
+			   (format t "~%j: ~d" j))
+			 (setq cpd (aref (car model) j))
+			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
+			 (setq evidence (gethash cpd-type evidence-slice))
+			 (setq dist-hash (make-hash-table :test #'equal))
+			 (when nil (= cur-slice 0)
+			   (format t "~%cpd:")
+			   (print-cpd cpd)
+			   (format t "~%cpd type: ~S" cpd-type)
+			   (format t "~%evidence:")
+			   (print-bn evidence))
+			 (loop
+			   ;;with vvbms = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			   with vvbms = (gethash (gethash 0 (rule-based-cpd-types cpd)) vvbms-hash)
+			   with num-vvbm = (length vvbms)
+			   for vvbm in vvbms
+			   do
+			      (if evidence
+				  (setf (gethash vvbm dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+				  (setf (gethash vvbm dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
+			   finally
+			      (setf (gethash cpd-type slice) dist-hash))
+			 (when nil (= cur-slice 0)
+			   (format t "~%dist hash:")
+			   (print-dist-hash dist-hash)
+			   (break)
+			   ))
+		    (setf (gethash cur-slice messages)
+			  slice)))
+	     messages))
+    (let (observations))))
+|#
 #| TESTS
 1) Structure mapping tests
 (load "newicarus")

@@ -1647,13 +1647,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (error "uh oh! Unsupported episode field type. Expected \"state\", \"observation\", or \"state-transitions\". Received: ~S" type)))
       (multiple-value-setq (bn priors)
 	(compile-bn-priors bn))
-      (when t nil (and print-special* (string-equal type "state-transitions"))
+      (when nil (and print-special* (string-equal type "state-transitions"))
 	;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
 	(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
 	(print-bn bn)
 	(format t "~%cue:")
 	(print-episode cue))
-      (when t nil (and print-special* (string-equal type "state-transitions"))
+      (when nil (and print-special* (string-equal type "state-transitions"))
 	(format t "~%~%sol: ~S" sol)
 	;;(break)
 	)
@@ -1688,7 +1688,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
 	     ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
 	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.
-	     (when t
+	     (when nil
 	       (format t "~% 1"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%nvelocity schema cpd before update:")
@@ -1698,14 +1698,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (mapcar #'print-cpd new-nodes))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))
-	     (when t
+	     (when nil
 	       (format t "~% 2"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%intermediate schema::")
 	       (print-cpd (aref (car bn) q-match)))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-schema-domain (aref (car bn) q-match) p-copy new-nodes :q-first-bindings q-first-bindings))
-	     (when t
+	     (when nil
 	       (format t "~% 3"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%updated schema:")

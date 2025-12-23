@@ -3077,7 +3077,8 @@
            do
               (setq goal (copy-hash-table concept-block))
 	      (setq junk nil)
-              (loop
+               (loop
+		     named adder
 		with c and h
 		with prev-new-rule
                 with new-rule and tog and certain-tog and rule-set and rule-set-block = (make-hash-table) and certain-rule-blocks
@@ -3141,11 +3142,18 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   (format t "~%cpd:~%~S" cpd)
-				   (print-cpd cpd)
-				   (format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
-				   (print-cpd-rule new-rule)
-				   (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule))))))
+				   ;;(format t "~%cpd:~%~S" cpd)
+				   ;;(print-cpd cpd)
+				   ;;(format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
+				   ;;(print-cpd-rule new-rule)
+				   ;;(warn "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)
+				   (loop
+					 with rs = (rule-based-cpd-rules cpd)
+					 for g being the hash-keys of goal
+					 do
+					 (setq new-rule (copy-rule (aref rs g)))
+					 (setq rule-set (reverse (cons new-rule (reverse rule-set)))))
+				   (return-from adder nil))))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0)
                                (= (hash-table-count (rule-avoid-list new-rule)) 0)

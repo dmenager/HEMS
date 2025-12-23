@@ -1658,7 +1658,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	;;(break)
 	)
       (loop
-        for (p-match . q-match) being the elements of (sort sol #'< :key #'cdr)
+        for (p-match . q-match) being the elements of (sort sol #'< :key #'cdr) ;;((1) (2) (3 . 0))
         with p-copy and observed-factors and observed-factor and num-assignments
         with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
 	with new-nodes
@@ -1685,12 +1685,23 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
 	     ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
 	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.
-	     #|
+	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+	       (format t "~%~%nvelocity schema cpd before update:")
+	       (print-cpd (aref (car bn) q-match))
+	       (format t "~%q-first-bindings:~%~S" q-first-bindings)
+	       (format t "~%new-nodes")
+	       (mapcar #'print-cpd new-nodes))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))
+	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+	       (format t "~%~%intermediate schema::")
+	       (print-cpd (aref (car bn) q-match)))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-schema-domain (aref (car bn) q-match) p-copy new-nodes :q-first-bindings q-first-bindings))
-	     |#
+	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+	       (format t "~%updated schema:")
+	       (print-cpd (aref (car bn) q-match))
+	       (break))
 	     (setq new-nodes (cons (aref (car bn) q-match) new-nodes))
 	     (loop
 	       for ident being the hash-keys of (rule-based-cpd-identifiers p-copy)

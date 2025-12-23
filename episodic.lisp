@@ -1659,7 +1659,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	)
       (loop
             for (p-match . q-match) being the elements of (sort sol #'(lambda (a b)
-									(when (b)
+									(when b
 									  (< a b)))
 								:key #'cdr)
         with p-copy and observed-factors and observed-factor and num-assignments

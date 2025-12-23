@@ -3154,7 +3154,7 @@
 					 (setq new-rule (copy-rule (aref rs g)))
 					 (setq rule-set (reverse (cons new-rule (reverse rule-set)))))
 				   (when t
-				     (format t "1"))
+				     (format t "~%1"))
 				   (return-from adder nil))))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0)
@@ -3242,10 +3242,10 @@
                ;;(break)
                )
 	  (when t
-	    (format t "1.1"))
+	    (format t "~%1.1"))
           (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness nil :check-prob-sum nil))
 	  (when t
-	    (format t "1.2"))
+	    (format t "~%1.2"))
 	 (return cpd))))
 
 #| Get variable domain while avoiding specific value |#
@@ -5741,7 +5741,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages)
     ;;(setq factors-list (coerce (car state) 'list))
     (when t
-      (format t "4"))
+      (format t "~%4"))
     (loop
       with new-factor
       for factor being the elements of (car state)
@@ -5765,7 +5765,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       finally
 	  (setq factors-list (reverse factors-list)))
     (when t
-      (format t "4.1"))
+      (format t "~%4.1"))
     (when nil t 
       (format t "~%explicit factors:~%~A~%num elements: ~d" factors-list (array-dimension (car state) 0)))
     (loop
@@ -5943,7 +5943,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       ;;(break)
       )
     (when t
-      (format t "4.2"))
+      (format t "~%4.2"))
     (calibrate-factor-graph all-factors op edges initial-messages lr)))
 
 #| Move assignment by 1 |#

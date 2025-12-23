@@ -1658,7 +1658,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	;;(break)
 	)
       (when t
-	(format t "3"))
+	(format t "~%3"))
       (loop
             for (p-match . q-match) being the elements of (sort sol #'(lambda (a b)
 									(when b
@@ -1669,7 +1669,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	with new-nodes
             do
 	    (when t
-	      (format t "3.1"))
+	      (format t "~%3.1"))
            (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
            (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
 					   observed-factors :key #'rule-based-cpd-dependent-id :test #'equal)))
@@ -1693,7 +1693,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
 	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.
 	     (when t
-	       (format t "~% 3.2"))
+	       (format t "~%3.2"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%nvelocity schema cpd before update:")
 	       (print-cpd (aref (car bn) q-match))
@@ -1703,14 +1703,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))
 	     (when t
-	       (format t "~% 3.3"))
+	       (format t "~%3.3"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%intermediate schema::")
 	       (print-cpd (aref (car bn) q-match)))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-schema-domain (aref (car bn) q-match) p-copy new-nodes :q-first-bindings q-first-bindings))
 	     (when t
-	       (format t "~% 3.4"))
+	       (format t "~%3.4"))
 	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%updated schema:")
 	       (print-cpd (aref (car bn) q-match))
@@ -1723,7 +1723,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 collect ident into remove
 		   finally
 		   (when t
-		     (format t "3.5"))
+		     (format t "~%3.5"))
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
 					 dep-id)))
@@ -1740,7 +1740,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	     (format t "~%observed factors:~%~S" observed-factors))
 	    (when soft-likelihoods
 	      (when t
-		(format t "3.7"))
+		(format t "~%3.7"))
 	     (loop
 	       for cpd being the elements of (car bn)
 	       for i from 0
@@ -1755,7 +1755,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 		   ))
 	    (when t
-	      (format t "3.8"))
+	      (format t "~%3.8"))
 	   (let (evidence-table)
              (setq evidence-table (make-observations observed-factors))
 	     (when nil (and print-special* (string-equal type "state-transitions"))
@@ -1763,11 +1763,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (format t "~%model:")
 	       (print-bn bn))
 	     (when t
-	       (format t "3.9"))
+	       (format t "~%3.9"))
              (multiple-value-bind (posterior-distribution posterior-marginals)
 		 (loopy-belief-propagation bn evidence-table priors mode lr)
 	       (when t
-		 (format t "3.10"))
+		 (format t "~%3.10"))
                (return (values posterior-distribution posterior-marginals eme sol bindings q-first-bindings))))))))
 
 #| Recollect a temporal experience.

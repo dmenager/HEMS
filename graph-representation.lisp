@@ -1754,7 +1754,7 @@
 |#
 
 #| Normalize factor rules to maintain probability measure.
-   Returns: Destructively modified phi |#
+   Returns: Destructively modified phi
 
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
@@ -1838,7 +1838,88 @@
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules)))
        (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi)))
        (return phi)))
-  
+|#
+
+#| Normalize factor rules to maintain probability measure.
+   Returns: Destructively modified phi |#
+
+;; phi = conditional probability distribution
+;; new-dep-id = dependent variable name of the conditional distribution
+(defun normalize-rule-probabilities (phi new-dep-id)
+  (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+    (format t "~%~%~%normalizing phi:")
+    (print-cpd phi))
+  (loop
+    with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
+    with rules = (rule-based-cpd-rules phi)
+    with new-rules and block = 0 and new-rule
+    for r1 being the elements of rules
+    for j from 0
+    do
+       (loop
+	 with parent-setting and norm-const
+	 for r2 being the elements of rules
+	 for k from 0
+	 when (not (= j k))
+	   do
+	      (setq parent-setting (copy-cpd-rule r2))
+	      (remhash new-dep-id (rule-conditions parent-setting))
+	      (when (compatible-rule-p r1 parent-setting phi phi)
+		(setq norm-const (+ (rule-probability r1)
+				    (rule-probability parent-setting)))
+		(setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
+					  :conditions (make-hash-table :test #'equal)
+					  :block (make-hash-table)
+					  :certain-block (make-hash-table)
+					  :avoid-list (make-hash-table)
+					  :redundancies (make-hash-table)
+					  :count (rule-count r1)))
+		(setf (gethash new-dep-id (rule-conditions new-rule)) (gethash new-dep-id (rule-conditions r1)))
+		(loop
+		  with r1-vals and r2-vals and new-vals
+		  for ident being the hash-keys of (rule-based-cpd-identifiers phi)
+		  when (not (equal ident new-dep-id))
+		    do
+		       (setq r1-vals (gethash ident (rule-conditions r1)))
+		       (setq r2-vals (gethash ident (rule-conditions parent-setting)))
+		       (cond ((and r1-vals r2-vals)
+			      (setq new-vals (intersection r1-vals r2-vals)))
+			     ((and r1-vals (null r2-vals))
+			      (setq new-vals r1-vals))
+			     ((and (null r1-vals) r2-vals)
+			      (setq new-vals r2-vals))
+			     ((and (null r1-vals) (null r2-vals))
+			      (setq new-vals nil)))
+		       (when new-vals
+			 (setf (gethash ident (rule-conditions new-rule)) new-vals))
+		       (setf (rule-probability new-rule) (if (> norm-const 0)
+							    (/ (rule-probability r1) norm-const)
+							    0))
+		       (when (floatp (rule-probability new-rule))
+			 (setf (rule-probability new-rule)
+			       (fround-to-n-digits (rule-probability new-rule) 5)))
+		       (when (rule-count r1)
+			 (setf (rule-count new-rule)
+			       (max (rule-count r1) (rule-count parent-setting))))
+		       (setf (gethash block (rule-block new-rule)) block)
+		       (setq block (+ block 1))
+		       (when (or (> (rule-probability new-rule) 1)
+				 (< (rule-probability new-rule) 0))
+			 (format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
+			 (print-cpd phi)
+			 (format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
+			 (print-cpd-rule r1)
+			 (format t "~%compatible rule:")
+			 (print-cpd-rule r2)
+			 (format t "~%normalizing constant: ~d~%new rule:" norm-const)
+			 (print-cpd-rule new-rule)
+			 ;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+			 (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+			 (error "Normalization error"))
+		       (setq new-rules (cons new-rule new-rules)))))
+    finally
+       (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
+  phi)
 
 #| split rules compatible with new zero-count rules |#
 
@@ -4041,7 +4122,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
     (loop
       with check-num-rules = (cond ((and nil check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -4190,8 +4271,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 						:check-prob-sum (not (or (eq op '*) (eq #'* op))))))
     
     |#
-    
-    (when (eq op '*)
+
+    ;; DHM: Don't need to normalize in (factor-filter). I can normalize after all factor operations are complete in (send-message)/(calibrate-factor-graph)
+    (when nil (eq op '*)
       (when nil (and (or (eq op '*)
 			 (eq op #'*))
 		     (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))

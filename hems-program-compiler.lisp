@@ -394,7 +394,7 @@
 				       (rule-based-cpd-cardinalities cpd)))))			 
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
-			 ;;(setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
+			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
 			 (when nil
 			   (format t "~%functional cpd:~%~S~%" cpd)
 			   (print-cpd cpd)
@@ -490,6 +490,9 @@
 				 (t
 				  (error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))
 			   |#
+			   (when nil
+			     (format t "~%output cpd:")
+			     (print-cpd cpd))
 			   cpd)
 			  (t
 			   (raise-identifier-type-error (second node-def)))))
@@ -532,8 +535,7 @@
 	    (format t "~%~%prior:~%")
 	    (print-cpd prior-cpd)
 	    (format t "~%cpd:")
-	    (print-cpd cpd))
-      
+	    (print-cpd cpd))      
       ;; make bindings
       (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
 	    (rule-based-cpd-dependent-id cpd))

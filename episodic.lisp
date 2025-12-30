@@ -1657,19 +1657,15 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(format t "~%~%sol: ~S" sol)
 	;;(break)
 	)
-      (when t
-	(format t "~%3"))
       (loop
-            for (p-match . q-match) being the elements of (sort sol #'(lambda (a b)
-									(when b
-									  (< a b)))
-								:key #'cdr)
-        with p-copy and observed-factors and observed-factor and num-assignments
+        for (p-match . q-match) being the elements of (sort sol #'(lambda (a b)
+								    (when (and a b)
+								      (< a b)))
+							    :key #'cdr)
+        with p-copy and observed-factors and observed-factor and num-assignments and var-val-mappings
         with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
 	with new-nodes
-            do
-	    (when t
-	      (format t "~%3.1"))
+        do
            (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
            (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
 					   observed-factors :key #'rule-based-cpd-dependent-id :test #'equal)))
@@ -1685,33 +1681,28 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (format t "~%q-cpd:")
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%bindings:~%~S" bindings))
-             (setq p-copy (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
+	     (multiple-value-setq (p-copy var-val-mappings)
+	       (subst-cpd (aref (car cue-bn) p-match) (aref (car bn) q-match) bindings))
 	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%subst p-copy:")
 	       (print-cpd p-copy))
              (setq dep-id (rule-based-cpd-dependent-id p-copy))
 	     ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
-	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.
-	     (when t
-	       (format t "~%3.2"))
-	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+	     ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.	   
+	     (when nil (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%nvelocity schema cpd before update:")
 	       (print-cpd (aref (car bn) q-match))
 	       (format t "~%q-first-bindings:~%~S" q-first-bindings)
 	       (format t "~%new-nodes")
 	       (mapcar #'print-cpd new-nodes))
 	     (setf (aref (car bn) q-match)
-		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))
-	     (when t
-	       (format t "~%3.3"))
-	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+		   (cpd-update-existing-vvms (aref (car bn) q-match) bindings new-nodes))	     
+	     (when nil (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%~%intermediate schema::")
 	       (print-cpd (aref (car bn) q-match)))
 	     (setf (aref (car bn) q-match)
 		   (cpd-update-schema-domain (aref (car bn) q-match) p-copy new-nodes :q-first-bindings q-first-bindings))
-	     (when t
-	       (format t "~%3.4"))
-	     (when (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
+	     (when nil (and (equal "NVELOCITY" (rule-based-cpd-dependent-var p-copy)))
 	       (format t "~%updated schema:")
 	       (print-cpd (aref (car bn) q-match))
 	       ;;(break)
@@ -1721,12 +1712,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       for ident being the hash-keys of (rule-based-cpd-identifiers p-copy)
 	       when (not (equal ident dep-id))
 		 collect ident into remove
-		   finally
-		   (when t
-		     (format t "~%3.5"))
+	       finally
 		  (setq observed-factor (normalize-rule-probabilities
 					 (factor-operation p-copy (list dep-id) remove #'+)
-					 dep-id)))
+					 dep-id
+					 :var-val-mappings var-val-mappings)))
 	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%observed factor (marginalized subst p-copy):")
 	       (print-cpd observed-factor)
@@ -1739,35 +1729,37 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (when nil (not (string-equal type "state-transitions"))
 	     (format t "~%observed factors:~%~S" observed-factors))
 	    (when soft-likelihoods
-	      (when t
-		(format t "~%3.7"))
 	     (loop
 	       for cpd being the elements of (car bn)
 	       for i from 0
 	       do
+		  (when nil
+		    (format t "~%making soft likelihoods for cpd:")
+		    (print-cpd cpd))
 		  (loop
 		    for rule being the elements of (rule-based-cpd-rules cpd)
 		    do
 		       (when (= (rule-probability rule) 0)
 			 (setf (rule-probability rule) 1/1000)))
+		  (when nil
+		    (format t "~%intermediate cpd:")
+		    (print-cpd cpd))
 		  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
-		  (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+		  (setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
 		  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
-		   ))
-	    (when t
-	      (format t "~%3.8"))
+		  (when nil
+		    (format t "~%final cpd:")
+		    (print-cpd cpd))
+	       ))
 	   (let (evidence-table)
              (setq evidence-table (make-observations observed-factors))
 	     (when nil (and print-special* (string-equal type "state-transitions"))
 	       (format t "~%evidence table:~%~S" evidence-table)
 	       (format t "~%model:")
-	       (print-bn bn))
-	     (when t
-	       (format t "~%3.9"))
+	       (print-bn bn)
+	       (break))
              (multiple-value-bind (posterior-distribution posterior-marginals)
 		 (loopy-belief-propagation bn evidence-table priors mode lr)
-	       (when t
-		 (format t "~%3.10"))
                (return (values posterior-distribution posterior-marginals eme sol bindings q-first-bindings))))))))
 
 #| Recollect a temporal experience.
@@ -2047,7 +2039,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(print-bn temporal-evidence-bn)
 	(format t"~%conditioned temporal model:~%")
 	(print-bn (episode-state-transitions conditioned-temporal))
-	(format t "~%bindings:~%~S~%sol:~%~S" bindings sol)
+	;;(format t "~%bindings:~%~S~%sol:~%~S" bindings sol)
 	;;(format t "~%bindings:~%~A" bindings)
 	;;(format t "~%conditioned model -> retrieval que bindings:~%~A" q-first-bindings)
 	#|
@@ -2058,7 +2050,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	(format t "~%slice: ~d" i)
 	(print-slice evidence-hash))
 	|#
-	;;(break)
+	(break)
 	)
       (loop
 	with temporal-bn = (car (episode-state-transitions conditioned-temporal))
@@ -2210,9 +2202,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				 (break)
 				 )
 			   (multiple-value-bind (posterior-distribution posterior-marginals)
-			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)
-			     (when t
-			       (format t "2"))
+			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods)			    
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 			     (when nil (and print-special*
 					    (= (car js) 0))
@@ -2243,8 +2233,6 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 					       (make-hash-table)))))))))
 	     (setf (gethash node-type slice) dist-hash)
 	    (setf (gethash node-type marginals-slice) marginals-dist-hash)
-	    (when t
-	      (format t "3"))
 	     (when (= marker (- mod-len 1))
 	       (when nil (and print-special*
 			      (= (car js) 0))
@@ -2259,40 +2247,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (format t "~%returning messages:")
 		 (print-state-transitions state-transitions)
 		 (break))
-	    (when t
-	      (format t "4"))
 	   (return (values state-transitions marginals-state-transitions))))))
-
-(defun model-var-vvbms (model hidden-state-p)
-  (loop
-    with vvbms-hash = (make-hash-table :test #'equal) 
-    with cpds-per-slice = (if hidden-state-p 3 2)
-    with num-cpds = (array-dimension (car model) 0)
-    with num-slices = (/ num-cpds cpds-per-slice)
-    with cpd and cpd-type
-    for i from 0 below cpds-per-slice
-    do
-       (setq cpd (aref (car model) i))
-       (setq cpd-type (gethash 0 (rule-based-cpd-types cpd))) 
-       (setf (gethash cpd-type vvbms-hash) nil)
-       (loop
-	 with j = i
-	 with cpd2 and vvbm
-	 while (< j  (- num-cpds 1))
-	 do
-	    (setq cpd2 (aref (car model) j))
-	    (setq vvbm (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
-	    (loop
-	      with value
-	      for vvb in vvbm
-	      do
-		 (setq value (caar vvb))
-		 (when (not (member value (gethash cpd-type vvbms-hash) :test #'equal))
-		   (setf (gethash cpd-type vvbms-hash)
-			 (cons value (gethash cpd-type vvbms-hash)))))
-	    (setq j (+ j cpds-per-slice)))
-    finally
-       (return vvbms-hash)))
 
 (defun make-messages (evidence-hash from to hidden-state-p)
   (loop
@@ -2351,11 +2306,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     finally
        (return messages)))
 
-#|  Returns hash table. Key: cpd type, Value: unioned domains of cpds of this type.|#
+#| Build list of unique values per cpd-type.
+   Returns hash table. Key: cpd type, Value: unioned domains of cpds of this type.|#
 
 ;; model = temporal bayesian network
 ;; hidden-state-p = flag for if the state transition model has a hidden state
-(defun model-var-vvbms-2 (model hidden-state-p)
+(defun model-var-vvbms (model hidden-state-p)
   (loop
 	with vvbms-hash = (make-hash-table :test #'equal) 
 	with cpds-per-slice = (if hidden-state-p 3 2)

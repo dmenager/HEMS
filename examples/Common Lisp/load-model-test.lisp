@@ -29,6 +29,7 @@
 
 
 #| TESTS
+
 (get-local-coverings #S(HEMS::RULE-BASED-CPD
    :DEPENDENT-ID #1="NPOSITION_24923"
    :IDENTIFIERS #H((#1# . 0) (#2="NPOSITION_PREV_185" . 1) (#3="NVELOCITY_PREV_216" . 2) (#4="TIME_DELTA_234" . 3))

@@ -774,8 +774,8 @@
 ;; rule1 = rule in rule-based cpd
 ;; rule2 = rule in rule-based cpd
 (defun same-rule-p (rule1 rule2 cpd1 cpd2 &key (check-probability t) (check-num-conditions t) (check-count t) (check-conditions t) (check-blocks nil) (exact nil) (round nil))
-  (cond ((and check-probability round (not (= (read-from-string (format nil "~5$" (rule-probability rule1)))
-                                              (read-from-string (format nil "~5$" (rule-probability rule2))))))
+  (cond ((and check-probability round (not (= (fround-to-n-digits (float (rule-probability rule1)) 5)
+                                              (fround-to-n-digits (float (rule-probability rule2)) 5))))
          nil)
         ((and check-probability (not round) (not (= (rule-probability rule1) (rule-probability rule2))))
          nil)
@@ -938,10 +938,10 @@
     (setf (rule-based-cpd-identifiers new-cpd) (swap-hash-keys (rule-based-cpd-identifiers new-cpd) bindings))
     (setq var-val-mappings (subst-var-value-block-map new-cpd cpd2 bindings))
     (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id cpd)))
-          (format t "~%bindings:~%~S~%var-val-mappings:~%~S" bindings var-val-mappings))
+          (format t "~%~%bindings:~%~S~%var-val-mappings:~%~S" bindings var-val-mappings))
     (setf (rule-based-cpd-rules new-cpd) (swap-rule-conditions (rule-based-cpd-rules new-cpd) bindings var-val-mappings))
     ;;(format t "~%subst cpd:~%~A" cpd)
-    new-cpd))
+    (values new-cpd var-val-mappings)))
 
 (defun subst-cpd-2 (cpd cpd2 bindings &key (deep nil) &aux new-cpd dep-id)
   ;;(format t "~%original cpd:~%~A" cpd)
@@ -1065,23 +1065,36 @@
 
 #| Get variable assignment of variable i in cpd for given index |#
 
-;; cpd = conditional probability density
-;; index = index into flattened cpd
-;; i = variable position in cpd-vars
-(defun get-cpd-assignment-for-var (cpd index i)
-  (mod  (floor (/ index (aref (rule-based-cpd-step-sizes cpd) i)))
-        (aref (rule-based-cpd-cardinalities cpd) i)))
+  ;; cpd = conditional probability density
+  ;; index = index into flattened cpd
+  ;; i = variable position in cpd-vars
+  ;; ident = identifier of variable at position i
+(defun get-cpd-assignment-for-var (cpd index i ident &key (var-val-mappings (make-hash-table :test #'equal)))
+  (let (value map)
+    (setq value
+	  (mod  (floor (/ index (aref (rule-based-cpd-step-sizes cpd) i)))
+		(aref (rule-based-cpd-cardinalities cpd) i)))
+    (setq map (gethash ident var-val-mappings))
+    (cond (map
+	   (let (new-val)
+	     (setq new-val (cdr (assoc value map)))
+	     (if new-val
+		 new-val
+		 value)))
+	  (t
+	   value))))
 
 #| Get variable assignment of all variables in cpd for given index |#
 
 ;; cpd = conditional probability density
 ;; index = index into flattened cpd
-(defun get-cpd-assignment-from-index (cpd index)
+(defun get-cpd-assignment-from-index (cpd index &key (var-val-mappings (make-hash-table :test #'equal)))
   (loop
     with assn = (make-array (hash-table-count (rule-based-cpd-identifiers cpd)) :fill-pointer t)
-    for i being the hash-values of (rule-based-cpd-identifiers cpd)
+    for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+      using (hash-value i)
     do
-       (setf (aref assn i) (get-cpd-assignment-for-var cpd index i))
+       (setf (aref assn i) (get-cpd-assignment-for-var cpd index i ident :var-val-mappings var-val-mappings))
     finally
        (return assn)))
 
@@ -1643,7 +1656,7 @@
     finally
         (return (values idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms vals))))
 
-#| Round a floating point number. Returns float. |#
+#| Round a floating point number to n decimal places. Returns float. |#
 
 ;; v = float to round
 ;; n = number of significant digits
@@ -1658,12 +1671,12 @@
        10^-n)))
 
 #| Normalize factor rules to maintain probability measure.
-   Returns: Destructively modified phi|#
+   Returns: Destructively modified phi
 
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
 (defun normalize-rule-probabilities (phi new-dep-id)
-  (when nil (equal "STATE_0_1539" (rule-based-cpd-dependent-id phi))
+  (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
     (format t "~%~%~%normalizing phi:")
     (print-cpd phi))
   (loop
@@ -1673,10 +1686,7 @@
     for r1 being the elements of rules
     for j from 0
     do
-       (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-		  (or (= j 400)
-		      (= j 401)
-		      (= j 402)))
+       (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
          (format t "~%~%~%normalizing rule ~d:~%~S" j r1))
          (loop
            with copy-rule = (copy-cpd-rule r1)
@@ -1686,16 +1696,13 @@
               (setf (gethash new-dep-id (rule-conditions copy-rule)) (list i))
 	      (setq compatible-rules (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
               (setq compatible-rule (car compatible-rules))
-              (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-			 (or (= j 400)
-			     (= j 401)
-			     (= j 402)))
+              (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
                 (format t "~%getting rule for assignment:")
-		    (print-cpd-rule copy-rule)
-		    (format t "~%candidatate matches:")
-		    (map nil #'print-cpd-rule (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
-		    (format t "~%selection:")
-		    (print-cpd-rule compatible-rule))
+		(print-cpd-rule copy-rule)
+		(format t "~%candidatate matches:")
+		(map nil #'print-cpd-rule (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
+		(format t "~%selection:")
+		(print-cpd-rule compatible-rule))
            when (or (null (rule-count compatible-rule))
                     (>= (rule-count compatible-rule) 0)
 		    )
@@ -1707,34 +1714,36 @@
               (setf (rule-probability new-rule) (if (> norm-const 0)
 						    (/ (rule-probability r1) norm-const)
                                                     0))
+	      (when (floatp (rule-probability new-rule))
+		(setf (rule-probability new-rule)
+		      (fround-to-n-digits (rule-probability new-rule) 5)))
 	      (when (rule-count r1)
 		(setq row-count (apply #'max (mapcar #'rule-count row)))
 		(setf (rule-count new-rule) row-count))
               (setf (rule-block new-rule) (make-hash-table))
               (setf (gethash block (rule-block new-rule)) block)
               (setq block (+ block 1))
-	      (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-			 (or (= j 400)
-			     (= j 401)
-			     (= j 402)))
+	      (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
 		(format t "~%~%row:")
 		(mapcar #'print-cpd-rule row)
 		(format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
 		(format t "~%normalized rule:")
 		(print-cpd-rule new-rule)
-		(break)
+		;;(break)
 		)
               (when (or (> (rule-probability new-rule) 1)
                         (< (rule-probability new-rule) 0))
+		(format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
 		(print-cpd phi)
-		(format t "~%identifiers:~%~S~%normalizing rule:" (rule-based-cpd-identifiers phi))
+		(format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
 		(print-cpd-rule r1)
 		(format t "~%row:")
 		(map nil #'print-cpd-rule row)
 		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
 		(print-cpd-rule new-rule)
 		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
-                (error "Normalization error"))
+		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+		(error "Normalization error"))
               (setq new-rules (cons new-rule new-rules))
 	      (when nil print-special*
 		(format t "~%block: ~d~%new rules:" block)
@@ -1742,6 +1751,94 @@
     finally
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
   phi)
+|#
+
+#| Normalize factor rules to maintain probability measure.
+   Returns: Destructively modified phi |#
+
+;; phi = conditional probability distribution
+;; new-dep-id = dependent variable name of the conditional distribution
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (when nil (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+    (format t "~%~%~%normalizing phi:")
+    (print-cpd phi))
+  (loop
+    with row-len = (aref (rule-based-cpd-cardinalities phi) 0)
+    with index-rule
+    with row and compatible-rule
+    with assn = (make-array (hash-table-count (rule-based-cpd-identifiers phi)) :initial-element 0)
+    with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
+    with rules = (rule-based-cpd-rules phi)
+    with new-rules and block = 0 and new-rule
+    for i from 0 to (reduce #'* (rule-based-cpd-cardinalities phi))
+    do
+       (when (= (mod i row-len) 0)
+	 (setq row nil))
+       (setq index-rule (make-rule :conditions (make-hash-table :test #'equal)))
+       (setq assn (get-cpd-assignment-from-index phi i :var-val-mappings var-val-mappings))
+       (loop
+         for ident being the hash-keys of (rule-based-cpd-identifiers phi)
+           using (hash-value pos)
+         do
+            (setf (gethash ident (rule-conditions index-rule)) (list (aref assn pos))))
+       (setq compatible-rule (car (get-compatible-rules phi phi index-rule :find-all nil :best-matches t)))
+       (when (or (null (rule-count compatible-rule))
+                 (>= (rule-count compatible-rule) 0))
+	 (setf (rule-probability index-rule)
+	       (rule-probability compatible-rule))
+	 (setf (rule-count index-rule)
+	       (rule-count compatible-rule))
+         (setq row (cons index-rule row)))
+       (when (= (mod i row-len) (- row-len 1))
+	 ;; row complete
+	 (loop
+	   with norm-const = (apply #'+ (mapcar #'rule-probability row))
+	   with row-count
+	   for r in row
+	   do
+	      (setq new-rule (copy-cpd-rule r))
+	      (setf (rule-probability new-rule) (if (> norm-const 0)
+						    (/ (rule-probability r) norm-const)
+                                                    0))
+	      (when (floatp (rule-probability new-rule))
+		(setf (rule-probability new-rule)
+		      (fround-to-n-digits (rule-probability new-rule) 5)))
+	      (when (rule-count r)
+		(setq row-count (apply #'max (mapcar #'rule-count row)))
+		(setf (rule-count new-rule) row-count))
+	      (setf (rule-block new-rule) (make-hash-table))
+	      (setf (gethash block (rule-block new-rule)) block)
+	      (setq block (+ block 1))
+	      (when nil (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+		(format t "~%~%row:")
+		(mapcar #'print-cpd-rule row)
+		(format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
+		(format t "~%normalized rule:")
+		(print-cpd-rule new-rule)
+		;;(break)
+		)
+	      (when (or (> (rule-probability new-rule) 1)
+			(< (rule-probability new-rule) 0))
+		(format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
+		(print-cpd phi)
+		(format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) (- block 1))
+		(print-cpd-rule r)
+		(format t "~%row:")
+		(map nil #'print-cpd-rule row)
+		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
+		(print-cpd-rule new-rule)
+		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+		(error "Normalization error"))
+	      (setq new-rules (cons new-rule new-rules))
+	      (when nil print-special*
+		    (format t "~%~%block: ~d~%new rules:" block)
+		    (map nil #'print-cpd-rule new-rules))))
+    finally
+       (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules)))
+       (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi)))
+       (return phi)))
+  
 
 #| split rules compatible with new zero-count rules |#
 
@@ -2410,7 +2507,12 @@
   (when nil (equal "EPOSITION" (rule-based-cpd-dependent-var cpd))
     (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum))
   (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
-        (format t "~%~%updating cpd rules for cpd:~%~S" cpd))
+        (format t "~%~%updating cpd rules for cpd:~%~S" cpd)
+	(print-cpd cpd)
+	(format t "~%rules:")
+	(map nil #'print-cpd-rule new-rules)
+	;;(break)
+	)
   (setq cpd (reset-attribute-and-concept-blocks cpd))
   (loop
     for rule being the elements of (rule-based-cpd-rules cpd)
@@ -2438,10 +2540,14 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
+		   (when nil
+		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
+			(when nil
+			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop
 			  named finder
@@ -3024,7 +3130,7 @@
 #| Exploit local structure in CPD to induce minimal rule set |#
 
 ;; cpd = conditional probability distribution
-(defun get-local-coverings (cpd)
+(defun get-local-coverings (cpd &key (patch t))
   (labels ((rule-satisfy-case-constraints-p (rule case-constraints &key (avoid nil))
              (loop
                with att-constraints
@@ -3053,11 +3159,12 @@
 				  (when (not (member rule-sva constraints :test #'equal));;(notany #'(lambda (constraint) (intersection rule-sva constraint)) constraints)
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
-                  (return t))))
-    (when nil (and (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
-	  (format t "~%~%getting local covering for:")
-	  (print-cpd cpd)
-	  (break)
+                   (return t))))
+    (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd))
+	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
+      (format t "~%~%getting local covering for:~%~S~%" cpd)
+      (print-cpd cpd)
+	  ;;(break)
       )
     (loop
       with universe =
@@ -3098,12 +3205,12 @@
 		   ;; DHM: Can I push the T(G) computation up a level, then at the end of this loop go through the T(G) iteratively removing the covered goal from the blocks?
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
-                   (if (and nil (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd))
-			    (= (length '(25  26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44))
+                   (if (and (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd))
+			    (= (length '(28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48))
 			       (hash-table-count goal))
 			    (loop
 			      named looper
-			      for lil-g in '(25  26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44)
+			      for lil-g in '(28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48)
 			      if (not (gethash lil-g goal))
 				do
 				   (return-from looper nil)
@@ -3111,7 +3218,21 @@
 				 (return t)))
 		       (setq print-special* t)
 		       (setq print-special* nil))
-		   (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
+		   (if (and (not print-special*)
+			    (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd))
+			    (= (length '(0 5 6))
+			       (hash-table-count goal))
+			    (loop
+			      named looper
+			      for lil-g in '(0 5 6)
+			      if (not (gethash lil-g goal))
+				do
+				   (return-from looper nil)
+			      finally
+				 (return t)))
+		       (setq print-special* t)
+		       (setq print-special* nil))
+		   (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3120,7 +3241,7 @@
                      )
                    (loop
                      with reject-conditions and continue = t
-                     while (or (= (hash-table-count (rule-conditions new-rule)) 0)
+                     while (or ;;(= (hash-table-count (rule-conditions new-rule)) 0)
                                (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 			       continue
 			       (not (hash-intersection-p (rule-certain-block new-rule) goal))
@@ -3131,9 +3252,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
+				 (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3142,26 +3263,37 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   ;;(format t "~%cpd:~%~S" cpd)
-				   ;;(print-cpd cpd)
-				   ;;(format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
-				   ;;(print-cpd-rule new-rule)
-				   ;;(warn "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule)
-				   (loop
-					 with rs = (rule-based-cpd-rules cpd)
-					 for g being the hash-keys of goal
-					 do
-					 (setq new-rule (copy-rule (aref rs g)))
-					 (setq rule-set (reverse (cons new-rule (reverse rule-set)))))
-				   (when t
-				     (format t "~%1"))
-				   (return-from adder nil))))))
+				   (cond ((null patch)
+					  (format t "~%cpd:~%~S" cpd)
+					  (print-cpd cpd)
+					  (format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
+					  (print-cpd-rule new-rule)
+					  (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule))
+					 (patch
+					  (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd)))
+					    (format t "~%in patch"))
+					  (loop
+					    with rs = (rule-based-cpd-rules cpd)
+					    for g being the hash-keys of goal
+					    do
+					       (setq new-rule (copy-rule (aref rs g)))
+					       (setq rule-set (reverse (cons new-rule (reverse rule-set)))))
+					  (loop
+					    for rule in rule-set
+					    do
+					       (setf (rule-block rule) (make-hash-table))
+					       (setf (rule-certain-block rule) (make-hash-table))
+					       (setf (gethash case (rule-block rule)) case)
+					       (setf (gethash case (rule-certain-block rule)) case)
+					       (setq minimal-rules (reverse (cons rule (reverse minimal-rules))))
+					       (setq case (+ case 1)))
+					  (return-from adder nil))))))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0)
                                (= (hash-table-count (rule-avoid-list new-rule)) 0)
 			       (> (hash-table-count (rule-certain-block new-rule)) 0))                          
                           ;; remove extraneous conditions, but make sure that pruned rule isn't compatible with existing rules!!
-                          (when nil t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+                          (when nil t nil (and (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
                             ;;(break)
 				(format t "~%~%testing for redundant conditions!~%rule:")
 				(print-cpd-rule new-rule))
@@ -3175,7 +3307,7 @@
 				 (remhash attribute (rule-conditions new-rule)))
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when nil (and print-special* (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd)))
+			  (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)
@@ -3199,7 +3331,7 @@
 			    ;;(setq print-special* nil)
 			    ;;(break)
 			    )
-			  (when (and prev-new-rule
+			  (when nil (and prev-new-rule
 				     (same-rule-p new-rule prev-new-rule nil nil :check-blocks t))
 			    (format t "~%previous rule:~%~S~%current rule:~%~S" prev-new-rule new-rule)
 			    (setq print-special* t))
@@ -3241,11 +3373,7 @@
 	       ;;(format t "~%goal changes: ~d~%no goal changes: ~d~%num parameters: ~d~%num prior rules: ~d~%num rules: ~d" goal-changes no-goal-changes (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0) (length minimal-rules))
                ;;(break)
                )
-	  (when t
-	    (format t "~%1.1"))
           (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness nil :check-prob-sum nil))
-	  (when t
-	    (format t "~%1.2"))
 	 (return cpd))))
 
 #| Get variable domain while avoiding specific value |#
@@ -3913,7 +4041,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
     (loop
       with check-num-rules = (cond ((and nil check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -3979,7 +4107,7 @@
                   (setq row-counts (make-list row-len :initial-element (rule-count compatible-rule))))))
          (when (= (length row-probs) row-len)
            (setq row-prob (reduce #'+ row-probs))
-           (cond ((and check-prob-sum (not (= 1 (read-from-string (format nil "~$" row-prob)))))
+           (cond ((and check-prob-sum (not (= 1 (fround-to-n-digits (float row-prob) 5))))
                   (when (> row-prob 0)
                     (format t "~%Malformed cpd:~%~S~%row assignments:~%~S~%row rules:~%~S~%row probs:~%~S~%row probability is ~d, not 1" cpd row-assns row-rules row-probs row-prob)
                     (error "Check row sums")))
@@ -4012,9 +4140,9 @@ Roughly based on (Koller and Friedman, 2009) |#
     (when nil(and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
     (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
-      (format t "~%~%phi1:")
+      (format t "~%~%phi1:~%~S" phi1)
       (print-cpd phi1)
-      (format t "~%phi2:")
+      (format t "~%phi2:~%~S" phi2)
       (print-cpd phi2))
     (setq cardinalities (get-var-cardinalities var-value-block-map))
     (setq steps (generate-cpd-step-sizes cardinalities))
@@ -4070,7 +4198,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	    (format t "~%unnormalized result:")
 	    (print-cpd new-phi))
       (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
-      ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
+      ;;(check-cpd new-phi :check-prob-sum nil :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
       )
     (when nil (and (or (eq op '*)
 		   (eq op #'*))
@@ -4375,7 +4503,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       do
          (when (null (gethash (car edge) evidence))
            (setf (gethash (car edge) evidence) (make-hash-table)))
-         (setf (gethash (cdr edge) (gethash (car edge) evidence)) 1))
+         (setf (gethash (cdr edge) (gethash (car edge) evidence)) 1.0))
   evidence)
 
 #| Send a message from one factor to the other |#
@@ -4390,12 +4518,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 6) (= j 15))
+  (when nil (and (= i 6) (= j 9))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
     (format t "~%~d:" j)
-    (print-cpd (aref factors j)))
+    (print-cpd (aref factors j))
+    (check-cpd (aref factors i) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil)
+    (check-cpd (aref factors j) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil))
   (let (nbrs-minus-j reduced)
     (loop
       for k from 0 to (- (array-dimension edges 0) 1)
@@ -4403,19 +4533,20 @@ Roughly based on (Koller and Friedman, 2009) |#
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
       finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 6) (= j 15))
+    (when nil (and (= i 6) (= j 9))
           (format t "~%neighbors minus j:")
           (loop for nbr in nbrs-minus-j
                 when (rule-based-cpd-p nbr)
 		  do
 		     (print-cpd nbr)
+		     (check-cpd nbr :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
                 else
 		  do
 		     (format t "~%non-cpd neighbor: ~S" nbr))
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 6) (= j 15))
+    (when nil  (and (= i 6) (= j 9))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -4578,7 +4709,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (= k 14) nil (and (= j 1) (= k 3))
+              (when nil (and (= j 6) (= k 9))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4592,26 +4723,28 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 6) (= k 15))
+	      (when nil (and (= j 6) (= k 9))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
                 (print-hash-entry k new-message)
-		(break))
+		;;(break)
+		)
               (loop
                 for new-rule being the elements of (rule-based-cpd-rules new-message)
                 do
                    (cond (round
-                          (setq deltas (cons (abs (- (read-from-string (format nil "~$" (rule-probability new-rule)))
-                                                     (read-from-string (format nil "~$"
-                                                                               (if (rule-based-cpd-p current-message)
-                                                                                   (rule-probability (car (get-compatible-rules
+                          (setq deltas (cons (abs (- (fround-to-n-digits (float (rule-probability new-rule)) 5)
+                                                     (fround-to-n-digits
+						      (if (rule-based-cpd-p current-message)
+                                                                                   (float (rule-probability (car (get-compatible-rules
                                                                                                            current-message
                                                                                                            new-message
                                                                                                            new-rule
                                                                                                            :find-all nil
-													   :best-matches t)))
-                                                                                   current-message)))))
+													   :best-matches t))))
+                                                                                   current-message)
+						      5)))
                                              deltas)))
                          (t
                           (setq deltas (cons (abs (- (rule-probability new-rule)
@@ -5740,8 +5873,6 @@ Roughly based on (Koller and Friedman, 2009) |#
     (maphash #'print-hash-entry evidence))
   (let (factors-list factors singleton-factors-list singleton-factors all-factors-list all-factors edges initial-messages)
     ;;(setq factors-list (coerce (car state) 'list))
-    (when t
-      (format t "~%4"))
     (loop
       with new-factor
       for factor being the elements of (car state)
@@ -5749,7 +5880,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%~%factor:")
 	   (print-cpd factor))
-	 (setq new-factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+	 ;;(setq new-factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+	 (setq new-factor (update-cpd-rules factor (rule-based-cpd-rules factor)))
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%new factor:")
 	   (print-cpd new-factor)
@@ -5764,8 +5896,6 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (setq factors-list (cons new-factor factors-list))
       finally
 	  (setq factors-list (reverse factors-list)))
-    (when t
-      (format t "~%4.1"))
     (when nil t 
       (format t "~%explicit factors:~%~A~%num elements: ~d" factors-list (array-dimension (car state) 0)))
     (loop
@@ -5942,8 +6072,6 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%initial messages:~%~A" initial-messages)
       ;;(break)
       )
-    (when t
-      (format t "~%4.2"))
     (calibrate-factor-graph all-factors op edges initial-messages lr)))
 
 #| Move assignment by 1 |#
@@ -6302,6 +6430,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (cond ((> num-compatible-conditions max-num-compatible-conditions)
 			 (setq compatible-rules (cons schema-rule nil)))
 			((and (= num-compatible-conditions max-num-compatible-conditions)
+			      ;; DHM: I suspect that this condition needs to be >, rather than <.
 			      (< num-compatible-set-values min-num-compatible-set-values))
 			 (setq compatible-rules (cons schema-rule nil)))
 			((and (= num-compatible-conditions max-num-compatible-conditions)
@@ -7820,6 +7949,923 @@ Roughly based on (Koller and Friedman, 2009) |#
     (let (observations))))
 |#
 #| TESTS
+(get-local-coverings
+#S(RULE-BASED-CPD
+   :DEPENDENT-ID #1="EPOSITION_301"
+   :IDENTIFIERS #H((#1# . 0) (#2="EPOSITION_PREV_216" . 1) (#3="EVELOCITY_PREV_256" . 2) (#4="TIME_DELTA_296" . 3))
+   :DEPENDENT-VAR #5="EPOSITION"
+   :VARS #H((0 . #5#) (1 . "EPOSITION_PREV") (2 . "EVELOCITY_PREV") (3 . "TIME_DELTA"))
+   :TYPES #H((0 . #6="PERCEPT") (1 . #6#) (2 . #6#) (3 . #6#))
+   :CONCEPT-IDS #H((0 . #7="NIL") (1 . #7#) (2 . #7#) (3 . #7#))
+   :QUALIFIED-VARS #H((0 . "EPOSITIONNIL") (1 . "EPOSITION_PREVNIL") (2 . "EVELOCITY_PREVNIL") (3 . "TIME_DELTANIL"))
+   :VAR-VALUE-BLOCK-MAP #H((0 . (((#8="NA" . 0)
+                                  #H((0 . 0) (1 . 1) (2 . 2) (6 . 6)))
+                                 ((#9="50" . 1)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (48 . 48)))
+                                 ((#10="150" . 2)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (26 . 26) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (47 . 47) (48 . 48)))
+                                 ((#11="250" . 3)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (25 . 25) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#12="350" . 4)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (24 . 24) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#13="450" . 5)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (23 . 23) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#14="550" . 6)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (22 . 22) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#15="650" . 7)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (21 . 21) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#16="750" . 8)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (20 . 20) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#17="850" . 9)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (19 . 19) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#18="950" . 10)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (18 . 18) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#19="1050" . 11)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (17 . 17) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#20="1150" . 12)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (16 . 16) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#21="1250" . 13)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (15 . 15) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#22="1350" . 14)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (14 . 14) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#23="1450" . 15)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (13 . 13) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#24="1550" . 16)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (12 . 12) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#25="1650" . 17)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (11 . 11) (28 . 28) (29 . 29) (30 . 30) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#26="1750" . 18)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (10 . 10) (28 . 28) (29 . 29) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#27="1850" . 19)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (9 . 9) (28 . 28) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#28="1950" . 20)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (8 . 8) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#29="2050" . 21)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (7 . 7) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47))))) (1 . (((#30="NA"
+                                                                                                                                                                                                                                                                                         . 0)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+                                                                                                                                                                                                                                                                                       ((#31="50"
+                                                                                                                                                                                                                                                                                         . 1)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (27 . 27) (47 . 47)))
+                                                                                                                                                                                                                                                                                       ((#32="150"
+                                                                                                                                                                                                                                                                                         . 2)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (26 . 26) (46 . 46)))
+                                                                                                                                                                                                                                                                                       ((#33="250"
+                                                                                                                                                                                                                                                                                         . 3)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (25 . 25) (45 . 45)))
+                                                                                                                                                                                                                                                                                       ((#34="350"
+                                                                                                                                                                                                                                                                                         . 4)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (24 . 24) (44 . 44)))
+                                                                                                                                                                                                                                                                                       ((#35="450"
+                                                                                                                                                                                                                                                                                         . 5)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (23 . 23) (43 . 43)))
+                                                                                                                                                                                                                                                                                       ((#36="550"
+                                                                                                                                                                                                                                                                                         . 6)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (22 . 22) (42 . 42)))
+                                                                                                                                                                                                                                                                                       ((#37="650"
+                                                                                                                                                                                                                                                                                         . 7)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (21 . 21) (41 . 41)))
+                                                                                                                                                                                                                                                                                       ((#38="750"
+                                                                                                                                                                                                                                                                                         . 8)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (20 . 20) (40 . 40)))
+                                                                                                                                                                                                                                                                                       ((#39="850"
+                                                                                                                                                                                                                                                                                         . 9)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (19 . 19) (39 . 39)))
+                                                                                                                                                                                                                                                                                       ((#40="950"
+                                                                                                                                                                                                                                                                                         . 10)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (18 . 18) (38 . 38)))
+                                                                                                                                                                                                                                                                                       ((#41="1050"
+                                                                                                                                                                                                                                                                                         . 11)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (17 . 17) (37 . 37)))
+                                                                                                                                                                                                                                                                                       ((#42="1150"
+                                                                                                                                                                                                                                                                                         . 12)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (16 . 16) (36 . 36)))
+                                                                                                                                                                                                                                                                                       ((#43="1250"
+                                                                                                                                                                                                                                                                                         . 13)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (15 . 15) (35 . 35)))
+                                                                                                                                                                                                                                                                                       ((#44="1350"
+                                                                                                                                                                                                                                                                                         . 14)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (14 . 14) (34 . 34)))
+                                                                                                                                                                                                                                                                                       ((#45="1450"
+                                                                                                                                                                                                                                                                                         . 15)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (13 . 13) (33 . 33)))
+                                                                                                                                                                                                                                                                                       ((#46="1550"
+                                                                                                                                                                                                                                                                                         . 16)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (12 . 12) (32 . 32)))
+                                                                                                                                                                                                                                                                                       ((#47="1650"
+                                                                                                                                                                                                                                                                                         . 17)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (11 . 11) (31 . 31)))
+                                                                                                                                                                                                                                                                                       ((#48="1750"
+                                                                                                                                                                                                                                                                                         . 18)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (10 . 10) (30 . 30)))
+                                                                                                                                                                                                                                                                                       ((#49="1850"
+                                                                                                                                                                                                                                                                                         . 19)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (9 . 9) (29 . 29)))
+                                                                                                                                                                                                                                                                                       ((#50="1950"
+                                                                                                                                                                                                                                                                                         . 20)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (8 . 8) (28 . 28)))
+                                                                                                                                                                                                                                                                                       ((#51="2050"
+                                                                                                                                                                                                                                                                                         . 21)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (7 . 7) (48 . 48))))) (2 . (((#52="NA"
+                                                                                                                                                                                                                                                                                                                                                                 . 0)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (1 . 1) (3 . 3) (4 . 4)))
+                                                                                                                                                                                                                                                                                                                                                               ((#53="-15"
+                                                                                                                                                                                                                                                                                                                                                                 . 1)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#54="-13"
+                                                                                                                                                                                                                                                                                                                                                                 . 2)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#55="-11"
+                                                                                                                                                                                                                                                                                                                                                                 . 3)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#56="-9"
+                                                                                                                                                                                                                                                                                                                                                                 . 4)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#57="-7"
+                                                                                                                                                                                                                                                                                                                                                                 . 5)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#58="-5"
+                                                                                                                                                                                                                                                                                                                                                                 . 6)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#59="-3"
+                                                                                                                                                                                                                                                                                                                                                                 . 7)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#60="-1"
+                                                                                                                                                                                                                                                                                                                                                                 . 8)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#61="1"
+                                                                                                                                                                                                                                                                                                                                                                 . 9)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#62="3"
+                                                                                                                                                                                                                                                                                                                                                                 . 10)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#63="5"
+                                                                                                                                                                                                                                                                                                                                                                 . 11)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#64="7"
+                                                                                                                                                                                                                                                                                                                                                                 . 12)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#65="9"
+                                                                                                                                                                                                                                                                                                                                                                 . 13)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#66="11"
+                                                                                                                                                                                                                                                                                                                                                                 . 14)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#67="13"
+                                                                                                                                                                                                                                                                                                                                                                 . 15)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#68="15"
+                                                                                                                                                                                                                                                                                                                                                                 . 16)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))) (3 . (((#69="NA"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     . 0)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #H((0 . 0) (3 . 3) (4 . 4) (5 . 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ((#70="1"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     . 1)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #H((1 . 1) (2 . 2) (3 . 3) (4 . 4) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :SET-VALUED-ATTRIBUTES #H((0 . ((0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10)
+                                   (11) (12) (13) (14) (15) (16) (17) (18) (19)
+                                   (20) (21))) (1 . ((0) (1) (2) (3) (4) (5)
+                                                     (6) (7) (8) (9) (10) (11)
+                                                     (12) (13) (14) (15) (16)
+                                                     (17) (18) (19) (20)
+                                                     (21))) (2 . ((0) (1) (2)
+                                                                  (3) (4) (5)
+                                                                  (6) (7) (8)
+                                                                  (9) (10) (11)
+                                                                  (12) (13)
+                                                                  (14) (15)
+                                                                  (16))) (3 . ((0)
+                                                                               (1))))
+   :LOWER-APPROX-VAR-VALUE-BLOCK-MAP #H((0 . (((#8# . 0)
+                                               #H((0 . 0) (1 . 1) (2 . 2) (6 . 6)))
+                                              ((#9# . 1) #H((27 . 27)))
+                                              ((#10# . 2) #H((26 . 26)))
+                                              ((#11# . 3) #H((25 . 25)))
+                                              ((#12# . 4) #H((24 . 24)))
+                                              ((#13# . 5) #H((23 . 23)))
+                                              ((#14# . 6) #H((22 . 22)))
+                                              ((#15# . 7) #H((21 . 21)))
+                                              ((#16# . 8) #H((20 . 20)))
+                                              ((#17# . 9) #H((19 . 19)))
+                                              ((#18# . 10) #H((18 . 18)))
+                                              ((#19# . 11) #H((17 . 17)))
+                                              ((#20# . 12) #H((16 . 16)))
+                                              ((#21# . 13) #H((15 . 15)))
+                                              ((#22# . 14) #H((14 . 14)))
+                                              ((#23# . 15) #H((13 . 13)))
+                                              ((#24# . 16) #H((12 . 12)))
+                                              ((#25# . 17) #H((11 . 11)))
+                                              ((#26# . 18) #H((10 . 10)))
+                                              ((#27# . 19) #H((9 . 9)))
+                                              ((#28# . 20) #H((8 . 8)))
+                                              ((#29# . 21)
+                                               #H((7 . 7))))) (1 . (((#30# . 0)
+                                                                     #H((2 . 2) (3 . 3)))
+                                                                    ((#31# . 1)
+                                                                     #H((27 . 27) (47 . 47)))
+                                                                    ((#32# . 2)
+                                                                     #H((26 . 26) (46 . 46)))
+                                                                    ((#33# . 3)
+                                                                     #H((25 . 25) (45 . 45)))
+                                                                    ((#34# . 4)
+                                                                     #H((24 . 24) (44 . 44)))
+                                                                    ((#35# . 5)
+                                                                     #H((23 . 23) (43 . 43)))
+                                                                    ((#36# . 6)
+                                                                     #H((22 . 22) (42 . 42)))
+                                                                    ((#37# . 7)
+                                                                     #H((21 . 21) (41 . 41)))
+                                                                    ((#38# . 8)
+                                                                     #H((20 . 20) (40 . 40)))
+                                                                    ((#39# . 9)
+                                                                     #H((19 . 19) (39 . 39)))
+                                                                    ((#40#
+                                                                      . 10)
+                                                                     #H((18 . 18) (38 . 38)))
+                                                                    ((#41#
+                                                                      . 11)
+                                                                     #H((17 . 17) (37 . 37)))
+                                                                    ((#42#
+                                                                      . 12)
+                                                                     #H((16 . 16) (36 . 36)))
+                                                                    ((#43#
+                                                                      . 13)
+                                                                     #H((15 . 15) (35 . 35)))
+                                                                    ((#44#
+                                                                      . 14)
+                                                                     #H((14 . 14) (34 . 34)))
+                                                                    ((#45#
+                                                                      . 15)
+                                                                     #H((13 . 13) (33 . 33)))
+                                                                    ((#46#
+                                                                      . 16)
+                                                                     #H((12 . 12) (32 . 32)))
+                                                                    ((#47#
+                                                                      . 17)
+                                                                     #H((11 . 11) (31 . 31)))
+                                                                    ((#48#
+                                                                      . 18)
+                                                                     #H((10 . 10) (30 . 30)))
+                                                                    ((#49#
+                                                                      . 19)
+                                                                     #H((9 . 9) (29 . 29)))
+                                                                    ((#50#
+                                                                      . 20)
+                                                                     #H((8 . 8) (28 . 28)))
+                                                                    ((#51#
+                                                                      . 21)
+                                                                     #H((7 . 7) (48 . 48))))) (2 . (((#52#
+                                                                                                      . 0)
+                                                                                                     #H((1 . 1) (4 . 4)))
+                                                                                                    ((#53#
+                                                                                                      . 1)
+                                                                                                     #H())
+                                                                                                    ((#54#
+                                                                                                      . 2)
+                                                                                                     #H())
+                                                                                                    ((#55#
+                                                                                                      . 3)
+                                                                                                     #H())
+                                                                                                    ((#56#
+                                                                                                      . 4)
+                                                                                                     #H())
+                                                                                                    ((#57#
+                                                                                                      . 5)
+                                                                                                     #H())
+                                                                                                    ((#58#
+                                                                                                      . 6)
+                                                                                                     #H())
+                                                                                                    ((#59#
+                                                                                                      . 7)
+                                                                                                     #H())
+                                                                                                    ((#60#
+                                                                                                      . 8)
+                                                                                                     #H())
+                                                                                                    ((#61#
+                                                                                                      . 9)
+                                                                                                     #H())
+                                                                                                    ((#62#
+                                                                                                      . 10)
+                                                                                                     #H())
+                                                                                                    ((#63#
+                                                                                                      . 11)
+                                                                                                     #H())
+                                                                                                    ((#64#
+                                                                                                      . 12)
+                                                                                                     #H())
+                                                                                                    ((#65#
+                                                                                                      . 13)
+                                                                                                     #H())
+                                                                                                    ((#66#
+                                                                                                      . 14)
+                                                                                                     #H())
+                                                                                                    ((#67#
+                                                                                                      . 15)
+                                                                                                     #H())
+                                                                                                    ((#68#
+                                                                                                      . 16)
+                                                                                                     #H()))) (3 . (((#69#
+                                                                                                                     . 0)
+                                                                                                                    #H((0 . 0) (5 . 5)))
+                                                                                                                   ((#70#
+                                                                                                                     . 1)
+                                                                                                                    #H((1 . 1) (2 . 2) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :CHARACTERISTIC-SETS #H()
+   :CHARACTERISTIC-SETS-VALUES #H()
+   :VAR-VALUES #H((0 . (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+                        21)) (1 . (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                   18 19 20 21)) (2 . (0 1 2 3 4 5 6 7 8 9 10
+                                                       11 12 13 14 15
+                                                       16)) (3 . (0 1)))
+   :CARDINALITIES #(22 22 17 2)
+   :STEP-SIZES #(1 22 484 8228)
+   :RULES #(#S(RULE
+               :ID "RULE-16758"
+               :CONDITIONS #H((#1# . (0)) (#4# . (0)))
+               :PROBABILITY 0
+               :BLOCK #H((0 . 0))
+               :CERTAIN-BLOCK #H((0 . 0))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16759"
+               :CONDITIONS #H((#1# . (0)) (#3# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((1 . 1))
+               :CERTAIN-BLOCK #H((1 . 1))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16760"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (0)) (#2# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((2 . 2))
+               :CERTAIN-BLOCK #H((2 . 2))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16761"
+               :CONDITIONS #H((#2# . (0)) (#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13
+                                                  14 15 16 17 18 19 20 21)))
+               :PROBABILITY 0
+               :BLOCK #H((3 . 3))
+               :CERTAIN-BLOCK #H((3 . 3))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16762"
+               :CONDITIONS #H((#3# . (0)) (#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13
+                                                  14 15 16 17 18 19 20
+                                                  21)) (#2# . (1 2 3 4 5 6 7 8
+                                                               9 10 11 12 13 14
+                                                               15 16 17 18 19
+                                                               20 21)))
+               :PROBABILITY 0
+               :BLOCK #H((4 . 4))
+               :CERTAIN-BLOCK #H((4 . 4))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16763"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#4# . (0)) (#2# . (1 2 3 4
+                                                                        5 6 7 8
+                                                                        9 10 11
+                                                                        12 13
+                                                                        14 15
+                                                                        16 17
+                                                                        18 19
+                                                                        20
+                                                                        21)) (#3# . (1
+                                                                                     2
+                                                                                     3
+                                                                                     4
+                                                                                     5
+                                                                                     6
+                                                                                     7
+                                                                                     8
+                                                                                     9
+                                                                                     10
+                                                                                     11
+                                                                                     12
+                                                                                     13
+                                                                                     14
+                                                                                     15
+                                                                                     16)))
+               :PROBABILITY 0
+               :BLOCK #H((5 . 5))
+               :CERTAIN-BLOCK #H((5 . 5))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16764"
+               :CONDITIONS #H((#2# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#1# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((6 . 6))
+               :CERTAIN-BLOCK #H((6 . 6))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16765"
+               :CONDITIONS #H((#1# . (21)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (21)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((7 . 7))
+               :CERTAIN-BLOCK #H((7 . 7))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16766"
+               :CONDITIONS #H((#1# . (20)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (20)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((8 . 8))
+               :CERTAIN-BLOCK #H((8 . 8))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16767"
+               :CONDITIONS #H((#1# . (19)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (19)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((9 . 9))
+               :CERTAIN-BLOCK #H((9 . 9))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16768"
+               :CONDITIONS #H((#1# . (18)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (18)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((10 . 10))
+               :CERTAIN-BLOCK #H((10 . 10))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16769"
+               :CONDITIONS #H((#1# . (17)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (17)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((11 . 11))
+               :CERTAIN-BLOCK #H((11 . 11))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16770"
+               :CONDITIONS #H((#1# . (16)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (16)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((12 . 12))
+               :CERTAIN-BLOCK #H((12 . 12))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16771"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (15)) (#2# . (15)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((13 . 13))
+               :CERTAIN-BLOCK #H((13 . 13))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16772"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (14)) (#2# . (14)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((14 . 14))
+               :CERTAIN-BLOCK #H((14 . 14))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16773"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (13)) (#2# . (13)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((15 . 15))
+               :CERTAIN-BLOCK #H((15 . 15))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16774"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (12)) (#2# . (12)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((16 . 16))
+               :CERTAIN-BLOCK #H((16 . 16))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16775"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (11)) (#2# . (11)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((17 . 17))
+               :CERTAIN-BLOCK #H((17 . 17))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16776"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (10)) (#2# . (10)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((18 . 18))
+               :CERTAIN-BLOCK #H((18 . 18))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16777"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (9)) (#2# . (9)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((19 . 19))
+               :CERTAIN-BLOCK #H((19 . 19))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16778"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (8)) (#2# . (8)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((20 . 20))
+               :CERTAIN-BLOCK #H((20 . 20))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16779"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (7)) (#2# . (7)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((21 . 21))
+               :CERTAIN-BLOCK #H((21 . 21))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16780"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (6)) (#2# . (6)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((22 . 22))
+               :CERTAIN-BLOCK #H((22 . 22))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16781"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (5)) (#2# . (5)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((23 . 23))
+               :CERTAIN-BLOCK #H((23 . 23))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16782"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (4)) (#2# . (4)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((24 . 24))
+               :CERTAIN-BLOCK #H((24 . 24))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16783"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (3)) (#2# . (3)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((25 . 25))
+               :CERTAIN-BLOCK #H((25 . 25))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16784"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (2)) (#2# . (2)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((26 . 26))
+               :CERTAIN-BLOCK #H((26 . 26))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16785"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (1)) (#2# . (1)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((27 . 27))
+               :CERTAIN-BLOCK #H((27 . 27))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16786"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 21)) (#2# . (20)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((28 . 28))
+               :CERTAIN-BLOCK #H((28 . 28))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16787"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 20 21)) (#2# . (19)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((29 . 29))
+               :CERTAIN-BLOCK #H((29 . 29))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16788"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      19 20 21)) (#2# . (18)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((30 . 30))
+               :CERTAIN-BLOCK #H((30 . 30))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16789"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 18
+                                      19 20 21)) (#2# . (17)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((31 . 31))
+               :CERTAIN-BLOCK #H((31 . 31))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16790"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 17 18
+                                      19 20 21)) (#2# . (16)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((32 . 32))
+               :CERTAIN-BLOCK #H((32 . 32))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16791"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 16 17 18
+                                      19 20 21)) (#2# . (15)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((33 . 33))
+               :CERTAIN-BLOCK #H((33 . 33))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16792"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 15 16 17 18
+                                      19 20 21)) (#2# . (14)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((34 . 34))
+               :CERTAIN-BLOCK #H((34 . 34))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16793"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 14 15 16 17 18
+                                      19 20 21)) (#2# . (13)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((35 . 35))
+               :CERTAIN-BLOCK #H((35 . 35))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16794"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (12)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((36 . 36))
+               :CERTAIN-BLOCK #H((36 . 36))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16795"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 12 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (11)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((37 . 37))
+               :CERTAIN-BLOCK #H((37 . 37))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16796"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 11 12 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (10)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((38 . 38))
+               :CERTAIN-BLOCK #H((38 . 38))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16797"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (9)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((39 . 39))
+               :CERTAIN-BLOCK #H((39 . 39))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16798"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (8)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((40 . 40))
+               :CERTAIN-BLOCK #H((40 . 40))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16799"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (7)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((41 . 41))
+               :CERTAIN-BLOCK #H((41 . 41))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16800"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (6)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((42 . 42))
+               :CERTAIN-BLOCK #H((42 . 42))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16801"
+               :CONDITIONS #H((#1# . (1 2 3 4 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (5)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((43 . 43))
+               :CERTAIN-BLOCK #H((43 . 43))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16802"
+               :CONDITIONS #H((#1# . (1 2 3 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (4)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((44 . 44))
+               :CERTAIN-BLOCK #H((44 . 44))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16803"
+               :CONDITIONS #H((#1# . (1 2 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (3)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((45 . 45))
+               :CERTAIN-BLOCK #H((45 . 45))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16804"
+               :CONDITIONS #H((#1# . (1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (2)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((46 . 46))
+               :CERTAIN-BLOCK #H((46 . 46))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16805"
+               :CONDITIONS #H((#1# . (2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (1)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((47 . 47))
+               :CERTAIN-BLOCK #H((47 . 47))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16806"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (21)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((48 . 48))
+               :CERTAIN-BLOCK #H((48 . 48))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21))
+   :CONCEPT-BLOCKS #H((0 . #H((21 . #H((0 . 0) (1 . 1) (2 . 2) (3 . 3) (4 . 4) (5 . 5) (6 . 6))))) (1.0d0 . #H((21 . #H((7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27))))) (0.0d0 . #H((21 . #H((28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :PRIOR NIL
+   :SINGLETON-P NIL
+   :COUNT 1
+   :LVL 1))
+
 1) Structure mapping tests
 (load "newicarus")
 (initialize-world)

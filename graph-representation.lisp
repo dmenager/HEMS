@@ -1846,79 +1846,208 @@
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
 (defun normalize-rule-probabilities (phi new-dep-id)
-  (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+  (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
     (format t "~%~%~%normalizing phi:")
     (print-cpd phi))
   (loop
+    with context-hash and counts-hash and rows-hash
     with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
     with rules = (rule-based-cpd-rules phi)
-    with new-rules and block = 0 and new-rule
+    with new-rules and block = 0 and new-rule and matched-p and r1-dep-values
     for r1 being the elements of rules
     for j from 0
     do
+       (setq context-hash (make-hash-table :test #'equalp))
+       (setq counts-hash (make-hash-table :test #'equalp))
+       (setq rows-hash (make-hash-table :test #'equalp))
+       (setq matched-p nil)
+       (setq r1-dep-values (gethash new-dep-id (rule-conditions r1)))
+       (when (null r1-dep-values)
+	 (setq r1-dep-values (gethash 0 (rule-based-cpd-var-values phi))))
        (loop
-	 with parent-setting and norm-const
+	 with parent-setting and norm-const and dependent-values
 	 for r2 being the elements of rules
 	 for k from 0
 	 when (not (= j k))
 	   do
+	      (setq dependent-values (gethash new-dep-id (rule-conditions r2)))
+	      (when (null dependent-values)
+		(setq dependent-values (gethash 0 (rule-based-cpd-var-values phi))))
 	      (setq parent-setting (copy-cpd-rule r2))
 	      (remhash new-dep-id (rule-conditions parent-setting))
 	      (when (compatible-rule-p r1 parent-setting phi phi)
-		(setq norm-const (+ (rule-probability r1)
-				    (rule-probability parent-setting)))
-		(setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
-					  :conditions (make-hash-table :test #'equal)
-					  :block (make-hash-table)
-					  :certain-block (make-hash-table)
-					  :avoid-list (make-hash-table)
-					  :redundancies (make-hash-table)
-					  :count (rule-count r1)))
-		(setf (gethash new-dep-id (rule-conditions new-rule)) (gethash new-dep-id (rule-conditions r1)))
-		(loop
-		  with r1-vals and r2-vals and new-vals
-		  for ident being the hash-keys of (rule-based-cpd-identifiers phi)
-		  when (not (equal ident new-dep-id))
-		    do
-		       (setq r1-vals (gethash ident (rule-conditions r1)))
-		       (setq r2-vals (gethash ident (rule-conditions parent-setting)))
-		       (cond ((and r1-vals r2-vals)
-			      (setq new-vals (intersection r1-vals r2-vals)))
-			     ((and r1-vals (null r2-vals))
-			      (setq new-vals r1-vals))
-			     ((and (null r1-vals) r2-vals)
-			      (setq new-vals r2-vals))
-			     ((and (null r1-vals) (null r2-vals))
-			      (setq new-vals nil)))
-		       (when new-vals
-			 (setf (gethash ident (rule-conditions new-rule)) new-vals))
-		       (setf (rule-probability new-rule) (if (> norm-const 0)
-							    (/ (rule-probability r1) norm-const)
-							    0))
-		       (when (floatp (rule-probability new-rule))
-			 (setf (rule-probability new-rule)
-			       (fround-to-n-digits (rule-probability new-rule) 5)))
-		       (when (rule-count r1)
-			 (setf (rule-count new-rule)
-			       (max (rule-count r1) (rule-count parent-setting))))
-		       (setf (gethash block (rule-block new-rule)) block)
-		       (setq block (+ block 1))
-		       (when (or (> (rule-probability new-rule) 1)
-				 (< (rule-probability new-rule) 0))
-			 (format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
-			 (print-cpd phi)
-			 (format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
-			 (print-cpd-rule r1)
-			 (format t "~%compatible rule:")
-			 (print-cpd-rule r2)
-			 (format t "~%normalizing constant: ~d~%new rule:" norm-const)
-			 (print-cpd-rule new-rule)
-			 ;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
-			 (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
-			 (error "Normalization error"))
-		       (setq new-rules (cons new-rule new-rules)))))
+		(when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+		  (format t "~%~%r1:")
+		  (print-cpd-rule r1))
+		(when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+		  (format t "~%~%Candidate rule:")
+		  (print-cpd-rule r2)
+		  (format t "~%Parent setting:")
+		  (print-cpd-rule parent-setting)
+		  (format t "~%compatible-rule-p: ~S" (compatible-rule-p r1 parent-setting phi phi)))
+		(let ((conditions (make-hash-table :test #'equal)))
+		  (setq matched-p t)
+		  (loop
+		    with r1-vals and r2-vals and new-vals
+		    for ident being the hash-keys of (rule-based-cpd-identifiers phi)
+		    when (not (equal ident new-dep-id))
+		      do
+			 (setq r1-vals (gethash ident (rule-conditions r1)))
+			 (setq r2-vals (gethash ident (rule-conditions parent-setting)))
+			 (cond ((and r1-vals r2-vals)
+				(setq new-vals (intersection r1-vals r2-vals)))
+			       ((and r1-vals (null r2-vals))
+				(setq new-vals r1-vals))
+			       ((and (null r1-vals) r2-vals)
+				(setq new-vals r2-vals))
+			       ((and (null r1-vals) (null r2-vals))
+				(setq new-vals nil)))
+			 (when new-vals
+			   (setf (gethash ident conditions) new-vals)))
+	          (when (null (gethash conditions context-hash))
+		    (setf (gethash conditions context-hash)
+			  (list (* (rule-probability r1)
+				   (length r1-dep-values))))
+		    (setf (gethash conditions counts-hash)
+			  (list (rule-count r1)))
+		    (setf (gethash conditions rows-hash)
+			  (list r1)))
+		  (setf (gethash conditions context-hash)
+			(cons (* (rule-probability parent-setting)
+				 (length dependent-values))
+			      (gethash conditions context-hash)))
+		  (setf (gethash conditions counts-hash)
+			(cons (rule-count parent-setting)
+			      (gethash conditions counts-hash)))
+		  (setf (gethash conditions rows-hash)
+			(cons r2
+			      (gethash conditions rows-hash))))))
+       (loop
+	 with counts
+	 with norm-const and count and row 
+	 for condition being the hash-keys of context-hash
+	   using (hash-value probs)
+	 do
+	    (setq norm-const (reduce #'+ probs))
+	    (setq counts (gethash condition counts-hash))
+	    (when (rule-count r1)
+	      (setq count (apply #'max counts)))
+	    (setq row (gethash condition rows-hash))
+	    (if (< (length r1-dep-values)
+		   (length (gethash 0 (rule-based-cpd-var-values phi))))
+		(setf (gethash new-dep-id condition) r1-dep-values))
+	    (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
+				      :conditions condition
+				      :probability (if (> norm-const 0)
+						       (/ (rule-probability r1) norm-const)
+						       0)
+				      :block (make-hash-table)
+				      :certain-block (make-hash-table)
+				      :avoid-list (make-hash-table)
+				      :redundancies (make-hash-table)
+				      :count count))
+	    (when (floatp (rule-probability new-rule))
+	      (setf (rule-probability new-rule)
+		    (fround-to-n-digits (rule-probability new-rule) 5)))
+	    (setf (gethash block (rule-block new-rule)) block)
+	    (setq block (+ block 1))
+	    (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (format t "~%~%normalizing rule:")
+	      (print-cpd-rule r1)
+	      (format t "~%row:")
+	      (mapcar #'print-cpd-rule row)
+	      (format t "~%joint context:")
+	      (format t "~%  conditions:~%   <")
+	      (loop
+		for att being the hash-keys of condition
+		  using (hash-value val)
+		do
+		   (format t "~a:=~d " att val)
+		finally
+		   (format t ">"))
+	      (format t "~%  probabilities:~%   ~S" probs)
+	      (format t "~%normalizing constant: ~d" norm-const))
+	    (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (format t "~%new rule:")
+	      (print-cpd-rule new-rule))
+	    (when (or (> (rule-probability new-rule) 1)
+		      (< (rule-probability new-rule) 0))
+	      (format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
+	      (print-cpd phi)
+	      (format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
+	      (print-cpd-rule r1)
+	      (format t "~%contexts:~%~S" context-hash)
+	      (format t "~%normalizing constant: ~d~%new rule:" norm-const)
+	      (print-cpd-rule new-rule)
+	      ;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+	      (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+	      (error "Normalization error"))
+	    (setq new-rules (cons new-rule new-rules))
+	    (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (loop
+		for nr1 in (reverse new-rules)
+		for x from 0
+		do
+		   (loop
+		     for nr2 in (reverse new-rules)
+		     for y from 0
+		     when (not (= x y))
+		       do
+			  (when (and (not (equal (rule-probability nr1)
+						 (rule-probability nr2)))
+				     (compatible-rule-p nr1 nr2 phi phi))
+			    (format t "~%compatible rules with different probabilities~%new rules:")
+			    (mapcar #'print-cpd-rule (reverse new-rules))
+			    (format t "~%rule1 at index ~d:" x)
+			    (print-cpd-rule nr1)
+			    (format t "~%rule2 at index ~d:" y)
+			    (print-cpd-rule nr2)
+			    (break))))))
+       (when (null matched-p)
+	 ;; Do a "self" match.
+	 (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	   (format t "~%no match for rule:")
+	   (print-cpd-rule r1))
+	 (let (norm-const)
+	   (setq new-rule (copy-cpd-rule r1))
+	   (setq norm-const (* (rule-probability r1)
+			       (length r1-dep-values)))
+	   (setf (rule-probability new-rule)
+		 (if (> norm-const 0)
+		     (/ (rule-probability new-rule) norm-const)
+		     0))
+	   (setf (gethash block (rule-block new-rule)) block)
+	   (setq block (+ block 1))
+	   (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (format t "~%norm const: ~d~%new rule:" norm-const)
+	     (print-cpd-rule new-rule))
+	   (setq new-rules (cons new-rule new-rules))
+	   (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (loop
+	       for nr1 in (reverse new-rules)
+	       for x from 0
+	       do
+		  (loop
+		    for nr2 in (reverse new-rules)
+		    for y from 0
+		    when (not (= x y))
+		      do
+			 (when (and (not (equal (rule-probability nr1)
+						(rule-probability nr2)))
+				    (compatible-rule-p nr1 nr2 phi phi))
+			   (format t "~%compatible rules with different probabilities~%new rules:")
+			   (mapcar #'print-cpd-rule (reverse new-rules))
+			   (format t "~%rule1 at index ~d:" x)
+			   (print-cpd-rule nr1)
+			   (format t "~%rule2 at index ~d:" y)
+			   (print-cpd-rule nr2)
+			   (break)))))))
     finally
+       (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	 (format t "~%~%max new rules index: ~d~%new rules:" (- (length new-rules) 1))
+	 (mapcar #'print-cpd-rule (reverse new-rules)))
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
+  (check-cpd phi :check-prob-sum t :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
   phi)
 
 #| split rules compatible with new zero-count rules |#
@@ -4123,6 +4252,9 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (when t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
+	  (format t "~%CPD has no rules:~%~S" cpd)
+	  (error "~%CPD has no rules"))
     (loop
       with check-num-rules = (cond ((and nil check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)

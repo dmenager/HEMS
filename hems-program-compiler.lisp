@@ -871,7 +871,7 @@
        (return new-body)))
 
 #| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nestde hash-table of edges |#
-
+x
 ;; body = HEMS program
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index

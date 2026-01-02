@@ -4824,7 +4824,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (print-cpd nbr)))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
        (setq factor (normalize-rule-probabilities factor (rule-based-cpd-dependent-id factor)))
-       ;;(setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+       (setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
        (when nil
 	 (format t "~%~%belief")
 	 (print-hash-entry k factor))

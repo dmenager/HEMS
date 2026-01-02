@@ -1721,7 +1721,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (setq observed-factor (normalize-rule-probabilities
 						(factor-operation p-copy (list dep-id) remove #'+)
 						dep-id
-						;;:var-val-mappings var-val-mappings
+						:var-val-mappings var-val-mappings
 						)))
 		    (when nil (and print-special* (string-equal type "state-transitions"))
 			  (format t "~%observed factor (marginalized subst p-copy):")

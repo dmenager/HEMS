@@ -1800,9 +1800,11 @@
 	      (setf (rule-probability new-rule) (if (> norm-const 0)
 						    (/ (rule-probability r) norm-const)
                                                     0))
+	      #|
 	      (when (floatp (rule-probability new-rule))
 		(setf (rule-probability new-rule)
 		      (fround-to-n-digits (rule-probability new-rule) 5)))
+	      |#
 	      (when (rule-count r)
 		(setq row-count (apply #'max (mapcar #'rule-count row)))
 		(setf (rule-count new-rule) row-count))
@@ -1845,7 +1847,7 @@
 
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
-(defun normalize-rule-probabilities (phi new-dep-id)
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
   (labels ((intersect-rule-conditions (r1 r2)
 	     (loop
 	       with conditions = (make-hash-table :test #'equal)
@@ -1870,7 +1872,7 @@
 		      (setf (gethash ident conditions) new-vals))
 	       finally
 		  (return conditions))))
-    (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+    (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -1900,10 +1902,10 @@
 		(setq parent-setting (copy-cpd-rule r2))
 		(remhash new-dep-id (rule-conditions parent-setting))
 		(when (compatible-rule-p r1 parent-setting phi phi)
-		  (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+		  (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 		    (format t "~%~%r1:")
 		    (print-cpd-rule r1))
-		  (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+		  (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 		    (format t "~%~%Candidate rule:")
 		    (print-cpd-rule r2)
 		    (format t "~%Parent setting:")
@@ -1976,7 +1978,7 @@
 	      |#
 	      (setf (gethash block (rule-block new-rule)) block)
 	      (setq block (+ block 1))
-	      (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 		(format t "~%~%normalizing rule:")
 		(print-cpd-rule r1)
 		(format t "~%row:")
@@ -1992,7 +1994,7 @@
 		     (format t ">"))
 		(format t "~%  probabilities:~%   ~S" probs)
 		(format t "~%normalizing constant: ~d" norm-const))
-	      (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 		(format t "~%new rule:")
 		(print-cpd-rule new-rule))
 	      (when (or (> (rule-probability new-rule) 1)
@@ -2008,7 +2010,7 @@
 		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
 		(error "Normalization error"))
 	      (setq new-rules (cons new-rule new-rules))
-	      (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	      (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 		(loop
 		  for nr1 in (reverse new-rules)
 		  for x from 0
@@ -2030,7 +2032,7 @@
 			      (break))))))
 	 (when (null matched-p)
 	   ;; Do a "self" match.
-	   (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	   (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 	     (format t "~%no match for rule:")
 	     (print-cpd-rule r1))
 	   (let (norm-const)
@@ -2043,11 +2045,11 @@
 		       0))
 	     (setf (gethash block (rule-block new-rule)) block)
 	     (setq block (+ block 1))
-	     (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 	       (format t "~%norm const: ~d~%new rule:" norm-const)
 	       (print-cpd-rule new-rule))
 	     (setq new-rules (cons new-rule new-rules))
-	     (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 	       (loop
 		 for nr1 in (reverse new-rules)
 		 for x from 0
@@ -2068,11 +2070,11 @@
 			     (print-cpd-rule nr2)
 			     (break)))))))
       finally
-	 (when (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	 (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
 	   (format t "~%~%max new rules index: ~d~%new rules:" (- (length new-rules) 1))
 	   (mapcar #'print-cpd-rule (reverse new-rules)))
 	 (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
-    (check-cpd phi :check-prob-sum t :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+    (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
     phi))
 
 #| split rules compatible with new zero-count rules |#
@@ -4276,7 +4278,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))
@@ -4821,7 +4823,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (format t "~%neighbor ~d:" idx )
 	       (print-cpd nbr)))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
-       (setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+       (setq factor (normalize-rule-probabilities factor (rule-based-cpd-dependent-id factor)))
+       ;;(setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
        (when nil
 	 (format t "~%~%belief")
 	 (print-hash-entry k factor))
@@ -4930,7 +4933,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 30 and deltas
+    with calibrated and conflicts and max-iter = 5 and deltas
     for count from 0
     do
        (when nil t

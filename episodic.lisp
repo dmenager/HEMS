@@ -2220,7 +2220,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			     (loop
 			       for cpd1 in posterior-distribution
 			       for cpd2 in posterior-marginals
-			       when (equal "EPOSITION_238" (rule-based-cpd-dependent-id cpd1))
+			       when (equal "EPOSITION" (rule-based-cpd-dependent-var cpd1))
 				 do
 				    (when (or (< (length (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
 						 22)

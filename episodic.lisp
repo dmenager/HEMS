@@ -2231,7 +2231,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				      (print-cpd cpd1)
 				      (format t "~%posterior marginal:")
 				      (print-cpd cpd2)
-				      (error "Malformed cpd"))
+				      (error "Malformed cpd")))
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 			     (when nil (and print-special*
 					    (= (car js) 0))

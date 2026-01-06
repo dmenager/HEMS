@@ -2216,7 +2216,22 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				 (break)
 				 )
 			   (multiple-value-bind (posterior-distribution posterior-marginals cost)
-			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only)			    
+			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only)
+			     (loop
+			       for cpd1 in posterior-distribution
+			       for cpd2 in posterior-marginals
+			       when (equal "EPOSITION_238" (rule-based-cpd-dependent-id cpd1))
+				 do
+				    (when (or (< (length (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
+						 22)
+					      (< (length (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
+						 22))
+				      (format t "~%malformed cpd!~%eposition domain should be size 22")
+				      (format t "~%posterior distribution:")
+				      (print-cpd cpd1)
+				      (format t "~%posterior marginal:")
+				      (print-cpd cpd2)
+				      (error "Malformed cpd"))
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 			     (when nil (and print-special*
 					    (= (car js) 0))

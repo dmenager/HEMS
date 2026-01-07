@@ -2840,7 +2840,7 @@
     for rule being the elements of (rule-based-cpd-rules cpd)
     for i from 0
     do
-       (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+       (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
              (format t "~%~%Rule: ~S~%index: ~d" rule i))
        (loop
          with vals and vvbm and #|lower-vvbm and lower-nvvbm and c-sets and|# card
@@ -2850,11 +2850,11 @@
             (setq card (aref (rule-based-cpd-cardinalities cpd) idx))
             (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
             (setq vals (gethash attribute (rule-conditions rule)))
-            (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+            (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%Attribute: ~S~%values: ~S~%vvbm:~%~S" attribute vals vvbm)
                   ;;(break)
                   )
-            (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+            (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%~%attribute: ~S~%attribute cpd idx: ~d~%vvbm:~%~S~%rule condition vals: ~S" attribute idx vvbm vals))
             (cond ((null vals)
                    (loop
@@ -2862,13 +2862,13 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
-		   (when nil
+		   (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
 		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
-			(when nil
+			(when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
 			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop

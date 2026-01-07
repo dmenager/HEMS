@@ -1,6 +1,33 @@
 (ql:quickload :hems)
 (in-package :hems)
 
+(defun run2 ()
+  (let ((from 29)
+	(to 2)
+	(evidence-hash (make-hash-table))
+	obs
+	st
+	slice
+	messages)
+    (load-eltm-from-file "eltm.txt")
+    (setq obs (compile-program nil
+		v1 = (percept-node time_delta :values ((:value "1" :probability 1.0 :count 1)))
+		v2 = (percept-node eposition :values ((:value "50" :probability 0.000000 :count 1) (:value "150" :probability 0.000000 :count 1) (:value "250" :probability 0.000000 :count 1) (:value "350" :probability 0.000000 :count 1) (:value "450" :probability 0.000000 :count 1) (:value "550" :probability 0.000000 :count 1) (:value "750" :probability 0.000000 :count 1) (:value "850" :probability 0.000000 :count 1) (:value "950" :probability 0.000000 :count 1) (:value "1050" :probability 0.000000 :count 1) (:value "1150" :probability 0.000000 :count 1) (:value "1250" :probability 0.000000 :count 1) (:value "1350" :probability 0.000000 :count 1) (:value "1450" :probability 0.000000 :count 1) (:value "1550" :probability 0.000000 :count 1) (:value "1650" :probability 0.000000 :count 1) (:value "1750" :probability 0.000000 :count 1) (:value "1850" :probability 0.000000 :count 1) (:value "1950" :probability 0.000000 :count 1) (:value "2050" :probability 0.000000 :count 1) (:value "NaN" :probability 0.002296 :count 1) (:value "650" :probability 0.997704 :count 1)))
+		v3 = (percept-node nposition :values ((:value "50" :probability 0.000000 :count 1) (:value "150" :probability 0.000000 :count 1) (:value "250" :probability 0.000000 :count 1) (:value "350" :probability 0.000000 :count 1) (:value "450" :probability 0.000000 :count 1) (:value "550" :probability 0.000000 :count 1) (:value "750" :probability 0.000000 :count 1) (:value "850" :probability 0.000000 :count 1) (:value "950" :probability 0.000000 :count 1) (:value "1050" :probability 0.000000 :count 1) (:value "NaN" :probability 0.000244 :count 1) (:value "650" :probability 0.999756 :count 1)))
+		v4 = (percept-node evelocity :values ((:value "NaN" :probability 0.000116 :count 1) (:value "-15" :probability 0.062493 :count 1) (:value "-13" :probability 0.062493 :count 1) (:value "-11" :probability 0.062493 :count 1) (:value "-9" :probability 0.062493 :count 1) (:value "-7" :probability 0.062493 :count 1) (:value "-5" :probability 0.062493 :count 1) (:value "-3" :probability 0.062493 :count 1) (:value "-1" :probability 0.062493 :count 1) (:value "1" :probability 0.062493 :count 1) (:value "3" :probability 0.062493 :count 1) (:value "5" :probability 0.062493 :count 1) (:value "7" :probability 0.062493 :count 1) (:value "9" :probability 0.062493 :count 1) (:value "13" :probability 0.062493 :count 1) (:value "15" :probability 0.062493 :count 1) (:value "11" :probability 0.062493 :count 1)))
+		v5 = (percept-node nvelocity :values ((:value "-15" :probability 0.062487 :count 1) (:value "-13" :probability 0.062487 :count 1) (:value "-11" :probability 0.062487 :count 1) (:value "-9" :probability 0.062487 :count 1) (:value "-7" :probability 0.062487 :count 1) (:value "-5" :probability 0.062487 :count 1) (:value "-3" :probability 0.062487 :count 1) (:value "-1" :probability 0.062487 :count 1) (:value "1" :probability 0.062487 :count 1) (:value "3" :probability 0.062487 :count 1) (:value "5" :probability 0.062487 :count 1) (:value "7" :probability 0.062487 :count 1) (:value "9" :probability 0.062487 :count 1) (:value "13" :probability 0.062487 :count 1) (:value "15" :probability 0.062487 :count 1) (:value "11" :probability 0.062487 :count 1) (:value "NaN" :probability 0.000209 :count 1)))))
+    (setq st (compile-program nil
+	       v6 = (percept-node time :values ((:value "28" :probability 1.0 :count 1)))))
+
+    (setq slice (make-hash-table :test #'equal))
+    (setf (gethash "STATE" slice) st)
+    (setf (gethash "OBSERVATION" slice) obs)
+    (setf (gethash 0 evidence-hash) slice)
+    (setq messages (make-messages evidence-hash 0 0 t))
+    (multiple-value-bind (temporal-bn backlinks)
+	(make-temporal-episode-retrieval-cue eltm* messages t)
+      (remember-temporal eltm* temporal-bn backlinks messages :hidden-state-p t :soft-likelihoods t))))
+
 (defun run ()
   (let ((from 29)
 	(to 2)

@@ -2828,7 +2828,7 @@
   (setf (rule-based-cpd-rules cpd) new-rules)
   (when nil (equal "EPOSITION" (rule-based-cpd-dependent-var cpd))
     (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum))
-  (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+  (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
         (format t "~%~%updating cpd rules for cpd:~%~S" cpd)
 	(print-cpd cpd)
 	(format t "~%rules:")
@@ -2840,7 +2840,7 @@
     for rule being the elements of (rule-based-cpd-rules cpd)
     for i from 0
     do
-       (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+       (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
              (format t "~%~%Rule: ~S~%index: ~d" rule i))
        (loop
          with vals and vvbm and #|lower-vvbm and lower-nvvbm and c-sets and|# card
@@ -2850,11 +2850,11 @@
             (setq card (aref (rule-based-cpd-cardinalities cpd) idx))
             (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
             (setq vals (gethash attribute (rule-conditions rule)))
-            (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%Attribute: ~S~%values: ~S~%vvbm:~%~S" attribute vals vvbm)
                   ;;(break)
                   )
-            (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%~%attribute: ~S~%attribute cpd idx: ~d~%vvbm:~%~S~%rule condition vals: ~S" attribute idx vvbm vals))
             (cond ((null vals)
                    (loop
@@ -2862,13 +2862,13 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
-		   (when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+		   (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
 		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
-			(when (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+			(when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
 			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop
@@ -6507,9 +6507,10 @@ Roughly based on (Koller and Friedman, 2009) |#
   (or (and (> (hash-table-count (rule-based-cpd-types cpd)) 1) (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))) (equal "PERCEPT" (gethash 1 (rule-based-cpd-types cpd))))
       (and (> (hash-table-count (rule-based-cpd-types cpd)) 1) (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd))) (equal "ACTION" (gethash 1 (rule-based-cpd-types cpd))))))
 
+;; DHM: removed the (attribute-cpd-p) check. It was put in for ICARUS, but is somewhat of a hack. Rather, it seems that we need a new "ATTRIBUTE" cpd type. (attribute-cpd-p) above tries to infer whether a cpd is an attribute based on its connection to other cpds, but in general, a modeler can have multiple cpd with type "PERCEPT" connect to each other without inteding a percept-attribute relationship
 (defun percept-cpd-p (cpd)
-  (and (not (attribute-cpd-p cpd))
-       (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd)))))
+  (and ;;(not (attribute-cpd-p cpd)) 
+       (string-equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd)))))
 
 (defun action-cpd-p (cpd)
   (and (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd)))))
@@ -6581,7 +6582,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (equal "STATE" (gethash 0 (rule-based-cpd-types q-cpd)))))
 	 t)
         (t
-         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
            (format t "~%~%p-cpd: ~S~%q-cpd: ~S" (rule-based-cpd-identifiers p-cpd) (rule-based-cpd-identifiers q-cpd)))
          (loop
            with p-val and p-match
@@ -6593,13 +6594,14 @@ Roughly based on (Koller and Friedman, 2009) |#
              (when p-match
                (if (gethash p-match (rule-based-cpd-identifiers p-cpd))
                    (setq p-val t)))
-             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%q-parent: ~S~%p-parent match: ~S~%p-val: ~S" q-val p-match p-val))
              (cond ((and p-match (not p-val) q-val)
-                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                       (format t "~%fail. Returning.")
-                      (break))
+                      ;;(break)
+		      )
                     (return-from same-matched-parents nil))))
          (loop
            with q-val and q-match and no-matched-parents = t
@@ -6612,18 +6614,19 @@ Roughly based on (Koller and Friedman, 2009) |#
                (setq no-matched-parents nil)
                (if (gethash q-match (rule-based-cpd-identifiers q-cpd))
                    (setq q-val t)))
-             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%p-parent: ~S~%q-parent match: ~S~%q-val: ~S" p-val q-match q-val))
              (cond ((and q-match p-val (not q-val))
-                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                       (format t "~%fail. Returning.")
-                      (break))
+                      ;;(break)
+		      )
                     (return-from same-matched-parents nil)))
            finally
               (if (and nil no-matched-parents (> (hash-table-count (rule-based-cpd-identifiers q-cpd)) 1))
                   (return-from same-matched-parents nil)))
-         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
            (format t "~%success.")
            ;;(break)
 	   )
@@ -6639,14 +6642,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-first-bindings = bindings hash table where elements of q are the keys
 (defun candidate-nodes (pnum p q possible-q-candidates bindings q-first-bindings &optional (heuristic nil) &aux p-cpd)
   (setq p-cpd (aref (car p) pnum))
-  (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
-        (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
+  (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
+        (format t "~%~%constructing candidate list for p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
   (loop
     with q-cpd
     for i in possible-q-candidates
     do
        (setq q-cpd (aref (car q) i))
-       (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+       (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
         (format t "~%~%q-cpd:~%~S" (rule-based-cpd-identifiers q-cpd)))
     when (and (not (gethash (rule-based-cpd-dependent-id q-cpd) q-first-bindings))
               (same-matched-parents p-cpd q-cpd bindings q-first-bindings heuristic))
@@ -7821,9 +7824,7 @@ Roughly based on (Koller and Friedman, 2009) |#
         (setq match (aref matches pnum))
         (setq q-match (cdr match))
         (setq pnum-prime nil)
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%~%new iteration~%pnum: ~d~%~A~%qp: ~d~%~A~%"
                   pnum
                   (aref (car p) pnum)
@@ -7834,22 +7835,16 @@ Roughly based on (Koller and Friedman, 2009) |#
         (when q-match
           ;;(setq q-first-bindings (fset:less q-first-bindings (cpd-dependent-id (aref (car q) q-match))))
           (remhash (rule-based-cpd-dependent-id (aref (car q) q-match)) q-first-bindings))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%reduced bindings: ~A~%reduced q-first-bindings: ~A" bindings q-first-bindings))
         ;;(setq candidates (analog-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings))
 	(setq candidates (candidate-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings t))
 	(setq candidates (make-array (length candidates) :initial-contents candidates))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%pnum: ~d~%candidates: ~A" pnum candidates))
         ;; swap pnode with random candidate
         (setq new-qnum (aref candidates (random (array-dimension candidates 0))))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" (car match) (aref (car p) (car match)) new-qnum (if new-qnum (aref (car q) new-qnum) nil) matches bindings))
         (setq match (cons (car match) new-qnum))
         (when new-qnum
@@ -7861,9 +7856,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           (setf (gethash (rule-based-cpd-dependent-id (aref (car q) new-qnum)) q-first-bindings) (rule-based-cpd-dependent-id (aref (car p) (car match)))))
         (setf (aref matches pnum) match)
         (when pnum-prime
-          (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+          (when nil (and (or (= pnum 0))) nil t
             (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" pnum-prime (aref (car p) pnum-prime) q-match (if q-match (aref (car q) q-match) nil) matches bindings))
           (setq match-prime (cons pnum-prime q-match))
           (setf (aref matches pnum-prime) match-prime)
@@ -8185,7 +8178,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq q-dim 0)
     (setq q-m 0)
     (setq q-dif 0)
-    (when nil t
+    (when nil
 	  (format t "~%~%possible candidates:~%~S" possible-candidates)
 	  )
     (setq key (key-from-matches matches))

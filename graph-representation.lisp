@@ -6863,13 +6863,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                                   ;;for count-idx being the hash-keys of (cpd-counts event)
                                   do
                                      (setq rule (aref (rule-based-cpd-rules event) rule-idx))
-				     (when (> (rule-probability rule) 0)
+				     (when (> (rule-probability rule) 0.001)
 				       ;;(setq compatible-rules (list (car (get-compatible-rules cpd event rule))))
                                        (setq compatible-rules (get-compatible-rules cpd event rule :find-all t))
                                        ;; find compatible rules in schema
                                        (cond (compatible-rules
-                                              (when nil t
-                                                    (format t "~%episode rule:~%~S" rule))
+                                              (when t
+                                                (format t "~%episode rule:~%")
+						(print-cpd-rule rule))
                                               (loop
 					        for compatible-rule in compatible-rules
 						for denom from 1
@@ -6951,7 +6952,7 @@ Roughly based on (Koller and Friedman, 2009) |#
            (cond ((and (not (null y))
                        (or (not (equal var-x-name var-y-name))
                            #|(not (equal (gethash 0 (rule-based-cpd-concept-ids x))
-                                       (gethash 0 (rule-based-cpd-concept-ids y))))|#
+                           (gethash 0 (rule-based-cpd-concept-ids y))))|#
 			   ))
                   0)
                  ((member (gethash 0 (rule-based-cpd-types x)) forbidden-types :test #'equal)
@@ -6959,11 +6960,15 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (t
                   (let (x-copy discount var-dif kost bic)
                     (cond ((rule-based-cpd-p y)
-			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
-			     (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" x y))
+			   (when t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+				 (format t "~%~%p-cpd before subst:")
+				 (print-cpd x)
+				 (format t "~%q-match:")
+				 (print-cpd y))
                            (setq x-copy (subst-cpd-2 x y bindings))
-			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
-			     (format t "~%p-cpd after subst:~%~S" x-copy))
+			   (when t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+				 (format t "~%p-cpd after subst:")
+				 (print-cpd x-copy))
                            (cond ((hash-intersection-p (rule-based-cpd-identifiers x-copy) (rule-based-cpd-identifiers y))
 				  (multiple-value-bind (dif forbidden-likelihood)
                                       (hash-difference-p (rule-based-cpd-identifiers y)
@@ -6974,8 +6979,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 				    ;;(setq x-copy (add-na-conditions-to-rules x-copy var-dif))
                                     (setq likelihood (local-likelihood x-copy y forbidden-likelihood))
                                     ;;(when (< bic 0) (setq bic 0))
-                                    (when nil
-                                      (format t "~%var-dif: ~A~%discount: ~d~%likelihood: ~d~%forbidden likelihood?: ~A~%total penalty: ~d" var-dif discount likelihood forbidden-likelihood (- likelihood discount))))
+                                    (when t 
+                                      (format t "~%local likelihood: ~d"likelihood)))
                                   (cond (bic-p
                                          ;;(setq kost (- 1 (/ (* (rule-based-cpd-lvl x) bic) (rule-based-cpd-lvl x))))
                                          ;;(setq kost (* (rule-based-cpd-lvl x) (- 1 (- likelihood discount))))
@@ -7071,7 +7076,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
-(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil))
+(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-only nil))
   (loop
      with q-likelihood = 1 and kost
      with num-local-preds = 0
@@ -7154,10 +7159,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (when (> kost 0)
 		 (setq num-local-preds (+ num-local-preds 1)))))
      finally
-	(when nil
-	  (format t "~%q-m: ~d~%q-dif: ~d" q-m q-dif))
+	(when t
+	  (format t "~%q-m: ~d~%q-dif: ~d~%q-likelihood: ~d" q-m q-dif q-likelihood))
 	(if bic-p
-	    (return (values (if score-p
+	    (return (values (if score-only
 				(- q-likelihood
 				   (* (/ (log q-m) 2)
 					    q-dif))
@@ -7165,7 +7170,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					 (* (/ (log q-m) 2)
 					    q-dif)))))
 			    num-local-preds))
-	    (return (values (if score-p
+	    (return (values (if score-only
 				q-likelihood
 				(abs (- 1 q-likelihood)))
 			    num-local-preds)))))
@@ -7680,7 +7685,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; bic-p = whether to compute bic or likelihood
 ;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-p nil))
+(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-only nil))
   (let (cost num-local-preds key previous-cost prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
@@ -7699,7 +7704,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                 :cost-of-nil cost-of-nil
                 :bic-p bic-p
                 :forbidden-types forbidden-types
-		:score-p score-p))
+		:score-only score-only))
            (when sol-cost-map
              (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
            (values solution cost bindings q-first-bindings num-local-preds)))))
@@ -8095,7 +8100,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types &key (score-p nil))
+(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types &key (score-only nil))
   (loop
     named looper
     with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
@@ -8116,7 +8121,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
         (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
-            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-p score-p)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-only score-only)
           (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
         (when nil (and print-special*
@@ -8158,7 +8163,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
-(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
+(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-only nil) &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
   (when nil 
     (format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
 	    (array-dimension (car p) 0)
@@ -8223,7 +8228,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           ;;(break)
 	  )
     (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
-        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-p score-p)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-only score-only)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
       (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
     (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
@@ -8238,7 +8243,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; bic-p = flag to compute BIC
 (defun bn-score (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
   (multiple-value-bind (sol no-matches score)
-      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t)
+      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-only t)
     (declare (ignore sol no-matches))
     score))
 #|

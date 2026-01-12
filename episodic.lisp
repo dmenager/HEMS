@@ -909,7 +909,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; type = type of the episodic memory content. Either, observation, state, or state transitions.
 ;; reject-list = list of episode ids to reject when merging
 ;; bicp-p = retrieval mode for using BIC or likelihood for structure mapping
-(defun new-match-cue (x y res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+(defun new-match-cue (x y res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types &key (score-only nil))
   (cond ((null x)
 	 (values (list nil most-positive-fixnum nil -1 0 ) nil reject-list nil))
         ((reject-branch? x y reject-list :check-decomps check-decomps :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case)
@@ -933,7 +933,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	    (t
 	     (error "uh oh")))
 	   (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
-               (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p :forbidden-types forbidden-types)
+               (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p :forbidden-types forbidden-types :score-only score-only)
 	     (declare (ignore no-matches))
 	     (when nil
 	       (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S~%q-first-bindings:~%~S" sol cost bindings q-first-bindings))
@@ -1077,7 +1077,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; reject-list = list of episode ids to reject and not expand/return
 ;; res = optimal common subgraph between cue and eltm, with associated cost
 ;; depth = optional depth of retrieval search
-(defun new-retrieve-episode (eltm cue reject-list &key (type "state-transitions") (res nil) (depth 0) (bic-p t) (lvl-func nil) (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil) (forbidden-types nil) &aux best-child (best-child-weighted-cost most-positive-fixnum) (best-child-cost most-positive-fixnum))
+(defun new-retrieve-episode (eltm cue reject-list &key (type "state-transitions") (res nil) (depth 0) (bic-p t) (lvl-func nil) (check-decomps t) (check-abstraction-ptrs nil) (check-index-case nil) (forbidden-types nil) (score-only nil) &aux best-child (best-child-weighted-cost most-positive-fixnum) (best-child-cost most-positive-fixnum))
   (setq best-child (list nil most-positive-fixnum (make-hash-table :test #'equal) nil -1 -1))
   (when nil t
     (format t "~%reject list in retrieve: ~A" reject-list))
@@ -1085,7 +1085,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
     (return-from new-retrieve-episode (values nil nil nil depth most-positive-fixnum most-positive-fixnum nil reject-list)))
   ;; merge eltm and ep
   (multiple-value-bind (p-cost branch rejects)
-      (new-match-cue eltm cue res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types)
+      (new-match-cue eltm cue res type reject-list bic-p check-decomps check-abstraction-ptrs check-index-case forbidden-types :score-only score-only)
     ;; for each child, check the match result
     (setq reject-list rejects)
     (when nil t
@@ -1125,7 +1125,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (setq pattern-backlinks (episode-backlinks cue))
                  (setq base-backlinks (episode-backlinks (car branch)))
 		 (multiple-value-bind (sol no-matches cost bindings q-first-bindings num-local-preds)
-                     (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p :forbidden-types forbidden-types)
+                     (new-maximum-common-subgraph pattern base pattern-backlinks base-backlinks :cost-of-nil (episode-count (car branch)) :bic-p bic-p :forbidden-types forbidden-types :score-only score-only)
 		   (declare (ignore no-matches))
 		   (when nil t
 		     (format t "~%retrieval mappings:~%~S~%retrieval cost: ~d~%retrieval bindings:~%~S" sol cost bindings))
@@ -1619,7 +1619,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      :backlinks (make-hash-table :test #'equal)
 		      :temporal-p nil
 		      :count 1
-		      :lvl 1)))
+		      :lvl 1))
+	   (when t
+	     (format t "~%~%observation cue")
+	     (print-episode cue)))
 	  ((string-equal type "state")
 	   (setq cue (make-episode
 		      :observation (cons (make-array 0) (make-hash-table :test #'equal))
@@ -1633,10 +1636,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	   (error "uh oh! Unsupported episode field type. Expected \"state\", \"observation\", or \"state-transitions\". Received: ~S" type)))
     (multiple-value-bind (eme sol bindings depth cost dont-care reject-list q-first-bindings)
         (cond ((equalp (cons (make-array 0) (make-hash-table :test #'equal)) cue-bn)
-               (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum nil))
+	       (values eltm nil nil 0 most-positive-fixnum most-positive-fixnum nil))
               (t
-               (new-retrieve-episode eltm cue nil :bic-p bic-p :type type)))
+               (new-retrieve-episode eltm cue nil :bic-p bic-p :type type :score-only score-only)))
       (declare (ignore depth dont-care))
+      (when (string-equal type "observation")
+	(format t "~%score: ~d" cost))
       (cond (score-only
 	     (values nil nil cost eme sol bindings q-first-bindings))
 	    (t	     
@@ -1653,14 +1658,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 	       (print-bn bn))      
 	     (multiple-value-setq (bn priors)
 	       (compile-bn-priors bn))
-	     (when nil (and (string-equal type "observation"))
+	     (when (and (string-equal type "observation"))
 		   ;; dhm: This (when) can safely be deleted/commented out. It is simply a print.
-		   (format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
-		   (print-bn bn)
+		   ;;(format t "~%~%episode id: ~S~%episode bn:" (episode-id (car eme)))
+		   ;;(print-bn bn)
 		   (format t "~%cue:")
 		   (print-episode cue))
-	     (when nil (and (string-equal type "observation"))
-		   (format t "~%~%sol: ~S" sol)
+	     (when (and (string-equal type "observation"))
+		   (format t "~%sol: ~S" sol)
 		   ;;(break)
 		   )
 	     (loop
@@ -2221,24 +2226,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				 )
 			   (multiple-value-bind (posterior-distribution posterior-marginals cost)
 			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only)
-			     (when nil
-			       (loop
-				 for cpd1 in posterior-distribution
-				 for cpd2 in posterior-marginals
-				 when (equal "EPOSITION" (rule-based-cpd-dependent-var cpd1))
-				   do
-				      (when (or (not (= (length (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
-							22))
-						(not (= (length (gethash 0 (rule-based-cpd-var-value-block-map cpd2)))
-							22)))
-					(format t "~%malformed cpd!~%eposition domain should be size 22")
-					(format t "~%posterior distribution:")
-					(print-cpd cpd1)
-					(format t "~%posterior marginal:")
-					(print-cpd cpd2)
-					(error "Malformed cpd"))))
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-			     (when nil (and print-special*
+			     (when nil t (and print-special*
 					    (= (car js) 0))
 				   (format t "~%posterior:")
 				   (print-bn (cons (make-array (length posterior-distribution)

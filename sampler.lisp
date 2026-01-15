@@ -11,7 +11,7 @@
     (when nil
       (format t "~%evidence-bn:")
       (print-bn evidence-bn))
-    (multiple-value-bind (posterior-distribution posterior-marginals score eme sol bindings q-first-bindings)
+    (multiple-value-bind (posterior-distribution posterior-marginals score score-ref eme sol bindings q-first-bindings)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type :soft-likelihoods soft-likelihoods)
       ;; verify in (remember) if the single observation node matches to the state transition models.
       (when nil (string-equal episode-type "state-transitions")

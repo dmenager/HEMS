@@ -4699,7 +4699,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
 (defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1))
-  (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+  (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	(format t "~%marginalizing phi:")
 	(print-cpd phi)
 	(format t "~%vars to keep:~%~S" vars))
@@ -4728,7 +4728,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   do
 	      (setf (gethash cond (rule-conditions marginalized-rule))
 		    vals))
-	 (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+	 (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	       (format t "~%~%vvm:~%~S" vvm)
 	       (format t "~%initial marginalized rule:")
 	       (print-cpd-rule marginalized-rule))
@@ -4737,7 +4737,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   for i from 0
 	   when (compatible-rule-p r marginalized-rule phi phi)
 	     do
-		(when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		      (format t "~%  r is compatible with marginalized rule.~%  r:")
 		      (print-cpd-rule r :indent "        "))
 		(loop
@@ -4755,7 +4755,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		      (funcall op
 			       (rule-probability marginalized-rule)
 			       (rule-probability r)))
-		(when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		      (format t "~%  updated marginalized rule:")
 		      (print-cpd-rule marginalized-rule :indent "        "))
 	   finally
@@ -4775,10 +4775,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		     (remhash cond (rule-conditions marginalized-rule))))
 	      (setq new-rules (cons marginalized-rule new-rules))
 	      (setq num-rules (+ num-rules 1))
-	      (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+	      (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%updated new rules:")
 		    (map nil #'print-cpd-rule new-rules)
-		    (break)
+		    ;;(break)
 		    ))
       finally
 	 (return (make-array num-rules :initial-contents (reverse new-rules))))))
@@ -4878,7 +4878,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 6) (= j 9))
+  (when nil (and #|(= i 12)|# (= j 8))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4886,27 +4886,33 @@ Roughly based on (Koller and Friedman, 2009) |#
     (print-cpd (aref factors j))
     (check-cpd (aref factors i) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil)
     (check-cpd (aref factors j) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil))
-  (let (nbrs-minus-j reduced)
+  (let (nbrs-minus-j nbrs reduced)
     (loop
       for k from 0 to (- (array-dimension edges 0) 1)
       for edge being the elements of edges
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
-      finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 6) (= j 9))
-          (format t "~%neighbors minus j:")
-          (loop for nbr in nbrs-minus-j
-                when (rule-based-cpd-p nbr)
-		  do
-		     (print-cpd nbr)
-		     (check-cpd nbr :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
-                else
-		  do
-		     (format t "~%non-cpd neighbor: ~S" nbr))
+	and collect (car edge) into nrs
+      finally
+	 (setq nbrs-minus-j neighbors)
+	 (setq nbrs nrs))
+    (when nil (and #|(= i 12)|# (= j 8))
+          (format t "~%neighbors of ~d (i) minus ~d (j):" i j)
+          (loop
+	    for nbr in nbrs-minus-j
+	    for nbr-idx in nbrs
+            when (rule-based-cpd-p nbr)
+	      do
+		 (format t "~%neighbor: ~d" nbr-idx)
+		 (print-cpd nbr)
+		 (check-cpd nbr :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+            else
+	      do
+		 (format t "~%non-cpd neighbor: ~S" nbr))
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil  (and (= i 6) (= j 9))
+    (when nil (and #|(= i 12)|# (= j 8))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -5070,7 +5076,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (and (= j 6) (= k 9))
+              (when nil (and #|(= j 12)|# (= k 8))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -5084,7 +5090,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 6) (= k 9))
+	      (when nil (and #|(= j 12)|# (= k 8))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -6868,7 +6874,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        (setq compatible-rules (get-compatible-rules cpd event rule :find-all t))
                                        ;; find compatible rules in schema
                                        (cond (compatible-rules
-                                              (when t
+                                              (when nil t
                                                 (format t "~%episode rule:~%")
 						(print-cpd-rule rule))
                                               (loop
@@ -6960,13 +6966,13 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (t
                   (let (x-copy discount var-dif kost bic)
                     (cond ((rule-based-cpd-p y)
-			   (when t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+			   (when nil t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
 				 (format t "~%~%p-cpd before subst:")
 				 (print-cpd x)
 				 (format t "~%q-match:")
 				 (print-cpd y))
                            (setq x-copy (subst-cpd-2 x y bindings))
-			   (when t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+			   (when nil t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
 				 (format t "~%p-cpd after subst:")
 				 (print-cpd x-copy))
                            (cond ((hash-intersection-p (rule-based-cpd-identifiers x-copy) (rule-based-cpd-identifiers y))
@@ -6979,7 +6985,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 				    ;;(setq x-copy (add-na-conditions-to-rules x-copy var-dif))
                                     (setq likelihood (local-likelihood x-copy y forbidden-likelihood))
                                     ;;(when (< bic 0) (setq bic 0))
-                                    (when t 
+                                    (when nil t 
                                       (format t "~%local likelihood: ~d"likelihood)))
                                   (cond (bic-p
                                          ;;(setq kost (- 1 (/ (* (rule-based-cpd-lvl x) bic) (rule-based-cpd-lvl x))))
@@ -7078,7 +7084,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 (defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-only nil))
   (loop
-     with q-likelihood = 1 and kost
+    with q-likelihood = 1 and kost
+    with q-ref-likelihood = 1 and kost-ref
      with num-local-preds = 0
      for (p-node . qp) in n
      do
@@ -7148,6 +7155,37 @@ Roughly based on (Koller and Friedman, 2009) |#
 				  ;;(setq num-local-preds 0)
 				  (setq q-likelihood (* q-likelihood 0))))))))
 	      (t
+	       (when score-only
+		 (let (marginal-p marginal-q)
+		   (setq marginal-p (copy-rule-based-cpd (aref (car p) p-node)))
+		   (loop
+		     for ident being the hash-keys of (rule-based-cpd-identifiers marginal-p)
+		       using (hash-value idx)
+		     when (= idx 0)
+		       collect ident into keep
+		     else
+		       collect ident into remove
+		     finally
+			(setq marginal-p (factor-operation marginal-p keep remove #'+)))
+		   (when qp
+		     (setq marginal-q (copy-rule-based-cpd (aref (car q) qp)))
+		     (loop
+		       for ident being the hash-keys of (rule-based-cpd-identifiers marginal-q)
+			 using (hash-value idx)
+		       when (= idx 0)
+			 collect ident into keep
+		       else
+			 collect ident into remove
+		       finally
+			  (setq marginal-q (factor-operation marginal-q keep remove #'+))))
+		   (setq kost-ref (cost marginal-p
+					marginal-q
+					bindings
+					q-first-bindings
+					:cost-of-nil cost-of-nil
+					:bic-p bic-p
+					:forbidden-types forbidden-types))
+		   (setq q-ref-likelihood (* q-ref-likelihood kost-ref))))
 	       (setq kost (cost (aref (car p) p-node)
 				(if qp (aref (car q) qp) nil)
 				bindings
@@ -7159,7 +7197,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (when (> kost 0)
 		 (setq num-local-preds (+ num-local-preds 1)))))
      finally
-	(when t
+	(when nil t
 	  (format t "~%q-m: ~d~%q-dif: ~d~%q-likelihood: ~d" q-m q-dif q-likelihood))
 	(if bic-p
 	    (return (values (if score-only
@@ -7169,10 +7207,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 				(abs (- 1 (- q-likelihood
 					 (* (/ (log q-m) 2)
 					    q-dif)))))
+			    (if score-only
+				(- q-ref-likelihood
+				   (* (/ (log q-m) 2)
+				      q-dif))
+				most-positive-fixnum)
 			    num-local-preds))
 	    (return (values (if score-only
 				q-likelihood
 				(abs (- 1 q-likelihood)))
+			    (if score-only
+				q-ref-likelihood
+				most-positive-fixnum)
 			    num-local-preds)))))
 
 ;; cost-of-nil = episode count for matching to nil
@@ -7686,16 +7732,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 (defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-only nil))
-  (let (cost num-local-preds key previous-cost prev-num-local-preds)
+  (let (cost cost-ref num-local-preds key previous-cost prev-cost-ref prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
       (let ((res (gethash key sol-cost-map)))
-	(setq previous-cost (car res))
-	(setq prev-num-local-preds (cdr res))))
+        (setq previous-cost (first res))
+	(setq prev-cost-ref (second res))
+	(setq prev-num-local-preds (third res))))
     (cond (previous-cost
-           (values solution previous-cost bindings q-first-bindings prev-num-local-preds))
+           (values solution previous-cost prev-cost-ref bindings q-first-bindings prev-num-local-preds))
           (t
-	   (multiple-value-setq (cost num-local-preds)
+	   (multiple-value-setq (cost cost-ref num-local-preds)
              (g (coerce solution 'list)
                 bindings
                 q-first-bindings
@@ -7706,8 +7753,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                 :forbidden-types forbidden-types
 		:score-only score-only))
            (when sol-cost-map
-             (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
-           (values solution cost bindings q-first-bindings num-local-preds)))))
+             (setf (gethash key sol-cost-map) (list cost cost-ref num-local-preds)))
+           (values solution cost cost-ref bindings q-first-bindings num-local-preds)))))
 
 #| Find largest common subgraph between two graphs |#
 
@@ -7974,31 +8021,31 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (> (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (> (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (= (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0))
-	      (< (sixth next) (sixth best-solution)))
+	      (< (seventh next) (seventh best-solution)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (= (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0))
-	      (= (sixth next) (sixth best-solution))
-	      (>= (fifth next) (fifth best-solution)))
+	      (= (seventh next) (seventh best-solution))
+	      (>= (sixth next) (sixth best-solution)))
 	 t)))
 
 #| Initialize empty set of mappings |#
@@ -8113,22 +8160,22 @@ Roughly based on (Koller and Friedman, 2009) |#
             (format t "~%time: ~d ~%total cycles: ~d~%stop temperature: ~d~%bindings:~%~S~%cost: ~d" time (/ time (length top-lvl-nodes)) big-t (third best-solution) (second best-solution))
             (break)
 	    )
-      (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution)))
+      (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution) (sixth best-solution)))
     else do
       (when nil
             (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d" time big-t (first current) (third current) (fourth current) (second current)))
       (multiple-value-bind (solution bindings q-first-bindings)
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
-        (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
+        (multiple-value-bind (new-matches new-cost new-cost-ref new-bindings new-q-first-bindings num-local-preds)
             (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-only score-only)
-          (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
+          (setq next (list new-matches new-cost new-cost-ref new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
         (when nil (and print-special*
 		       (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
               (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
         (when (better-random-match? next best-solution)
-          (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next) (array-dimension (car q) 0)))
+          (setq best-solution (list (copy-array (first next)) (second next) (third next) (copy-hash-table (fourth next)) (copy-hash-table (fifth next)) (sixth next) (array-dimension (car q) 0)))
           (when nil (and print-special*
 			 (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
 		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
@@ -8171,10 +8218,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 	    (array-dimension (car q) 0))
     ;;(break)
     )
-  (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
+  (let (matches cost cost-ref bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))
     (setq cost most-positive-fixnum)
+    (setq cost-ref most-positive-fixnum)
     (setq num-local-preds -1)
     (setq bindings (make-hash-table :test #'equal))
     (setq q-first-bindings (make-hash-table :test #'equal))
@@ -8188,8 +8236,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  )
     (setq key (key-from-matches matches))
     (when (null (gethash key sol-cost-map))
-      (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
-    (setq current (list matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0)))
+      (setf (gethash key sol-cost-map) (list cost cost-ref num-local-preds)))
+    (setq current (list matches cost cost-ref bindings q-first-bindings num-local-preds (array-dimension (car q) 0)))
     (setq stop-temp (expt 10 (- 1)))
     (setq almost-zero 1.e-39)
     (setq alpha .999)
@@ -8227,11 +8275,11 @@ Roughly based on (Koller and Friedman, 2009) |#
           (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
           ;;(break)
 	  )
-    (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
+    (multiple-value-bind (matches cost cost-ref bindings q-first-bindings num-local-preds)
         (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-only score-only)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
-    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
+      (setq current (list matches no-matches cost cost-ref bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
+    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current) (seventh current))))
 
 #| Score Bayes net, q, on pattern graph using likelihood or BIC |#
 
@@ -8242,10 +8290,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
 (defun bn-score (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
-  (multiple-value-bind (sol no-matches score)
+  (multiple-value-bind (sol no-matches score score-ref)
       (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-only t)
     (declare (ignore sol no-matches))
-    score))
+    (values score score-ref)))
+
 #|
 (defun temporal-bn-score (p q q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
   (labels ((init-messages (messages forward-pass-p)
@@ -8305,6 +8354,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     messages))
     (let (observations))))
 |#
+
 #| TESTS
 (get-local-coverings
 #S(RULE-BASED-CPD

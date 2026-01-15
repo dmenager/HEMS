@@ -329,6 +329,9 @@
     (log-message (list "~%entropy value: ~d" entropy) "log.txt")
     (values net entropy)))
 
+(defun bic-fitness (bic bic-ref)
+  (exp (* (/ -1 2) (- bic bic-ref))))
+
 #| TESTS
 
 (ql:quickload :hems)

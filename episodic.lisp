@@ -1505,6 +1505,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (format t "~%outcome probability: ~d" (getf prob-rec :probability))
        (format t "~%outcome model selection score: ~d" (getf prob-rec :model-selection))
        (format t "~%outcome model selection score of reference independence model: ~d" (getf prob-rec :model-selection-ref))
+       (format t "~%BIC_fitness score: ~d" (getf prob-rec :bic-fitness))
        (format t "~%beliefs:")
        (map nil #'(lambda (cpd)
 		    (print-cpd cpd))
@@ -1561,6 +1562,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(list :probability (getf prob-rec :probability)
 			      :model-selection (getf prob-rec :model-selection)
 			      :model-selection-ref (getf prob-rec :model-selection-ref)
+			      :bic-fitness (getf prob-rec :bic-fitness)
 			      :network (marginalize-bn (getf prob-rec :network))))
 	       finally
 		  (return dist-hash)))
@@ -2140,12 +2142,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(list ':probability 0
 			      ':model-selection 0
 			      ':model-selection-ref 0
+			      ':bic-fitness 1
 			      ':network (cdr prob-obs)))
 		  ;; I need to have the marginals evidence hash to properly pre-fill marginals-dist-hash
 		  (setf (gethash c marginals-dist-hash)
 			(list ':probability 0
 			      ':model-selection 0
 			      ':model-selection-ref 0
+			      ':bic-fitness 1
 			      ':network (cdr prob-obs))))
 	     (when (equal "ACTION" node-type)
 	       (loop
@@ -2172,11 +2176,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			       (list :probability prob
 				     :model-selection 0
 				     :model-selection-ref 0
+				     :bic-fitness 1
 				     :network (make-empty-graph)))
 			 (setf (gethash c marginals-dist-hash)
 			       (list :probability prob
 				     :model-selection 0
 				     :model-selection-ref 0
+				     :bic-fitness 1
 				     :network (make-empty-graph))))))
 	     (when (not (equal "ACTION" node-type))
 	       (loop
@@ -2254,6 +2260,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (list ':probability prob
 					 ':model-selection cost
 					 ':model-selection-ref cost-ref
+					 ':bic-fitness (bic-fitness cost cost-ref)
 					 ':network (cons (make-array (length posterior-distribution)
 								     :initial-contents posterior-distribution)
 							 (make-hash-table))))
@@ -2261,6 +2268,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (list ':probability prob
 					 ':model-selection cost
 					 ':model-selection-ref cost-ref
+					 ':bic-fitness (bic-fitness cost cost-ref)
 					 ':network (cons (make-array (length posterior-marginals)
 								     :initial-contents posterior-marginals)
 							 (make-hash-table)))))))))
@@ -2328,10 +2336,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     (setf (gethash vvb dist-hash) (list :probability (float (/ 1 num-vvbm))
 							 :model-selection 0
 							 :model-selection-ref 0
+							 :bic-fitness 1
 							 :network evidence))
 		     (setf (gethash vvb dist-hash) (list :probability (float (/ 1 num-vvbm))
 							 :model-selection 0
 							 :model-selection-ref 0
+							 :bic-fitness 1
 							 :network (make-empty-graph))))
 	      finally
 		 (setf (gethash cpd-type slice) dist-hash))

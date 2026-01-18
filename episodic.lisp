@@ -658,6 +658,7 @@
           (t ;; when insert starts at root
            (multiple-value-bind (sol no-matches cost cost-ref bindings q-first-bindings num-local-preds)
                (new-maximum-common-subgraph pattern base (episode-backlinks y) (episode-backlinks (car x)) :cost-of-nil (episode-count (car x)) :bic-p bic-p)
+	     (declare (ignore cost-ref))
 	     (when nil (and (string-equal type "state-transitions")
 			print-special*)
 	       (format t "~%pattern:~%~S~%base:~%~S" pattern base))
@@ -817,10 +818,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		   (when nil
 		     (format t "~%cost: ~d~%num local matches: ~d~%best child cost: ~d~%best child local preds: ~d" cost num-local-preds (second best-child) (fifth best-child)))
 		   (when (or (= i 1)
-			     (better-random-match? (list nil cost bindings nil num-local-preds (array-dimension (car base) 0)) best-child))
+			     (better-random-match? (list nil cost cost-ref bindings nil num-local-preds (array-dimension (car base) 0)) best-child))
                      (setq res (list sol no-matches cost bindings q-first-bindings num-local-preds))
                      (setq best-child-cost cost)
-                     (setq best-child (list i cost bindings nil num-local-preds (array-dimension (car base) 0))))))
+                     (setq best-child (list i cost cost-ref bindings nil num-local-preds (array-dimension (car base) 0))))))
                 (nil t
                  (setq reject-list (cons (episode-id (car branch)) reject-list))))))
     ;;(format t "~%~%parent cost: ~d~%unweighted parent cost: ~d~%best-child cost: ~d" p-cost unweighted-p-cost best-child-cost)
@@ -838,7 +839,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
                  (format t "~%Absorbed"))
            (values eltm eltm))
           ((and (not absorb)
-		(or (and branch (better-random-match? (list nil p-cost p-bindings nil p-num-local-preds (array-dimension (car (funcall ep-access-func (car eltm))) 0)) best-child) #|(<= p-cost best-child-cost)|#)
+		(or (and branch (better-random-match? (list nil p-cost nil p-bindings nil p-num-local-preds (array-dimension (car (funcall ep-access-func (car eltm))) 0)) best-child) #|(<= p-cost best-child-cost)|#)
 		    (not branch)))
            (setf (episode-parent ep) eltm)
            (setf (episode-depth ep) (+ depth 1))
@@ -1505,7 +1506,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
        (format t "~%outcome probability: ~d" (getf prob-rec :probability))
        (format t "~%outcome model selection score: ~d" (getf prob-rec :model-selection))
        (format t "~%outcome model selection score of reference independence model: ~d" (getf prob-rec :model-selection-ref))
-       (format t "~%BIC_fitness score: ~d" (getf prob-rec :bic-fitness))
+       (format t "~%BIC_fitness score: ~S" (getf prob-rec :bic-fitness))
        (format t "~%beliefs:")
        (map nil #'(lambda (cpd)
 		    (print-cpd cpd))
@@ -1761,9 +1762,9 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (when nil
 			   (format t "~%intermediate cpd:")
 			   (print-cpd cpd))
-			 ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
+			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
-			 ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
+			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setf (aref soft-cpds i) cpd)
 			 (when nil
 			   (format t "~%final cpd:")
@@ -1772,11 +1773,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (setq bn (cons soft-cpds (cdr bn)))))
 		  (let (evidence-table)
 		    (setq evidence-table (make-observations observed-factors))
-		    (when nil (and print-special* (string-equal type "state-transitions"))
+		    (when t nil (and print-special* (string-equal type "state-transitions"))
 			  (format t "~%evidence table:~%~S" evidence-table)
 			  (format t "~%model:")
 			  (print-bn bn)
-			  (break))
+			  ;;(break)
+			  )
 		    (multiple-value-bind (posterior-distribution posterior-marginals)
 			(loopy-belief-propagation bn evidence-table priors mode lr)
 		      (return (values posterior-distribution posterior-marginals cost cost-ref eme sol bindings q-first-bindings))))))))))
@@ -2142,14 +2144,14 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			(list ':probability 0
 			      ':model-selection 0
 			      ':model-selection-ref 0
-			      ':bic-fitness 1
+			      ':bic-fitness (when score-only 1)
 			      ':network (cdr prob-obs)))
 		  ;; I need to have the marginals evidence hash to properly pre-fill marginals-dist-hash
 		  (setf (gethash c marginals-dist-hash)
 			(list ':probability 0
 			      ':model-selection 0
 			      ':model-selection-ref 0
-			      ':bic-fitness 1
+			      ':bic-fitness (when score-only 1)
 			      ':network (cdr prob-obs))))
 	     (when (equal "ACTION" node-type)
 	       (loop
@@ -2176,13 +2178,13 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			       (list :probability prob
 				     :model-selection 0
 				     :model-selection-ref 0
-				     :bic-fitness 1
+				     :bic-fitness (when score-only 1)
 				     :network (make-empty-graph)))
 			 (setf (gethash c marginals-dist-hash)
 			       (list :probability prob
 				     :model-selection 0
 				     :model-selection-ref 0
-				     :bic-fitness 1
+				     :bic-fitness (when score-only 1)
 				     :network (make-empty-graph))))))
 	     (when (not (equal "ACTION" node-type))
 	       (loop
@@ -2239,13 +2241,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			   (multiple-value-bind (posterior-distribution posterior-marginals cost cost-ref)
 			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only)
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-			     (when (and print-special*
-					    (= (car js) 0))
-				   (format t "~%posterior:")
-				   (print-bn (cons (make-array (length posterior-distribution)
-							       :initial-contents posterior-distribution)
+			     (when t 
+				   (format t "~%posterior marginals:")
+				   (print-bn (cons (make-array (length posterior-marginals)
+							       :initial-contents posterior-marginals)
 						   (make-hash-table)))
-				   (break)
+				   ;;(break)
 				   )
 			     ;; smooth the posterior here.
 			     ;;(setq posterior-distribution (smooth-posterior posterior-distribution (gethash (car js) alphas) :mixture-type "discrete-normal-approximation"))
@@ -2260,7 +2261,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (list ':probability prob
 					 ':model-selection cost
 					 ':model-selection-ref cost-ref
-					 ':bic-fitness (bic-fitness cost cost-ref)
+					 ':bic-fitness (when score-only (bic-fitness cost cost-ref))
 					 ':network (cons (make-array (length posterior-distribution)
 								     :initial-contents posterior-distribution)
 							 (make-hash-table))))
@@ -2268,7 +2269,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				   (list ':probability prob
 					 ':model-selection cost
 					 ':model-selection-ref cost-ref
-					 ':bic-fitness (bic-fitness cost cost-ref)
+					 ':bic-fitness (when score-only (bic-fitness cost cost-ref))
 					 ':network (cons (make-array (length posterior-marginals)
 								     :initial-contents posterior-marginals)
 							 (make-hash-table)))))))))
@@ -2290,7 +2291,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		 (break))
 	   (return (values state-transitions marginals-state-transitions))))))
 
-(defun make-messages (evidence-hash from to hidden-state-p)
+(defun make-messages (evidence-hash from to hidden-state-p &key (score-only nil))
   (loop
     with messages = (make-hash-table)
     with idx-list = (loop for i from from to to collect i)
@@ -2336,12 +2337,12 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     (setf (gethash vvb dist-hash) (list :probability (float (/ 1 num-vvbm))
 							 :model-selection 0
 							 :model-selection-ref 0
-							 :bic-fitness 1
+							 :bic-fitness (when score-only 1)
 							 :network evidence))
 		     (setf (gethash vvb dist-hash) (list :probability (float (/ 1 num-vvbm))
 							 :model-selection 0
 							 :model-selection-ref 0
-							 :bic-fitness 1
+							 :bic-fitness (when score-only 1)
 							 :network (make-empty-graph))))
 	      finally
 		 (setf (gethash cpd-type slice) dist-hash))

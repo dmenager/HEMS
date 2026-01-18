@@ -405,7 +405,14 @@
 				       (rule-based-cpd-cardinalities cpd)))))			 
 			 (setf (rule-based-cpd-rules cpd)
 			       (make-array (length rules) :initial-contents (reverse rules)))
+			 #|
+			 (when (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd))
+			   (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil))
 			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
+			 (when (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd))
+			   (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
+			   (format t "~%pass!"))
+			 |#
 			 (when nil
 			   (format t "~%functional cpd:~%~S~%" cpd)
 			   (print-cpd cpd)

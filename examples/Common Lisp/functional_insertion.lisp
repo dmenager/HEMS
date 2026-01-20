@@ -7,7 +7,8 @@
   (format t "~%state:")
   (hems:print-bn state)
   (break)
-  (new-push-to-ep-buffer :observation observation :state state :action-name "NIL" :hidden-state-p t :insertp t :temporal-p t))
+  (new-push-to-ep-buffer :observation observation :state state :action-name "NIL" :hidden-state-p t :insertp t :temporal-p t)
+  (save-eltm-to-file eltm*))
 
 (defun example2 ()
   (let (observation state)

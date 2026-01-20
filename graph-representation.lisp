@@ -4958,7 +4958,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when (and (= i 8) (= j 13))
+  (when nil (and (= i 8) (= j 13))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -4976,7 +4976,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       finally
 	 (setq nbrs-minus-j neighbors)
 	 (setq nbrs nrs))
-    (when (and (= i 8) (= j 13))
+    (when nil (and (= i 8) (= j 13))
           (format t "~%neighbors of ~d (i) minus ~d (j):" i j)
           (loop
 	    for nbr in nbrs-minus-j
@@ -4992,7 +4992,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when (and (= i 8) (= j 13))
+    (when nil (and (= i 8) (= j 13))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -5156,7 +5156,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when (and (= j 8) (= k 13))
+              (when nil (and (= j 8) (= k 13))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -5170,7 +5170,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when (and (= j 8) (= k 13))
+	      (when nil (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -6888,6 +6888,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq min-num-compatible-set-values num-compatible-set-values)))))
     finally
        (when (null match-p)
+	 (when nil
+	   (format t "~%no match to reference rule:")
+	   (print-cpd-rule rule)
+	   (break))
 	 (when nil t
 	   (format t "~%~%schema cpd:")
 	   (print-cpd schema-cpd)

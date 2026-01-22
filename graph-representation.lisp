@@ -3238,7 +3238,7 @@
 			(member (cdar condition-block)
 				(gethash (caar condition-block)
 					   (rule-conditions rule)))))
-	   when (and (> rule-block-intersection 0) ;;(> (hash-table-count intersection) 0)
+	   when (and (> (hash-table-count intersection) 0) ;; (> rule-block-intersection 0)
 		     (not (member (cdar condition-block)
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
@@ -3324,20 +3324,24 @@
 								     (hash-table-count (second condition-block)))))
 			  |#
 			  ;; dhm: argument computes condition positives over positives and negatives
-			  (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
+			  #|(setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
 								     (+ (hash-table-count intersection)
 									condition-conflicts))))
+			  |#
+			  ;; dhm: argument computes condition positives over positives and negatives
+			  (setq condition-entropy (binary-entropy (/ rule-block-intersection
+								     (+ rule-block-intersection condition-conflicts))))
 			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%new covered negs: ~dcondition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
+			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
 				    intersection-size condition-conflicts condition-entropy (hash-table-count (second condition-block))))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (< condition-entropy best-condition-entropy))
-				     
+				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= condition-entropy best-condition-entropy)
 					  (< (hash-table-count (second condition-block)) best-block-size))
-				     
+				    |#
 				     
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
@@ -3562,7 +3566,7 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if nil ;;(= probability-concept 5.6511647e-4)
+		   (if nil ;; (= probability-concept 5.6511647e-4)
 		       #|
 		       (and nil (equal "EPOSITION_282" (rule-based-cpd-dependent-id cpd))
 			    (= 504

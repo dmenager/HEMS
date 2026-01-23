@@ -1599,7 +1599,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable
-(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t) (score-only nil))
+(defun remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (soft-likelihoods t) (score-only nil) (singleton-only nil))
   (let (partial-states cue bindings and bn priors)
     ;;(log-message (list "~d," (array-dimension (caar cue-states) 0)) "vse.csv")     
     ;;(log-message (list "~d," (array-dimension (caar partial-states) 0)) "vse.csv")
@@ -1780,7 +1780,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  ;;(break)
 			  )
 		    (multiple-value-bind (posterior-distribution posterior-marginals)
-			(loopy-belief-propagation bn evidence-table priors mode lr)
+			(loopy-belief-propagation bn evidence-table priors mode lr :singleton-only singleton-only)
 		      (return (values posterior-distribution posterior-marginals cost cost-ref eme sol bindings q-first-bindings))))))))))
 
 #| Recollect a temporal experience.
@@ -1792,7 +1792,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; temporal-evidence-bn = evidence network on the temporal model
 ;; backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory. Key: episode id, Value: subtree
 ;; evidence-slices = hash table. Key: integer Value: hash table of evidence observed for state and observation schemas. Key: ["STATE", "OBSERVATION"], Value: evidence network
-(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (infer-num 0) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods score-only)
+(defun remember-temporal (eltm temporal-evidence-bn backlinks evidence-slices &key (mode '+) (infer-num 0) (lr 1) (bic-p t) (alphas (make-hash-table)) hidden-state-p soft-likelihoods score-only (singleton-only nil))
   (labels ((find-vvbm-by-idx-val (vals vvbms acc)
 	     (loop
 	       for vvbm in vvbms
@@ -2239,7 +2239,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				 ;;(break)
 				 )
 			   (multiple-value-bind (posterior-distribution posterior-marginals cost cost-ref)
-			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only)
+			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only :singleton-only singleton-only)
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
 			     (when t 
 				   (format t "~%posterior marginals:")
@@ -2401,7 +2401,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 ;; hidden-state-p = flag for if the temporal model has a state variable
 ;; soft-likelihoods = flag for if we add very small padding to 0-valued probablities
 ;; bic-p = flag for using the Bayesian information criterion. If false, system just uses likelihood
-(defun calibrate-temporal-model (evidence-hash from to n-passes hidden-state-p soft-likelihoods bic-p &key (score-only nil))
+(defun calibrate-temporal-model (evidence-hash from to n-passes hidden-state-p soft-likelihoods bic-p &key (score-only nil) (singleton-only nil))
   (labels ((check-one-way-convergence (messages new-messages)
 	     "slice -> type [state, observation, action] -> distribution-hash [outcome_1,..., outcome_n] -> (:probability prob, :model-selection score :network net)"
 	     (loop
@@ -2629,7 +2629,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		     ;;(break)
 		     )
 		   (multiple-value-bind (state-transitions marginals-state-transitions)
-		       (remember-temporal (list (car eltm*)) evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p :score-only score-only)
+		       (remember-temporal (list (car eltm*)) evidence-bn backlinks evidence-slices :hidden-state-p hidden-state-p :soft-likelihoods soft-likelihoods :bic-p bic-p :score-only score-only :singleton-only singleton-only)
 		     (when nil print-special*
 		       (format t "~%state transitions:")
 		       (print-state-transitions state-transitions)
@@ -2710,10 +2710,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 (defun py-remember (eltm cue-bn mode lr bic-p &key (backlinks (make-hash-table :test #'equal)) (type "state-transitions") (observability 1) (softlikelihoods nil))
   (remember eltm cue-bn mode lr bic-p :backlinks backlinks :type type :observability observability :soft-likelihoods softlikelihoods))
 
-(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods (alphas (make-hash-table)) (infernum 0))
+(defun py-remember-temporal (eltm temporal-evidence-bn backlinks evidence-bns &key (mode '+) (lr 1) (bicp t) hiddenstatep softlikelihoods (alphas (make-hash-table)) (infernum 0) (singletononly nil))
   (let (alist marginal-alist)
     (multiple-value-bind (messages marginal-messages)
-	(remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods :alphas alphas :infer-num infernum)
+	(remember-temporal eltm temporal-evidence-bn backlinks evidence-bns :mode mode :lr lr :bic-p bicp :hidden-state-p hiddenstatep :soft-likelihoods softlikelihoods :alphas alphas :infer-num infernum :singleton-only singleton-only)
       (maphash #'(lambda (k v)
 		   (push (list k v) alist))
 	       messages)

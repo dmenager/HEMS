@@ -3329,8 +3329,10 @@
 									condition-conflicts))))
 			  |#
 			  ;; dhm: argument computes condition positives over positives and negatives
-			  (setq condition-entropy (binary-entropy (/ rule-block-intersection
-								     (+ rule-block-intersection condition-conflicts))))
+			  (if (> (+ rule-block-intersection condition-conflicts) 0)
+			      (setq condition-entropy (binary-entropy (/ rule-block-intersection
+									 (+ rule-block-intersection condition-conflicts))))
+			      (setq condition-entropy most-positive-fixnum))
 			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
 				    intersection-size condition-conflicts condition-entropy (hash-table-count (second condition-block))))
@@ -5138,7 +5140,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
-(defun calibrate-factor-graph (factors op edges evidence lr)
+(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil))
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
@@ -5160,7 +5162,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (and (= j 8) (= k 13))
+              (when (and (= j 8) (= k 13))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -5174,7 +5176,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 8) (= k 13))
+	      (when (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -5230,7 +5232,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 when (rule-based-cpd-singleton-p (aref factors i))
                    collect (compute-belief i factors edges messages) into posterior-marginals
-		  else
+		  else if (not singleton-only)
 		    collect (compute-belief i factors edges messages) into posterior-distribution
 		  finally
 		     (return (values posterior-distribution posterior-marginals))))
@@ -6316,7 +6318,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence priors op lr)
+(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil))
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -6521,7 +6523,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%initial messages:~%~A" initial-messages)
       ;;(break)
       )
-    (calibrate-factor-graph all-factors op edges initial-messages lr)))
+    (calibrate-factor-graph all-factors op edges initial-messages lr :singleton-only singleton-only)))
 
 #| Move assignment by 1 |#
 
@@ -6892,7 +6894,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq min-num-compatible-set-values num-compatible-set-values)))))
     finally
        (when (null match-p)
-	 (when nil
+	 (when t nil
 	   (format t "~%no match to reference rule:")
 	   (print-cpd-rule rule)
 	   (break))

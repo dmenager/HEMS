@@ -183,9 +183,9 @@
 (defun infer-posterior (cpds-hash episode obs type)
   (let ((observation (make-hash-table :test #'equal))
 	(net (get-episode-bn episode type)))
-    (multiple-value-bind (sol no-matches cost bindings)
+    (multiple-value-bind (sol no-matches cost cost-ref bindings)
 	(new-maximum-common-subgraph obs net (make-hash-table) (make-hash-table))
-      (declare (ignore sol no-matches cost))
+      (declare (ignore sol no-matches cost cost-ref ))
       (loop
 	with mapped-id
 	for cpd being the elements of (car obs)
@@ -328,6 +328,9 @@
 	(H[bn] episode observations type))
     (log-message (list "~%entropy value: ~d" entropy) "log.txt")
     (values net entropy)))
+
+(defun bic-fitness (bic bic-ref)
+  (exp (* (/ -1 2) (- bic bic-ref))))
 
 #| TESTS
 

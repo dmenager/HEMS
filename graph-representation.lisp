@@ -222,7 +222,22 @@
      do
        (setf (gethash i hash) value)
      finally
-       (return hash)))
+	(return hash)))
+
+#| Look up attribute assignment in rule conditions.
+   Returns list.|#
+
+;; att = attribute to look up in rule conditions
+;; rule = cpd rule
+;; cpd = rule-based cpd
+(defun lookup-rule-condition (att rule cpd)
+  (let (res att-idx)
+    (setq res (gethash att (rule-conditions rule)))
+    (when (null res)
+      (setq att-idx (gethash att (rule-based-cpd-identifiers cpd)))
+      (setq res (gethash att-idx (rule-based-cpd-var-values cpd))))
+    res))
+
 #| Make a ruleset whose probabilities are initilized to value |#
 
 ;; factor = conditional probability distribution
@@ -774,8 +789,8 @@
 ;; rule1 = rule in rule-based cpd
 ;; rule2 = rule in rule-based cpd
 (defun same-rule-p (rule1 rule2 cpd1 cpd2 &key (check-probability t) (check-num-conditions t) (check-count t) (check-conditions t) (check-blocks nil) (exact nil) (round nil))
-  (cond ((and check-probability round (not (= (read-from-string (format nil "~5$" (rule-probability rule1)))
-                                              (read-from-string (format nil "~5$" (rule-probability rule2))))))
+  (cond ((and check-probability round (not (= (fround-to-n-digits (float (rule-probability rule1)) 5)
+                                              (fround-to-n-digits (float (rule-probability rule2)) 5))))
          nil)
         ((and check-probability (not round) (not (= (rule-probability rule1) (rule-probability rule2))))
          nil)
@@ -938,10 +953,10 @@
     (setf (rule-based-cpd-identifiers new-cpd) (swap-hash-keys (rule-based-cpd-identifiers new-cpd) bindings))
     (setq var-val-mappings (subst-var-value-block-map new-cpd cpd2 bindings))
     (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id cpd)))
-          (format t "~%bindings:~%~S~%var-val-mappings:~%~S" bindings var-val-mappings))
+          (format t "~%~%bindings:~%~S~%var-val-mappings:~%~S" bindings var-val-mappings))
     (setf (rule-based-cpd-rules new-cpd) (swap-rule-conditions (rule-based-cpd-rules new-cpd) bindings var-val-mappings))
     ;;(format t "~%subst cpd:~%~A" cpd)
-    new-cpd))
+    (values new-cpd var-val-mappings)))
 
 (defun subst-cpd-2 (cpd cpd2 bindings &key (deep nil) &aux new-cpd dep-id)
   ;;(format t "~%original cpd:~%~A" cpd)
@@ -1046,7 +1061,7 @@
 ;; vvm = variable value map of conditional-probability density
 (defun generate-cpd-cardinalities (vvm &aux count)
   (setq count (hash-table-count vvm))
-  (make-array count :initial-contents (loop for i from 0 to (- count 1) collect (length (gethash i vvm))) :fill-pointer t))
+  (make-array count :initial-contents (loop for i from 0 below count collect (length (gethash i vvm))) :fill-pointer t))
 
 #| Generate an ordered list of step-sizes for the variables |#
 
@@ -1065,23 +1080,36 @@
 
 #| Get variable assignment of variable i in cpd for given index |#
 
-;; cpd = conditional probability density
-;; index = index into flattened cpd
-;; i = variable position in cpd-vars
-(defun get-cpd-assignment-for-var (cpd index i)
-  (mod  (floor (/ index (aref (rule-based-cpd-step-sizes cpd) i)))
-        (aref (rule-based-cpd-cardinalities cpd) i)))
+  ;; cpd = conditional probability density
+  ;; index = index into flattened cpd
+  ;; i = variable position in cpd-vars
+  ;; ident = identifier of variable at position i
+(defun get-cpd-assignment-for-var (cpd index i ident &key (var-val-mappings (make-hash-table :test #'equal)))
+  (let (value map)
+    (setq value
+	  (mod  (floor (/ index (aref (rule-based-cpd-step-sizes cpd) i)))
+		(aref (rule-based-cpd-cardinalities cpd) i)))
+    (setq map (gethash ident var-val-mappings))
+    (cond (map
+	   (let (new-val)
+	     (setq new-val (cdr (assoc value map)))
+	     (if new-val
+		 new-val
+		 value)))
+	  (t
+	   value))))
 
 #| Get variable assignment of all variables in cpd for given index |#
 
 ;; cpd = conditional probability density
 ;; index = index into flattened cpd
-(defun get-cpd-assignment-from-index (cpd index)
+(defun get-cpd-assignment-from-index (cpd index &key (var-val-mappings (make-hash-table :test #'equal)))
   (loop
     with assn = (make-array (hash-table-count (rule-based-cpd-identifiers cpd)) :fill-pointer t)
-    for i being the hash-values of (rule-based-cpd-identifiers cpd)
+    for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+      using (hash-value i)
     do
-       (setf (aref assn i) (get-cpd-assignment-for-var cpd index i))
+       (setf (aref assn i) (get-cpd-assignment-for-var cpd index i ident :var-val-mappings var-val-mappings))
     finally
        (return assn)))
 
@@ -1643,7 +1671,7 @@
     finally
         (return (values idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms vals))))
 
-#| Round a floating point number. Returns float. |#
+#| Round a floating point number to n decimal places. Returns float. |#
 
 ;; v = float to round
 ;; n = number of significant digits
@@ -1658,12 +1686,12 @@
        10^-n)))
 
 #| Normalize factor rules to maintain probability measure.
-   Returns: Destructively modified phi|#
+   Returns: Destructively modified phi
 
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
 (defun normalize-rule-probabilities (phi new-dep-id)
-  (when nil (equal "STATE_0_1539" (rule-based-cpd-dependent-id phi))
+  (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
     (format t "~%~%~%normalizing phi:")
     (print-cpd phi))
   (loop
@@ -1673,10 +1701,7 @@
     for r1 being the elements of rules
     for j from 0
     do
-       (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-		  (or (= j 400)
-		      (= j 401)
-		      (= j 402)))
+       (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
          (format t "~%~%~%normalizing rule ~d:~%~S" j r1))
          (loop
            with copy-rule = (copy-cpd-rule r1)
@@ -1686,16 +1711,13 @@
               (setf (gethash new-dep-id (rule-conditions copy-rule)) (list i))
 	      (setq compatible-rules (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
               (setq compatible-rule (car compatible-rules))
-              (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-			 (or (= j 400)
-			     (= j 401)
-			     (= j 402)))
+              (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
                 (format t "~%getting rule for assignment:")
-		    (print-cpd-rule copy-rule)
-		    (format t "~%candidatate matches:")
-		    (map nil #'print-cpd-rule (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
-		    (format t "~%selection:")
-		    (print-cpd-rule compatible-rule))
+		(print-cpd-rule copy-rule)
+		(format t "~%candidatate matches:")
+		(map nil #'print-cpd-rule (get-compatible-rules phi phi copy-rule :find-all nil :best-matches t))
+		(format t "~%selection:")
+		(print-cpd-rule compatible-rule))
            when (or (null (rule-count compatible-rule))
                     (>= (rule-count compatible-rule) 0)
 		    )
@@ -1707,34 +1729,36 @@
               (setf (rule-probability new-rule) (if (> norm-const 0)
 						    (/ (rule-probability r1) norm-const)
                                                     0))
+	      (when (floatp (rule-probability new-rule))
+		(setf (rule-probability new-rule)
+		      (fround-to-n-digits (rule-probability new-rule) 5)))
 	      (when (rule-count r1)
 		(setq row-count (apply #'max (mapcar #'rule-count row)))
 		(setf (rule-count new-rule) row-count))
               (setf (rule-block new-rule) (make-hash-table))
               (setf (gethash block (rule-block new-rule)) block)
               (setq block (+ block 1))
-	      (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id phi))
-			 (or (= j 400)
-			     (= j 401)
-			     (= j 402)))
+	      (when (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
 		(format t "~%~%row:")
 		(mapcar #'print-cpd-rule row)
 		(format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
 		(format t "~%normalized rule:")
 		(print-cpd-rule new-rule)
-		(break)
+		;;(break)
 		)
               (when (or (> (rule-probability new-rule) 1)
                         (< (rule-probability new-rule) 0))
+		(format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
 		(print-cpd phi)
-		(format t "~%identifiers:~%~S~%normalizing rule:" (rule-based-cpd-identifiers phi))
+		(format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
 		(print-cpd-rule r1)
 		(format t "~%row:")
 		(map nil #'print-cpd-rule row)
 		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
 		(print-cpd-rule new-rule)
 		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
-                (error "Normalization error"))
+		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+		(error "Normalization error"))
               (setq new-rules (cons new-rule new-rules))
 	      (when nil print-special*
 		(format t "~%block: ~d~%new rules:" block)
@@ -1742,6 +1766,416 @@
     finally
        (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
   phi)
+|#
+
+#| Normalize factor rules to maintain probability measure.
+   Returns: Destructively modified phi
+
+;; phi = conditional probability distribution
+;; new-dep-id = dependent variable name of the conditional distribution
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (when nil (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+    (format t "~%~%~%normalizing phi:")
+    (print-cpd phi))
+  (loop
+    with row-len = (aref (rule-based-cpd-cardinalities phi) 0)
+    with index-rule
+    with row and compatible-rule
+    with assn = (make-array (hash-table-count (rule-based-cpd-identifiers phi)) :initial-element 0)
+    with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
+    with rules = (rule-based-cpd-rules phi)
+    with new-rules and block = 0 and new-rule
+    for i from 0 to (reduce #'* (rule-based-cpd-cardinalities phi))
+    do
+       (when (= (mod i row-len) 0)
+	 (setq row nil))
+       (setq index-rule (make-rule :conditions (make-hash-table :test #'equal)))
+       (setq assn (get-cpd-assignment-from-index phi i :var-val-mappings var-val-mappings))
+       (loop
+         for ident being the hash-keys of (rule-based-cpd-identifiers phi)
+           using (hash-value pos)
+         do
+            (setf (gethash ident (rule-conditions index-rule)) (list (aref assn pos))))
+       (setq compatible-rule (car (get-compatible-rules phi phi index-rule :find-all nil :best-matches t)))
+       (when (or (null (rule-count compatible-rule))
+                 (>= (rule-count compatible-rule) 0))
+	 (setf (rule-probability index-rule)
+	       (rule-probability compatible-rule))
+	 (setf (rule-count index-rule)
+	       (rule-count compatible-rule))
+         (setq row (cons index-rule row)))
+       (when (= (mod i row-len) (- row-len 1))
+	 ;; row complete
+	 (loop
+	   with norm-const = (apply #'+ (mapcar #'rule-probability row))
+	   with row-count
+	   for r in row
+	   do
+	      (setq new-rule (copy-cpd-rule r))
+	      (setf (rule-probability new-rule) (if (> norm-const 0)
+						    (/ (rule-probability r) norm-const)
+                                                    0))
+	      #|
+	      (when (floatp (rule-probability new-rule))
+		(setf (rule-probability new-rule)
+		      (fround-to-n-digits (rule-probability new-rule) 5)))
+	      |#
+	      (when (rule-count r)
+		(setq row-count (apply #'max (mapcar #'rule-count row)))
+		(setf (rule-count new-rule) row-count))
+	      (setf (rule-block new-rule) (make-hash-table))
+	      (setf (gethash block (rule-block new-rule)) block)
+	      (setq block (+ block 1))
+	      (when nil (equal "OBSERVATION_0_71945" (rule-based-cpd-dependent-id phi))
+		(format t "~%~%row:")
+		(mapcar #'print-cpd-rule row)
+		(format t "~%normalizing constant: ~d~%new count: ~d" norm-const row-count)
+		(format t "~%normalized rule:")
+		(print-cpd-rule new-rule)
+		;;(break)
+		)
+	      (when (or (> (rule-probability new-rule) 1)
+			(< (rule-probability new-rule) 0))
+		(format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
+		(print-cpd phi)
+		(format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) (- block 1))
+		(print-cpd-rule r)
+		(format t "~%row:")
+		(map nil #'print-cpd-rule row)
+		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
+		(print-cpd-rule new-rule)
+		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+		(error "Normalization error"))
+	      (setq new-rules (cons new-rule new-rules))
+	      (when nil print-special*
+		    (format t "~%~%block: ~d~%new rules:" block)
+		    (map nil #'print-cpd-rule new-rules))))
+    finally
+       (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules)))
+       (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi)))
+       (return phi)))
+|#
+
+#| Normalize factor rules to maintain probability measure.
+   Returns: Destructively modified phi |#
+
+;; phi = conditional probability distribution
+;; new-dep-id = dependent variable name of the conditional distribution
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (labels ((intersect-rule-conditions (r1 r2)
+	     (loop
+	       with conditions = (make-hash-table :test #'equal)
+	       with r1-vals and r2-vals and new-vals
+	       for ident being the hash-keys of (rule-based-cpd-identifiers phi)
+		 using (hash-value idx)
+	       when (not (equal ident new-dep-id))
+		 do
+		    (setq r1-vals (gethash ident (rule-conditions r1)))
+		    (setq r2-vals (gethash ident (rule-conditions r2)))
+		    (cond ((and r1-vals r2-vals)
+			   (setq new-vals (intersection r1-vals r2-vals)))
+			  ((and r1-vals (null r2-vals))
+			   (setq new-vals r1-vals))
+			  ((and (null r1-vals) r2-vals)
+			   (setq new-vals r2-vals))
+			  ((and (null r1-vals) (null r2-vals))
+			   (setq new-vals nil)))
+		    (when (and new-vals
+			       (not (= (length new-vals)
+				       (length (gethash idx (rule-based-cpd-var-values phi))))))
+		      (setf (gethash ident conditions) new-vals))
+	       finally
+		  (return conditions))))
+    (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+      (format t "~%~%~%normalizing phi:")
+      (print-cpd phi))
+    (loop
+      with context-hash and counts-hash and rows-hash and dep-values-hash
+      with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
+      with rules = (rule-based-cpd-rules phi)
+      with new-rules and block = 0 and new-rule and matched-p and r1-dep-values
+      for r1 being the elements of rules
+      for j from 0
+      do
+	 (setq context-hash (make-hash-table :test #'equal))
+	 (setq counts-hash (make-hash-table :test #'equal))
+	 (setq rows-hash (make-hash-table :test #'equal))
+	 (setq dep-values-hash (make-hash-table :test #'equal))
+	 (setq matched-p nil)
+	 (let ((row-h (make-hash-table :test #'equal))
+	       (remaining-dep-vals (gethash 0 (rule-based-cpd-var-values phi)))
+	       encoding)
+	   (setq r1-dep-values (gethash new-dep-id (rule-conditions r1)))
+	   (when (null r1-dep-values)
+	     (setq r1-dep-values (gethash 0 (rule-based-cpd-var-values phi))))
+	   (setq encoding (polynomial-encoding r1 phi))
+	   (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+	     (when (gethash encoding rows-hash)
+	       (format t "~%overiding existing row!!")
+	       (break)))
+	   (setf (gethash (rule-id r1) row-h) r1)
+	   (setq remaining-dep-vals
+		 (set-difference remaining-dep-vals r1-dep-values))
+	   (setf (gethash encoding context-hash)
+		 (list (* (rule-probability r1)
+			  (length r1-dep-values))))
+	   (setf (gethash encoding counts-hash)
+		 (list (rule-count r1)))
+	   (setf (gethash encoding rows-hash)
+		 (list :descriptor (rule-conditions r1)
+		       :contents row-h))
+	   (setf (gethash encoding dep-values-hash) remaining-dep-vals))
+	 (loop
+	   with parent-setting and norm-const and r2-dep-values
+	   with new-r2-dep-id-vals and remaining-dep-vals
+	   for r2 being the elements of rules
+	   for k from 0
+	   when (not (= j k))
+	     do
+		(setq r2-dep-values (gethash new-dep-id (rule-conditions r2)))
+		(when (null r2-dep-values)
+		  (setq r2-dep-values (gethash 0 (rule-based-cpd-var-values phi))))
+		(setq parent-setting (copy-cpd-rule r2))
+		(remhash new-dep-id (rule-conditions parent-setting))
+		(when (compatible-rule-p r1 parent-setting phi phi)
+		  (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			     (equal "RULE-64312" (rule-id r1))
+			     (equal "RULE-64315" (rule-id r2)))
+		    (format t "~%~%r1:")
+		    (print-cpd-rule r1))
+		  (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			     (equal "RULE-64312" (rule-id r1))
+			     (equal "RULE-64315" (rule-id r2)))
+		    (format t "~%~%Candidate rule:")
+		    (print-cpd-rule r2)
+		    (format t "~%Parent setting:")
+		    (print-cpd-rule parent-setting)
+		    ;;(format t "~%compatible-rule-p: ~S" (compatible-rule-p r1 parent-setting phi phi))
+		    )
+		  (let (conditions condition-rule2)
+		    (setq matched-p t)
+		    (setq conditions (intersect-rule-conditions r1 parent-setting))
+		    (setq condition-rule2 (make-rule :conditions conditions))
+		    (loop
+		      with new-context-hash = (make-hash-table :test #'equal) and new-counts-hash = (make-hash-table :test #'equal)
+		      with new-rows-hash = (make-hash-table :test #'equal) and new-dep-values-hash = (make-hash-table :test #'equal)
+		      with condition-match-p
+		      with condition-rule1 and new-conditions
+		      with new-encoding
+		      with row-descriptor and row-contents
+		      for encoding being the hash-keys of context-hash
+			using (hash-value probs)
+		      do
+			 (setq condition-rule1 (make-rule :conditions (getf (gethash encoding rows-hash) :descriptor)))
+			 (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+				    (equal "RULE-64312" (rule-id r1))
+				    (equal "RULE-64315" (rule-id r2)))
+			   (format t "~%~%condition-rule1:~%~S~%condition-rule2:~%~S" condition-rule1 condition-rule2))
+			 (when (compatible-rule-p condition-rule1 condition-rule2 phi phi)
+			   (setq condition-match-p t)
+			   (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+				      (equal "RULE-64312" (rule-id r1))
+				      (equal "RULE-64315" (rule-id r2)))
+			     (format t "~%compatible condition rules!"))
+			   (setq new-conditions (intersect-rule-conditions condition-rule1 condition-rule2))
+			   (setq new-encoding (polynomial-encoding (make-rule :conditions new-conditions) phi))
+			   (setq row-descriptor (getf (gethash encoding rows-hash) :descriptor))
+			   (setq row-contents (getf (gethash encoding rows-hash) :contents))
+			   (setq remaining-dep-vals (gethash encoding dep-values-hash))
+			   (setq new-r2-dep-id-vals (intersection r2-dep-values remaining-dep-vals))
+			   (when nil
+			     (format t "~%remaining dependent id variable values for encoding ~S:~%~S~%new r2-dep-id vals from r2 not in remaining set:~%~S" encoding remaining-dep-vals new-r2-dep-id-vals))
+			   (when new-r2-dep-id-vals
+			     (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+					(equal "RULE-64312" (rule-id r1))
+					(equal "RULE-64315" (rule-id r2)))
+			       (format t "~%~%encoding: ~S~%context hash size before: ~S" encoding (length (gethash encoding context-hash)))
+			       (format t "~%row before:~%   descriptor:~%   ~S" (getf (gethash encoding rows-hash) :descriptor)))
+			     (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			       (when (gethash new-encoding new-rows-hash)
+				 (format t "~%overiding existing row!!")
+				 (break)))
+			     (setf (gethash new-dep-id (rule-conditions parent-setting)) new-r2-dep-id-vals)
+			     (setq remaining-dep-vals (set-difference remaining-dep-vals new-r2-dep-id-vals))
+			     (setf (gethash (rule-id parent-setting) row-contents) parent-setting)
+			     (setf (gethash new-encoding new-context-hash)
+				   (cons (* (rule-probability parent-setting)
+					    (length new-r2-dep-id-vals))
+					 (gethash encoding context-hash)))
+			     (setf (gethash new-encoding new-counts-hash)
+				   (cons (rule-count parent-setting)
+					 (gethash encoding counts-hash)))
+			     (setf (gethash new-encoding new-rows-hash)
+				   (list :descriptor (intersect-rule-conditions parent-setting (make-rule :conditions row-descriptor))
+					 :contents row-contents))
+			     (setf (gethash new-encoding new-dep-values-hash) remaining-dep-vals)
+			     (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+					(equal "RULE-64312" (rule-id r1))
+					(equal "RULE-64315" (rule-id r2)))
+			       (format t "~%new encoding: ~S~%context hash size after: ~S" new-encoding (length (gethash new-encoding new-context-hash)))
+			       (format t "~%row after:~%   descriptor:~%   ~S" (getf (gethash new-encoding new-rows-hash) :descriptor))))
+			   #|
+			   (setf (gethash condition context-hash)
+				 (cons (* (rule-probability parent-setting)
+					  (length r2-dep-values))
+				       (gethash condition context-hash)))
+			   (setf (gethash condition counts-hash)
+				 (cons (rule-count parent-setting)
+				       (gethash condition counts-hash)))
+			   (setf (gethash condition rows-hash)
+				 (cons r2
+				       (gethash condition rows-hash)))
+			   |#)
+		      finally
+			 (setq context-hash new-context-hash)
+			 (setq counts-hash new-counts-hash)
+			 (setq rows-hash new-rows-hash)
+			 (setq dep-values-hash new-dep-values-hash)))))
+	 (loop
+	   with counts
+	   with norm-const and count
+	   with row-prop-list and condition and row
+	   for encoding being the hash-keys of context-hash
+	     using (hash-value probs)
+	   do
+	      (setq norm-const (reduce #'+ probs))
+	      (setq counts (gethash encoding counts-hash))
+	      (when (rule-count r1)
+		;;(setq count (apply #'max counts))
+		;; DHM: patching. Some rules strangely have nil count in non-singleton cpds
+		(setq count (rule-count r1)))
+	      (setq row-prop-list (gethash encoding rows-hash))
+	      (setq condition (getf row-prop-list :descriptor))
+	      (setq row (getf row-prop-list :contents))
+	      (when (< (length r1-dep-values)
+		       (length (gethash 0 (rule-based-cpd-var-values phi))))
+		(when nil
+		  (format t "new dep id: ~S~%condition: ~S~%r1 dep values: ~S~%norm const: ~d prob: ~d" new-dep-id condition r1-dep-values norm-const (rule-probability r1)))
+		(setf (gethash new-dep-id condition) r1-dep-values))
+	      (when nil
+		(format t "~%condition:~%~S" condition))
+	      (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
+					:conditions condition
+					:probability (if (> norm-const 0)
+							 (/ (rule-probability r1) norm-const)
+							 0)
+					:block (make-hash-table)
+					:certain-block (make-hash-table)
+					:avoid-list (make-hash-table)
+					:redundancies (make-hash-table)
+					:count count))
+	      #|
+	      (when (floatp (rule-probability new-rule))
+		(setf (rule-probability new-rule)
+		      (fround-to-n-digits (rule-probability new-rule) 5)))
+	      |#
+	      (setf (gethash block (rule-block new-rule)) block)
+	      (setq block (+ block 1))
+	      (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			 (or (equal "RULE-2049" (rule-id new-rule))
+			     (equal "RULE-2052" (rule-id new-rule))))
+		(format t "~%~%normalizing rule:")
+		(print-cpd-rule r1)
+		(format t "~%encoding: ~S~%row descriptor (new rule conditions):~%   <" encoding)
+		(loop
+		  for att being the hash-keys of condition
+		    using (hash-value val)
+		  do
+		     (format t "~a:=~d " att val)
+		  finally
+		     (format t ">"))
+		(format t "~%row:~%")
+		(loop
+		  for r being the hash-values of row
+		  do
+		     (print-cpd-rule r))
+		(format t "~%  probabilities:~%   ~S" probs)
+		(format t "~%normalizing constant: ~d" norm-const))
+	      (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			 (or (equal "RULE-2049" (rule-id new-rule))
+			     (equal "RULE-2052" (rule-id new-rule))))
+		(format t "~%new rule:")
+		(print-cpd-rule new-rule))
+	      (when (or (> (rule-probability new-rule) 1)
+			(< (rule-probability new-rule) 0))
+		(format t "~%new dep-id: ~S~%cpd:~%~S" new-dep-id phi)
+		(print-cpd phi)
+		(format t "~%identifiers:~%~S~%normalizing rule ~d:" (rule-based-cpd-identifiers phi) j)
+		(print-cpd-rule r1)
+		(format t "~%contexts:~%~S" context-hash)
+		(format t "~%normalizing constant: ~d~%new rule:" norm-const)
+		(print-cpd-rule new-rule)
+		;;(format t "~%identifiers:~%~S~%normalizing rule:~%~S~%row:~%~S~%norm const: ~d~%normalized rule:~%~S" (rule-based-cpd-identifiers phi) r1 row norm-const new-rule)
+		(check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+		(error "Normalization error"))
+	      (setq new-rules (cons new-rule new-rules))
+	      (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+		(loop
+		  for nr1 in (reverse new-rules)
+		  for x from 0
+		  do
+		     (loop
+		       for nr2 in (reverse new-rules)
+		       for y from 0
+		       when (not (= x y))
+			 do
+			    (when (and (not (equal (rule-probability nr1)
+						   (rule-probability nr2)))
+				       (compatible-rule-p nr1 nr2 phi phi))
+			      (format t "~%compatible rules with different probabilities~%new rules:")
+			      (mapcar #'print-cpd-rule (reverse new-rules))
+			      (format t "~%rule1 at index ~d:" x)
+			      (print-cpd-rule nr1)
+			      (format t "~%rule2 at index ~d:" y)
+			      (print-cpd-rule nr2)
+			      (break))))))
+	 (when (null matched-p)
+	   ;; Do a "self" match.
+	   (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (format t "~%no match for rule:")
+	     (print-cpd-rule r1))
+	   (let (norm-const)
+	     (setq new-rule (copy-cpd-rule r1))
+	     (setq norm-const (* (rule-probability r1)
+				 (length r1-dep-values)))
+	     (setf (rule-probability new-rule)
+		   (if (> norm-const 0)
+		       (/ (rule-probability new-rule) norm-const)
+		       0))
+	     (setf (gethash block (rule-block new-rule)) block)
+	     (setq block (+ block 1))
+	     (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	       (format t "~%norm const: ~d~%new rule:" norm-const)
+	       (print-cpd-rule new-rule))
+	     (setq new-rules (cons new-rule new-rules))
+	     (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+	       (loop
+		 for nr1 in (reverse new-rules)
+		 for x from 0
+		 do
+		    (loop
+		      for nr2 in (reverse new-rules)
+		      for y from 0
+		      when (not (= x y))
+			do
+			   (when (and (not (equal (rule-probability nr1)
+						  (rule-probability nr2)))
+				      (compatible-rule-p nr1 nr2 phi phi))
+			     (format t "~%compatible rules with different probabilities~%new rules:")
+			     (mapcar #'print-cpd-rule (reverse new-rules))
+			     (format t "~%rule1 at index ~d:" x)
+			     (print-cpd-rule nr1)
+			     (format t "~%rule2 at index ~d:" y)
+			     (print-cpd-rule nr2)
+			     (break)))))))
+      finally
+	 (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	   (format t "~%~%max new rules index: ~d~%new rules:" (- (length new-rules) 1))
+	   (mapcar #'print-cpd-rule (reverse new-rules)))
+	 (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
+    (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+    phi))
 
 #| split rules compatible with new zero-count rules |#
 
@@ -1751,9 +2185,9 @@
 ;; ident = variable to split on
 ;; binding = variable binding to avoid when splitting
 ;; vvbm = variable var block map from which to find bindings to use in splitting
-(defun split-compatible-rules (rules rule phi ident binding vvbm)
+;; acc = accumulator for storing the result
+(defun split-compatible-rules (rules rule phi ident binding vvbm acc)
   (loop
-    with split-rules = nil
     for existing-rule in rules
     when (and (or (not (equal (rule-probability rule)
                               (rule-probability existing-rule)))
@@ -1765,17 +2199,24 @@
            (format t "~%~%existing rule is compatible with new rule.~%Splitting existing rule:")
            (print-cpd-rule existing-rule)
            (format t "~%new rule:")
-           (print-cpd-rule rule))
+           (print-cpd-rule rule)
+	   (format t "~%binding: ~S" binding))
          (loop
-           with split-rule = (copy-cpd-rule existing-rule)
+           with split-rule = (let ((tmp (copy-cpd-rule existing-rule)))
+			       (remhash ident (rule-conditions tmp))
+			       tmp)
            for (binding2 block) in vvbm
            when (not (equal (car binding2) (car binding)))
              do
+		(when nil
+		  (format t "~%(car binding2): ~S~%(car binding): ~S" binding2 binding))
                 (when (null (gethash ident (rule-conditions split-rule)))
                   (setf (gethash ident (rule-conditions split-rule)) nil))
-                (setf (gethash ident (rule-conditions split-rule))
-                      (cons (cdr binding2)
-                            (gethash ident (rule-conditions split-rule))))
+		(when (not (member (cdr binding2)
+				   (gethash ident (rule-conditions split-rule))))
+		  (setf (gethash ident (rule-conditions split-rule))
+			(cons (cdr binding2)
+                              (gethash ident (rule-conditions split-rule)))))
            finally
               (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
                 (format t "~%split rule:")
@@ -1783,15 +2224,15 @@
                 ;;(format t "~%compatible rules:")
                 ;;(mapcar #'print-cpd-rule (get-compatible-rules phi phi split-rule :find-all t))
                 )
-              (setq split-rules (cons split-rule split-rules)))
+              (setq acc (cons split-rule acc)))
     else
       do
          (when nil (and print-special* (equal "STATE_VAR2_309" (rule-based-cpd-dependent-id phi)))
                (format t "~%~%existing rule is NOT compatible with new rule. Inserting existing rule:")
                (print-cpd-rule existing-rule))
-         (setq split-rules (cons existing-rule split-rules))
+         (setq acc (cons existing-rule acc))
     finally
-       (return split-rules)))
+       (return acc)))
 
 #| Add back any pruned conditions to every rule in ruleset if they are missing from phi2 identifiers
    Returns: destrictively modified CPD |#
@@ -1863,15 +2304,17 @@
                    (setq vvbm1 (insert-after vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq sva1 (insert-after sva1 insert-pos (list (cdr binding))))
                    (when nil (and print-special* (equal "TIME_509" (rule-based-cpd-dependent-id phi1)))
-                         (format t "~%updated schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding:~%~S" vvbm1 vvbm2 var2s var2 binding))
+                         (format t "~%updated schema vvbm: ~S~%episode vvbm: ~S~%var2s:~%~S~%var2: ~S~%binding: ~S" vvbm1 vvbm2 var2s var2 binding))
                    (setq lower-vvbm1 (insert-after lower-vvbm1 insert-pos (list binding (make-hash-table))))
                    (setq vals1 (insert-after vals1 insert-pos (cdr binding)))
                    (cond ((= pos 0)
                           ;; new column
                           (loop
                             with rule-condition
-                            with new-rules = (coerce (rule-based-cpd-rules phi1) 'list)
+			    with existing-rules = (coerce (rule-based-cpd-rules phi1) 'list)  
+                            with new-rules = nil
                             for rule being the elements of (rule-based-cpd-rules phi1)
+			    for i from 0
                             do
                                (setq new-rule (copy-cpd-rule rule))
                                (setf (gethash ident2 (rule-conditions new-rule)) (list (cdr binding)))
@@ -1880,14 +2323,17 @@
                                      (format t "~%new rule:~%~S~%existing rule:~%~S" new-rule rule))
                                (when (notany #'(lambda (r) (same-rule-p new-rule r phi1 phi1)) new-rules)
                                  (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
-                                       (format t "~%~%binding: ~S~%new rule:~%~S~%existing rule:~%~S" binding new-rule rule))
-                                 (setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
+                                       (format t "~%~%binding: ~S~%existing rule ~d:" binding i)
+				       (print-cpd-rule rule)
+				       (format t "~%new rule:")
+				       (print-cpd-rule new-rule))
+                                 (setq new-rules (split-compatible-rules existing-rules new-rule phi1 ident2 binding vvbm1 new-rules))
                                  (setq new-rules (cons new-rule new-rules)))
                                (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
                                      (format t "~%new rules:")
                                      (map nil #'print-cpd-rule new-rules)
                                      ;;(format t "~%new rules:~%~S" new-rules)
-                                     ;;(break)
+                                     (break)
                                      )
                             finally
                                (setq new-rules (remove-duplicates new-rules :test #'(lambda (r1 r2)
@@ -1896,7 +2342,8 @@
                          (t
                           ;; new row
                           (loop
-                            with new-rules = (coerce (rule-based-cpd-rules phi1) 'list)
+                            with existing-rules = (coerce (rule-based-cpd-rules phi1) 'list)
+			    with new-rules = nil
                             for i from 0 to 1
                             do
                                (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
@@ -1926,7 +2373,7 @@
                                              (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
                                                    (format t "~%new rule:")
                                                    (print-cpd-rule loop-rule))
-                                             (setq new-rules (split-compatible-rules new-rules loop-rule phi1 ident2 binding vvbm1))
+                                             (setq new-rules (split-compatible-rules existing-rules loop-rule phi1 ident2 binding vvbm1 new-rules))
                                              (setq new-rules (cons loop-rule new-rules))))
                                      (t
                                       (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions new-rule)) (list 0))
@@ -1934,7 +2381,7 @@
                                       (when nil (and (equal "GREATER_230" (rule-based-cpd-dependent-id phi1)))
                                             (format t "~%new rule:")
                                             (print-cpd-rule new-rule))
-                                      (setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 binding vvbm1))
+                                      (setq new-rules (split-compatible-rules existing-rules new-rule phi1 ident2 binding vvbm1 new-rules))
                                       (setq new-rules (cons new-rule new-rules))))                            
                                (setq new-rules (remove-duplicates new-rules :test #'(lambda (r1 r2)
                                                                                       (same-rule-p r1 r2 phi1 phi1))))
@@ -2029,7 +2476,6 @@
                               (format t "~%(car binding): ~S~%(caar (second vvbm2)): ~S~%updated rule:" (car binding) (caar (second vvbm2)))
                               (print-cpd-rule new-rule)
                               (break))
-                        ;;(setq new-rules (split-compatible-rules new-rules new-rule phi1 ident2 (cons ident2 (cdr binding)) updated-vvbm1))
                         (setq new-rules (cons new-rule new-rules)))
                 finally
                    (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id phi1)))
@@ -2395,15 +2841,21 @@
 ;; new-rules = array of new rules to replace current rules
 (defun update-cpd-rules (cpd new-rules &key (disambiguate-p nil) (check-uniqueness nil) (check-prob-sum t))
   (setf (rule-based-cpd-rules cpd) new-rules)
-  ;;(check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum)
-  (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
-        (format t "~%~%updating cpd rules for cpd:~%~S" cpd))
+  (when nil (equal "EPOSITION" (rule-based-cpd-dependent-var cpd))
+    (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum check-prob-sum))
+  (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+        (format t "~%~%updating cpd rules for cpd:~%~S" cpd)
+	(print-cpd cpd)
+	(format t "~%rules:")
+	(map nil #'print-cpd-rule new-rules)
+	;;(break)
+	)
   (setq cpd (reset-attribute-and-concept-blocks cpd))
   (loop
     for rule being the elements of (rule-based-cpd-rules cpd)
     for i from 0
     do
-       (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+       (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
              (format t "~%~%Rule: ~S~%index: ~d" rule i))
        (loop
          with vals and vvbm and #|lower-vvbm and lower-nvvbm and c-sets and|# card
@@ -2413,11 +2865,11 @@
             (setq card (aref (rule-based-cpd-cardinalities cpd) idx))
             (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
             (setq vals (gethash attribute (rule-conditions rule)))
-            (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%Attribute: ~S~%values: ~S~%vvbm:~%~S" attribute vals vvbm)
                   ;;(break)
                   )
-            (when nil (equal "TIME_PREV_506" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
                   (format t "~%~%attribute: ~S~%attribute cpd idx: ~d~%vvbm:~%~S~%rule condition vals: ~S" attribute idx vvbm vals))
             (cond ((null vals)
                    (loop
@@ -2425,10 +2877,14 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
+		   (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
+			(when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop
 			  named finder
@@ -2739,6 +3195,7 @@
     (loop
       with copy-rule and padding = 0.00001
       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection = -1 and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum and best-condition-conflicts = most-positive-fixnum
+      with best-block-size = most-positive-fixnum and best-condition-entropy = most-positive-fixnum
       with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
       with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
       with best-pos-condition and best-pos-rule and best-pos-info-gain = most-negative-fixnum
@@ -2746,12 +3203,16 @@
       with best-zero-ub-ig = most-negative-fixnum and best-zero-ub-pos = most-negative-fixnum
       with best-info-gain = most-negative-fixnum and best-entropy = most-negative-fixnum
       with best-rule
-      for certain-ident being the hash-keys of certain-tog
+      with att-blocks
+      for ident being the hash-keys of certain-tog
 	using (hash-value certain-att-blocks)
+      #|
       for ident being the hash-keys of tog
 	using (hash-value att-blocks)
+      |#
       do
-	 (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+	 (setq att-blocks (gethash ident tog))
+	 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -2766,22 +3227,22 @@
 	   with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
 	   with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs and new-entropy and entropy and p and q
 	   with upper-bound-info-gain and upper-bound-focus and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p
+	   with rule-block-intersection
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
-               for (condition-block intersection) in att-blocks
+           for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+	      (setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t)))
+	      (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
-		(format t "~%condition-block:~%~S~%intersection:~S~%condition value in rule?:~A" condition-block intersection
+		(format t "~%condition-block:~%~S~%intersection:~S~%rule block intersection size: ~d~%condition value in rule?:~A" condition-block intersection rule-block-intersection
 			(member (cdar condition-block)
-				  (gethash (caar condition-block)
+				(gethash (caar condition-block)
 					   (rule-conditions rule)))))
-	   when (and (> (hash-table-count intersection) 0)
+	   when (and (> (hash-table-count intersection) 0) ;; (> rule-block-intersection 0)
 		     (not (member (cdar condition-block)
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
              do
-		(when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
-		      (format t "~%pass 1!"))
 		(setq num-conflicts (hash-table-count (rule-avoid-list rule)))
 		(setq copy-rule (copy-cpd-rule rule))
 		(setq condition (car condition-block))
@@ -2798,76 +3259,117 @@
 			(block-difference (rule-block copy-rule)
 					  concept-block
 					  :output-hash-p t))
+		(when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		  (format t "~%pass 1!~%goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
+			  (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
+			  num-conflicts
+			  (hash-table-count (rule-avoid-list copy-rule))))
 		(when (and (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
-			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts))
-		 (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
+			   (not (and (= (hash-table-count (rule-avoid-list rule)) 0)
+				     (< (hash-table-count (rule-certain-block copy-rule))
+					(hash-table-count (rule-certain-block rule))))))
+		 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
 		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
-		  (setq focus (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
-		  (setq new-covered-pos (hash-table-count focus))
-		  (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
-		  (setq p (handler-case
-			      (/ new-covered-pos
-				 (+ new-covered-pos new-covered-negs))
-			    (error (c)
-			      0)))
-		  (setq upper-bound-p (handler-case
-			      (/ upper-bound-covered-pos
-				 (+ upper-bound-covered-pos new-covered-negs))
-			    (error (c)
-			      0)))
-		  (setq new-entropy (binary-entropy p))
-		  (setq upper-bound-entropy (binary-entropy upper-bound-p))
-		  (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
-		  (setq covered-negs (hash-table-count (rule-avoid-list rule)))
-		  (setq q (handler-case
-			      (/ covered-pos 
-				 (+ covered-pos covered-negs))
-			    (error (c)
-			      0)))
-		  (setq entropy (binary-entropy q))		  
-		  (setq info-gain (- (* (+ covered-pos covered-negs) entropy)
-				     (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
-		  (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
-						 (* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
-		  (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
-		    (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
-		  (cond ((> p 0)
-			 (when (> info-gain best-pos-info-gain)
-			   (setq best-pos-info-gain info-gain)
-			   (setq best-entropy new-entropy)
-			   (setq best-pos-condition condition)
-			   (setq best-pos-rule (copy-cpd-rule copy-rule))
-			   (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
-			     (format t "~%updated rule:~%~S" copy-rule))))
-			((> upper-bound-p 0)
-			 (let (uncertain-after intersection-size condition-conflicts)
-			   (setq uncertain-after (hash-table-count
-						  (hash-intersection (rule-block copy-rule) goal :output-hash-p t)))
-			   (setq intersection-size (hash-table-count intersection))
-			   (setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
-			   (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
-			     (format t "~%num condition conflicts (to concept block): ~d~%intersection size: ~d~%uncertain after: ~d" condition-conflicts intersection-size uncertain-after))
-			   (when (or (> upper-bound-info-gain best-zero-ub-ig)
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (< new-covered-negs best-zero-new-negs))
+		 (setq focus (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
+		 (setq new-covered-pos (hash-table-count focus))
+		 (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
+		 (setq p (handler-case
+			     (/ new-covered-pos
+				(+ new-covered-pos new-covered-negs))
+			   (error (c)
+			     0)))
+		 (setq upper-bound-p (handler-case
+					 (/ upper-bound-covered-pos
+					    (+ upper-bound-covered-pos new-covered-negs))
+				       (error (c)
+					 0)))
+		 (setq new-entropy (binary-entropy p))
+		 (setq upper-bound-entropy (binary-entropy upper-bound-p))
+		 (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
+		 (setq covered-negs (hash-table-count (rule-avoid-list rule)))
+		 (setq q (handler-case
+			     (/ covered-pos 
+				(+ covered-pos covered-negs))
+			   (error (c)
+			     0)))
+		 (setq entropy (binary-entropy q))		  
+		 (setq info-gain (- (* (+ covered-pos covered-negs) entropy)
+				    (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
+		 (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
+						(* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
+		 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		   (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
+		 (cond ((> p 0)
+			(when (> info-gain best-pos-info-gain)
+			  (setq best-pos-info-gain info-gain)
+			  (setq best-entropy new-entropy)
+			  (setq best-pos-condition condition)
+			  (setq best-pos-rule (copy-cpd-rule copy-rule))
+			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			    (format t "~%updated rule:~%~S" copy-rule))))
+		       ((> upper-bound-p 0)
+			(let (uncertain-after
+			      intersection-size condition-conflicts
+			      condition-entropy)
+			  (setq uncertain-after (hash-table-count
+						 (hash-intersection (rule-block copy-rule) goal :output-hash-p t)))
+			  (setq intersection-size (hash-table-count intersection))
+			  (setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
+			  ;;(setq condition-concept-intersection (hash-intersection (second condition-block) concept-block :output-hash-p t))
+			  #|
+			  (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
+								     (hash-table-count (second condition-block)))))
+			  |#
+			  ;; dhm: argument computes condition positives over positives and negatives
+			  #|(setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
+								     (+ (hash-table-count intersection)
+									condition-conflicts))))
+			  |#
+			  ;; dhm: argument computes condition positives over positives and negatives
+			  (if (> (+ rule-block-intersection condition-conflicts) 0)
+			      (setq condition-entropy (binary-entropy (/ rule-block-intersection
+									 (+ rule-block-intersection condition-conflicts))))
+			      (setq condition-entropy most-positive-fixnum))
+			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
+				    intersection-size condition-conflicts condition-entropy (hash-table-count (second condition-block))))
+			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (< condition-entropy best-condition-entropy))
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (< condition-conflicts best-condition-conflicts))
-				     |#
+					  (= condition-entropy best-condition-entropy)
+					  (< (hash-table-count (second condition-block)) best-block-size))
+				    |#
+				     
+				     #|
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (< new-covered-negs best-zero-new-negs))
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
-					  ;;(= condition-conflicts best-condition-conflicts)
-					  (> intersection-size best-intersection))
+					  (< condition-entropy best-condition-entropy))
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (= new-covered-negs best-zero-new-negs)
+					  (= condition-entropy best-condition-entropy)
+					  (< (hash-table-count (second condition-block)) best-block-size))
+				     |#
 				     
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= new-covered-negs best-zero-new-negs)
-					  (= condition-conflicts best-condition-conflicts)
+					  (> intersection-size best-intersection))
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (= new-covered-negs best-zero-new-negs)
 					  (= intersection-size best-intersection)
-				     (> uncertain-after best-zero-uncertain))
+					  (< condition-entropy best-condition-entropy))				    
+				     (and (= upper-bound-info-gain best-zero-ub-ig)
+					  (= new-covered-negs best-zero-new-negs)
+					  (= intersection-size best-intersection)
+					  (= condition-entropy best-condition-entropy)
+				     (< (hash-table-count (second condition-block)) best-block-size))
 				     |#)
 			     (setq best-zero-ub-ig upper-bound-info-gain)
 			     (setq best-zero-new-negs new-covered-negs)
@@ -2876,7 +3378,9 @@
 			     (setq best-zero-rule (copy-cpd-rule copy-rule))
 			     (setq best-intersection intersection-size)
 			     (setq best-condition-conflicts condition-conflicts)
-			     (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+			     (setq best-block-size (hash-table-count (second condition-block)))
+			     (setq best-condition-entropy condition-entropy)
+			     (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
 	 (cond (best-pos-condition
@@ -2885,7 +3389,7 @@
 	       (best-zero-condition
 		(setq best-condition best-zero-condition)
 		(setq best-rule best-zero-rule)))
-	 (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+	 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 
@@ -2988,7 +3492,7 @@
 #| Exploit local structure in CPD to induce minimal rule set |#
 
 ;; cpd = conditional probability distribution
-(defun get-local-coverings (cpd)
+(defun get-local-coverings (cpd &key (patch t))
   (labels ((rule-satisfy-case-constraints-p (rule case-constraints &key (avoid nil))
              (loop
                with att-constraints
@@ -3017,10 +3521,11 @@
 				  (when (not (member rule-sva constraints :test #'equal));;(notany #'(lambda (constraint) (intersection rule-sva constraint)) constraints)
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
-                  (return t))))
-    (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
-	  (format t "~%~%getting local covering for:")
-	  (print-cpd cpd)
+                   (return t))))
+    (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd))
+	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
+      (format t "~%~%getting local covering for:~%~S~%" cpd)
+      (print-cpd cpd)
 	  ;;(break)
       )
     (loop
@@ -3042,6 +3547,7 @@
               (setq goal (copy-hash-table concept-block))
 	      (setq junk nil)
               (loop
+		named adder
 		with c and h
 		with prev-new-rule
                 with new-rule and tog and certain-tog and rule-set and rule-set-block = (make-hash-table) and certain-rule-blocks
@@ -3061,7 +3567,73 @@
 		   ;; DHM: Can I push the T(G) computation up a level, then at the end of this loop go through the T(G) iteratively removing the covered goal from the blocks?
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
-                   (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+		   
+		   (if nil ;; (= probability-concept 5.6511647e-4)
+		       #|
+		       (and nil (equal "EPOSITION_282" (rule-based-cpd-dependent-id cpd))
+			    (= 504
+			       (hash-table-count goal))
+			    (loop
+			      named looper
+			      for lil-g in '(187 192 197 204 210 219 227 236 249 260 265 269 281 293 304 312 322 332 338
+					     350 357 358 359 363 372 377 382 389 395 404 412 421 434 444 449 453 465 477
+					     488 496 505 515 521 533 540 541 542 546 555 560 565 572 578 587 595 604 617
+					     627 632 636 647 658 669 676 684 694 700 711 718 719 720 724 731 736 741 748
+					     754 763 771 781 794 805 810 814 827 839 851 859 868 879 885 896 903 904 905
+					     909 918 923 928 935 941 949 957 967 980 991 996 1000 1012 1024 1035 1043 1052
+					     1062 1068 1080 1087 1088 1089 1093 1102 1107 1112 1119 1125 1134 1142 1151
+					     1164 1175 1180 1184 1196 1208 1219 1227 1236 1246 1252 1263 1270 1271 1272
+					     1276 1284 1288 1293 1299 1305 1313 1320 1329 1341 1352 1357 1361 1372 1382
+					     1392 1399 1407 1417 1423 1434 1441 1442 1443 1447 1455 1460 1465 1472 1478
+					     1487 1495 1505 1518 1529 1534 1538 1551 1564 1575 1583 1593 1604 1610 1622
+					     1629 1630 1631 1635 1644 1649 1654 1661 1667 1676 1684 1694 1707 1718 1723
+					     1727 1739 1751 1762 1770 1780 1791 1797 1809 1816 1817 1818 1822 1831 1836
+					     1841 1848 1854 1863 1871 1881 1894 1905 1910 1914 1926 1938 1949 1957 1967
+					     1978 1984 1996 2003 2004 2005 2009 2018 2023 2028 2035 2041 2050 2058 2068
+					     2081 2092 2097 2101 2113 2125 2136 2144 2154 2165 2171 2183 2190 2191 2192
+					     2196 2205 2210 2215 2222 2228 2237 2245 2255 2268 2279 2284 2288 2300 2312
+					     2323 2331 2341 2352 2358 2370 2377 2378 2379 2383 2392 2397 2402 2409 2415
+					     2424 2432 2442 2455 2466 2471 2475 2488 2500 2512 2520 2530 2541 2547 2559
+					     2566 2567 2568 2572 2581 2586 2591 2598 2604 2613 2621 2631 2644 2655 2660
+					     2664 2676 2688 2699 2707 2717 2728 2734 2746 2753 2754 2755 2759 2768 2773
+					     2778 2785 2791 2800 2808 2818 2831 2842 2847 2851 2863 2875 2886 2894 2904
+					     2915 2921 2933 2940 2941 2942 2946 2955 2960 2965 2972 2978 2987 2995 3005
+					     3018 3029 3033 3037 3050 3063 3074 3081 3090 3100 3105 3116 3122 3123 3124
+					     3128 3136 3140 3145 3152 3158 3167 3175 3184 3197 3207 3212 3216 3229 3242
+					     3253 3261 3271 3282 3288 3300 3307 3308 3309 3313 3322 3327 3332 3339 3345
+					     3354 3362 3371 3384 3394 3399 3403 3415 3427 3438 3446 3455 3465 3471 3483
+					     3490 3491 3492 3496 3504 3509 3514 3521 3527 3536 3544 3553 3566 3576 3581
+					     3585 3597 3610 3621 3629 3638 3648 3654 3666 3673 3674 3675 3679 3688 3692
+					     3696 3700 3704 3708 3712 3716 3720 3724 3728 3732 3736 3740 3744 3748 3752
+					     3756 3760 3764 3768 3769 3770 3774 3778 3782 3786 3792 3797 3805 3812 3820
+					     3832 3841 3846 3850 3863 3875 3886 3894 3904 3914 3920 3932 3939 3940 3941
+					     3945)
+			      if (not (gethash lil-g goal))
+				do
+				   (return-from looper nil)
+			      finally
+		       (return t)))
+		       |#
+		       (setq print-special* t)
+		       (setq print-special* nil))
+		   
+		   #|
+		   (if (and (not print-special*)
+			    (equal "EPOSITION_301" (rule-based-cpd-dependent-id cpd))
+			    (= (length '(0 5 6))
+			       (hash-table-count goal))
+			    (loop
+			      named looper
+			      for lil-g in '(0 5 6)
+			      if (not (gethash lil-g goal))
+				do
+				   (return-from looper nil)
+			      finally
+				 (return t)))
+		       (setq print-special* t)
+		   (setq print-special* nil))
+		   |#
+		   (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3070,7 +3642,7 @@
                      )
                    (loop
                      with reject-conditions and continue = t
-                     while (or (= (hash-table-count (rule-conditions new-rule)) 0)
+                     while (or ;;(= (hash-table-count (rule-conditions new-rule)) 0)
                                (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 			       continue
 			       (not (hash-intersection-p (rule-certain-block new-rule) goal))
@@ -3081,9 +3653,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+				 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+				 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3092,14 +3664,44 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   (format t "~%cpd:~%~S" cpd)
-				   (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule))))))
+				   (cond (t (null patch)
+					  (format t "~%cpd:~%~S" cpd)
+					  (print-cpd cpd)
+					  (format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
+					  (print-cpd-rule new-rule)
+					  (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule))
+					 (patch
+					  (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
+					    (format t "~%~%in patch!~%failed to cover goal:~%~S~%rules for concept block:" goal)
+					    (mapcar #'print-cpd-rule rule-set))
+					  (loop
+					    with rs = (rule-based-cpd-rules cpd)
+					    for g being the hash-keys of goal
+					    do
+					       (setq new-rule (copy-cpd-rule (aref rs g)))
+					       (setq rule-set (reverse (cons new-rule (reverse rule-set))))
+					       (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
+						 (format t "~%adding rule for idx ~d:" g)
+						 (print-cpd-rule new-rule)))
+					  (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
+					    (format t "~%updated rule-set:")
+					    (mapcar #'print-cpd-rule rule-set))
+					  (loop
+					    for rule in rule-set
+					    do
+					       (setf (rule-block rule) (make-hash-table))
+					       (setf (rule-certain-block rule) (make-hash-table))
+					       (setf (gethash case (rule-block rule)) case)
+					       (setf (gethash case (rule-certain-block rule)) case)
+					       (setq minimal-rules (reverse (cons rule (reverse minimal-rules))))
+					       (setq case (+ case 1)))
+					  (return-from adder nil))))))))
 		   (cond ((and (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0) ;;(subsetp (rule-block new-rule) goal)
                                (> (hash-table-count (rule-block new-rule)) 0)
                                (= (hash-table-count (rule-avoid-list new-rule)) 0)
 			       (> (hash-table-count (rule-certain-block new-rule)) 0))                          
                           ;; remove extraneous conditions, but make sure that pruned rule isn't compatible with existing rules!!
-                          (when nil t nil (and print-special* (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
+                          (when nil t nil (and (equal "ZERO_345" (rule-based-cpd-dependent-id cpd)))
                             ;;(break)
 				(format t "~%~%testing for redundant conditions!~%rule:")
 				(print-cpd-rule new-rule))
@@ -3113,7 +3715,7 @@
 				 (remhash attribute (rule-conditions new-rule)))
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when (and print-special* (equal "EVELOCITY_237" (rule-based-cpd-dependent-id cpd)))
+			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)
@@ -3132,12 +3734,12 @@
                                 (format t "~%rule-set:~%~S~%rule-set block:~%~S~%goal:~%~S" rule-set rule-set-block goal))
                           (setq goal (block-difference goal rule-set-block :output-hash-p t))
                           (setq junk nil)
-                          (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id cpd)))
+                          (when nil (and (equal "DECISION_2_261" (rule-based-cpd-dependent-id cpd)))
                             (format t "~%updated goal:~%~S~%****************************~%" goal)
 			    ;;(setq print-special* nil)
 			    ;;(break)
 			    )
-			  (when (and prev-new-rule
+			  (when nil (and prev-new-rule
 				     (same-rule-p new-rule prev-new-rule nil nil :check-blocks t))
 			    (format t "~%previous rule:~%~S~%current rule:~%~S" prev-new-rule new-rule)
 			    (setq print-special* t))
@@ -3179,7 +3781,7 @@
 	       ;;(format t "~%goal changes: ~d~%no goal changes: ~d~%num parameters: ~d~%num prior rules: ~d~%num rules: ~d" goal-changes no-goal-changes (reduce #'* (rule-based-cpd-cardinalities cpd)) (array-dimension (rule-based-cpd-rules cpd) 0) (length minimal-rules))
                ;;(break)
                )
-         (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness nil :check-prob-sum nil))
+          (setq cpd (update-cpd-rules cpd (make-array case :initial-contents minimal-rules) :check-uniqueness nil :check-prob-sum nil))
 	 (return cpd))))
 
 #| Get variable domain while avoiding specific value |#
@@ -3444,6 +4046,40 @@
 	      (t
                (push rule result)))))
     result))
+
+;; This is a copy of local function (polynomial-encoding) from (operate-filter rules). Local version may be safely removed if it still exists
+(defun polynomial-encoding (rule cpd)
+  (labels ((mod-exp (base exp mod)
+	     "Computes (base^exp) % mod efficiently using modular exponentiation."
+	     (let ((result 1))
+	       (loop
+		 while (> exp 0)
+		 do
+		    ;; If exp is odd, multiply result by base
+		    (when (oddp exp) 
+		      (setq result (mod (* result base) mod)))
+		    ;; Square the base
+		    (setq base (mod (* base base) mod))
+		    ;; Reduce exp by half
+		    (setq exp (floor exp 2)))
+	       result)))
+  (let ((x 3)
+	(rule-key (make-array (hash-table-count (rule-based-cpd-identifiers cpd)))))
+    (loop
+      with values
+      for j from 0
+      for attribute being the hash-keys of (rule-based-cpd-identifiers cpd)
+	using (hash-value idx)
+      do
+	 (setq values (gethash attribute (rule-conditions rule)))
+	 (when (null values)
+	   (setq values (gethash idx (rule-based-cpd-var-values cpd))))
+	 (setf (aref rule-key j)
+	       (reduce #'+
+		       (mapcar #'(lambda (i)
+				   (mod-exp x i (+ (expt 10 9) 7)))
+			       values))))
+    (format nil "~{~a~}" (coerce rule-key 'list)))))
 
 #| Perform a filter operation over rules
    Returns: a list of rules |#
@@ -3785,27 +4421,26 @@
 		  (when new-rule
 		    (setf (gethash num-rules (rule-block new-rule)) num-rules)
 		    (setq rule-key (polynomial-encoding new-rule))
-		    (let ((old-rule (gethash rule-key rule-keys)))
-		      
-		    (cond ((null old-rule)
-			   (setq new-rules (cons new-rule new-rules))
-			   (setf (gethash rule-key rule-keys) new-rule)
-			   (when nil (and (or (eq op '*)
-					  (eq op #'*))
-				      ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
-				      )
-			     (format t "~%new rule:")
-			     (print-cpd-rule new-rule))
-			   (setq num-rules (+ num-rules 1)))
-			  (t
-			   (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
-			     (format t "~%discarded duplicate rule"))
-			   (when nil (not (same-rule-p new-rule old-rule nil nil))
-			     (format t "~%new-rule collided with different old rule.~%rule key: ~S~%new rule:" rule-key)
-			     (print-cpd-rule new-rule)
-			     (format t "~%old rule:")
-			     (print-cpd-rule old-rule)
-			     (break))))))))
+		    (let ((old-rule (gethash rule-key rule-keys)))		      
+		      (cond ((null old-rule)
+			     (setq new-rules (cons new-rule new-rules))
+			     (setf (gethash rule-key rule-keys) new-rule)
+			     (when nil (and (or (eq op '*)
+						(eq op #'*))
+					    ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
+					    )
+				   (format t "~%new rule:")
+				   (print-cpd-rule new-rule))
+			     (setq num-rules (+ num-rules 1)))
+			    (t
+			     (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi2)))
+				   (format t "~%discarded duplicate rule"))
+			     (when nil (not (same-rule-p new-rule old-rule nil nil))
+				   (format t "~%new-rule collided with different old rule.~%rule key: ~S~%new rule:" rule-key)
+				   (print-cpd-rule new-rule)
+				   (format t "~%old rule:")
+				   (print-cpd-rule old-rule)
+				   (break))))))))
       ;; process the no-match rules
       (multiple-value-setq (new-rules num-rules)
 	(filter-no-match-rules no-match-r1s phi2 new-rules num-rules))
@@ -3848,7 +4483,10 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
+	  (format t "~%CPD has no rules:~%~S" cpd)
+	  (error "~%CPD has no rules"))
     (loop
       with check-num-rules = (cond ((and nil check-rule-count (> (array-dimension (rule-based-cpd-rules cpd) 0) (reduce #'* (rule-based-cpd-cardinalities cpd))))
                                     (format t "~%number of rules exceeds cpd parameters.~%new phi:~%~S~%rules:" cpd)
@@ -3914,7 +4552,7 @@
                   (setq row-counts (make-list row-len :initial-element (rule-count compatible-rule))))))
          (when (= (length row-probs) row-len)
            (setq row-prob (reduce #'+ row-probs))
-           (cond ((and check-prob-sum (not (= 1 (read-from-string (format nil "~$" row-prob)))))
+           (cond ((and check-prob-sum (not (= 1 (fround-to-n-digits (float row-prob) 5))))
                   (when (> row-prob 0)
                     (format t "~%Malformed cpd:~%~S~%row assignments:~%~S~%row rules:~%~S~%row probs:~%~S~%row probability is ~d, not 1" cpd row-assns row-rules row-probs row-prob)
                     (error "Check row sums")))
@@ -3944,14 +4582,12 @@ Roughly based on (Koller and Friedman, 2009) |#
   (let (var-union types idents concept-ids qvars values cardinalities steps var-value-block-map sva lower-vvbms new-phi new-rules)
     (multiple-value-setq (idents var-union types concept-ids qvars var-value-block-map sva lower-vvbms values)
       (ordered-union phi1 phi2))
-    (when nil(and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
+    (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
-    (when nil (and (or (eq op '*)
-		   (eq op #'*))
-	       (equal (rule-based-cpd-dependent-id phi1) "EPOSITION_PREV_219"))
-      (format t "~%~%phi1:")
+    (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
+      (format t "~%~%phi1:~%~S" phi1)
       (print-cpd phi1)
-      (format t "~%phi2:")
+      (format t "~%phi2:~%~S" phi2)
       (print-cpd phi2))
     (setq cardinalities (get-var-cardinalities var-value-block-map))
     (setq steps (generate-cpd-step-sizes cardinalities))
@@ -3975,9 +4611,9 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
     (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi :compute-count-p (if (or (eq op '+) (eq op #'+)) t))))
-    (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id phi1)))
-      (format t "~%~%filtered rules before compression: ~d" new-rules)
-      ;;(mapcar #'print-cpd-rule new-rules)
+    (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
+      (format t "~%~%filtered rules before compression:")
+      (mapcar #'print-cpd-rule new-rules)
       ;;(break)
       )
     
@@ -3999,15 +4635,16 @@ Roughly based on (Koller and Friedman, 2009) |#
 						:check-prob-sum (not (or (eq op '*) (eq #'* op))))))
     
     |#
-    
-    (when (eq op '*)
+
+    ;; DHM: Don't need to normalize in (factor-filter). I can normalize after all factor operations are complete in (send-message)/(calibrate-factor-graph)
+    (when nil (eq op '*)
       (when nil (and (or (eq op '*)
 			 (eq op #'*))
 		     (equal (rule-based-cpd-dependent-var phi1) "ONE_1"))
 	    (format t "~%unnormalized result:")
 	    (print-cpd new-phi))
       (setq new-phi (normalize-rule-probabilities new-phi (rule-based-cpd-dependent-id new-phi)))
-      ;;(check-cpd new-phi :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
+      ;;(check-cpd new-phi :check-prob-sum nil :check-uniqueness nil :check-prob-sum t :check-counts nil :check-count-prob-agreement nil)
       )
     (when nil (and (or (eq op '*)
 		   (eq op #'*))
@@ -4121,17 +4758,19 @@ Roughly based on (Koller and Friedman, 2009) |#
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
+	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
            (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
                  (format t "~%intermediate episode:~%~S" phi1)
-                 ;;(break)
+                 (break)
                  )
-           (setq phi1 (cpd-transform-episode-domain phi1 phi2))
-           (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
+           ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
+	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
+	   (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
 	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi2))
 	     (format t "~%~%episode rules:~%")
 	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi1))
-             ;;(break)
+             (break)
              )
            ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	   (setq phi1 (disambiguate-rules phi1 phi2))
@@ -4139,142 +4778,14 @@ Roughly based on (Koller and Friedman, 2009) |#
            (factor-filter phi2 phi1 '+)))))
 
 #| Perform a marginalize operation over rules.
-   Returns: Array of CPD rules
-
-;; phi = schema conditional probability distribution
-;; vars = list variables to keep
-;; op = operation to apply on rules
-;; new-dep-id = dependent variable after marginalization step is complete
-(defun operate-marginalize-rules-keep (phi vars op new-dep-id)
-  (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-    (format t "~%marginalizing phi:")
-    (print-cpd phi)
-    (format t "~%vars to keep:~%~S" vars))
-  (loop
-    with rules = (rule-based-cpd-rules phi)
-    with new-rules
-    with marginalized-rule
-    with marginalized-cases
-    with intersection1
-    with num-rules = 0
-    for r1 being the elements of rules
-    for i from 0
-    do
-       (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-	 (format t "~%~%rule at index i = ~d" i)
-	 (print-cpd-rule r1)
-	 (format t "~%global ignore indeces:~%~S" marginalized-cases)
-	 )
-       (setq marginalized-rule nil)
-       (setq intersection1 nil)
-       (loop
-	 named inter
-	 with vals
-	 for var in vars
-	 do
-	    (setq vals (gethash var (rule-conditions r1)))
-	    (when (null vals)
-	      (let ((index (gethash var (rule-based-cpd-identifiers phi))))
-		(setq vals (gethash index (rule-based-cpd-var-values phi)))))
-	    (setq intersection1 (cons (cons var vals) intersection1)))
-       (when (not (member i marginalized-cases))
-	 (setq marginalized-rule (make-rule :id (gensym "RULE-")
-					    :conditions (make-hash-table :test #'equal)
-					    :probability (rule-probability r1)
-					    :block (make-hash-table)
-					    :count (rule-count r1)))
-	 (loop
-	   for inter in intersection1
-	   do
-	      (setf (gethash (car inter) (rule-conditions marginalized-rule))
-		    (cdr inter)))
-	 (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-	   (format t "~%initial marginalized rule:")
-	   (print-cpd-rule marginalized-rule))
-	 (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
-	 ;;(setq num-rules (+ num-rules 1))
-	 (when nil (and (equal "OBSERVATION_0_1277" (rule-based-cpd-dependent-id phi)))
-	       (format t "~%rule has intersection with keep vars"))
-	 (loop
-	   with intersection2
-	   with candidate-marginalizations = marginalized-cases
-	   with num-conditions
-	   for r2 being the elements of rules
-	   for j from 0
-	   when (not (= j i)) do
-	     (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-	       (format t "~%  checking if r2 is compatible with marginalized rule.~%  r2:")
-	       (print-cpd-rule r2 :indent "        ")
-	       (format t "~%  local ignore:~%  ~S" candidate-marginalizations))
-	     (setq intersection2 nil)
-	     (loop
-	       named inter
-	       with vals
-	       for var in vars
-	       do
-		  (setq vals (gethash var (rule-conditions r2)))
-		  (when (null vals)
-		    (let ((index (gethash var (rule-based-cpd-identifiers phi))))
-		      (setq vals (gethash index (rule-based-cpd-var-values phi)))))
-		  (setq intersection2 (cons (cons var vals) intersection2)))
-	     (when (compatible-rule-p r2 marginalized-rule phi phi)
-	       (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-		 (format t "~%  r2 is compatible with marginalized rule.~%  marginalized-rule:")
-		 (print-cpd-rule marginalized-rule)
-		 (format t "~%r1:")
-		 (print-cpd-rule r1)
-		 (format t "~%r2:")
-		 (print-cpd-rule r2))
-	       (setf (rule-probability marginalized-rule)
-		     (funcall op
-			      (rule-probability marginalized-rule)
-			      (rule-probability r2)))
-	       (when (not (rule-based-cpd-singleton-p phi))
-		 (setf (rule-count marginalized-rule)
-		       (funcall op 1)))
-	       (setq num-conditions (hash-table-count (rule-conditions marginalized-rule)))
-	       (loop
-		 with vals
-		 for inter in intersection2
-		 do
-		    (setq vals (gethash (car inter) (rule-conditions marginalized-rule)))
-		    (setf (gethash (car inter) (rule-conditions marginalized-rule))
-			  (intersection vals (cdr inter))
-			  ))
-	       (if (> (hash-table-count (rule-conditions marginalized-rule)) num-conditions)
-		   (setq candidate-marginalizations (cons j marginalized-cases))
-		   (setq candidate-marginalizations (cons j candidate-marginalizations)))
-	       (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-		 (format t "~%  updated marginalized rule:")
-		 (print-cpd-rule marginalized-rule :indent "        ")
-		 (format t "~%        new local ignore:~%~S" candidate-marginalizations)))
-	   finally
-	      (setq new-rules (cons marginalized-rule new-rules))
-	      (setq num-rules (+ num-rules 1))
-	      (setq marginalized-cases candidate-marginalizations)
-	      (when (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
-		(format t "~%updated new rules:")
-		(map nil #'print-cpd-rule new-rules)
-		(format t "~%updated global ignore rule indexes:~%~S" marginalized-cases)
-		(break)
-		)))
-    finally
-       (when (null new-rules)
-	 (error "No marginalized rules left."))
-       (when nil (equal "OBSERVATION_0_1277" (rule-based-cpd-dependent-id phi))
-	 (format t "~%returning:")
-	 (map nil #'print-cpd-rule new-rules))
-       (return (make-array num-rules :initial-contents (reverse new-rules)))))
-|#
-#| Perform a marginalize operation over rules.
    Returns: Array of CPD rules|#
 
 ;; phi = schema conditional probability distribution
 ;; vars = list variables to keep
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
-(defun operate-marginalize-rules-keep (phi vars op new-dep-id)
-  (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+(defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1))
+  (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	(format t "~%marginalizing phi:")
 	(print-cpd phi)
 	(format t "~%vars to keep:~%~S" vars))
@@ -4295,7 +4806,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					    :conditions (make-hash-table :test #'equal)
 					    :probability 0
 					    :block (make-hash-table)
-					    :count (if (rule-based-cpd-singleton-p phi) nil 1)))
+					    :count (if (rule-based-cpd-singleton-p phi) nil rule-count)))
 	 (setf (gethash num-rules (rule-block marginalized-rule)) num-rules)
 	 (loop
 	   for cond being the hash-keys of vvm
@@ -4303,7 +4814,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   do
 	      (setf (gethash cond (rule-conditions marginalized-rule))
 		    vals))
-	 (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+	 (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	       (format t "~%~%vvm:~%~S" vvm)
 	       (format t "~%initial marginalized rule:")
 	       (print-cpd-rule marginalized-rule))
@@ -4312,7 +4823,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   for i from 0
 	   when (compatible-rule-p r marginalized-rule phi phi)
 	     do
-		(when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		      (format t "~%  r is compatible with marginalized rule.~%  r:")
 		      (print-cpd-rule r :indent "        "))
 		(loop
@@ -4330,7 +4841,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		      (funcall op
 			       (rule-probability marginalized-rule)
 			       (rule-probability r)))
-		(when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		      (format t "~%  updated marginalized rule:")
 		      (print-cpd-rule marginalized-rule :indent "        "))
 	   finally
@@ -4350,10 +4861,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		     (remhash cond (rule-conditions marginalized-rule))))
 	      (setq new-rules (cons marginalized-rule new-rules))
 	      (setq num-rules (+ num-rules 1))
-	      (when nil (and print-special* (equal "NPOSITION_234" (rule-based-cpd-dependent-id phi)))
+	      (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		    (format t "~%updated new rules:")
 		    (map nil #'print-cpd-rule new-rules)
-		    (break)
+		    ;;(break)
 		    ))
       finally
 	 (return (make-array num-rules :initial-contents (reverse new-rules))))))
@@ -4406,9 +4917,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi = conditional probability density
 ;; vars = variables to keep
 ;; op = operation to apply to factor (max or +)
-(defun operate-factor (phi vars op)
+;; rule-count = count for each marginalized rule
+(defun operate-factor (phi vars op &key (rule-count 1))
   (setf (rule-based-cpd-rules phi)
-	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi)))
+	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi) :rule-count rule-count))
   (update-cpd-rules phi (rule-based-cpd-rules phi)))
 
 #| Generate intermediate factor by marginalization or max |#
@@ -4417,11 +4929,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; keep = vars to keep
 ;; remove = variables to op out
 ;; op = operation to apply to factor (max or +)
-(defun factor-operation (phi keep remove op)
+(defun factor-operation (phi keep remove op &key (rule-count 1))
   (cond ((null remove)
-	 (operate-factor phi keep op))
+	 (operate-factor phi keep op :rule-count rule-count))
 	(t
-	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op))))
+	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op :rule-count rule-count))))
 
 #| Prepare factor graph for message passing |#
 
@@ -4437,7 +4949,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       do
          (when (null (gethash (car edge) evidence))
            (setf (gethash (car edge) evidence) (make-hash-table)))
-         (setf (gethash (cdr edge) (gethash (car edge) evidence)) 1))
+         (setf (gethash (cdr edge) (gethash (car edge) evidence)) 1.0))
   evidence)
 
 #| Send a message from one factor to the other |#
@@ -4452,32 +4964,41 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset)
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when nil (and (= i 6) (= j 15))
+  (when nil (and (= i 8) (= j 13))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
     (format t "~%~d:" j)
-    (print-cpd (aref factors j)))
-  (let (nbrs-minus-j reduced)
+    (print-cpd (aref factors j))
+    (check-cpd (aref factors i) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil)
+    (check-cpd (aref factors j) :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil :check-prob-sum nil))
+  (let (nbrs-minus-j nbrs reduced)
     (loop
       for k from 0 to (- (array-dimension edges 0) 1)
       for edge being the elements of edges
       when (and (= (cdr edge) i) (not (= (car edge) j)))
         collect (gethash i (gethash (car edge) messages)) into neighbors
-      finally (setq nbrs-minus-j neighbors))
-    (when nil (and (= i 6) (= j 15))
-          (format t "~%neighbors minus j:")
-          (loop for nbr in nbrs-minus-j
-                when (rule-based-cpd-p nbr)
-		  do
-		     (print-cpd nbr)
-                else
-		  do
-		     (format t "~%non-cpd neighbor: ~S" nbr))
+	and collect (car edge) into nrs
+      finally
+	 (setq nbrs-minus-j neighbors)
+	 (setq nbrs nrs))
+    (when nil (and (= i 8) (= j 13))
+          (format t "~%neighbors of ~d (i) minus ~d (j):" i j)
+          (loop
+	    for nbr in nbrs-minus-j
+	    for nbr-idx in nbrs
+            when (rule-based-cpd-p nbr)
+	      do
+		 (format t "~%neighbor: ~d" nbr-idx)
+		 (print-cpd nbr)
+		 (check-cpd nbr :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
+            else
+	      do
+		 (format t "~%non-cpd neighbor: ~S" nbr))
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
     (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
-    (when nil (and (= i 6) (= j 15))
+    (when nil (and (= i 8) (= j 13))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
@@ -4513,6 +5034,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (format t "~%neighbor ~d:" idx )
 	       (print-cpd nbr)))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (setq factor (normalize-rule-probabilities factor (rule-based-cpd-dependent-id factor)))
        (setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
        (when nil
 	 (format t "~%~%belief")
@@ -4521,7 +5043,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (equal "NPOSITION_234" (rule-based-cpd-dependent-id factor)))
 	 (format t "~%~%posterior marginal:")
 	 (print-cpd factor)
-	 (check-cpd factor :check-count-prob-agreement nil :check-uniqueness nil :check-counts nil))
+	 ;;(check-cpd factor :check-count-prob-agreement nil :check-uniqueness nil :check-counts nil)
+	 )
        (return factor)))
 
 #| Dampen message signals to avoid oscilations
@@ -4617,14 +5140,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
-(defun calibrate-factor-graph (factors op edges evidence lr)
+(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil))
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 30 and deltas
+    with calibrated and conflicts and max-iter = 5 and deltas
     for count from 0
     do
-       (when nil t
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -4639,7 +5162,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when nil (= k 14) nil (and (= j 1) (= k 3))
+              (when (and (= j 8) (= k 13))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -4653,26 +5176,26 @@ Roughly based on (Koller and Friedman, 2009) |#
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 6) (= k 15))
+	      (when (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
                 (print-hash-entry k new-message)
-		(break))
+		;;(break)
+		)
               (loop
                 for new-rule being the elements of (rule-based-cpd-rules new-message)
                 do
                    (cond (round
-                          (setq deltas (cons (abs (- (read-from-string (format nil "~$" (rule-probability new-rule)))
-                                                     (read-from-string (format nil "~$"
-                                                                               (if (rule-based-cpd-p current-message)
-                                                                                   (rule-probability (car (get-compatible-rules
+                          (setq deltas (cons (abs (- (float (rule-probability new-rule))
+                                                     (if (rule-based-cpd-p current-message)
+                                                                                   (float (rule-probability (car (get-compatible-rules
                                                                                                            current-message
                                                                                                            new-message
                                                                                                            new-rule
                                                                                                            :find-all nil
-													   :best-matches t)))
-                                                                                   current-message)))))
+													   :best-matches t))))
+                                                                                   current-message)))
                                              deltas)))
                          (t
                           (setq deltas (cons (abs (- (rule-probability new-rule)
@@ -4691,7 +5214,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil t
+       (when t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
@@ -4709,7 +5232,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 when (rule-based-cpd-singleton-p (aref factors i))
                    collect (compute-belief i factors edges messages) into posterior-marginals
-		  else
+		  else if (not singleton-only)
 		    collect (compute-belief i factors edges messages) into posterior-distribution
 		  finally
 		     (return (values posterior-distribution posterior-marginals))))
@@ -5081,8 +5604,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 
 ;; cpd = cpd to modify
 ;; modifier-cpd = cpd that updates values in cpd
-(defun modify-cpd (cpd modifier-cpd &key causal-discovery)
+(defun modify-cpd (cpd modifier-cpd &key (compute-new-rules-p t) causal-discovery)
   (let (new-cards new-steps new-rules)
+    #|
+    (unless causal-discovery
+      (when compute-new-rules-p
+        ;;DHM: I don't call (factor-filter) here because it gives a new cpd that isn't the same as 'cpd. new cpd rules don't get properly added to bn. Not sure why.
+	;;     The following code, which was the original implementation, works.
+	(setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
+	(when nil t
+	      (mapcar #'print-cpd-rule new-rules))))
+    |#
     (setf (gethash (rule-based-cpd-dependent-id modifier-cpd)
                    (rule-based-cpd-identifiers cpd))
           (hash-table-count (rule-based-cpd-identifiers cpd)))
@@ -5115,18 +5647,31 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setq new-steps (generate-cpd-step-sizes new-cards))
       (setf (rule-based-cpd-cardinalities cpd) new-cards)
       (setf (rule-based-cpd-step-sizes cpd) new-steps)
-      (setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
-      (when nil (string-equal "state" (gethash 0 (rule-based-cpd-types cpd)))
-	(format t "~%~%cpd:~%")
-	(print-cpd cpd)
-	(format t "~%modifier cpd:~%")
-	(print-cpd modifier-cpd)
-	(format t "~%new rules")
-	(map nil #'(lambda (rule)
+      (when compute-new-rules-p
+	;;DHM: I don't call (factor-filter) here because it gives a new cpd that isn't the same as 'cpd. new cpd rules don't get properly added to bn. Not sure why.
+	;;     The following code, which was the original implementation, works.
+	(setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
+	(when nil (string-equal "state" (gethash 0 (rule-based-cpd-types cpd)))
+	      (format t "~%~%cpd:~%")
+	      (print-cpd cpd)
+	      (format t "~%modifier cpd:~%")
+	      (print-cpd modifier-cpd)
+	      #|
+	      (format t "~%new rules")
+	      (map nil #'(lambda (rule)
 			   (print-cpd-rule rule))
-		   new-rules))
-      (setf (rule-based-cpd-rules cpd) (make-array (length new-rules) :initial-contents new-rules))
-      ;;(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+		   new-rules)
+	      |#)
+	(setq cpd (update-cpd-rules cpd
+                                        (make-array (length new-rules) :initial-contents new-rules)))
+	(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
+
+
+	(when nil
+	  (format t "~%modified cpd:")
+	  (print-cpd cpd)
+	  (check-cpd cpd :check-uniqueness nil)
+	  (break)))
       )
     cpd))
 
@@ -5773,7 +6318,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence priors op lr)
+(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil))
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -5786,7 +6331,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%~%factor:")
 	   (print-cpd factor))
-	 (setq new-factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+	 ;;(setq new-factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+	 (setq new-factor (update-cpd-rules factor (rule-based-cpd-rules factor)))
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%new factor:")
 	   (print-cpd new-factor)
@@ -5800,7 +6346,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(setf (rule-count rule) 1)))
 	 (setq factors-list (cons new-factor factors-list))
       finally
-	 (setq factors-list (reverse factors-list)))
+	  (setq factors-list (reverse factors-list)))
     (when nil t 
       (format t "~%explicit factors:~%~A~%num elements: ~d" factors-list (array-dimension (car state) 0)))
     (loop
@@ -5977,7 +6523,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%initial messages:~%~A" initial-messages)
       ;;(break)
       )
-    (calibrate-factor-graph all-factors op edges initial-messages lr)))
+    (calibrate-factor-graph all-factors op edges initial-messages lr :singleton-only singleton-only)))
 
 #| Move assignment by 1 |#
 
@@ -6053,9 +6599,10 @@ Roughly based on (Koller and Friedman, 2009) |#
   (or (and (> (hash-table-count (rule-based-cpd-types cpd)) 1) (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd))) (equal "PERCEPT" (gethash 1 (rule-based-cpd-types cpd))))
       (and (> (hash-table-count (rule-based-cpd-types cpd)) 1) (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd))) (equal "ACTION" (gethash 1 (rule-based-cpd-types cpd))))))
 
+;; DHM: removed the (attribute-cpd-p) check. It was put in for ICARUS, but is somewhat of a hack. Rather, it seems that we need a new "ATTRIBUTE" cpd type. (attribute-cpd-p) above tries to infer whether a cpd is an attribute based on its connection to other cpds, but in general, a modeler can have multiple cpd with type "PERCEPT" connect to each other without inteding a percept-attribute relationship
 (defun percept-cpd-p (cpd)
-  (and (not (attribute-cpd-p cpd))
-       (equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd)))))
+  (and ;;(not (attribute-cpd-p cpd)) 
+       (string-equal "PERCEPT" (gethash 0 (rule-based-cpd-types cpd)))))
 
 (defun action-cpd-p (cpd)
   (and (equal "ACTION" (gethash 0 (rule-based-cpd-types cpd)))))
@@ -6127,7 +6674,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (equal "STATE" (gethash 0 (rule-based-cpd-types q-cpd)))))
 	 t)
         (t
-         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
            (format t "~%~%p-cpd: ~S~%q-cpd: ~S" (rule-based-cpd-identifiers p-cpd) (rule-based-cpd-identifiers q-cpd)))
          (loop
            with p-val and p-match
@@ -6139,13 +6686,14 @@ Roughly based on (Koller and Friedman, 2009) |#
              (when p-match
                (if (gethash p-match (rule-based-cpd-identifiers p-cpd))
                    (setq p-val t)))
-             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%q-parent: ~S~%p-parent match: ~S~%p-val: ~S" q-val p-match p-val))
              (cond ((and p-match (not p-val) q-val)
-                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                       (format t "~%fail. Returning.")
-                      (break))
+                      ;;(break)
+		      )
                     (return-from same-matched-parents nil))))
          (loop
            with q-val and q-match and no-matched-parents = t
@@ -6158,18 +6706,19 @@ Roughly based on (Koller and Friedman, 2009) |#
                (setq no-matched-parents nil)
                (if (gethash q-match (rule-based-cpd-identifiers q-cpd))
                    (setq q-val t)))
-             (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+             (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                (format t "~%~%p bindings:~%~S~%q first bindings:~%~S" bindings q-first-bindings)
                (format t "~%p-parent: ~S~%q-parent match: ~S~%q-val: ~S" p-val q-match q-val))
              (cond ((and q-match p-val (not q-val))
-                    (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+                    (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
                       (format t "~%fail. Returning.")
-                      (break))
+                      ;;(break)
+		      )
                     (return-from same-matched-parents nil)))
            finally
               (if (and nil no-matched-parents (> (hash-table-count (rule-based-cpd-identifiers q-cpd)) 1))
                   (return-from same-matched-parents nil)))
-         (when nil (and heuristic (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+         (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
            (format t "~%success.")
            ;;(break)
 	   )
@@ -6185,14 +6734,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-first-bindings = bindings hash table where elements of q are the keys
 (defun candidate-nodes (pnum p q possible-q-candidates bindings q-first-bindings &optional (heuristic nil) &aux p-cpd)
   (setq p-cpd (aref (car p) pnum))
-  (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
-        (format t "~%~%p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
+  (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
+        (format t "~%~%constructing candidate list for p-cpd:~%~S" (rule-based-cpd-identifiers p-cpd)))
   (loop
     with q-cpd
     for i in possible-q-candidates
     do
        (setq q-cpd (aref (car q) i))
-       (when nil (and (equal (rule-based-cpd-dependent-var p-cpd) "RESOURCE"))
+       (when nil (and (equal (rule-based-cpd-dependent-id p-cpd) "NVELOCITY_276"))
         (format t "~%~%q-cpd:~%~S" (rule-based-cpd-identifiers q-cpd)))
     when (and (not (gethash (rule-based-cpd-dependent-id q-cpd) q-first-bindings))
               (same-matched-parents p-cpd q-cpd bindings q-first-bindings heuristic))
@@ -6335,6 +6884,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (cond ((> num-compatible-conditions max-num-compatible-conditions)
 			 (setq compatible-rules (cons schema-rule nil)))
 			((and (= num-compatible-conditions max-num-compatible-conditions)
+			      ;; DHM: I suspect that this condition needs to be >, rather than <.
 			      (< num-compatible-set-values min-num-compatible-set-values))
 			 (setq compatible-rules (cons schema-rule nil)))
 			((and (= num-compatible-conditions max-num-compatible-conditions)
@@ -6344,6 +6894,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq min-num-compatible-set-values num-compatible-set-values)))))
     finally
        (when (null match-p)
+	 (when t nil
+	   (format t "~%no match to reference rule:")
+	   (print-cpd-rule rule)
+	   (break))
 	 (when nil t
 	   (format t "~%~%schema cpd:")
 	   (print-cpd schema-cpd)
@@ -6405,13 +6959,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                                   ;;for count-idx being the hash-keys of (cpd-counts event)
                                   do
                                      (setq rule (aref (rule-based-cpd-rules event) rule-idx))
-				     (when (> (rule-probability rule) 0)
+				     (when (> (rule-probability rule) 0.001)
 				       ;;(setq compatible-rules (list (car (get-compatible-rules cpd event rule))))
                                        (setq compatible-rules (get-compatible-rules cpd event rule :find-all t))
                                        ;; find compatible rules in schema
                                        (cond (compatible-rules
                                               (when nil t
-                                                    (format t "~%episode rule:~%~S" rule))
+                                                (format t "~%episode rule:~%")
+						(print-cpd-rule rule))
                                               (loop
 					        for compatible-rule in compatible-rules
 						for denom from 1
@@ -6493,7 +7048,7 @@ Roughly based on (Koller and Friedman, 2009) |#
            (cond ((and (not (null y))
                        (or (not (equal var-x-name var-y-name))
                            #|(not (equal (gethash 0 (rule-based-cpd-concept-ids x))
-                                       (gethash 0 (rule-based-cpd-concept-ids y))))|#
+                           (gethash 0 (rule-based-cpd-concept-ids y))))|#
 			   ))
                   0)
                  ((member (gethash 0 (rule-based-cpd-types x)) forbidden-types :test #'equal)
@@ -6501,11 +7056,15 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (t
                   (let (x-copy discount var-dif kost bic)
                     (cond ((rule-based-cpd-p y)
-			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
-			     (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" x y))
+			   (when nil t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+				 (format t "~%~%p-cpd before subst:")
+				 (print-cpd x)
+				 (format t "~%q-match:")
+				 (print-cpd y))
                            (setq x-copy (subst-cpd-2 x y bindings))
-			   (when nil (and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
-			     (format t "~%p-cpd after subst:~%~S" x-copy))
+			   (when nil t nil ;;(and (= cycle* 4) y (equal "BLOCK581" (rule-based-cpd-dependent-id y)))
+				 (format t "~%p-cpd after subst:")
+				 (print-cpd x-copy))
                            (cond ((hash-intersection-p (rule-based-cpd-identifiers x-copy) (rule-based-cpd-identifiers y))
 				  (multiple-value-bind (dif forbidden-likelihood)
                                       (hash-difference-p (rule-based-cpd-identifiers y)
@@ -6516,8 +7075,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 				    ;;(setq x-copy (add-na-conditions-to-rules x-copy var-dif))
                                     (setq likelihood (local-likelihood x-copy y forbidden-likelihood))
                                     ;;(when (< bic 0) (setq bic 0))
-                                    (when nil
-                                      (format t "~%var-dif: ~A~%discount: ~d~%likelihood: ~d~%forbidden likelihood?: ~A~%total penalty: ~d" var-dif discount likelihood forbidden-likelihood (- likelihood discount))))
+                                    (when nil t 
+                                      (format t "~%local likelihood: ~d"likelihood)))
                                   (cond (bic-p
                                          ;;(setq kost (- 1 (/ (* (rule-based-cpd-lvl x) bic) (rule-based-cpd-lvl x))))
                                          ;;(setq kost (* (rule-based-cpd-lvl x) (- 1 (- likelihood discount))))
@@ -6613,9 +7172,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; p-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; qp-refs-map = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
-(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil))
+(defun g (n bindings q-first-bindings p q q-dif q-m p-refs-map qp-refs-map &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-only nil))
   (loop
-     with q-likelihood = 1 and kost
+    with q-likelihood = 1 and kost
+    with q-ref-likelihood = 1 and kost-ref
      with num-local-preds = 0
      for (p-node . qp) in n
      do
@@ -6685,6 +7245,37 @@ Roughly based on (Koller and Friedman, 2009) |#
 				  ;;(setq num-local-preds 0)
 				  (setq q-likelihood (* q-likelihood 0))))))))
 	      (t
+	       (when score-only
+		 (let (marginal-p marginal-q)
+		   (setq marginal-p (copy-rule-based-cpd (aref (car p) p-node)))
+		   (loop
+		     for ident being the hash-keys of (rule-based-cpd-identifiers marginal-p)
+		       using (hash-value idx)
+		     when (= idx 0)
+		       collect ident into keep
+		     else
+		       collect ident into remove
+		     finally
+			(setq marginal-p (factor-operation marginal-p keep remove #'+)))
+		   (when qp
+		     (setq marginal-q (copy-rule-based-cpd (aref (car q) qp)))
+		     (loop
+		       for ident being the hash-keys of (rule-based-cpd-identifiers marginal-q)
+			 using (hash-value idx)
+		       when (= idx 0)
+			 collect ident into keep
+		       else
+			 collect ident into remove
+		       finally
+			  (setq marginal-q (factor-operation marginal-q keep remove #'+))))
+		   (setq kost-ref (cost marginal-p
+					marginal-q
+					bindings
+					q-first-bindings
+					:cost-of-nil cost-of-nil
+					:bic-p bic-p
+					:forbidden-types forbidden-types))
+		   (setq q-ref-likelihood (* q-ref-likelihood kost-ref))))
 	       (setq kost (cost (aref (car p) p-node)
 				(if qp (aref (car q) qp) nil)
 				bindings
@@ -6696,20 +7287,28 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (when (> kost 0)
 		 (setq num-local-preds (+ num-local-preds 1)))))
      finally
-	(when nil
-	  (format t "~%q-m: ~d~%q-dif: ~d" q-m q-dif))
+	(when nil t
+	  (format t "~%q-m: ~d~%q-dif: ~d~%q-likelihood: ~d" q-m q-dif q-likelihood))
 	(if bic-p
-	    (return (values (if score-p
+	    (return (values (if score-only
 				(- q-likelihood
 				   (* (/ (log q-m) 2)
 					    q-dif))
 				(abs (- 1 (- q-likelihood
 					 (* (/ (log q-m) 2)
 					    q-dif)))))
+			    (if score-only
+				(- q-ref-likelihood
+				   (* (/ (log q-m) 2)
+				      q-dif))
+				most-positive-fixnum)
 			    num-local-preds))
-	    (return (values (if score-p
+	    (return (values (if score-only
 				q-likelihood
 				(abs (- 1 q-likelihood)))
+			    (if score-only
+				q-ref-likelihood
+				most-positive-fixnum)
 			    num-local-preds)))))
 
 ;; cost-of-nil = episode count for matching to nil
@@ -7222,17 +7821,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; bic-p = whether to compute bic or likelihood
 ;; p-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
-(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-p nil))
-  (let (cost num-local-preds key previous-cost prev-num-local-preds)
+(defun get-cost (solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types &key (sol-cost-map) (score-only nil))
+  (let (cost cost-ref num-local-preds key previous-cost prev-cost-ref prev-num-local-preds)
     (setq key (key-from-matches solution))
     (when sol-cost-map
       (let ((res (gethash key sol-cost-map)))
-	(setq previous-cost (car res))
-	(setq prev-num-local-preds (cdr res))))
+        (setq previous-cost (first res))
+	(setq prev-cost-ref (second res))
+	(setq prev-num-local-preds (third res))))
     (cond (previous-cost
-           (values solution previous-cost bindings q-first-bindings prev-num-local-preds))
+           (values solution previous-cost prev-cost-ref bindings q-first-bindings prev-num-local-preds))
           (t
-	   (multiple-value-setq (cost num-local-preds)
+	   (multiple-value-setq (cost cost-ref num-local-preds)
              (g (coerce solution 'list)
                 bindings
                 q-first-bindings
@@ -7241,10 +7841,10 @@ Roughly based on (Koller and Friedman, 2009) |#
                 :cost-of-nil cost-of-nil
                 :bic-p bic-p
                 :forbidden-types forbidden-types
-		:score-p score-p))
+		:score-only score-only))
            (when sol-cost-map
-             (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
-           (values solution cost bindings q-first-bindings num-local-preds)))))
+             (setf (gethash key sol-cost-map) (list cost cost-ref num-local-preds)))
+           (values solution cost cost-ref bindings q-first-bindings num-local-preds)))))
 
 #| Find largest common subgraph between two graphs |#
 
@@ -7366,9 +7966,7 @@ Roughly based on (Koller and Friedman, 2009) |#
         (setq match (aref matches pnum))
         (setq q-match (cdr match))
         (setq pnum-prime nil)
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%~%new iteration~%pnum: ~d~%~A~%qp: ~d~%~A~%"
                   pnum
                   (aref (car p) pnum)
@@ -7379,22 +7977,16 @@ Roughly based on (Koller and Friedman, 2009) |#
         (when q-match
           ;;(setq q-first-bindings (fset:less q-first-bindings (cpd-dependent-id (aref (car q) q-match))))
           (remhash (rule-based-cpd-dependent-id (aref (car q) q-match)) q-first-bindings))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%reduced bindings: ~A~%reduced q-first-bindings: ~A" bindings q-first-bindings))
         ;;(setq candidates (analog-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings))
 	(setq candidates (candidate-nodes pnum p q (gethash pnum possible-candidates) bindings q-first-bindings t))
 	(setq candidates (make-array (length candidates) :initial-contents candidates))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%pnum: ~d~%candidates: ~A" pnum candidates))
         ;; swap pnode with random candidate
         (setq new-qnum (aref candidates (random (array-dimension candidates 0))))
-        (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+        (when nil (and (or (= pnum 0))) nil t
           (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" (car match) (aref (car p) (car match)) new-qnum (if new-qnum (aref (car q) new-qnum) nil) matches bindings))
         (setq match (cons (car match) new-qnum))
         (when new-qnum
@@ -7406,9 +7998,7 @@ Roughly based on (Koller and Friedman, 2009) |#
           (setf (gethash (rule-based-cpd-dependent-id (aref (car q) new-qnum)) q-first-bindings) (rule-based-cpd-dependent-id (aref (car p) (car match)))))
         (setf (aref matches pnum) match)
         (when pnum-prime
-          (when nil (and (or (= pnum 27)
-				    (= pnum 17)
-				    (= pnum 22))) nil t
+          (when nil (and (or (= pnum 0))) nil t
             (format t "~%matching ~A~%~A~%with ~A~%~A~%current matches:~%~A~%bindings:~%~A" pnum-prime (aref (car p) pnum-prime) q-match (if q-match (aref (car q) q-match) nil) matches bindings))
           (setq match-prime (cons pnum-prime q-match))
           (setf (aref matches pnum-prime) match-prime)
@@ -7521,31 +8111,31 @@ Roughly based on (Koller and Friedman, 2009) |#
   (cond ((< (second next) (second best-solution))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (> (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (> (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (= (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0))
-	      (< (sixth next) (sixth best-solution)))
+	      (< (seventh next) (seventh best-solution)))
 	 t)
 	((and (= (second next) (second best-solution))
-	      (= (if (> (sixth next) 0)
-		     (/ (hash-table-count (third next)) (sixth next))
+	      (= (if (> (seventh next) 0)
+		     (/ (hash-table-count (fourth next)) (seventh next))
 		     0)
-		 (if (> (sixth best-solution) 0)
-		     (/ (hash-table-count (third best-solution)) (sixth best-solution))
+		 (if (> (seventh best-solution) 0)
+		     (/ (hash-table-count (fourth best-solution)) (seventh best-solution))
 		     0))
-	      (= (sixth next) (sixth best-solution))
-	      (>= (fifth next) (fifth best-solution)))
+	      (= (seventh next) (seventh best-solution))
+	      (>= (sixth next) (sixth best-solution)))
 	 t)))
 
 #| Initialize empty set of mappings |#
@@ -7647,7 +8237,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-m = number of summarized in q
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = whether to compute bic or likelihood
-(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types &key (score-p nil))
+(defun new-simulated-annealing (p q p-backlinks q-backlinks current possible-candidates sol-cost-map start-temp end-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types &key (score-only nil))
   (loop
     named looper
     with big-t = start-temp and smallest-float = end-temp and next and delta-e and delta-m
@@ -7660,22 +8250,22 @@ Roughly based on (Koller and Friedman, 2009) |#
             (format t "~%time: ~d ~%total cycles: ~d~%stop temperature: ~d~%bindings:~%~S~%cost: ~d" time (/ time (length top-lvl-nodes)) big-t (third best-solution) (second best-solution))
             (break)
 	    )
-      (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution)))
+      (return-from looper (values (first best-solution) (second best-solution) (third best-solution) (fourth best-solution) (fifth best-solution) (sixth best-solution)))
     else do
       (when nil
             (format t "~%~%iteration: ~d~%temperature: ~d~%current mapping:~%~A~%current bindings: ~A~%current q-first-bindings: ~A~%cost of current solution: ~d" time big-t (first current) (third current) (fourth current) (second current)))
       (multiple-value-bind (solution bindings q-first-bindings)
 	  (linear-neighbor (make-nil-mappings p) (make-hash-table :test #'equal) (make-hash-table :test #'equal)  possible-candidates p q p-nodes q-nodes top-lvl-nodes)
 	;;(linear-neighbor (copy-array (first current)) (copy-hash-table (third current)) (copy-hash-table (fourth current)) possible-candidates p q p-nodes q-nodes top-lvl-nodes)
-        (multiple-value-bind (new-matches new-cost new-bindings new-q-first-bindings num-local-preds)
-            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-p score-p)
-          (setq next (list new-matches new-cost new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
+        (multiple-value-bind (new-matches new-cost new-cost-ref new-bindings new-q-first-bindings num-local-preds)
+            (get-cost solution p-backlinks q-backlinks bindings q-first-bindings p q q-dif q-m p-nodes q-nodes cost-of-nil bic-p forbidden-types :sol-cost-map sol-cost-map :score-only score-only)
+          (setq next (list new-matches new-cost new-cost-ref new-bindings new-q-first-bindings num-local-preds (array-dimension (car q) 0))))
         (setq delta-e (- (second next) (second current)))
         (when nil (and print-special*
 		       (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
               (format t "~%new mapping:~%~A~%new bindings: ~A~%new q-first-bindings: ~A~%cost of new solution: ~d~%delta cost: ~d" (first next) (third next) (fourth next) (second next) delta-e))
         (when (better-random-match? next best-solution)
-          (setq best-solution (list (copy-array (first next)) (second next) (copy-hash-table (third next)) (copy-hash-table (fourth next)) (fifth next) (array-dimension (car q) 0)))
+          (setq best-solution (list (copy-array (first next)) (second next) (third next) (copy-hash-table (fourth next)) (copy-hash-table (fifth next)) (sixth next) (array-dimension (car q) 0)))
           (when nil (and print-special*
 			 (equal "STATE" (gethash 0 (rule-based-cpd-types (aref (car p) 0)))))
 		(format t "~%new mapping is new best solution!~%~%Best score: ~d~%Found at iteration: ~d~%temperature: ~d" (second best-solution) time big-t)))
@@ -7710,7 +8300,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-backlinks = hash table of episode ids to back-links references pointing to lower-level observation/state transition models in the event memory
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
-(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-p nil)  &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
+(defun new-maximum-common-subgraph (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil) (score-only nil) &aux p-nodes q-nodes top-lvl-nodes (required-swaps 1))
   (when nil 
     (format t "~%~%p:~%~S~%|p|: ~d~%q:~%~S~%|q|: ~d" (map 'list #'rule-based-cpd-identifiers (car p))
 	    (array-dimension (car p) 0)
@@ -7718,10 +8308,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 	    (array-dimension (car q) 0))
     ;;(break)
     )
-  (let (matches cost bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
+  (let (matches cost cost-ref bindings q-first-bindings possible-candidates current temperature stop-temp alpha almost-zero sol-cost-map key no-matches p-dim p-m q-dim q-m q-dif num-local-preds)
     (setq sol-cost-map (make-hash-table :test #'equal))
     (setq matches (make-nil-mappings p))
     (setq cost most-positive-fixnum)
+    (setq cost-ref most-positive-fixnum)
     (setq num-local-preds -1)
     (setq bindings (make-hash-table :test #'equal))
     (setq q-first-bindings (make-hash-table :test #'equal))
@@ -7730,13 +8321,13 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq q-dim 0)
     (setq q-m 0)
     (setq q-dif 0)
-    (when nil t
+    (when nil
 	  (format t "~%~%possible candidates:~%~S" possible-candidates)
 	  )
     (setq key (key-from-matches matches))
     (when (null (gethash key sol-cost-map))
-      (setf (gethash key sol-cost-map) (cons cost num-local-preds)))
-    (setq current (list matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0)))
+      (setf (gethash key sol-cost-map) (list cost cost-ref num-local-preds)))
+    (setq current (list matches cost cost-ref bindings q-first-bindings num-local-preds (array-dimension (car q) 0)))
     (setq stop-temp (expt 10 (- 1)))
     (setq almost-zero 1.e-39)
     (setq alpha .999)
@@ -7774,11 +8365,11 @@ Roughly based on (Koller and Friedman, 2009) |#
           (format t "~%~%initial temperature: ~d~%alpha: ~d~%num top-lvl-nodes:~%~A~%expected number of cycles: ~d" temperature alpha (length top-lvl-nodes) required-swaps)
           ;;(break)
 	  )
-    (multiple-value-bind (matches cost bindings q-first-bindings num-local-preds)
-        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-p score-p)
+    (multiple-value-bind (matches cost cost-ref bindings q-first-bindings num-local-preds)
+        (new-simulated-annealing p q p-backlinks q-backlinks current possible-candidates sol-cost-map temperature stop-temp alpha top-lvl-nodes p-nodes q-nodes q-dif q-m cost-of-nil bic-p forbidden-types :score-only score-only)
       (setq no-matches (make-na-matches-for-unmatched-cpds p q matches bindings q-first-bindings p-nodes))
-      (setq current (list matches no-matches cost bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
-    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current))))
+      (setq current (list matches no-matches cost cost-ref bindings q-first-bindings num-local-preds (array-dimension (car q) 0))))
+    (values (first current) (second current) (third current) (fourth current) (fifth current) (sixth current) (seventh current))))
 
 #| Score Bayes net, q, on pattern graph using likelihood or BIC |#
 
@@ -7789,12 +8380,989 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; cost-of-nil = episode count for matching to nil
 ;; bic-p = flag to compute BIC
 (defun bn-score (p q p-backlinks q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
-  (multiple-value-bind (sol no-matches score)
-      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-p t)
+  (multiple-value-bind (sol no-matches score score-ref)
+      (new-maximum-common-subgraph p q p-backlinks q-backlinks :cost-of-nil cost-of-nil :bic-p bic-p :forbidden-types forbidden-types :score-only t)
     (declare (ignore sol no-matches))
-    score))
+    (values score score-ref)))
+
+#|
+(defun temporal-bn-score (p q q-backlinks &key (cost-of-nil 2) (bic-p t) (forbidden-types nil))
+  (labels ((init-messages (messages forward-pass-p)
+	     (let ((idx-list (make-index-list forward-pass-p)))
+	       (loop
+		 with marker and cpds-per-slice = (if hidden-state-p 3 2)
+		 with model = (episode-state-transitions q)
+		 with vvbms-hash = (model-var-vvbms model)
+		 with num-slices = (/ (array-dimension (car model) 0) cpds-per-slice)
+		 with slice and evidence-slice
+		 for cur-slice in ()idx-list
+		 do
+		    (setq evidence-slice (gethash cur-slice evidence-hash))
+		    (if (null evidence-slice)
+			(setq evidence-slice (make-hash-table :test #'equal)))
+		    (setq slice (make-hash-table :test #'equal))
+		    (setq marker (mod (* cur-slice cpds-per-slice) (array-dimension (car model) 0)))
+		    (when nil (= cur-slice 0)
+		      (format t "~%~%cur slice (i): ~d~%num-slices per model: ~d~%mod slice length: ~d~%num-cpds: ~d~%model slice marker: ~d"
+			      cur-slice num-slices cpds-per-slice (array-dimension (car model) 0) marker))
+		    (loop
+		      with cpd and cpd-type and evidence
+		      with dist-hash
+		      for j from marker to (+ marker (- cpds-per-slice 1))
+		      ;;for j from 0 below (array-dimension (car model) 0)
+		      do
+			 (when nil (= cur-slice 0)
+			   (format t "~%j: ~d" j))
+			 (setq cpd (aref (car model) j))
+			 (setq cpd-type (gethash 0 (rule-based-cpd-types cpd)))
+			 (setq evidence (gethash cpd-type evidence-slice))
+			 (setq dist-hash (make-hash-table :test #'equal))
+			 (when nil (= cur-slice 0)
+			   (format t "~%cpd:")
+			   (print-cpd cpd)
+			   (format t "~%cpd type: ~S" cpd-type)
+			   (format t "~%evidence:")
+			   (print-bn evidence))
+			 (loop
+			   ;;with vvbms = (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+			   with vvbms = (gethash (gethash 0 (rule-based-cpd-types cpd)) vvbms-hash)
+			   with num-vvbm = (length vvbms)
+			   for vvbm in vvbms
+			   do
+			      (if evidence
+				  (setf (gethash vvbm dist-hash) (cons (float (/ 1 num-vvbm)) evidence))
+				  (setf (gethash vvbm dist-hash) (cons (float (/ 1 num-vvbm)) (make-empty-graph))))
+			   finally
+			      (setf (gethash cpd-type slice) dist-hash))
+			 (when nil (= cur-slice 0)
+			   (format t "~%dist hash:")
+			   (print-dist-hash dist-hash)
+			   (break)
+			   ))
+		    (setf (gethash cur-slice messages)
+			  slice)))
+	     messages))
+    (let (observations))))
+|#
 
 #| TESTS
+(get-local-coverings
+#S(RULE-BASED-CPD
+   :DEPENDENT-ID #1="EPOSITION_301"
+   :IDENTIFIERS #H((#1# . 0) (#2="EPOSITION_PREV_216" . 1) (#3="EVELOCITY_PREV_256" . 2) (#4="TIME_DELTA_296" . 3))
+   :DEPENDENT-VAR #5="EPOSITION"
+   :VARS #H((0 . #5#) (1 . "EPOSITION_PREV") (2 . "EVELOCITY_PREV") (3 . "TIME_DELTA"))
+   :TYPES #H((0 . #6="PERCEPT") (1 . #6#) (2 . #6#) (3 . #6#))
+   :CONCEPT-IDS #H((0 . #7="NIL") (1 . #7#) (2 . #7#) (3 . #7#))
+   :QUALIFIED-VARS #H((0 . "EPOSITIONNIL") (1 . "EPOSITION_PREVNIL") (2 . "EVELOCITY_PREVNIL") (3 . "TIME_DELTANIL"))
+   :VAR-VALUE-BLOCK-MAP #H((0 . (((#8="NA" . 0)
+                                  #H((0 . 0) (1 . 1) (2 . 2) (6 . 6)))
+                                 ((#9="50" . 1)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (48 . 48)))
+                                 ((#10="150" . 2)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (26 . 26) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (47 . 47) (48 . 48)))
+                                 ((#11="250" . 3)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (25 . 25) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#12="350" . 4)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (24 . 24) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#13="450" . 5)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (23 . 23) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#14="550" . 6)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (22 . 22) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#15="650" . 7)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (21 . 21) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#16="750" . 8)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (20 . 20) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#17="850" . 9)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (19 . 19) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#18="950" . 10)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (18 . 18) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#19="1050" . 11)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (17 . 17) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#20="1150" . 12)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (16 . 16) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#21="1250" . 13)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (15 . 15) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#22="1350" . 14)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (14 . 14) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#23="1450" . 15)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (13 . 13) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#24="1550" . 16)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (12 . 12) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#25="1650" . 17)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (11 . 11) (28 . 28) (29 . 29) (30 . 30) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#26="1750" . 18)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (10 . 10) (28 . 28) (29 . 29) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#27="1850" . 19)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (9 . 9) (28 . 28) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#28="1950" . 20)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (8 . 8) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                 ((#29="2050" . 21)
+                                  #H((3 . 3) (4 . 4) (5 . 5) (7 . 7) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47))))) (1 . (((#30="NA"
+                                                                                                                                                                                                                                                                                         . 0)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (2 . 2) (3 . 3)))
+                                                                                                                                                                                                                                                                                       ((#31="50"
+                                                                                                                                                                                                                                                                                         . 1)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (27 . 27) (47 . 47)))
+                                                                                                                                                                                                                                                                                       ((#32="150"
+                                                                                                                                                                                                                                                                                         . 2)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (26 . 26) (46 . 46)))
+                                                                                                                                                                                                                                                                                       ((#33="250"
+                                                                                                                                                                                                                                                                                         . 3)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (25 . 25) (45 . 45)))
+                                                                                                                                                                                                                                                                                       ((#34="350"
+                                                                                                                                                                                                                                                                                         . 4)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (24 . 24) (44 . 44)))
+                                                                                                                                                                                                                                                                                       ((#35="450"
+                                                                                                                                                                                                                                                                                         . 5)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (23 . 23) (43 . 43)))
+                                                                                                                                                                                                                                                                                       ((#36="550"
+                                                                                                                                                                                                                                                                                         . 6)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (22 . 22) (42 . 42)))
+                                                                                                                                                                                                                                                                                       ((#37="650"
+                                                                                                                                                                                                                                                                                         . 7)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (21 . 21) (41 . 41)))
+                                                                                                                                                                                                                                                                                       ((#38="750"
+                                                                                                                                                                                                                                                                                         . 8)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (20 . 20) (40 . 40)))
+                                                                                                                                                                                                                                                                                       ((#39="850"
+                                                                                                                                                                                                                                                                                         . 9)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (19 . 19) (39 . 39)))
+                                                                                                                                                                                                                                                                                       ((#40="950"
+                                                                                                                                                                                                                                                                                         . 10)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (18 . 18) (38 . 38)))
+                                                                                                                                                                                                                                                                                       ((#41="1050"
+                                                                                                                                                                                                                                                                                         . 11)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (17 . 17) (37 . 37)))
+                                                                                                                                                                                                                                                                                       ((#42="1150"
+                                                                                                                                                                                                                                                                                         . 12)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (16 . 16) (36 . 36)))
+                                                                                                                                                                                                                                                                                       ((#43="1250"
+                                                                                                                                                                                                                                                                                         . 13)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (15 . 15) (35 . 35)))
+                                                                                                                                                                                                                                                                                       ((#44="1350"
+                                                                                                                                                                                                                                                                                         . 14)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (14 . 14) (34 . 34)))
+                                                                                                                                                                                                                                                                                       ((#45="1450"
+                                                                                                                                                                                                                                                                                         . 15)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (13 . 13) (33 . 33)))
+                                                                                                                                                                                                                                                                                       ((#46="1550"
+                                                                                                                                                                                                                                                                                         . 16)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (12 . 12) (32 . 32)))
+                                                                                                                                                                                                                                                                                       ((#47="1650"
+                                                                                                                                                                                                                                                                                         . 17)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (11 . 11) (31 . 31)))
+                                                                                                                                                                                                                                                                                       ((#48="1750"
+                                                                                                                                                                                                                                                                                         . 18)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (10 . 10) (30 . 30)))
+                                                                                                                                                                                                                                                                                       ((#49="1850"
+                                                                                                                                                                                                                                                                                         . 19)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (9 . 9) (29 . 29)))
+                                                                                                                                                                                                                                                                                       ((#50="1950"
+                                                                                                                                                                                                                                                                                         . 20)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (8 . 8) (28 . 28)))
+                                                                                                                                                                                                                                                                                       ((#51="2050"
+                                                                                                                                                                                                                                                                                         . 21)
+                                                                                                                                                                                                                                                                                        #H((0 . 0) (1 . 1) (4 . 4) (5 . 5) (6 . 6) (7 . 7) (48 . 48))))) (2 . (((#52="NA"
+                                                                                                                                                                                                                                                                                                                                                                 . 0)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (1 . 1) (3 . 3) (4 . 4)))
+                                                                                                                                                                                                                                                                                                                                                               ((#53="-15"
+                                                                                                                                                                                                                                                                                                                                                                 . 1)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#54="-13"
+                                                                                                                                                                                                                                                                                                                                                                 . 2)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#55="-11"
+                                                                                                                                                                                                                                                                                                                                                                 . 3)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#56="-9"
+                                                                                                                                                                                                                                                                                                                                                                 . 4)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#57="-7"
+                                                                                                                                                                                                                                                                                                                                                                 . 5)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#58="-5"
+                                                                                                                                                                                                                                                                                                                                                                 . 6)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#59="-3"
+                                                                                                                                                                                                                                                                                                                                                                 . 7)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#60="-1"
+                                                                                                                                                                                                                                                                                                                                                                 . 8)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#61="1"
+                                                                                                                                                                                                                                                                                                                                                                 . 9)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#62="3"
+                                                                                                                                                                                                                                                                                                                                                                 . 10)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#63="5"
+                                                                                                                                                                                                                                                                                                                                                                 . 11)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#64="7"
+                                                                                                                                                                                                                                                                                                                                                                 . 12)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#65="9"
+                                                                                                                                                                                                                                                                                                                                                                 . 13)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#66="11"
+                                                                                                                                                                                                                                                                                                                                                                 . 14)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#67="13"
+                                                                                                                                                                                                                                                                                                                                                                 . 15)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48)))
+                                                                                                                                                                                                                                                                                                                                                               ((#68="15"
+                                                                                                                                                                                                                                                                                                                                                                 . 16)
+                                                                                                                                                                                                                                                                                                                                                                #H((0 . 0) (2 . 2) (3 . 3) (5 . 5) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))) (3 . (((#69="NA"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     . 0)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #H((0 . 0) (3 . 3) (4 . 4) (5 . 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ((#70="1"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     . 1)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    #H((1 . 1) (2 . 2) (3 . 3) (4 . 4) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :SET-VALUED-ATTRIBUTES #H((0 . ((0) (1) (2) (3) (4) (5) (6) (7) (8) (9) (10)
+                                   (11) (12) (13) (14) (15) (16) (17) (18) (19)
+                                   (20) (21))) (1 . ((0) (1) (2) (3) (4) (5)
+                                                     (6) (7) (8) (9) (10) (11)
+                                                     (12) (13) (14) (15) (16)
+                                                     (17) (18) (19) (20)
+                                                     (21))) (2 . ((0) (1) (2)
+                                                                  (3) (4) (5)
+                                                                  (6) (7) (8)
+                                                                  (9) (10) (11)
+                                                                  (12) (13)
+                                                                  (14) (15)
+                                                                  (16))) (3 . ((0)
+                                                                               (1))))
+   :LOWER-APPROX-VAR-VALUE-BLOCK-MAP #H((0 . (((#8# . 0)
+                                               #H((0 . 0) (1 . 1) (2 . 2) (6 . 6)))
+                                              ((#9# . 1) #H((27 . 27)))
+                                              ((#10# . 2) #H((26 . 26)))
+                                              ((#11# . 3) #H((25 . 25)))
+                                              ((#12# . 4) #H((24 . 24)))
+                                              ((#13# . 5) #H((23 . 23)))
+                                              ((#14# . 6) #H((22 . 22)))
+                                              ((#15# . 7) #H((21 . 21)))
+                                              ((#16# . 8) #H((20 . 20)))
+                                              ((#17# . 9) #H((19 . 19)))
+                                              ((#18# . 10) #H((18 . 18)))
+                                              ((#19# . 11) #H((17 . 17)))
+                                              ((#20# . 12) #H((16 . 16)))
+                                              ((#21# . 13) #H((15 . 15)))
+                                              ((#22# . 14) #H((14 . 14)))
+                                              ((#23# . 15) #H((13 . 13)))
+                                              ((#24# . 16) #H((12 . 12)))
+                                              ((#25# . 17) #H((11 . 11)))
+                                              ((#26# . 18) #H((10 . 10)))
+                                              ((#27# . 19) #H((9 . 9)))
+                                              ((#28# . 20) #H((8 . 8)))
+                                              ((#29# . 21)
+                                               #H((7 . 7))))) (1 . (((#30# . 0)
+                                                                     #H((2 . 2) (3 . 3)))
+                                                                    ((#31# . 1)
+                                                                     #H((27 . 27) (47 . 47)))
+                                                                    ((#32# . 2)
+                                                                     #H((26 . 26) (46 . 46)))
+                                                                    ((#33# . 3)
+                                                                     #H((25 . 25) (45 . 45)))
+                                                                    ((#34# . 4)
+                                                                     #H((24 . 24) (44 . 44)))
+                                                                    ((#35# . 5)
+                                                                     #H((23 . 23) (43 . 43)))
+                                                                    ((#36# . 6)
+                                                                     #H((22 . 22) (42 . 42)))
+                                                                    ((#37# . 7)
+                                                                     #H((21 . 21) (41 . 41)))
+                                                                    ((#38# . 8)
+                                                                     #H((20 . 20) (40 . 40)))
+                                                                    ((#39# . 9)
+                                                                     #H((19 . 19) (39 . 39)))
+                                                                    ((#40#
+                                                                      . 10)
+                                                                     #H((18 . 18) (38 . 38)))
+                                                                    ((#41#
+                                                                      . 11)
+                                                                     #H((17 . 17) (37 . 37)))
+                                                                    ((#42#
+                                                                      . 12)
+                                                                     #H((16 . 16) (36 . 36)))
+                                                                    ((#43#
+                                                                      . 13)
+                                                                     #H((15 . 15) (35 . 35)))
+                                                                    ((#44#
+                                                                      . 14)
+                                                                     #H((14 . 14) (34 . 34)))
+                                                                    ((#45#
+                                                                      . 15)
+                                                                     #H((13 . 13) (33 . 33)))
+                                                                    ((#46#
+                                                                      . 16)
+                                                                     #H((12 . 12) (32 . 32)))
+                                                                    ((#47#
+                                                                      . 17)
+                                                                     #H((11 . 11) (31 . 31)))
+                                                                    ((#48#
+                                                                      . 18)
+                                                                     #H((10 . 10) (30 . 30)))
+                                                                    ((#49#
+                                                                      . 19)
+                                                                     #H((9 . 9) (29 . 29)))
+                                                                    ((#50#
+                                                                      . 20)
+                                                                     #H((8 . 8) (28 . 28)))
+                                                                    ((#51#
+                                                                      . 21)
+                                                                     #H((7 . 7) (48 . 48))))) (2 . (((#52#
+                                                                                                      . 0)
+                                                                                                     #H((1 . 1) (4 . 4)))
+                                                                                                    ((#53#
+                                                                                                      . 1)
+                                                                                                     #H())
+                                                                                                    ((#54#
+                                                                                                      . 2)
+                                                                                                     #H())
+                                                                                                    ((#55#
+                                                                                                      . 3)
+                                                                                                     #H())
+                                                                                                    ((#56#
+                                                                                                      . 4)
+                                                                                                     #H())
+                                                                                                    ((#57#
+                                                                                                      . 5)
+                                                                                                     #H())
+                                                                                                    ((#58#
+                                                                                                      . 6)
+                                                                                                     #H())
+                                                                                                    ((#59#
+                                                                                                      . 7)
+                                                                                                     #H())
+                                                                                                    ((#60#
+                                                                                                      . 8)
+                                                                                                     #H())
+                                                                                                    ((#61#
+                                                                                                      . 9)
+                                                                                                     #H())
+                                                                                                    ((#62#
+                                                                                                      . 10)
+                                                                                                     #H())
+                                                                                                    ((#63#
+                                                                                                      . 11)
+                                                                                                     #H())
+                                                                                                    ((#64#
+                                                                                                      . 12)
+                                                                                                     #H())
+                                                                                                    ((#65#
+                                                                                                      . 13)
+                                                                                                     #H())
+                                                                                                    ((#66#
+                                                                                                      . 14)
+                                                                                                     #H())
+                                                                                                    ((#67#
+                                                                                                      . 15)
+                                                                                                     #H())
+                                                                                                    ((#68#
+                                                                                                      . 16)
+                                                                                                     #H()))) (3 . (((#69#
+                                                                                                                     . 0)
+                                                                                                                    #H((0 . 0) (5 . 5)))
+                                                                                                                   ((#70#
+                                                                                                                     . 1)
+                                                                                                                    #H((1 . 1) (2 . 2) (6 . 6) (7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27) (28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :CHARACTERISTIC-SETS #H()
+   :CHARACTERISTIC-SETS-VALUES #H()
+   :VAR-VALUES #H((0 . (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+                        21)) (1 . (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                   18 19 20 21)) (2 . (0 1 2 3 4 5 6 7 8 9 10
+                                                       11 12 13 14 15
+                                                       16)) (3 . (0 1)))
+   :CARDINALITIES #(22 22 17 2)
+   :STEP-SIZES #(1 22 484 8228)
+   :RULES #(#S(RULE
+               :ID "RULE-16758"
+               :CONDITIONS #H((#1# . (0)) (#4# . (0)))
+               :PROBABILITY 0
+               :BLOCK #H((0 . 0))
+               :CERTAIN-BLOCK #H((0 . 0))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16759"
+               :CONDITIONS #H((#1# . (0)) (#3# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((1 . 1))
+               :CERTAIN-BLOCK #H((1 . 1))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16760"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (0)) (#2# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((2 . 2))
+               :CERTAIN-BLOCK #H((2 . 2))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16761"
+               :CONDITIONS #H((#2# . (0)) (#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13
+                                                  14 15 16 17 18 19 20 21)))
+               :PROBABILITY 0
+               :BLOCK #H((3 . 3))
+               :CERTAIN-BLOCK #H((3 . 3))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16762"
+               :CONDITIONS #H((#3# . (0)) (#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13
+                                                  14 15 16 17 18 19 20
+                                                  21)) (#2# . (1 2 3 4 5 6 7 8
+                                                               9 10 11 12 13 14
+                                                               15 16 17 18 19
+                                                               20 21)))
+               :PROBABILITY 0
+               :BLOCK #H((4 . 4))
+               :CERTAIN-BLOCK #H((4 . 4))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16763"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#4# . (0)) (#2# . (1 2 3 4
+                                                                        5 6 7 8
+                                                                        9 10 11
+                                                                        12 13
+                                                                        14 15
+                                                                        16 17
+                                                                        18 19
+                                                                        20
+                                                                        21)) (#3# . (1
+                                                                                     2
+                                                                                     3
+                                                                                     4
+                                                                                     5
+                                                                                     6
+                                                                                     7
+                                                                                     8
+                                                                                     9
+                                                                                     10
+                                                                                     11
+                                                                                     12
+                                                                                     13
+                                                                                     14
+                                                                                     15
+                                                                                     16)))
+               :PROBABILITY 0
+               :BLOCK #H((5 . 5))
+               :CERTAIN-BLOCK #H((5 . 5))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16764"
+               :CONDITIONS #H((#2# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#1# . (0)) (#4# . (1)))
+               :PROBABILITY 0
+               :BLOCK #H((6 . 6))
+               :CERTAIN-BLOCK #H((6 . 6))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16765"
+               :CONDITIONS #H((#1# . (21)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (21)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((7 . 7))
+               :CERTAIN-BLOCK #H((7 . 7))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16766"
+               :CONDITIONS #H((#1# . (20)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (20)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((8 . 8))
+               :CERTAIN-BLOCK #H((8 . 8))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16767"
+               :CONDITIONS #H((#1# . (19)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (19)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((9 . 9))
+               :CERTAIN-BLOCK #H((9 . 9))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16768"
+               :CONDITIONS #H((#1# . (18)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (18)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((10 . 10))
+               :CERTAIN-BLOCK #H((10 . 10))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16769"
+               :CONDITIONS #H((#1# . (17)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (17)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((11 . 11))
+               :CERTAIN-BLOCK #H((11 . 11))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16770"
+               :CONDITIONS #H((#1# . (16)) (#3# . (1 2 3 4 5 6 7 8 9 10 11 12
+                                                   13 14 15
+                                                   16)) (#2# . (16)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((12 . 12))
+               :CERTAIN-BLOCK #H((12 . 12))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16771"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (15)) (#2# . (15)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((13 . 13))
+               :CERTAIN-BLOCK #H((13 . 13))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16772"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (14)) (#2# . (14)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((14 . 14))
+               :CERTAIN-BLOCK #H((14 . 14))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16773"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (13)) (#2# . (13)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((15 . 15))
+               :CERTAIN-BLOCK #H((15 . 15))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16774"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (12)) (#2# . (12)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((16 . 16))
+               :CERTAIN-BLOCK #H((16 . 16))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16775"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (11)) (#2# . (11)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((17 . 17))
+               :CERTAIN-BLOCK #H((17 . 17))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16776"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (10)) (#2# . (10)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((18 . 18))
+               :CERTAIN-BLOCK #H((18 . 18))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16777"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (9)) (#2# . (9)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((19 . 19))
+               :CERTAIN-BLOCK #H((19 . 19))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16778"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (8)) (#2# . (8)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((20 . 20))
+               :CERTAIN-BLOCK #H((20 . 20))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16779"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (7)) (#2# . (7)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((21 . 21))
+               :CERTAIN-BLOCK #H((21 . 21))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16780"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (6)) (#2# . (6)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((22 . 22))
+               :CERTAIN-BLOCK #H((22 . 22))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16781"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (5)) (#2# . (5)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((23 . 23))
+               :CERTAIN-BLOCK #H((23 . 23))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16782"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (4)) (#2# . (4)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((24 . 24))
+               :CERTAIN-BLOCK #H((24 . 24))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16783"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (3)) (#2# . (3)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((25 . 25))
+               :CERTAIN-BLOCK #H((25 . 25))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16784"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (2)) (#2# . (2)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((26 . 26))
+               :CERTAIN-BLOCK #H((26 . 26))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16785"
+               :CONDITIONS #H((#3# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+                                      16)) (#1# . (1)) (#2# . (1)) (#4# . (1)))
+               :PROBABILITY 1.0d0
+               :BLOCK #H((27 . 27))
+               :CERTAIN-BLOCK #H((27 . 27))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16786"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 21)) (#2# . (20)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((28 . 28))
+               :CERTAIN-BLOCK #H((28 . 28))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16787"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 20 21)) (#2# . (19)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((29 . 29))
+               :CERTAIN-BLOCK #H((29 . 29))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16788"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      19 20 21)) (#2# . (18)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((30 . 30))
+               :CERTAIN-BLOCK #H((30 . 30))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16789"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 18
+                                      19 20 21)) (#2# . (17)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((31 . 31))
+               :CERTAIN-BLOCK #H((31 . 31))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16790"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 17 18
+                                      19 20 21)) (#2# . (16)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((32 . 32))
+               :CERTAIN-BLOCK #H((32 . 32))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16791"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 16 17 18
+                                      19 20 21)) (#2# . (15)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((33 . 33))
+               :CERTAIN-BLOCK #H((33 . 33))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16792"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 15 16 17 18
+                                      19 20 21)) (#2# . (14)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((34 . 34))
+               :CERTAIN-BLOCK #H((34 . 34))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16793"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 14 15 16 17 18
+                                      19 20 21)) (#2# . (13)) (#3# . (1 2 3 4 5
+                                                                      6 7 8 9
+                                                                      10 11 12
+                                                                      13 14 15
+                                                                      16)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((35 . 35))
+               :CERTAIN-BLOCK #H((35 . 35))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16794"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (12)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((36 . 36))
+               :CERTAIN-BLOCK #H((36 . 36))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16795"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 12 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (11)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((37 . 37))
+               :CERTAIN-BLOCK #H((37 . 37))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16796"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 11 12 13 14 15 16 17 18
+                                      19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (10)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((38 . 38))
+               :CERTAIN-BLOCK #H((38 . 38))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16797"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (9)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((39 . 39))
+               :CERTAIN-BLOCK #H((39 . 39))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16798"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (8)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((40 . 40))
+               :CERTAIN-BLOCK #H((40 . 40))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16799"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (7)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((41 . 41))
+               :CERTAIN-BLOCK #H((41 . 41))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16800"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (6)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((42 . 42))
+               :CERTAIN-BLOCK #H((42 . 42))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16801"
+               :CONDITIONS #H((#1# . (1 2 3 4 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (5)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((43 . 43))
+               :CERTAIN-BLOCK #H((43 . 43))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16802"
+               :CONDITIONS #H((#1# . (1 2 3 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (4)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((44 . 44))
+               :CERTAIN-BLOCK #H((44 . 44))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16803"
+               :CONDITIONS #H((#1# . (1 2 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (3)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((45 . 45))
+               :CERTAIN-BLOCK #H((45 . 45))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16804"
+               :CONDITIONS #H((#1# . (1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (2)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((46 . 46))
+               :CERTAIN-BLOCK #H((46 . 46))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16805"
+               :CONDITIONS #H((#1# . (2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20 21)) (#3# . (1 2 3 4 5 6 7 8 9
+                                                            10 11 12 13 14 15
+                                                            16)) (#2# . (1)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((47 . 47))
+               :CERTAIN-BLOCK #H((47 . 47))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21)
+            #S(RULE
+               :ID "RULE-16806"
+               :CONDITIONS #H((#1# . (1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
+                                      18 19 20)) (#3# . (1 2 3 4 5 6 7 8 9 10
+                                                         11 12 13 14 15
+                                                         16)) (#2# . (21)) (#4# . (1)))
+               :PROBABILITY 0.0d0
+               :BLOCK #H((48 . 48))
+               :CERTAIN-BLOCK #H((48 . 48))
+               :AVOID-LIST #H()
+               :REDUNDANCIES #H()
+               :COUNT 21))
+   :CONCEPT-BLOCKS #H((0 . #H((21 . #H((0 . 0) (1 . 1) (2 . 2) (3 . 3) (4 . 4) (5 . 5) (6 . 6))))) (1.0d0 . #H((21 . #H((7 . 7) (8 . 8) (9 . 9) (10 . 10) (11 . 11) (12 . 12) (13 . 13) (14 . 14) (15 . 15) (16 . 16) (17 . 17) (18 . 18) (19 . 19) (20 . 20) (21 . 21) (22 . 22) (23 . 23) (24 . 24) (25 . 25) (26 . 26) (27 . 27))))) (0.0d0 . #H((21 . #H((28 . 28) (29 . 29) (30 . 30) (31 . 31) (32 . 32) (33 . 33) (34 . 34) (35 . 35) (36 . 36) (37 . 37) (38 . 38) (39 . 39) (40 . 40) (41 . 41) (42 . 42) (43 . 43) (44 . 44) (45 . 45) (46 . 46) (47 . 47) (48 . 48))))))
+   :PRIOR NIL
+   :SINGLETON-P NIL
+   :COUNT 1
+   :LVL 1))
+
 1) Structure mapping tests
 (load "newicarus")
 (initialize-world)

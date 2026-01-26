@@ -42,9 +42,23 @@
 	   (return a-list))
       hash))
 
+(defun hash-rule-conditions (conditions)
+  (if (listp conditions)
+      (loop
+	with hash-table =
+			(if (stringp (caar conditions))
+			    (make-hash-table :test #'equal)
+			    (make-hash-table))
+	for (att . set-values) in conditions
+	do
+	   (setf (gethash att hash-table) set-values)
+	finally
+	   (return hash-table))
+      conditions))
+
 (defun hash-rule (rule)
   (setf (rule-conditions rule)
-	(a-list-to-hash (rule-conditions rule)))
+	(hash-rule-conditions (rule-conditions rule)))
   (setf (rule-block rule)
 	(a-list-to-hash (rule-block rule)))
   (if (listp (rule-certain-block rule))
@@ -146,14 +160,8 @@
 	     (vvbm-to-hash (rule-based-cpd-var-value-block-map cpd)))
        (setf (rule-based-cpd-set-valued-attributes cpd)
 	     (vvbm-to-hash (rule-based-cpd-set-valued-attributes cpd)))
-       (setf (rule-based-cpd-set-valued-negated-attributes cpd)
-	     (vvbm-to-hash (rule-based-cpd-set-valued-negated-attributes cpd)))
-       (setf (rule-based-cpd-negated-vvbms cpd)
-	     (vvbm-to-hash (rule-based-cpd-negated-vvbms cpd)))
        (setf (rule-based-cpd-lower-approx-var-value-block-map cpd)
 	     (vvbm-to-hash (rule-based-cpd-lower-approx-var-value-block-map cpd)))
-       (setf (rule-based-cpd-lower-approx-negated-vvbms cpd)
-	     (vvbm-to-hash (rule-based-cpd-lower-approx-negated-vvbms cpd)))
        (setf (rule-based-cpd-characteristic-sets cpd)
 	     (vvbm-to-hash (rule-based-cpd-characteristic-sets cpd)))
        (setf (rule-based-cpd-characteristic-sets-values cpd)
@@ -188,14 +196,8 @@
 	     (vvbm-to-a-list (rule-based-cpd-var-value-block-map cpd)))
        (setf (rule-based-cpd-set-valued-attributes cpd)
 	     (vvbm-to-a-list (rule-based-cpd-set-valued-attributes cpd)))
-       (setf (rule-based-cpd-set-valued-negated-attributes cpd)
-	     (vvbm-to-a-list (rule-based-cpd-set-valued-negated-attributes cpd)))
-       (setf (rule-based-cpd-negated-vvbms cpd)
-	     (vvbm-to-a-list (rule-based-cpd-negated-vvbms cpd)))
        (setf (rule-based-cpd-lower-approx-var-value-block-map cpd)
 	     (vvbm-to-a-list (rule-based-cpd-lower-approx-var-value-block-map cpd)))
-       (setf (rule-based-cpd-lower-approx-negated-vvbms cpd)
-	     (vvbm-to-a-list (rule-based-cpd-lower-approx-negated-vvbms cpd)))
        (setf (rule-based-cpd-characteristic-sets cpd)
 	     (vvbm-to-a-list (rule-based-cpd-characteristic-sets cpd)))
        (setf (rule-based-cpd-characteristic-sets-values cpd)
@@ -238,27 +240,28 @@
 
 (defun unhash-eltm (eltm)
   (loop
-    with branch and episode and visited
-    with stack = (list eltm)
-    while stack
-    do
-       (setq branch (car stack))
-       (setq episode (car branch))
-       (setq stack (rest stack))
-       (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
-       ;;(format t "~%visiting: ~S" (episode-id episode))
-       (loop
-	 for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
-	 do
-	    (nunhash-cpds (funcall slot episode)))
-       ;;(format t "~%episode:~%~S"episode)
-       (setq visited (cons (episode-id episode) visited))
-       (loop
-	 for child in (rest branch)
-	 when (not (member (episode-id (car child)) visited
-			   :test #'equal))
-	   do
-	      (setq stack (cons child stack))))
+	with branch and episode and visited
+	with stack = (list eltm)
+	while stack
+	do
+	(setq branch (car stack))
+	(setq episode (car branch))
+	(setq stack (rest stack))
+	(when (episode-p episode)
+	  (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
+	  ;;(format t "~%visiting: ~S" (episode-id episode))
+	  (loop
+		for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
+		do
+		(nunhash-cpds (funcall slot episode)))
+	  ;;(format t "~%episode:~%~S"episode)
+	  (setq visited (cons (episode-id episode) visited))
+	  (loop
+		for child in (rest branch)
+		when (not (member (episode-id (car child)) visited
+				  :test #'equal))
+		do
+		(setq stack (cons child stack)))))
   eltm)
 
 #| Save contents of event memory to file which can be read later |#

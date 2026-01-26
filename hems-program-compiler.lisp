@@ -71,7 +71,7 @@
 		(list :value value :probability p :count nil))
 	    values)))
 
-(defun discrete-normal-approximation (&key values modes)
+(defun discrete-normal-approximation (&key values modes stdev)
   (labels ((parse-string-numerics (l)
 	     (mapcan #'(lambda (v)
 			 (let (parsed)
@@ -101,7 +101,7 @@
 	     (multiple-value-bind (unnormalized total)
 		 (get-unnormalized-distribution distances std)
 	       (mapcar #'(lambda (pair)
-			   (list :value  (write-to-string (car pair))
+			   (list :value (write-to-string (car pair))
 				 :probability (/ (cdr pair) total)
 				 :count 1))
 		       unnormalized))))
@@ -116,7 +116,11 @@
     (setq values (parse-string-numerics values))
     (setq modes (parse-string-numerics modes))
     (cons '(:value "NA" :probability 0.0 :count 1)
-	  (get-distribution (get-distances values) (if (> (length modes) 1) (stdev modes) 1)))))
+	  (get-distribution (get-distances values)
+			    (cond (stdev
+				   stdev)
+				  (t
+				   (if (> (length modes) 1) (stdev modes) 1)))))))
 
 (defun get-cpd-type (ref-cpd)
   (cond ((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "PERCEPT")
@@ -130,24 +134,61 @@
 	((equal (gethash 0 (rule-based-cpd-types ref-cpd)) "STATE")
 	 'state-node)))
 
+
+#| Construct a random variable from node declaration in HEMS program.
+   Returns: CPD|#
+
 ;; node-def = list describing node contents in attribute-value pair format. :kb-concept-id is optional.
-(defun make-bn-node (node-def)
-  (labels ((n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
+;; nodes-hash = hash table. key: program variable. value: CPD
+(defun make-bn-node (node-def nodes-hash)
+  (labels ((alistp (alist)
+	     (and (listp alist)
+		  (every #'consp alist)))
+	   (cartesian-product (lists)
+	     (reduce #'(lambda (acc domain)
+			 (mapcan #'(lambda (partial)
+				     (mapcar #'(lambda (val)
+						 (append partial (list val)))
+					     domain))
+				 acc))
+		     lists
+		     :initial-value (list nil)))
+	   (enumerate-assignments (vars domains)
+	     (let ((tuples (cartesian-product domains))
+		   ret)
+	       (setq ret (mapcar #'(lambda (values)
+				     (mapcar #'cons vars values))
+				 tuples))
+	       (if ret
+		   ret
+		   (list nil))))
+	   (n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
 	     (when (null (gethash 0 vvbm))
 	       (setf (gethash 0 vvbm) nil))
 	     (when (null (gethash 0 sva))
 	       (setf (gethash 0 sva) nil))
 	     (when (null (gethash 0 vals))
 	       (setf (gethash 0 vals) nil))
-	     (setf (gethash 0 vvbm)
-		   (reverse (cons (list (cons value idx) (make-hash-table))
-				  (reverse (gethash 0 vvbm)))))
-	     (setf (gethash 0 sva)
-		   (reverse (cons (list idx)
-				  (reverse (gethash 0 sva)))))
-	     (setf (gethash 0 vals)
-		   (reverse (cons idx
-				  (reverse (gethash 0 vals))))))
+	     (cond ((string-equal "NA" value)
+		    (setf (gethash 0 vvbm)
+			  (cons (list (cons value idx) (make-hash-table))
+					 (gethash 0 vvbm)))
+		    (setf (gethash 0 sva)
+			  (cons (list idx)
+				(gethash 0 sva)))
+		    (setf (gethash 0 vals)
+			  (cons idx
+				(gethash 0 vals))))
+		   (t
+		    (setf (gethash 0 vvbm)
+			  (reverse (cons (list (cons value idx) (make-hash-table))
+					 (reverse (gethash 0 vvbm)))))
+		    (setf (gethash 0 sva)
+			  (reverse (cons (list idx)
+					 (reverse (gethash 0 sva)))))
+		    (setf (gethash 0 vals)
+			  (reverse (cons idx
+					 (reverse (gethash 0 vals))))))))
 	   (n-cpd-add-book-keeping-variables (cpd vvbm sva vals)
 	     (let (cards steps)
 	       (setq cards (generate-cpd-cardinalities vvbm))
@@ -173,28 +214,220 @@
 		 (vvbm (make-hash-table))
 		 (sva (make-hash-table))
 		 (vals (make-hash-table))
-		 (cards)
-		 (steps)
+		 ;;(cards)
+		 ;;(steps)
 		 (type)
 		 (concept-id (getf node-def :kb-concept-id))
 		 (value (getf node-def :value))
 		 (values (getf node-def :values)) ;;(percept-node p :values ((a . 1) (b . 2)))
-		 (supported-keywords '(:value :kb-concept-id :values))
+		 (arguments (getf node-def :arguments))
+		 (generator (getf node-def :generator))
+		 (functional-type (getf node-def :type))
+		 (parents)
+		 (parent-domains)
+		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments :type))
 		 (node-def-kwds (remove-if-not #'keywordp node-def))
 		 (unsupported))
 	     (setq unsupported (set-difference node-def-kwds supported-keywords :test #'equal))
 	     (when unsupported
 	       (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
-	     (cond ((and (null value)
-			 (null values))
-		    (error "No 'value' or 'values' field found in node definition list.~%Received: ~S" node-def))
-		   ((and value values)
-		    (error "Found 'value' and 'values' field in node definition when only one is supported.~%Received: ~S" node-def)))
-	     (cond ((or (equal "PERCEPT-NODE" (symbol-name (car node-def)))
-			(equal "OBSERVATION-NODE" (symbol-name (car node-def)))
-			(equal "RELATION-NODE" (symbol-name (car node-def)))
-			(equal "STATE-NODE" (symbol-name (car node-def)))
-			(equal "ACTION-NODE" (symbol-name (car node-def))))
+	     (setq type (symbol-name (second node-def)))
+	     (setf (gethash 0 vars) type)
+	     (setq type-identifier (symbol-name (gensym (concatenate 'string type "_"))))
+	     (setf (gethash type-identifier identifiers) 0)
+	     (setf (rule-based-cpd-dependent-id cpd) type-identifier)
+	     (setf (rule-based-cpd-identifiers cpd) identifiers)
+	     (setf (rule-based-cpd-dependent-var cpd) type)
+	     (setf (rule-based-cpd-vars cpd) vars)
+	     (setf (rule-based-cpd-types cpd) types-hash)
+	     (cond ((or (null concept-id)
+			(stringp concept-id))
+		    (if concept-id
+			(setf (gethash 0 cids) concept-id)
+			(setf (gethash 0 cids) "NIL"))
+		    (setf (rule-based-cpd-concept-ids cpd) cids)
+		    (setf (rule-based-cpd-qualified-vars cpd)
+			  (generate-cpd-vars identifiers vars cids)))
+		   (t
+		    (error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))
+	     (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
+	     (setf (rule-based-cpd-count cpd) 1)
+	     (cond ((or (string-equal "FUNCTIONAL-NODE" (symbol-name (car node-def))))
+		    (cond ((or value values)
+			   (error "'value' and 'values' fields not supported for functional node definition.~%Received: ~S" node-def))
+			  ((null generator)
+			   (error "Missing ':generator' function for functional node definition. Received: ~S" node-def))
+			  (nil (null arguments)
+			   (error "Missing function arguments ':arguments' for functional node definition. Received: ~S" node-def)))
+		    (cond ((and (symbolp (second node-def))
+				(not (null (second node-def))))
+			   (setf (gethash 0 types-hash) "BELIEF")
+			   (cond ((string-equal "PERCEPT" functional-type)
+				  (setf (gethash 0 types-hash) "PERCEPT"))
+				 ((string-equal "OBSERVATION" functional-type)
+				  (setf (gethash 0 types-hash) "OBSERVATION"))
+				 ((string-equal "RELATION" functional-type)
+				  (setf (gethash 0 types-hash) "BELIEF"))
+				 ((string-equal "STATE" functional-type)
+				  (setf (gethash 0 types-hash) "STATE"))
+				 ((string-equal "ACTION" functional-type)
+				  (setf (gethash 0 types-hash) "ACTION"))
+				 (t
+				  (error "Unsupported functional type: ~A" functional-type))))
+			  (t
+			   (raise-identifier-type-error (second node-def))))
+		    (setf (rule-based-cpd-characteristic-sets cpd) (make-hash-table))
+		    (setf (rule-based-cpd-characteristic-sets-values cpd) (make-hash-table))
+		    (loop
+		      with found-cpd
+		      for argument in arguments
+		      do
+			 (setq found-cpd (gethash argument nodes-hash))
+			 (when (null found-cpd)
+			   (error "Reference to ~A before declaration. Found in functional arguments list ~{~A~^ ~} ." argument arguments))
+		         (setq parent-domains (cons (mapcar #'caar
+							    (gethash 0
+								     (rule-based-cpd-var-value-block-map
+								      found-cpd)))
+						    parent-domains))
+			 (setq parents (cons (rule-based-cpd-dependent-id found-cpd)
+					     parents))
+		      finally
+			 (setq parent-domains (reverse parent-domains))
+			 (setq parents (reverse parents))
+			 (when nil
+			   (format t "~%parent-domains:~%~S" parent-domains)))
+		    (loop
+		      with prob-row
+		      with domain
+		      with assns = (enumerate-assignments arguments parent-domains)
+		      ;;with print = (format t "~%~%assns:~%~S" assns)
+		      with rules
+		      for assn in assns
+		      for j from 0
+		      do
+			 (setq prob-row (apply (eval `(lambda ,arguments
+							,generator))
+					       (mapcar #'cdr assn)))
+			 (when (null prob-row)
+			   (error "Functional node generator: Expected non-empty probability distribution associated with assignment ~A. Received nil." assn))
+			 (when (not (alistp prob-row))
+			   (error "Functional node generator: Expected type association list for the probability distribution associated with assignment ~A, not ~A" assn prob-row))
+			 (when (not (assoc "NA" prob-row :test #'string-equal))
+			   (setq prob-row (cons (cons "NA" 0) prob-row)))
+			 ;; TODO: check if there exists a duplicate entry.
+			 (when (null domain)
+			   (loop
+			     ;;for dom in (mapcar #'car prob-row)
+			     for pr in prob-row
+			     for i from 0
+			     collect (cons (car pr) i) into dmn
+			     collect (list (cons (car pr) i) (make-hash-table)) into vvbm
+			     collect (list (cons (car pr) i) (make-hash-table)) into lower-vvbm
+			     collect (list i) into sva
+			     collect i into var-values
+			     finally
+				(setq domain dmn)
+				(when (null (rule-based-cpd-var-value-block-map cpd))
+				  (setf (rule-based-cpd-var-value-block-map cpd) (make-hash-table))
+				  (setf (rule-based-cpd-lower-approx-var-value-block-map cpd) (make-hash-table))
+				  (setf (rule-based-cpd-set-valued-attributes cpd) (make-hash-table))
+				  (setf (rule-based-cpd-var-values cpd) (make-hash-table))
+				  (setf (gethash 0 (rule-based-cpd-var-value-block-map cpd))
+					vvbm)
+				  (setf (gethash 0 (rule-based-cpd-lower-approx-var-value-block-map cpd))
+					lower-vvbm)
+				  (setf (gethash 0 (rule-based-cpd-set-valued-attributes cpd))
+					sva)
+				  (setf (gethash 0 (rule-based-cpd-var-values cpd))
+					var-values))))
+			 (when (or (not (null (set-difference prob-row domain
+							      :key #'car
+							      :test #'string-equal)))
+				   (not (= (length domain)
+					   (length prob-row))))
+			   (error "Functional node generator: Malformed probability distribution associated with assignment ~A. Expected row of size ~d. Received ~d~%row: ~A" assn (length domain) (length prob-row) prob-row))
+			 (when nil t
+			   (format t "~%~%prob-row:~%~S~%domain:~%~S" prob-row domain))
+			 (loop
+			   with rule
+			   for (asn . prob) in prob-row
+			   do
+			      (setq rule (make-rule
+					  :id (gensym "RULE-")
+					  :conditions (make-hash-table :test #'equal)
+					  :probability prob
+					  :certain-block (make-hash-table)
+					  :count (- (length prob-row) 1)))
+			      (when nil t
+				(format t "~%asn: ~S~%domain match: ~S" asn (assoc asn domain
+					    :test #'string-equal)))
+			      (setf (gethash type-identifier (rule-conditions rule))
+				    (list (cdr
+					   (assoc asn domain
+					    :test #'string-equal))))
+			      (loop
+				with parent-id and parent-cpd
+				with value
+				for (parent . string-value) in assn
+				do
+				   (setq parent-cpd (gethash parent nodes-hash))
+				   (setq parent-id (rule-based-cpd-dependent-id parent-cpd))
+				   (setq value
+					 (cdar (assoc string-value
+						     (gethash 0
+							      (rule-based-cpd-var-value-block-map parent-cpd))
+						     :key #'car
+						     :test #'string-equal)))
+				   (when nil t
+				     (format t "~%~%parent: ~S~%string value: ~S~%parent vvbm:~%~Smatch: ~S" parent string-value (rule-based-cpd-var-value-block-map parent-cpd)
+					     (assoc string-value
+						     (gethash 0
+							      (rule-based-cpd-var-value-block-map parent-cpd))
+						     :key #'car
+						     :test #'string-equal)))
+				   (setf (gethash parent-id (rule-conditions rule)) (list value)))			      
+			   (setq rules (cons rule rules)))
+		      finally
+			 (cond (arguments
+				(loop
+				  with modifier-cpd
+				  for argument in arguments
+				  do
+				     (setq modifier-cpd (gethash argument nodes-hash))
+				     (setq cpd (modify-cpd cpd modifier-cpd :compute-new-rules-p nil))))
+			       (t
+				(setf (rule-based-cpd-cardinalities cpd)
+				      (generate-cpd-cardinalities
+				       (rule-based-cpd-var-value-block-map cpd)))
+				(setf (rule-based-cpd-step-sizes cpd)
+				      (generate-cpd-step-sizes
+				       (rule-based-cpd-cardinalities cpd)))))			 
+			 (setf (rule-based-cpd-rules cpd)
+			       (make-array (length rules) :initial-contents (reverse rules)))
+			 #|
+			 (when (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd))
+			   (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil))
+			 (setq cpd (get-local-coverings (update-cpd-rules cpd (rule-based-cpd-rules cpd))))
+			 (when (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd))
+			   (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
+			   (format t "~%pass!"))
+			 |#
+			 (when nil
+			   (format t "~%functional cpd:~%~S~%" cpd)
+			   (print-cpd cpd)
+			   (break))
+			 (return cpd)))
+		   ((or (string-equal "PERCEPT-NODE" (symbol-name (car node-def)))
+			(string-equal "OBSERVATION-NODE" (symbol-name (car node-def)))
+			(string-equal "RELATION-NODE" (symbol-name (car node-def)))
+			(string-equal "STATE-NODE" (symbol-name (car node-def)))
+			(string-equal "ACTION-NODE" (symbol-name (car node-def))))
+		    (cond ((and (null value)
+				(null values))
+			   (error "No 'value' or 'values' field found in node definition list.~%Received: ~S" node-def))
+			  ((and value values)
+			   (error "Found 'value' and 'values' field in node definition, but they are mutually exclusive.~%Received: ~S" node-def)))
 		    (cond ((and (symbolp (second node-def))
 				(not (null (second node-def))))
 			   (cond ((equal "PERCEPT-NODE" (symbol-name (car node-def)))
@@ -207,6 +440,7 @@
 				  (setf (gethash 0 types-hash) "STATE"))
 				 ((equal "ACTION-NODE" (symbol-name (car node-def)))
 				  (setf (gethash 0 types-hash) "ACTION")))
+			   #|
 			   (setq type (symbol-name (second node-def)))
 			   (setf (rule-based-cpd-dependent-var cpd) type)
 			   (setf (gethash 0 vars) type)
@@ -218,6 +452,7 @@
 			   (setf (rule-based-cpd-types cpd) types-hash)
 			   (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
 			   (setf (rule-based-cpd-count cpd) 1)
+			   |#
 			   (when value
 			     (setq values (list (list :value "NA" :probability 0 :count 0)
 						(list :value value :probability 1 :count 1))))
@@ -261,6 +496,7 @@
 			     finally
 				(setf (rule-based-cpd-rules cpd) rules))
 			   (n-cpd-add-book-keeping-variables cpd vvbm sva vals)
+			   #|
 			   (cond ((or (null concept-id)
 				      (stringp concept-id))
 				  (if concept-id
@@ -271,6 +507,10 @@
 					(generate-cpd-vars identifiers vars cids)))
 				 (t
 				  (error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))
+			   |#
+			   (when nil
+			     (format t "~%output cpd:")
+			     (print-cpd cpd))
 			   cpd)
 			  (t
 			   (raise-identifier-type-error (second node-def)))))
@@ -279,9 +519,87 @@
 	  (t
 	   (raise-identifier-type-error (car node-def))))))
 
+#| Update CPD domain with contents from prior.
+   Returns: CPD|#
+
+;; cpd = conditional probability distribution
+;; nodes-hash = hash table. key: program variable. value: CPD
+(defun compile-cpd-prior (cpd nodes-hash)
+  (let (prior-cpd
+	(bindings (make-hash-table :test #'equal)))
+    (setq cpd (factor-operation
+	       cpd
+	       (list (rule-based-cpd-dependent-id cpd))
+	       (loop
+		 for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+		   using (hash-value pos)
+		 when (> pos 0)
+		   collect ident into remove
+		 finally
+		    (return remove))
+	       '+
+	       :rule-count
+	       (- (length
+		   (gethash 0 (rule-based-cpd-var-value-block-map cpd)))
+		  1)))
+    (when (rule-based-cpd-prior cpd)
+      (setq prior-cpd
+	    (aref (car (eval `(compile-program nil
+				c1 = ,(rule-based-cpd-prior cpd))))
+		  0))
+      (setf (rule-based-cpd-singleton-p prior-cpd) t)
+      (when nil (or (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506")
+		    (equal (rule-based-cpd-dependent-id cpd) "TIME_509"))
+	    (format t "~%~%prior:~%")
+	    (print-cpd prior-cpd)
+	    (format t "~%cpd:")
+	    (print-cpd cpd))      
+      ;; make bindings
+      (setf (gethash (rule-based-cpd-dependent-id prior-cpd) bindings)
+	    (rule-based-cpd-dependent-id cpd))
+      (loop
+	for value in (getf (rule-based-cpd-prior cpd) :values)
+	do
+	   (setf (gethash (getf value :value) bindings)
+		 (getf value :value)))
+      (setq prior-cpd (subst-cpd prior-cpd cpd bindings))
+      (setq cpd (cpd-update-schema-domain (copy-rule-based-cpd cpd) prior-cpd nil))
+      (when nil
+	(format t "~%prior cpd:")
+	(print-cpd prior-cpd)
+	(format t "~%intermediate cpd:")
+	(print-cpd cpd))
+      (setq cpd (update-cpd-rules cpd (rule-based-cpd-rules cpd)))
+      (when nil
+	(format t "~%bindings:~%~S~%updated cpd:" bindings)
+	(print-cpd cpd)
+	(break))
+      (loop
+	for var being the hash-keys of nodes-hash
+	using (hash-value cpd2)
+	for i from 0
+	when (and (gethash (rule-based-cpd-dependent-id cpd)
+			   (rule-based-cpd-identifiers cpd2))
+		  (not (equal (rule-based-cpd-dependent-id cpd)
+			      (rule-based-cpd-dependent-id cpd2))))
+	  do
+	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
+			    (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506"))
+		   (format t "~%updating downstream cpd.")
+		   (setq print-special* t))
+	     (setf (gethash var nodes-hash)
+		   (cpd-update-existing-vvms cpd2 bindings (list cpd)))
+	     (when nil (and (equal (rule-based-cpd-dependent-id cpd2) "TIME_509")
+			    (equal (rule-based-cpd-dependent-id cpd) "TIME_PREV_506"))
+		   (format t "~%bindings:~%~S~%updated downstream cpd:~%" bindings)
+		   (print-cpd cpd2)
+		   (break)))))
+  cpd)
+
 (defun raise-identifier-type-error (recieved)
   (error "Unsupported identifier ~A. Expected type of non-nil symbol." recieved))
 
+#|
 (defun directed-edge (cpd1 cpd2 causal-discovery)
   (let ((cpd1-copy (make-rule-based-cpd
 		    :dependent-id (rule-based-cpd-dependent-id cpd1)
@@ -316,8 +634,7 @@
     (setf (gethash (rule-based-cpd-dependent-id cpd1)
 		   (rule-conditions rule))
 	  (list 1))
-    (setf (aref (rule-based-cpd-rules cpd1-copy) 1) rule)
-    
+    (setf (aref (rule-based-cpd-rules cpd1-copy) 1) rule)    
     (setf (gethash (rule-based-cpd-dependent-id cpd1-copy)
 		   (rule-based-cpd-identifiers cpd1-copy))
 	  0)
@@ -337,7 +654,38 @@
 	  (gethash 0 (rule-based-cpd-var-values cpd1)))
     (if (> (length (gethash 0 (rule-based-cpd-var-values cpd1))) 2)
 	(error "multiple variable values currently unsupported"))
-    (modify-cpd cpd2 cpd1-copy :causal-discovery causal-discovery)))
+(modify-cpd cpd2 cpd1-copy :causal-discovery causal-discovery)))
+|#
+
+#| Condition one cpd by another cpd via a directed edge.
+   Returns: CPD|#
+
+;; cpd1 = from cpd
+;; cpd2 = to cpd
+(defun directed-edge (cpd1 cpd2 causal-discovery)
+  (let ((marginal-cpd1 (factor-operation
+			cpd1
+			(list (rule-based-cpd-dependent-id cpd1))
+			(loop
+			  for ident being the hash-keys of (rule-based-cpd-identifiers cpd1)
+			    using (hash-value pos)
+			  when (> pos 0)
+			    collect ident into remove
+			  finally
+			     (return remove))
+			'+
+			:rule-count
+			(- (length
+			    (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
+			   1))))
+    (when nil t
+      (format t "~%~%cpd1")
+      (print-cpd cpd1)
+      (format t "~%marginalized cpd1")
+      (print-cpd marginal-cpd1)
+      ;;(break)
+      )
+    (modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)))
 
 #| Sort a list of factors in topological order. Returns a list. |#
 
@@ -540,8 +888,8 @@
        ;;(format t "~%new body:~%~S" new-body)
        (return new-body)))
 
-#| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nested hash-table of edges |#
-
+#| Compiles a hems program into a Bayesian Network. Returns a cons where the first element is an array of factors, and the second element is a nestde hash-table of edges |#
+x
 ;; body = HEMS program
 ;; relational-invariants = Flag for whether to augment the state with relational comparators that are true.
 ;; neighborhood-func = function that returns the indeces of the neighbors of the given variable index
@@ -580,24 +928,28 @@
 					 (when (gethash (first ,args) ,hash)
 					   (warn "Attempting to overwrite value for identifyer ~A in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (setf (gethash (first ,args) ,hash)
-					       (make-bn-node (third ,args))))
+					       (make-bn-node (third ,args) ,hash)))
 					(t
 					 (error "Expected assignment to node definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((equal (symbol-name '~) (symbol-name (second ,args)))
 				  (cond ((listp (third ,args))
 					 (when (not (gethash (first ,args) ,hash))
-					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
+					   (error "Reference to ~A before declaration in statement ~{~A~^ ~}." (first ,args) (subseq ,args 0 3)))
 					 (let* ((raw-symbol (first (third ,args)))
 						(prior-fn (or (find-symbol (symbol-name raw-symbol) "HEMS")
-							   (error "~A does not name a defined function" raw-symbol)))
+							      (error "~A does not name a defined function" raw-symbol)))
 						(,prior-args (apply prior-fn
-								   (loop
-								     for (key arg) on (cdr (third ,args)) by #'cddr
-								     append (list key arg)))))
-					 (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
-					       (list (get-cpd-type (gethash (first ,args) ,hash))
-						     'prior
-						     :values ,prior-args))))
+								    (loop
+								      for (key arg) on (cdr (third ,args)) by #'cddr
+								      append (list key arg)))))
+					   (setf (rule-based-cpd-prior (gethash (first ,args) ,hash))
+						 (list (get-cpd-type (gethash (first ,args) ,hash))
+						       'prior
+						       :values ,prior-args))
+					   (setf (gethash (first ,args) ,hash)
+						 (compile-cpd-prior
+						  (gethash (first ,args) ,hash)
+						  ,hash))))
 					(t
 					 (error "Expected distributional identity to prior definition (list) in statement ~{~A~^ ~}." (subseq ,args 0 3)))))
 				 ((or (equal "---" (symbol-name (second ,args)))

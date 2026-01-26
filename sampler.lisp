@@ -11,7 +11,7 @@
     (when nil
       (format t "~%evidence-bn:")
       (print-bn evidence-bn))
-    (multiple-value-bind (posterior-distribution posterior-marginals eme sol bindings q-first-bindings)
+    (multiple-value-bind (posterior-distribution posterior-marginals score score-ref eme sol bindings q-first-bindings)
 	(remember eltm evidence-bn '+ 1 t :backlinks backlinks :type episode-type :soft-likelihoods soft-likelihoods)
       ;; verify in (remember) if the single observation node matches to the state transition models.
       (when nil (string-equal episode-type "state-transitions")
@@ -45,7 +45,7 @@
 	     (setf (episode-state-transitions new-episode) new-bn))
 	    (t
 	     (error "Unsupported episode type: ~A. Expected \"OBSERVATION\", \"STATE\", or \"STATE-TRANSITIONS\"" episode-type)))
-      (values new-episode sol bindings q-first-bindings))))
+      (values new-episode sol bindings q-first-bindings score))))
 
 #| Draw a random sample from an episode in the event memory. Returns an association list of variables and their values |# 
 

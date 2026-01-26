@@ -6,10 +6,10 @@
 ;; state = state as a graph
 (defun model-predict (episode state &key (bic-p t) &aux forbidden-types)
   (setq forbidden-types '("GOAL" "INTENTION"))
-  (multiple-value-bind (matches no-matches cost bindings)
+  (multiple-value-bind (matches no-matches cost cost-ref bindings)
       (new-maximum-common-subgraph state (episode-observation episode) nil nil :bic-p bic-p :cost-of-nil (episode-count episode) :forbidden-types forbidden-types)
     ;;(subgraph-greedy-monomorphism state (car (episode-states episode)) :bic-p bic-p :cost-of-nil (episode-count episode))
-    (declare (ignore cost no-matches))
+    (declare (ignore cost cost-ref no-matches))
     (loop
       with x-copy and y
       with l and total = 1 and r and threshold = 1

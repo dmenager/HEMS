@@ -3387,7 +3387,7 @@
 			     (setq best-zero-new-negs new-covered-negs)
 			     (setq best-zero-condition condition)
 			     (setq best-zero-rule (copy-cpd-rule copy-rule))
-			     (setq best-intersection intersection-size)
+			     ;;(setq best-intersection intersection-size)
 			     (setq best-condition-conflicts condition-conflicts)
 			     (setq best-block-size (hash-table-count (second condition-block)))
 			     (setq best-condition-entropy condition-entropy)

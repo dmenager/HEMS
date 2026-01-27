@@ -1887,7 +1887,7 @@
 		      (setf (gethash ident conditions) new-vals))
 	       finally
 		  (return conditions))))
-    (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+    (when (equal "SALES_228" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -2042,9 +2042,10 @@
 	      (setq norm-const (reduce #'+ probs))
 	      (setq counts (gethash encoding counts-hash))
 	      (when (rule-count r1)
-		;;(setq count (apply #'max counts))
+		(setq count (apply #'max counts))
 		;; DHM: patching. Some rules strangely have nil count in non-singleton cpds
-		(setq count (rule-count r1)))
+		;;(setq count (rule-count r1))
+		)
 	      (setq row-prop-list (gethash encoding rows-hash))
 	      (setq condition (getf row-prop-list :descriptor))
 	      (setq row (getf row-prop-list :contents))
@@ -3212,7 +3213,7 @@
       |#
       do
 	 (setq att-blocks (gethash ident tog))
-	 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+	 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -3232,7 +3233,7 @@
            for (condition-block intersection) in att-blocks
 	   do
 	      (setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t)))
-	      (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+	      (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%rule block intersection size: ~d~%condition value in rule?:~A" condition-block intersection rule-block-intersection
 			(member (cdar condition-block)
@@ -3259,7 +3260,7 @@
 			(block-difference (rule-block copy-rule)
 					  concept-block
 					  :output-hash-p t))
-		(when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		(when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 		  (format t "~%pass 1!~%goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
 			  (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
 			  num-conflicts
@@ -3269,7 +3270,7 @@
 			   (not (and (= (hash-table-count (rule-avoid-list rule)) 0)
 				     (< (hash-table-count (rule-certain-block copy-rule))
 					(hash-table-count (rule-certain-block rule))))))
-		 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
 		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
@@ -3300,7 +3301,7 @@
 				    (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
 		 (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						(* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
-		 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 		   (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
 		 (cond ((> p 0)
 			(when (> info-gain best-pos-info-gain)
@@ -3308,7 +3309,7 @@
 			  (setq best-entropy new-entropy)
 			  (setq best-pos-condition condition)
 			  (setq best-pos-rule (copy-cpd-rule copy-rule))
-			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 			    (format t "~%updated rule:~%~S" copy-rule))))
 		       ((> upper-bound-p 0)
 			(let (uncertain-after
@@ -3333,7 +3334,7 @@
 			      (setq condition-entropy (binary-entropy (/ rule-block-intersection
 									 (+ rule-block-intersection condition-conflicts))))
 			      (setq condition-entropy most-positive-fixnum))
-			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
 				    intersection-size condition-conflicts condition-entropy (hash-table-count (second condition-block))))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
@@ -3380,7 +3381,7 @@
 			     (setq best-condition-conflicts condition-conflicts)
 			     (setq best-block-size (hash-table-count (second condition-block)))
 			     (setq best-condition-entropy condition-entropy)
-			     (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			     (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
 	 (cond (best-pos-condition
@@ -3389,7 +3390,7 @@
 	       (best-zero-condition
 		(setq best-condition best-zero-condition)
 		(setq best-rule best-zero-rule)))
-	 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+	 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 
@@ -3522,7 +3523,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when nil (and (equal "STATE_0_346" (rule-based-cpd-dependent-id cpd))
+    (when (and (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd))
 	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
       (format t "~%~%getting local covering for:~%~S~%" cpd)
       (print-cpd cpd)
@@ -3568,52 +3569,7 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if nil ;; (= probability-concept 5.6511647e-4)
-		       #|
-		       (and nil (equal "EPOSITION_282" (rule-based-cpd-dependent-id cpd))
-			    (= 504
-			       (hash-table-count goal))
-			    (loop
-			      named looper
-			      for lil-g in '(187 192 197 204 210 219 227 236 249 260 265 269 281 293 304 312 322 332 338
-					     350 357 358 359 363 372 377 382 389 395 404 412 421 434 444 449 453 465 477
-					     488 496 505 515 521 533 540 541 542 546 555 560 565 572 578 587 595 604 617
-					     627 632 636 647 658 669 676 684 694 700 711 718 719 720 724 731 736 741 748
-					     754 763 771 781 794 805 810 814 827 839 851 859 868 879 885 896 903 904 905
-					     909 918 923 928 935 941 949 957 967 980 991 996 1000 1012 1024 1035 1043 1052
-					     1062 1068 1080 1087 1088 1089 1093 1102 1107 1112 1119 1125 1134 1142 1151
-					     1164 1175 1180 1184 1196 1208 1219 1227 1236 1246 1252 1263 1270 1271 1272
-					     1276 1284 1288 1293 1299 1305 1313 1320 1329 1341 1352 1357 1361 1372 1382
-					     1392 1399 1407 1417 1423 1434 1441 1442 1443 1447 1455 1460 1465 1472 1478
-					     1487 1495 1505 1518 1529 1534 1538 1551 1564 1575 1583 1593 1604 1610 1622
-					     1629 1630 1631 1635 1644 1649 1654 1661 1667 1676 1684 1694 1707 1718 1723
-					     1727 1739 1751 1762 1770 1780 1791 1797 1809 1816 1817 1818 1822 1831 1836
-					     1841 1848 1854 1863 1871 1881 1894 1905 1910 1914 1926 1938 1949 1957 1967
-					     1978 1984 1996 2003 2004 2005 2009 2018 2023 2028 2035 2041 2050 2058 2068
-					     2081 2092 2097 2101 2113 2125 2136 2144 2154 2165 2171 2183 2190 2191 2192
-					     2196 2205 2210 2215 2222 2228 2237 2245 2255 2268 2279 2284 2288 2300 2312
-					     2323 2331 2341 2352 2358 2370 2377 2378 2379 2383 2392 2397 2402 2409 2415
-					     2424 2432 2442 2455 2466 2471 2475 2488 2500 2512 2520 2530 2541 2547 2559
-					     2566 2567 2568 2572 2581 2586 2591 2598 2604 2613 2621 2631 2644 2655 2660
-					     2664 2676 2688 2699 2707 2717 2728 2734 2746 2753 2754 2755 2759 2768 2773
-					     2778 2785 2791 2800 2808 2818 2831 2842 2847 2851 2863 2875 2886 2894 2904
-					     2915 2921 2933 2940 2941 2942 2946 2955 2960 2965 2972 2978 2987 2995 3005
-					     3018 3029 3033 3037 3050 3063 3074 3081 3090 3100 3105 3116 3122 3123 3124
-					     3128 3136 3140 3145 3152 3158 3167 3175 3184 3197 3207 3212 3216 3229 3242
-					     3253 3261 3271 3282 3288 3300 3307 3308 3309 3313 3322 3327 3332 3339 3345
-					     3354 3362 3371 3384 3394 3399 3403 3415 3427 3438 3446 3455 3465 3471 3483
-					     3490 3491 3492 3496 3504 3509 3514 3521 3527 3536 3544 3553 3566 3576 3581
-					     3585 3597 3610 3621 3629 3638 3648 3654 3666 3673 3674 3675 3679 3688 3692
-					     3696 3700 3704 3708 3712 3716 3720 3724 3728 3732 3736 3740 3744 3748 3752
-					     3756 3760 3764 3768 3769 3770 3774 3778 3782 3786 3792 3797 3805 3812 3820
-					     3832 3841 3846 3850 3863 3875 3886 3894 3904 3914 3920 3932 3939 3940 3941
-					     3945)
-			      if (not (gethash lil-g goal))
-				do
-				   (return-from looper nil)
-			      finally
-		       (return t)))
-		       |#
+		   (if (= probability-concept 0)
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -3633,7 +3589,7 @@
 		       (setq print-special* t)
 		   (setq print-special* nil))
 		   |#
-		   (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+		   (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3653,9 +3609,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+				 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+				 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3667,8 +3623,13 @@
 				   (cond (t (null patch)
 					  (format t "~%cpd:~%~S" cpd)
 					  (print-cpd cpd)
-					  (format t "~%goal:~%~S~%rule:~%~S" goal new-rule)
+					  (format t "~%goal:~%~S~%concept-block:~%~S~%rule:~%~S" goal concept-block new-rule)
 					  (print-cpd-rule new-rule)
+					  (format t "~%rule-set:")
+					  (loop
+					    for r in rule-set
+					    do
+					    (print-cpd-rule r))
 					  (error "No more condition from ToG but concept block is not covered properly~%concept block:~%~S~%goal:~%~S~%rule:~%~S" concept-block goal new-rule))
 					 (patch
 					  (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
@@ -3715,7 +3676,7 @@
 				 (remhash attribute (rule-conditions new-rule)))
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when (and nil print-special* (equal "NVELOCITY_40317" (rule-based-cpd-dependent-id cpd)))
+			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)
@@ -4737,39 +4698,43 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       )
 	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count)))
           (t
-           (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
-             (format t "~%~%episode before update:~%~S~%schema before update:~%~S~%bindings:~%~S~%schema rules:~%" phi1 phi2 bindings)
-	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi2))
+           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+             (format t "~%~%episode before update:")
+	     (print-cpd phi1)
+	     (format t "~%schema before update:")
+	     (print-cpd phi2)
+	     (format t "~%bindings:~%~S" bindings)
 	     
              ;;(format t "~%updating episode with schema")
              )
 	   ;;(check-cpd phi1 :check-uniqueness nil :check-rule-count nil :check-counts nil)
            (setq phi2 (cpd-update-existing-vvms phi2 bindings new-nodes))
-           (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
-                 (format t "~%intermediate schema:~%~S" phi2)
+           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+             (format t "~%intermediate schema:~%~S" phi2)
+	     (print-cpd phi2)
                  ;;(break)
                  )
            ;;(check-cpd phi2 :check-uniqueness nil)
            (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	   ;;(check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-           (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
-             (format t "~%intermediate schema2:~%~S~%rules:" phi2)
-	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi2))
+           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+             (format t "~%intermediate schema2:~%~S" phi2)
+	     (print-cpd phi2)
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
 	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
-           (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
                  (format t "~%intermediate episode:~%~S" phi1)
                  (break)
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when nil (and (equal "EPOSITION_231" (rule-based-cpd-dependent-id phi2)))
+	   (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
-	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi2))
+	     (print-cpd phi2)
 	     (format t "~%~%episode rules:~%")
-	     (map nil #'print-cpd-rule (rule-based-cpd-rules phi1))
+	     (print-cpd phi1)
              (break)
              )
            ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
@@ -5651,26 +5616,19 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;;DHM: I don't call (factor-filter) here because it gives a new cpd that isn't the same as 'cpd. new cpd rules don't get properly added to bn. Not sure why.
 	;;     The following code, which was the original implementation, works.
 	(setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
-	(when nil (string-equal "state" (gethash 0 (rule-based-cpd-types cpd)))
-	      (format t "~%~%cpd:~%")
+	(when nil (string-equal "BELIEF_225" (rule-based-cpd-dependent-id cpd))
+	      (format t "~%~%modified cpd:~%")
 	      (print-cpd cpd)
 	      (format t "~%modifier cpd:~%")
 	      (print-cpd modifier-cpd)
-	      #|
-	      (format t "~%new rules")
-	      (map nil #'(lambda (rule)
-			   (print-cpd-rule rule))
-		   new-rules)
-	      |#)
+	      (break))
 	(setq cpd (update-cpd-rules cpd
-                                        (make-array (length new-rules) :initial-contents new-rules)))
-	(normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))
-
-
+                                    (make-array (length new-rules) :initial-contents new-rules)))
+	;;(setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
 	(when nil
-	  (format t "~%modified cpd:")
+	  (format t "~%~%modified cpd:")
 	  (print-cpd cpd)
-	  (check-cpd cpd :check-uniqueness nil)
+	  ;;(check-cpd cpd :check-uniqueness nil)
 	  (break)))
       )
     cpd))
@@ -6894,7 +6852,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq min-num-compatible-set-values num-compatible-set-values)))))
     finally
        (when (null match-p)
-	 (when t nil
+	 (when nil
 	   (format t "~%no match to reference rule:")
 	   (print-cpd-rule rule)
 	   (break))

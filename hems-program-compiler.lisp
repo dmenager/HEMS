@@ -510,7 +510,8 @@
 			   |#
 			   (when nil
 			     (format t "~%output cpd:")
-			     (print-cpd cpd))
+			     (print-cpd cpd)
+			     (break))
 			   cpd)
 			  (t
 			   (raise-identifier-type-error (second node-def)))))
@@ -664,7 +665,7 @@
 ;; cpd2 = to cpd
 (defun directed-edge (cpd1 cpd2 causal-discovery)
   (let ((marginal-cpd1 (factor-operation
-			cpd1
+			(copy-rule-based-cpd cpd1)
 			(list (rule-based-cpd-dependent-id cpd1))
 			(loop
 			  for ident being the hash-keys of (rule-based-cpd-identifiers cpd1)
@@ -678,14 +679,18 @@
 			(- (length
 			    (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
 			   1))))
-    (when nil t
+    (when nil (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd2))
       (format t "~%~%cpd1")
       (print-cpd cpd1)
       (format t "~%marginalized cpd1")
       (print-cpd marginal-cpd1)
+      (format t "~%cpd2 (to be modified cpd)")
+      (print-cpd cpd2)
       ;;(break)
       )
-    (modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)))
+    ;;(modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)
+    (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery)
+    ))
 
 #| Sort a list of factors in topological order. Returns a list. |#
 

@@ -3213,7 +3213,7 @@
       |#
       do
 	 (setq att-blocks (gethash ident tog))
-	 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+	 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -3233,7 +3233,7 @@
            for (condition-block intersection) in att-blocks
 	   do
 	      (setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t)))
-	      (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+	      (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%rule block intersection size: ~d~%condition value in rule?:~A" condition-block intersection rule-block-intersection
 			(member (cdar condition-block)
@@ -3260,7 +3260,7 @@
 			(block-difference (rule-block copy-rule)
 					  concept-block
 					  :output-hash-p t))
-		(when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+		(when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		  (format t "~%pass 1!~%goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
 			  (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
 			  num-conflicts
@@ -3270,7 +3270,7 @@
 			   (not (and (= (hash-table-count (rule-avoid-list rule)) 0)
 				     (< (hash-table-count (rule-certain-block copy-rule))
 					(hash-table-count (rule-certain-block rule))))))
-		 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+		 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
 		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
@@ -3301,24 +3301,36 @@
 				    (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
 		 (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						(* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
-		 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
-		   (format t "~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
+		 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
+		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
 		 (cond ((> p 0)
 			(when (> info-gain best-pos-info-gain)
 			  (setq best-pos-info-gain info-gain)
 			  (setq best-entropy new-entropy)
 			  (setq best-pos-condition condition)
 			  (setq best-pos-rule (copy-cpd-rule copy-rule))
-			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 			    (format t "~%updated rule:~%~S" copy-rule))))
 		       ((> upper-bound-p 0)
-			(let (uncertain-after
-			      intersection-size condition-conflicts
-			      condition-entropy)
-			  (setq uncertain-after (hash-table-count
-						 (hash-intersection (rule-block copy-rule) goal :output-hash-p t)))
-			  (setq intersection-size (hash-table-count intersection))
-			  (setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
+			(let (condition-conflicts
+			      condition-entropy
+			      condition-rule)
+			  (setq condition-rule (make-rule :conditions (make-hash-table :test #'equal)))
+			  (setf (gethash (car condition)
+					 (rule-conditions condition-rule))
+				(cons (cdr condition)
+				      (gethash (car condition)
+					       (rule-conditions copy-rule))))
+			  (setf (rule-block condition-rule)
+				(get-rule-block cpd condition-rule))
+			  (setf (rule-certain-block condition-rule)
+				(get-rule-block cpd condition-rule :certain-p t))
+			  (setf (rule-avoid-list condition-rule)
+				(block-difference (rule-block condition-rule)
+						  concept-block
+						  :output-hash-p t))
+			  (setq rule-block-intersection (hash-table-count (hash-intersection goal (rule-block condition-rule) :output-hash-p t)))
+			  (setq condition-conflicts (hash-table-count (rule-avoid-list condition-rule)))
 			  ;;(setq condition-concept-intersection (hash-intersection (second condition-block) concept-block :output-hash-p t))
 			  #|
 			  (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
@@ -3334,9 +3346,8 @@
 			      (setq condition-entropy (binary-entropy (/ rule-block-intersection
 									 (+ rule-block-intersection condition-conflicts))))
 			      (setq condition-entropy most-positive-fixnum))
-			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition positives (concept-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t))
-				    intersection-size condition-conflicts condition-entropy (hash-table-count (second condition-block))))
+			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
+			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs rule-block-intersection condition-conflicts condition-entropy (hash-table-count (rule-block condition-rule))))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (< condition-entropy best-condition-entropy))
@@ -3374,14 +3385,13 @@
 				     |#)
 			     (setq best-zero-ub-ig upper-bound-info-gain)
 			     (setq best-zero-new-negs new-covered-negs)
-			     (setq best-zero-uncertain uncertain-after)
 			     (setq best-zero-condition condition)
 			     (setq best-zero-rule (copy-cpd-rule copy-rule))
 			     (setq best-intersection intersection-size)
 			     (setq best-condition-conflicts condition-conflicts)
 			     (setq best-block-size (hash-table-count (second condition-block)))
 			     (setq best-condition-entropy condition-entropy)
-			     (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+			     (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
 	 (cond (best-pos-condition
@@ -3390,7 +3400,7 @@
 	       (best-zero-condition
 		(setq best-condition best-zero-condition)
 		(setq best-rule best-zero-rule)))
-	 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+	 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 
@@ -3523,7 +3533,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when nil (and (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd))
+    (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id cpd))
 	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
       (format t "~%~%getting local covering for:~%~S~%" cpd)
       (print-cpd cpd)
@@ -3569,7 +3579,7 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if (= probability-concept 0)
+		   (if nil ;;(= probability-concept 0)
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -3589,7 +3599,7 @@
 		       (setq print-special* t)
 		   (setq print-special* nil))
 		   |#
-		   (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+		   (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
                      (format t "~%~%G:~%~S~%Avoid List:~%~S~%certain T(G) for new rule:" goal (block-difference universe concept-block :output-hash-p t))
                      ;;(print-tog certain-tog)
                      ;;(format t "~%~%T(G) for new rule:")
@@ -3609,9 +3619,9 @@
 			  (setq c condition)
 			  (cond (condition
 				 (setq new-rule copy-rule)
-				 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+				 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 				       (format t "~%--------------~%condition:~S~%new rule:~%~S" condition new-rule))
-				 (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+				 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 				   (format t "~%updated rule block:~%~S" (rule-block new-rule))
 				   (format t "~%updated rule certain block:~%~S" (rule-certain-block new-rule))
 				   (format t "~%updated rule avoid list:~%~S" (rule-avoid-list new-rule))
@@ -3620,7 +3630,7 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   (cond (t (null patch)
+				   (cond ((null patch)
 					  (format t "~%cpd:~%~S" cpd)
 					  (print-cpd cpd)
 					  (format t "~%goal:~%~S~%concept-block:~%~S~%rule:~%~S" goal concept-block new-rule)
@@ -3676,7 +3686,7 @@
 				 (remhash attribute (rule-conditions new-rule)))
 			  ;;(when nil (not (= (hash-table-count (rule-block new-rule)) (hash-table-count (rule-certain-block new-rule))))
 			  ;;(setq case-constraints (update-case-constraints cpd new-rule case-constraints)))
-			  (when (and nil print-special* (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd)))
+			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
                             ;;(format t "~%final rule:~%~S" new-rule)
 			    (format t "~%final rule:~%~S"new-rule)
 			    (print-cpd-rule new-rule)
@@ -4444,7 +4454,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))

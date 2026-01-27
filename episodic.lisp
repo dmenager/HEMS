@@ -1773,7 +1773,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (setq bn (cons soft-cpds (cdr bn)))))
 		  (let (evidence-table)
 		    (setq evidence-table (make-observations observed-factors))
-		    (when t nil (and print-special* (string-equal type "state-transitions"))
+		    (when nil (and print-special* (string-equal type "state-transitions"))
 			  (format t "~%evidence table:~%~S" evidence-table)
 			  (format t "~%model:")
 			  (print-bn bn)
@@ -2229,6 +2229,8 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				 do
 				    (format t "~%~S : ~S" key (episode-id (car subtree))))
 			       (format t "~%backlink-episode: ~S" (if backlink-episode (episode-id backlink-episode))))
+			 (when nil t
+			   (format t "~%node type: ~S" node-type))
 			 (when backlink-episode
 			   (when nil (and print-special*
 					  (= (car js) 0))
@@ -2241,7 +2243,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			   (multiple-value-bind (posterior-distribution posterior-marginals cost cost-ref)
 			       (remember (list backlink-episode) evidence-bn mode lr bic-p :type node-type :soft-likelihoods soft-likelihoods :score-only score-only :singleton-only singleton-only)
 			     ;; If we had hierarchical temporal episodes, you would do a recursive call here with the recollection and eme
-			     (when t 
+			     (when nil t 
 				   (format t "~%posterior marginals:")
 				   (print-bn (cons (make-array (length posterior-marginals)
 							       :initial-contents posterior-marginals)

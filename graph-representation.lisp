@@ -3630,7 +3630,7 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   (cond ((null patch)
+				   (cond (t (null patch)
 					  (format t "~%cpd:~%~S" cpd)
 					  (print-cpd cpd)
 					  (format t "~%goal:~%~S~%concept-block:~%~S~%rule:~%~S" goal concept-block new-rule)
@@ -4180,14 +4180,22 @@
 		  (if (rule-based-cpd-singleton-p cpd2)
 		      (setf (rule-count no-match-r1) nil)
 		      (setf (rule-count no-match-r2) 0))
-		  |#
-		  (loop
-		    for att being the hash-keys of (rule-conditions no-match-r2)
-		      using (hash-value vals)
-		    when (and (null (gethash att (rule-based-cpd-identifiers cpd2)))
-			      (set-difference vals (list 0)))
-		      do
-			 (setf (rule-count no-match-r2) 0))
+	       |#
+		  (cond ((or (eq op '*)
+			     (eq op #'*))
+			 (if (rule-based-cpd-singleton-p cpd2)
+			     (setf (rule-count no-match-r2) nil)
+			     (setf (rule-count no-match-r2) 1)))
+			((or (eq op '+)
+			     (eq op #'+))
+			 (loop
+			   for att being the hash-keys of (rule-conditions no-match-r2)
+			     using (hash-value vals)
+			   when (and (null (gethash att (rule-based-cpd-identifiers cpd2)))
+				     (set-difference vals (list 0)))
+			     do
+				(setf (rule-count no-match-r2) 0))))
+		  
                   (setq no-match-rule (rule-filter no-match-r1 no-match-r2 op num-rules (rule-conditions no-match-r2) compute-count-p))
 		  (when nil
 		    (format t "~%~%No match rule:")
@@ -4556,9 +4564,9 @@ Roughly based on (Koller and Friedman, 2009) |#
     (when nil (and print-special* (equal "ADDEND_382" (rule-based-cpd-dependent-id phi1))) ;;nil (and #|(eq op '*)|# (eq op '+) (equal "GOAL732" (rule-based-cpd-dependent-id phi1)))
           (format t "~%~%phi1:~%~A~%phi2:~%~A~%unioned-ids: ~A~%var union: ~A~%unioned-concept-ids: ~A~%qualified vars: ~A~%var value block map: ~S" phi1 phi2 idents var-union concept-ids qvars var-value-block-map))
     (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
-      (format t "~%~%phi1:~%~S" phi1)
+      (format t "~%~%phi1:")
       (print-cpd phi1)
-      (format t "~%phi2:~%~S" phi2)
+      (format t "~%phi2:")
       (print-cpd phi2))
     (setq cardinalities (get-var-cardinalities var-value-block-map))
     (setq steps (generate-cpd-step-sizes cardinalities))
@@ -5009,6 +5017,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (format t "~%neighbor ~d:" idx )
 	       (print-cpd nbr)))
        (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (when nil
+	 (format t "~%intermediate belief:")
+	 (print-cpd factor))
        (setq factor (normalize-rule-probabilities factor (rule-based-cpd-dependent-id factor)))
        (setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
        (when nil
@@ -5122,7 +5133,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 5 and deltas
     for count from 0
     do
-       (when t
+       (when nil t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -5189,7 +5200,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when t
+       (when nil t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")

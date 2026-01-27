@@ -1887,7 +1887,7 @@
 		      (setf (gethash ident conditions) new-vals))
 	       finally
 		  (return conditions))))
-    (when (equal "SALES_228" (rule-based-cpd-dependent-id phi))
+    (when nil (equal "SALES_228" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -3523,7 +3523,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when (and (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd))
+    (when nil (and (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd))
 	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
       (format t "~%~%getting local covering for:~%~S~%" cpd)
       (print-cpd cpd)
@@ -4698,7 +4698,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       )
 	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count)))
           (t
-           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
              (format t "~%~%episode before update:")
 	     (print-cpd phi1)
 	     (format t "~%schema before update:")
@@ -4709,7 +4709,7 @@ Roughly based on (Koller and Friedman, 2009) |#
              )
 	   ;;(check-cpd phi1 :check-uniqueness nil :check-rule-count nil :check-counts nil)
            (setq phi2 (cpd-update-existing-vvms phi2 bindings new-nodes))
-           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema:~%~S" phi2)
 	     (print-cpd phi2)
                  ;;(break)
@@ -4717,7 +4717,7 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi2 :check-uniqueness nil)
            (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	   ;;(check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-           (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema2:~%~S" phi2)
 	     (print-cpd phi2)
              ;;(break)
@@ -4730,7 +4730,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+	   (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
 	     (print-cpd phi2)
 	     (format t "~%~%episode rules:~%")

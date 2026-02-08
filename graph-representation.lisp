@@ -3217,7 +3217,7 @@
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
-           with condition and att-block and lower-approx
+           with condition and condition-idx and att-block and lower-approx
            with certain-discounted-coverage and discounted-coverage
            with goodness-weight and goodness and cert-goodness-weight and cert-goodness
            with penalty-weight and penalty and cert-penalty-weight and cert-penalty
@@ -3232,7 +3232,6 @@
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
 	   do
-	      (setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) (rule-block rule) :output-hash-p t)))
 	      (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%rule block intersection size: ~d~%condition value in rule?:~A" condition-block intersection rule-block-intersection
@@ -3247,6 +3246,7 @@
 		(setq num-conflicts (hash-table-count (rule-avoid-list rule)))
 		(setq copy-rule (copy-cpd-rule rule))
 		(setq condition (car condition-block))
+		(setq condition-idx (gethash (car condition) (rule-based-cpd-identifiers cpd)))
 		(setf (gethash (car condition)
 			       (rule-conditions copy-rule))
 		      (cons (cdr condition)
@@ -3261,15 +3261,17 @@
 					  concept-block
 					  :output-hash-p t))
 		(when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
-		  (format t "~%pass 1!~%goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
+		  (format t "~%pass 1!~%candidate new rule:~%~S" copy-rule)
+		  ;;(print-cpd-rule copy-rule)
+		  (format t "goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
 			  (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
 			  num-conflicts
 			  (hash-table-count (rule-avoid-list copy-rule))))
 		(when (and (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
-			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
 			   (not (and (= (hash-table-count (rule-avoid-list rule)) 0)
 				     (< (hash-table-count (rule-certain-block copy-rule))
-					(hash-table-count (rule-certain-block rule))))))
+					(hash-table-count (rule-certain-block rule)))))
+			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts))
 		 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
 		 (setq upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
@@ -3314,23 +3316,15 @@
 		       ((> upper-bound-p 0)
 			(let (condition-conflicts
 			      condition-entropy
-			      condition-rule)
-			  (setq condition-rule (make-rule :conditions (make-hash-table :test #'equal)))
-			  (setf (gethash (car condition)
-					 (rule-conditions condition-rule))
-				(cons (cdr condition)
-				      (gethash (car condition)
-					       (rule-conditions copy-rule))))
-			  (setf (rule-block condition-rule)
-				(get-rule-block cpd condition-rule))
-			  (setf (rule-certain-block condition-rule)
-				(get-rule-block cpd condition-rule :certain-p t))
-			  (setf (rule-avoid-list condition-rule)
-				(block-difference (rule-block condition-rule)
-						  concept-block
-						  :output-hash-p t))
-			  (setq rule-block-intersection (hash-table-count (hash-intersection goal (rule-block condition-rule) :output-hash-p t)))
-			  (setq condition-conflicts (hash-table-count (rule-avoid-list condition-rule)))
+			      condition-gini
+			      rule-concept-intersection)
+			  ;;(setq condition-conflicts (hash-table-count (rule-avoid-list copy-rule)))
+			  ;;(setq rule-block-intersection upper-bound-covered-pos)
+
+			  (setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) goal :output-hash-p t)))
+			  (setq rule-concept-intersection (hash-table-count (hash-intersection (second condition-block) concept-block :output-hash-p t)))
+			  (setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
+			  
 			  ;;(setq condition-concept-intersection (hash-intersection (second condition-block) concept-block :output-hash-p t))
 			  #|
 			  (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
@@ -3346,16 +3340,20 @@
 			      (setq condition-entropy (binary-entropy (/ rule-block-intersection
 									 (+ rule-block-intersection condition-conflicts))))
 			      (setq condition-entropy most-positive-fixnum))
+			  (setq condition-gini (- 1 (+ (expt (/ rule-block-intersection
+								(+ rule-block-intersection condition-conflicts))
+							     2)
+						       (expt (/ condition-conflicts
+								(+ rule-block-intersection condition-conflicts))
+							     2))))
 			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%new covered negs: ~d~%condition positives (rule-block): ~d~%condition conflicts: ~d~%condition entropy: ~d~%block size: ~d" new-covered-negs rule-block-intersection condition-conflicts condition-entropy (hash-table-count (rule-block condition-rule))))
+			    (format t "~%new covered negs: ~d~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition gini index: ~d~%condition concept-positives: ~d~%conditon block size: ~d~%rule block size: ~d" new-covered-negs rule-block-intersection condition-conflicts condition-entropy (float condition-gini) rule-concept-intersection (hash-table-count (second condition-block)) (hash-table-count (rule-block copy-rule))))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (< condition-entropy best-condition-entropy))
-				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
 					  (= condition-entropy best-condition-entropy)
-					  (< (hash-table-count (second condition-block)) best-block-size))
-				    |#
+					  (> (hash-table-count (rule-block copy-rule)) best-block-size))
 				     
 				     #|
 				     (and (= upper-bound-info-gain best-zero-ub-ig)
@@ -3389,7 +3387,7 @@
 			     (setq best-zero-rule (copy-cpd-rule copy-rule))
 			     ;;(setq best-intersection intersection-size)
 			     (setq best-condition-conflicts condition-conflicts)
-			     (setq best-block-size (hash-table-count (second condition-block)))
+			     (setq best-block-size (hash-table-count (hash-table-count (rule-block copy-rule))))
 			     (setq best-condition-entropy condition-entropy)
 			     (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))
@@ -3533,10 +3531,11 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id cpd))
+    (when (and (equal "ACTION_231" (rule-based-cpd-dependent-id cpd))
 	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
       (format t "~%~%getting local covering for:~%~S~%" cpd)
       (print-cpd cpd)
+      (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 	  ;;(break)
       )
     (loop
@@ -3579,7 +3578,7 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if nil ;;(= probability-concept 0)
+		   (if (= probability-concept 0)
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -4716,7 +4715,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       )
 	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count)))
           (t
-           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id phi2)))
              (format t "~%~%episode before update:")
 	     (print-cpd phi1)
 	     (format t "~%schema before update:")
@@ -4727,7 +4726,7 @@ Roughly based on (Koller and Friedman, 2009) |#
              )
 	   ;;(check-cpd phi1 :check-uniqueness nil :check-rule-count nil :check-counts nil)
            (setq phi2 (cpd-update-existing-vvms phi2 bindings new-nodes))
-           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema:~%~S" phi2)
 	     (print-cpd phi2)
                  ;;(break)
@@ -4735,20 +4734,20 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi2 :check-uniqueness nil)
            (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	   ;;(check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema2:~%~S" phi2)
 	     (print-cpd phi2)
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
 	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
-           (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id phi2)))
                  (format t "~%intermediate episode:~%~S" phi1)
                  (break)
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when nil (and (equal "MOOD_222" (rule-based-cpd-dependent-id phi2)))
+	   (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
 	     (print-cpd phi2)
 	     (format t "~%~%episode rules:~%")

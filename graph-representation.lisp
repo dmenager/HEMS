@@ -3061,8 +3061,8 @@
 		    (when (= (hash-table-count att-block) (hash-table-count universe))
                       (setq intersection (make-hash-table)))
 		    (when (not (= (hash-table-count intersection)
-				  (hash-table-count new-g)))
-		      (setq num-constraints (+ num-constraints 1)))
+				(hash-table-count new-g)))
+			(setq num-constraints (+ num-constraints 1)))
                     (setq condition (cons ident (cdar value-block)))
                     (setq att-blocks (cons (list (list condition att-block) intersection) att-blocks))
 		    (when nil
@@ -3205,7 +3205,7 @@
     (loop
       with copy-rule and padding = 0.00001
       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection = -1 and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum and best-condition-conflicts = most-positive-fixnum
-      with best-rule-block-size = (hash-table-count (rule-block rule)) and best-rule-block-intersection = (hash-intersection (rule-block rule) goal :output-hash-p t) and best-condition-block-size = most-positive-fixnum and best-condition-entropy = most-positive-fixnum
+      with best-rule-block-size = (hash-table-count (rule-block rule)) and best-rule-block-intersection = (hash-intersection (rule-block rule) goal :output-hash-p t) and best-condition-block-size = most-positive-fixnum and best-condition-entropy = most-positive-fixnum and best-condition-entropy-2 = most-positive-fixnum
       with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
       with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
       with best-pos-condition and best-pos-rule and best-pos-info-gain = most-negative-fixnum
@@ -3326,10 +3326,13 @@
 			    (format t "~%updated rule:~%~S" copy-rule))))
 		       ((> upper-bound-p 0)
 			(let (condition-conflicts
+			      condition-conflicts-2
 			      condition-entropy
+			      condition-entropy-2
 			      condition-gini
 			      condition-retention)
 			  (setq condition-conflicts new-covered-negs)
+			  (setq condition-conflicts-2 (hash-table-count (hash-difference (rule-block copy-rule) goal cpd :output-hash-p t)))
 			  (setq rule-block-intersection upper-bound-focus)
 
 			  ;;(setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) goal :output-hash-p t)))
@@ -3352,6 +3355,12 @@
 			      (setq condition-entropy (binary-entropy (/ (hash-table-count rule-block-intersection)
 									 (+ (hash-table-count rule-block-intersection) condition-conflicts))))
 			      (setq condition-entropy most-positive-fixnum))
+			  (if (> (+ (hash-table-count rule-block-intersection)
+				    condition-conflicts-2)
+				 0)
+			      (setq condition-entropy-2 (binary-entropy (/ (hash-table-count rule-block-intersection)
+									 (+ (hash-table-count rule-block-intersection) condition-conflicts-2))))
+			      (setq condition-entropy-2 most-positive-fixnum))
 			  (setq condition-gini (- 1 (+ (expt (/ (hash-table-count rule-block-intersection)
 								(+ (hash-table-count rule-block-intersection) condition-conflicts))
 							     2)
@@ -3361,13 +3370,26 @@
 			  (setq condition-retention (/ (hash-table-count (rule-block copy-rule))
 						       (hash-table-count (rule-block rule))))
 			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%rule block size: ~d~%condition block size: ~d condiiton-retention: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy  (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block)) (float condition-retention)))
+			    (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count (hash-intersection (rule-block copy-rule) rule-block-intersection :output-hash-p t)) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block)) (float condition-retention)))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (< condition-entropy best-condition-entropy))
-				   (and (= upper-bound-info-gain best-zero-ub-ig)
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (= condition-entropy best-condition-entropy)
+					 (< condition-entropy-2 best-condition-entropy-2))
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (= condition-entropy best-condition-entropy)
+					 (= condition-entropy-2 best-condition-entropy-2)
 					 (> num-constraints best-num-constraints))
+				    #|
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (= condition-entropy best-condition-entropy)
+					 (> (hash-table-count rule-block-intersection) best-rule-block-intersection))
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (= condition-entropy best-condition-entropy)
+					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
+					 (> num-constraints best-num-constraints))
+				    |#
 				    #|
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (= condition-entropy best-condition-entropy)
@@ -3431,6 +3453,7 @@
 			     (setq best-rule-block-intersection (hash-table-count rule-block-intersection))
 			     (setq best-rule-block-size (hash-table-count (rule-block copy-rule)))
 			     (setq best-condition-entropy condition-entropy)
+			     (setq best-condition-entropy-2 condition-entropy-2)
 			     (setq best-condition-retention condition-retention)
 			     (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 			       (format t "~%updated rule:~%~S" copy-rule))))))))

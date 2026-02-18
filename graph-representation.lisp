@@ -3237,7 +3237,8 @@
 	   with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
 	   with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
 	   with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs and new-entropy and entropy and p and q
-	   with upper-bound-info-gain and upper-bound-focus and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p
+	   with upper-bound-info-gain and new-upper-bound-focus and upper-bound-focus
+	   with new-upper-bound-covered-pos and new-upper-bound-entropy and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p and upper-bound-q
 	   with rule-block-intersection
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
@@ -3249,6 +3250,7 @@
 				(gethash (caar condition-block)
 					   (rule-conditions rule)))))
 	   when (and (> (hash-table-count intersection) 0) ;; (> rule-block-intersection 0)
+		     (> num-constraints 0)
 		     (not (member (cdar condition-block)
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
@@ -3285,35 +3287,47 @@
 			   )
 		 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
-		 (setq upper-bound-focus intersection) ;;(hash-intersection (rule-block copy-rule) goal :output-hash-p t)
-		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
 		 (setq focus (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
 		 (setq new-covered-pos (hash-table-count focus))
 		 (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
+		 (setq new-upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
+		 (setq new-upper-bound-covered-pos (hash-table-count new-upper-bound-focus))
 		 (setq p (handler-case
 			     (/ new-covered-pos
 				(+ new-covered-pos new-covered-negs))
 			   (error (c)
 			     0)))
 		 (setq upper-bound-p (handler-case
-					 (/ upper-bound-covered-pos
-					    (+ upper-bound-covered-pos new-covered-negs))
+					 (/ new-upper-bound-covered-pos
+					    (+ new-upper-bound-covered-pos new-covered-negs))
 				       (error (c)
 					 0)))
 		 (setq new-entropy (binary-entropy p))
-		 (setq upper-bound-entropy (binary-entropy upper-bound-p))
+		 (setq new-upper-bound-entropy (binary-entropy upper-bound-p))
 		 (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
 		 (setq covered-negs (hash-table-count (rule-avoid-list rule)))
+		 (setq upper-bound-focus (hash-intersection (rule-block rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
+		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
 		 (setq q (handler-case
 			     (/ covered-pos 
 				(+ covered-pos covered-negs))
 			   (error (c)
 			     0)))
+		 (setq upper-bound-q (handler-case
+			     (/ upper-bound-covered-pos 
+				(+ upper-bound-covered-pos covered-negs))
+			   (error (c)
+			     0)))
 		 (setq entropy (binary-entropy q))		  
+		 (setq upper-bound-entropy (binary-entropy upper-bound-q))
 		 (setq info-gain (- (* (+ covered-pos covered-negs) entropy)
 				    (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
+		 #|
 		 (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						(* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
+		 |#
+		 (setq upper-bound-info-gain (- (* (+ upper-bound-covered-pos covered-negs) upper-bound-entropy)
+						(* (+ new-upper-bound-covered-pos new-covered-negs) new-upper-bound-entropy)))
 		 (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
 		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
 		 (cond ((> p 0)
@@ -3333,7 +3347,7 @@
 			      condition-retention)
 			  (setq condition-conflicts new-covered-negs)
 			  (setq condition-conflicts-2 (hash-table-count (hash-difference (rule-block copy-rule) goal cpd :output-hash-p t)))
-			  (setq rule-block-intersection upper-bound-focus)
+			  (setq rule-block-intersection new-upper-bound-focus)
 
 			  ;;(setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) goal :output-hash-p t)))
 			  ;;(setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
@@ -3370,10 +3384,19 @@
 			  (setq condition-retention (/ (hash-table-count (rule-block copy-rule))
 						       (hash-table-count (rule-block rule))))
 			  (when (and print-special* (equal "ACTION_231" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count (hash-intersection (rule-block copy-rule) rule-block-intersection :output-hash-p t)) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block)) (float condition-retention)))
+			    (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block))))
 			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (< condition-entropy best-condition-entropy))
+				    
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (= condition-entropy best-condition-entropy)
+					 (< (hash-table-count (second condition-block)) best-condition-block-size))
+				    (and (= upper-bound-info-gain best-zero-ub-ig)
+					 (= condition-entropy best-condition-entropy)
+					 (= (hash-table-count (second condition-block)) best-condition-block-size)
+					 (> (hash-table-count rule-block-intersection) best-rule-block-intersection))
+				    #|
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (= condition-entropy best-condition-entropy)
 					 (< condition-entropy-2 best-condition-entropy-2))
@@ -3381,6 +3404,7 @@
 					 (= condition-entropy best-condition-entropy)
 					 (= condition-entropy-2 best-condition-entropy-2)
 					 (> num-constraints best-num-constraints))
+				    |#
 				    #|
 				    (and (= upper-bound-info-gain best-zero-ub-ig)
 					 (= condition-entropy best-condition-entropy)
@@ -3597,7 +3621,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when (and (equal "ACTION_231" (rule-based-cpd-dependent-id cpd))
+    (when nil (and (equal "ACTION_231" (rule-based-cpd-dependent-id cpd))
 	       (< (array-dimension (rule-based-cpd-rules cpd) 0) 100))
       (format t "~%~%getting local covering for:~%~S~%" cpd)
       (print-cpd cpd)
@@ -3644,7 +3668,7 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if (= probability-concept 0 #|0.05394432820715228d0|#)
+		   (if nil ;; (= probability-concept 0 #|0.05394432820715228d0|#)
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   

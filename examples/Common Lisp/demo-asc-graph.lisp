@@ -9,7 +9,8 @@
 	       (not (null obs2)))
     do
        (new-push-to-ep-buffer :observation obs1 :state st1 :action-name "NIL" :bic-p t :insertp nil :temporal-p t :hidden-state-p t)
-       (new-push-to-ep-buffer :observation obs2 :state st2 :action-name "NIL" :bic-p t :insertp t :temporal-p t :hidden-state-p t)))
+       (new-push-to-ep-buffer :observation obs2 :state st2 :action-name "NIL" :bic-p t :insertp t :temporal-p t :hidden-state-p t))
+  (eltm-to-pdf))
 
 (defun example2 ()
   (let (obs1 obs2 obs3 obs4 st1 st2 st3 st4)

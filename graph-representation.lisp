@@ -1887,7 +1887,7 @@
 		      (setf (gethash ident conditions) new-vals))
 	       finally
 		  (return conditions))))
-    (when nil (equal "SALES_228" (rule-based-cpd-dependent-id phi))
+    (when (equal "A_265" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -2042,10 +2042,7 @@
 	      (setq norm-const (reduce #'+ probs))
 	      (setq counts (gethash encoding counts-hash))
 	      (when (rule-count r1)
-		(setq count (apply #'max counts))
-		;; DHM: patching. Some rules strangely have nil count in non-singleton cpds
-		;;(setq count (rule-count r1))
-		)
+		(setq count (apply #'max counts)))
 	      (setq row-prop-list (gethash encoding rows-hash))
 	      (setq condition (getf row-prop-list :descriptor))
 	      (setq row (getf row-prop-list :contents))
@@ -2133,7 +2130,7 @@
 			      (break))))))
 	 (when (null matched-p)
 	   ;; Do a "self" match.
-	   (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	   (when (equal "A_265" (rule-based-cpd-dependent-id phi))
 	     (format t "~%no match for rule:")
 	     (print-cpd-rule r1))
 	   (let (norm-const)
@@ -2878,13 +2875,13 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
-		   (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+		   (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
 		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
-			(when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+			(when (equal "C_222" (rule-based-cpd-dependent-id cpd))
 			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop

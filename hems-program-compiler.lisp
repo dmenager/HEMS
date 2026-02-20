@@ -357,6 +357,7 @@
 					  :id (gensym "RULE-")
 					  :conditions (make-hash-table :test #'equal)
 					  :probability prob
+					  :block (make-hash-table)
 					  :certain-block (make-hash-table)
 					  :count (- (length prob-row) 1)))
 			      (when nil t
@@ -454,8 +455,11 @@
 			   (setf (rule-based-cpd-count cpd) 1)
 			   |#
 			   (when value
-			     (setq values (list (list :value "NA" :probability 0 :count 0)
-						(list :value value :probability 1 :count 1))))
+			     (cond ((string-equal "NA" value)
+				    (setq values (list (list :value value :probability 1 :count 1))))
+				   (t
+				    (setq values (list (list :value "NA" :probability 0 :count 0)
+						       (list :value value :probability 1 :count 1))))))
 			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
 										 (getf lst :value))))
 			     (let (count-val)
@@ -479,6 +483,7 @@
 					    :id (gensym "RULE-")
 					    :conditions (make-hash-table :test #'equal)
 					    :probability prob
+					    :block (make-hash-table)
 					    :certain-block (make-hash-table)
 					    :count count))
 				(setf (gethash (rule-based-cpd-dependent-id cpd)

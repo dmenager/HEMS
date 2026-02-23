@@ -2853,7 +2853,7 @@
     for rule being the elements of (rule-based-cpd-rules cpd)
     for i from 0
     do
-       (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+       (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
              (format t "~%~%Rule: ~S~%index: ~d" rule i))
        (loop
          with vals and vvbm and #|lower-vvbm and lower-nvvbm and c-sets and|# card
@@ -2863,11 +2863,11 @@
             (setq card (aref (rule-based-cpd-cardinalities cpd) idx))
             (setq vvbm (gethash idx (rule-based-cpd-var-value-block-map cpd)))
             (setq vals (gethash attribute (rule-conditions rule)))
-            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "C_222" (rule-based-cpd-dependent-id cpd))
                   (format t "~%Attribute: ~S~%values: ~S~%vvbm:~%~S" attribute vals vvbm)
                   ;;(break)
                   )
-            (when nil (equal "NVELOCITY_56953" (rule-based-cpd-dependent-id cpd))
+            (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
                   (format t "~%~%attribute: ~S~%attribute cpd idx: ~d~%vvbm:~%~S~%rule condition vals: ~S" attribute idx vvbm vals))
             (cond ((null vals)
                    (loop
@@ -5446,7 +5446,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                       (setf (gethash attribute (rule-conditions rule))
                             (aref asn pos)))
                rule)))
-    (when nil 
+    (when t
       (format t "~%making initial rules for:")
       (print-cpd cpd)
       (format t "~%~%assn: ~S" assn))
@@ -5460,6 +5460,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (setq anti-pair-hash (make-hash-table))
 	   (setq anti-assn (set-difference (gethash i (rule-based-cpd-var-values cpd))
 					   (aref assn i)))
+	   (when (null anti-assn)
+	     (setq anti-assn (aref assn i)))
+	   (when t
+	     (format t "~%anti-assn: ~S" anti-assn))
 	   (setf (gethash
 		  (parse-integer (format nil "1~{~a~}" as))
 		  anti-pair-hash)
@@ -5473,9 +5477,11 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setf (aref assn-0 0)
 	    (gethash (parse-integer (format nil "1~{~a~}" (aref assn 0)))
 		     (gethash 0 inversion-map)))
+      (when t
+	(format t "~%assn-0: ~S" assn-0))
       (loop
         with rules and case = 0 and rule
-        for assignment in (list assn assn-0)
+        for assignment in (list assn assn-0) ;;(if (equalp assn assn-0) (list assn) (list assn assn-0))
         for prob in (list 1 0)
         do
            (setq rule (make-initial-rule assignment prob case 1))
@@ -5499,10 +5505,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                 (setq rules (cons rule rules))
                 (setq case (+ case 1)))
         finally
-	   (when nil
+	   (when t
 	     (format t "~%initial rules:")
 	     (mapcar #'print-cpd-rule (reverse rules))
-	     (break))
+	     ;;(break)
+	     )
            (return (make-array case :initial-contents (nreverse rules)))))))
 
 #| Make a ruleset for describing the conditional probability distribution. Does not create any 0-count rules
@@ -7790,7 +7797,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                           (setf (gethash i types) (gethash idx (rule-based-cpd-types q-cpd)))
                           (setf (gethash i cids) (gethash idx (rule-based-cpd-concept-ids q-cpd)))
                           (setf (gethash i qvars) (gethash idx (rule-based-cpd-qualified-vars q-cpd)))
-                          (cond (p-match
+			  (cond (p-match
                                  (setf (gethash i vvbm) (gethash 0 (rule-based-cpd-var-value-block-map p-match)))
                                  (setf (gethash i sva) (gethash 0 (rule-based-cpd-set-valued-attributes p-match)))
                                  (setf (gethash i vals) (gethash 0 (rule-based-cpd-var-values p-match))))
@@ -7801,15 +7808,21 @@ Roughly based on (Koller and Friedman, 2009) |#
                                  (setq zeros (cons i zeros))))
                           (setq i (+ i 1))))
                 finally
-                   (setq assn (make-array (hash-table-count idents) :initial-element (list 1)))
+		   ;; make hash table for assignment
+                   ;;(setq cards (make-array (hash-table-count idents) :initial-element 2))
+                   (setq cards (get-var-cardinalities vvbm))
+                   (setq steps (generate-cpd-step-sizes cards))
+		   (loop
+		     for c being the elements of cards
+		     for k from 0
+		     when (= c 1)
+		       do
+			  (setq zeros (cons k zeros)))
+		   (setq assn (make-array (hash-table-count idents) :initial-element (list 1)))
                    (loop
                      for zero in zeros
                      do
-                        (setf (aref assn zero) (list 0)))
-                   ;; make hash table for assignment
-                   ;;(setq cards (make-array (hash-table-count idents) :initial-element 2))
-                   (setq cards (get-var-cardinalities vvbm))
-                   (setq steps (generate-cpd-step-sizes cards)))
+                        (setf (aref assn zero) (list 0))))
               (setq dummy-match
                     (make-rule-based-cpd
                      :dependent-id (rule-based-cpd-dependent-id q-cpd)
@@ -7830,7 +7843,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		     :prior (rule-based-cpd-prior q-cpd)
                      :count 1
                      :lvl (rule-based-cpd-lvl q-cpd)))
-              (setq rules (make-initial-rules dummy-match assn))
+	      (setq rules (make-initial-rules dummy-match assn))
               (loop
                 with ident = (rule-based-cpd-dependent-id dummy-match)
                 with rules-list = (reverse (coerce rules 'list))

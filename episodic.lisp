@@ -1755,7 +1755,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      for cpd being the elements of (car bn)
 		      for i from 0
 		      do
-			 (when t
+			 (when nil t
 			   (format t "~%~%making soft likelihoods for cpd:")
 			   (print-cpd cpd))
 			 (loop
@@ -1763,21 +1763,21 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			   do
 			      (when (= (rule-probability rule) 0)
 				(setf (rule-probability rule) 1/1000)))
-			 (when t
+			 (when nil t
 			   (format t "~%intermediate cpd:")
 			   (print-cpd cpd))
 			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
 			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setf (aref soft-cpds i) cpd)
-			 (when t nil
+			 (when nil
 			   (format t "~%final cpd:")
 			   (print-cpd cpd))
 		      finally
 			 (setq bn (cons soft-cpds (cdr bn)))))
 		  (let (evidence-table)
 		    (setq evidence-table (make-observations observed-factors))
-		    (when t nil (and print-special* (string-equal type "state-transitions"))
+		    (when nil (and print-special* (string-equal type "state-transitions"))
 			  (format t "~%~%evidence table:~%~S" evidence-table)
 			  (format t "~%model:")
 			  (print-bn bn)

@@ -1887,7 +1887,7 @@
 		      (setf (gethash ident conditions) new-vals))
 	       finally
 		  (return conditions))))
-    (when (equal "A_265" (rule-based-cpd-dependent-id phi))
+    (when (equal "C_222" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -1910,7 +1910,11 @@
 	   (when (null r1-dep-values)
 	     (setq r1-dep-values (gethash 0 (rule-based-cpd-var-values phi))))
 	   (setq encoding (polynomial-encoding r1 phi))
-	   (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+	   (when (equal "C_222" (rule-based-cpd-dependent-id phi))
+	     (format t "~%~%r1:")
+	     (print-cpd-rule r1)
+	     (format t "~%encoding: ~S" encoding))
+	   (when (equal "C_222" (rule-based-cpd-dependent-id phi))
 	     (when (gethash encoding rows-hash)
 	       (format t "~%overiding existing row!!")
 	       (break)))
@@ -1939,14 +1943,16 @@
 		(setq parent-setting (copy-cpd-rule r2))
 		(remhash new-dep-id (rule-conditions parent-setting))
 		(when (compatible-rule-p r1 parent-setting phi phi)
-		  (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-			     (equal "RULE-64312" (rule-id r1))
-			     (equal "RULE-64315" (rule-id r2)))
+		  (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+			     ;;(equal "RULE-64312" (rule-id r1))
+			     ;;(equal "RULE-64315" (rule-id r2))
+			     )
 		    (format t "~%~%r1:")
 		    (print-cpd-rule r1))
-		  (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-			     (equal "RULE-64312" (rule-id r1))
-			     (equal "RULE-64315" (rule-id r2)))
+		  (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+			     ;;(equal "RULE-64312" (rule-id r1))
+			     ;;(equal "RULE-64315" (rule-id r2))
+			     )
 		    (format t "~%~%Candidate rule:")
 		    (print-cpd-rule r2)
 		    (format t "~%Parent setting:")
@@ -1968,15 +1974,17 @@
 			using (hash-value probs)
 		      do
 			 (setq condition-rule1 (make-rule :conditions (getf (gethash encoding rows-hash) :descriptor)))
-			 (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-				    (equal "RULE-64312" (rule-id r1))
-				    (equal "RULE-64315" (rule-id r2)))
+			 (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+				    ;;(equal "RULE-64312" (rule-id r1))
+				    ;;(equal "RULE-64315" (rule-id r2))
+				    )
 			   (format t "~%~%condition-rule1:~%~S~%condition-rule2:~%~S" condition-rule1 condition-rule2))
 			 (when (compatible-rule-p condition-rule1 condition-rule2 phi phi)
 			   (setq condition-match-p t)
-			   (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-				      (equal "RULE-64312" (rule-id r1))
-				      (equal "RULE-64315" (rule-id r2)))
+			   (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+				      ;;(equal "RULE-64312" (rule-id r1))
+				      ;;(equal "RULE-64315" (rule-id r2))
+				      )
 			     (format t "~%compatible condition rules!"))
 			   (setq new-conditions (intersect-rule-conditions condition-rule1 condition-rule2))
 			   (setq new-encoding (polynomial-encoding (make-rule :conditions new-conditions) phi))
@@ -1984,15 +1992,16 @@
 			   (setq row-contents (getf (gethash encoding rows-hash) :contents))
 			   (setq remaining-dep-vals (gethash encoding dep-values-hash))
 			   (setq new-r2-dep-id-vals (intersection r2-dep-values remaining-dep-vals))
-			   (when nil
+			   (when t nil
 			     (format t "~%remaining dependent id variable values for encoding ~S:~%~S~%new r2-dep-id vals from r2 not in remaining set:~%~S" encoding remaining-dep-vals new-r2-dep-id-vals))
 			   (when new-r2-dep-id-vals
-			     (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-					(equal "RULE-64312" (rule-id r1))
-					(equal "RULE-64315" (rule-id r2)))
+			     (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+					;;(equal "RULE-64312" (rule-id r1))
+					;;(equal "RULE-64315" (rule-id r2))
+					)
 			       (format t "~%~%encoding: ~S~%context hash size before: ~S" encoding (length (gethash encoding context-hash)))
 			       (format t "~%row before:~%   descriptor:~%   ~S" (getf (gethash encoding rows-hash) :descriptor)))
-			     (when nil (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
+			     (when (equal "C_222" (rule-based-cpd-dependent-id phi))
 			       (when (gethash new-encoding new-rows-hash)
 				 (format t "~%overiding existing row!!")
 				 (break)))
@@ -2010,9 +2019,10 @@
 				   (list :descriptor (intersect-rule-conditions parent-setting (make-rule :conditions row-descriptor))
 					 :contents row-contents))
 			     (setf (gethash new-encoding new-dep-values-hash) remaining-dep-vals)
-			     (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-					(equal "RULE-64312" (rule-id r1))
-					(equal "RULE-64315" (rule-id r2)))
+			     (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+					;;(equal "RULE-64312" (rule-id r1))
+					;;(equal "RULE-64315" (rule-id r2))
+					)
 			       (format t "~%new encoding: ~S~%context hash size after: ~S" new-encoding (length (gethash new-encoding new-context-hash)))
 			       (format t "~%row after:~%   descriptor:~%   ~S" (getf (gethash new-encoding new-rows-hash) :descriptor))))
 			   #|
@@ -2028,10 +2038,11 @@
 				       (gethash condition rows-hash)))
 			   |#)
 		      finally
-			 (setq context-hash new-context-hash)
-			 (setq counts-hash new-counts-hash)
-			 (setq rows-hash new-rows-hash)
-			 (setq dep-values-hash new-dep-values-hash)))))
+			 (when (> (hash-table-count new-context-hash) 0)
+			   (setq context-hash new-context-hash)
+			   (setq counts-hash new-counts-hash)
+			   (setq rows-hash new-rows-hash)
+			   (setq dep-values-hash new-dep-values-hash))))))
 	 (loop
 	   with counts
 	   with norm-const and count
@@ -2048,10 +2059,10 @@
 	      (setq row (getf row-prop-list :contents))
 	      (when (< (length r1-dep-values)
 		       (length (gethash 0 (rule-based-cpd-var-values phi))))
-		(when nil
+		(when t nil
 		  (format t "new dep id: ~S~%condition: ~S~%r1 dep values: ~S~%norm const: ~d prob: ~d" new-dep-id condition r1-dep-values norm-const (rule-probability r1)))
 		(setf (gethash new-dep-id condition) r1-dep-values))
-	      (when nil
+	      (when t nil
 		(format t "~%condition:~%~S" condition))
 	      (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
 					:conditions condition
@@ -2070,9 +2081,10 @@
 	      |#
 	      (setf (gethash block (rule-block new-rule)) block)
 	      (setq block (+ block 1))
-	      (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-			 (or (equal "RULE-2049" (rule-id new-rule))
-			     (equal "RULE-2052" (rule-id new-rule))))
+	      (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+			 ;;(or (equal "RULE-2049" (rule-id new-rule))
+			 ;;    (equal "RULE-2052" (rule-id new-rule)))
+			 )
 		(format t "~%~%normalizing rule:")
 		(print-cpd-rule r1)
 		(format t "~%encoding: ~S~%row descriptor (new rule conditions):~%   <" encoding)
@@ -2090,9 +2102,10 @@
 		     (print-cpd-rule r))
 		(format t "~%  probabilities:~%   ~S" probs)
 		(format t "~%normalizing constant: ~d" norm-const))
-	      (when nil (and (equal "EPOSITION_238" (rule-based-cpd-dependent-id phi))
-			 (or (equal "RULE-2049" (rule-id new-rule))
-			     (equal "RULE-2052" (rule-id new-rule))))
+	      (when (and (equal "C_222" (rule-based-cpd-dependent-id phi))
+			 ;;(or (equal "RULE-2049" (rule-id new-rule))
+			 ;;    (equal "RULE-2052" (rule-id new-rule)))
+			 )
 		(format t "~%new rule:")
 		(print-cpd-rule new-rule))
 	      (when (or (> (rule-probability new-rule) 1)
@@ -2130,7 +2143,7 @@
 			      (break))))))
 	 (when (null matched-p)
 	   ;; Do a "self" match.
-	   (when (equal "A_265" (rule-based-cpd-dependent-id phi))
+	   (when (equal "C_222" (rule-based-cpd-dependent-id phi))
 	     (format t "~%no match for rule:")
 	     (print-cpd-rule r1))
 	   (let (norm-const)
@@ -2143,7 +2156,7 @@
 		       0))
 	     (setf (gethash block (rule-block new-rule)) block)
 	     (setq block (+ block 1))
-	     (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	     (when (equal "C_222" (rule-based-cpd-dependent-id phi))
 	       (format t "~%norm const: ~d~%new rule:" norm-const)
 	       (print-cpd-rule new-rule))
 	     (setq new-rules (cons new-rule new-rules))
@@ -2168,7 +2181,7 @@
 			     (print-cpd-rule nr2)
 			     (break)))))))
       finally
-	 (when nil (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi))
+	 (when (equal "C_222" (rule-based-cpd-dependent-id phi))
 	   (format t "~%~%max new rules index: ~d~%new rules:" (- (length new-rules) 1))
 	   (mapcar #'print-cpd-rule (reverse new-rules)))
 	 (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
@@ -2853,7 +2866,7 @@
     for rule being the elements of (rule-based-cpd-rules cpd)
     for i from 0
     do
-       (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
+       (when nil (equal "C_222" (rule-based-cpd-dependent-id cpd))
              (format t "~%~%Rule: ~S~%index: ~d" rule i))
        (loop
          with vals and vvbm and #|lower-vvbm and lower-nvvbm and c-sets and|# card
@@ -2867,7 +2880,7 @@
                   (format t "~%Attribute: ~S~%values: ~S~%vvbm:~%~S" attribute vals vvbm)
                   ;;(break)
                   )
-            (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
+            (when nil (equal "C_222" (rule-based-cpd-dependent-id cpd))
                   (format t "~%~%attribute: ~S~%attribute cpd idx: ~d~%vvbm:~%~S~%rule condition vals: ~S" attribute idx vvbm vals))
             (cond ((null vals)
                    (loop
@@ -2875,13 +2888,13 @@
 		     do
                         (setf (gethash i (second vvb)) i)))
                   ((listp vals)
-		   (when (equal "C_222" (rule-based-cpd-dependent-id cpd))
+		   (when nil (equal "C_222" (rule-based-cpd-dependent-id cpd))
 		     (format t "~%vals: ~S" vals))
                    (loop
 		     with vvb
                      for val in vals
                      do
-			(when (equal "C_222" (rule-based-cpd-dependent-id cpd))
+			(when nil (equal "C_222" (rule-based-cpd-dependent-id cpd))
 			  (format t "~%val: ~S~%vvbm:~%~S" val vvbm))
 			(setq vvb nil)
 			(loop
@@ -5446,10 +5459,6 @@ Roughly based on (Koller and Friedman, 2009) |#
                       (setf (gethash attribute (rule-conditions rule))
                             (aref asn pos)))
                rule)))
-    (when t
-      (format t "~%making initial rules for:")
-      (print-cpd cpd)
-      (format t "~%~%assn: ~S" assn))
     (let (assn-0
 	  (inversion-map (make-hash-table)))
       (loop
@@ -5462,8 +5471,6 @@ Roughly based on (Koller and Friedman, 2009) |#
 					   (aref assn i)))
 	   (when (null anti-assn)
 	     (setq anti-assn (aref assn i)))
-	   (when t
-	     (format t "~%anti-assn: ~S" anti-assn))
 	   (setf (gethash
 		  (parse-integer (format nil "1~{~a~}" as))
 		  anti-pair-hash)
@@ -5477,8 +5484,6 @@ Roughly based on (Koller and Friedman, 2009) |#
       (setf (aref assn-0 0)
 	    (gethash (parse-integer (format nil "1~{~a~}" (aref assn 0)))
 		     (gethash 0 inversion-map)))
-      (when t
-	(format t "~%assn-0: ~S" assn-0))
       (loop
         with rules and case = 0 and rule
         for assignment in (list assn assn-0) ;;(if (equalp assn assn-0) (list assn) (list assn assn-0))
@@ -5505,11 +5510,6 @@ Roughly based on (Koller and Friedman, 2009) |#
                 (setq rules (cons rule rules))
                 (setq case (+ case 1)))
         finally
-	   (when t
-	     (format t "~%initial rules:")
-	     (mapcar #'print-cpd-rule (reverse rules))
-	     ;;(break)
-	     )
            (return (make-array case :initial-contents (nreverse rules)))))))
 
 #| Make a ruleset for describing the conditional probability distribution. Does not create any 0-count rules

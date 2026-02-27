@@ -5229,7 +5229,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 5 and deltas
+    with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
        (when nil t

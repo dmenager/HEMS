@@ -2,29 +2,27 @@
 
 ;;;; Online EM for Bayesian networks represented as rule-based CPDs.
 ;;;;
-;;;; Expected input:
+;;;; Input:
 ;;;;   BN          = cons whose CAR is an array of RULE-BASED-CPD objects.
-;;;;                 The CDR is preserved but otherwise ignored.
-;;;;   LATENT-VARS = list of RULE-BASED-CPD-DEPENDENT-ID strings to be returned
-;;;;                 as posterior singleton factors in the output network.
-;;;;   DATASET     = sequence processed incrementally. Each element can be:
+;;;;                 The CDR is ignored by ONLINE-EM but preserved in output.
+;;;;   LATENT-VARS = list of RULE-BASED-CPD-DEPENDENT-ID strings whose CPDs
+;;;;                 should be replaced by posterior singleton factors.
+;;;;   DATUM       = one new example/datapoint processed incrementally. DATUM can be:
 ;;;;                   1) an evidence hash table suitable for LOOPY-BELIEF-PROPAGATION,
 ;;;;                   2) a list/vector/array of singleton RULE-BASED-CPD evidence factors,
 ;;;;                   3) a BN-like cons whose CAR is such a list/array of evidence factors.
 ;;;;
-;;;; Return value:
-;;;;   A cons whose CAR is an array of RULE-BASED-CPD objects. All CPDs are updated
-;;;;   online via EM. In addition, the CPDs whose dependent-id appears in LATENT-VARS
-;;;;   are replaced by their posterior singleton distributions from the final datum.
-;;;;   The CDR of the input BN is preserved unchanged.
+;;;; Output:
+;;;;   A cons with:
+;;;;     CAR = array of RULE-BASED-CPD objects (updated by one online EM step), and
+;;;;           CPDs in LATENT-VARS replaced by posterior singleton distributions.
+;;;;     CDR = original CDR from BN.
 ;;;;
 ;;;; Notes:
-;;;;   * This implementation reuses COMPILE-BN-PRIORS, LOOPY-BELIEF-PROPAGATION,
-;;;;     MAKE-OBSERVATIONS, COPY-BN, COPY-RULE-BASED-CPD, UPDATE-CPD-RULES, and
-;;;;     NORMALIZE-RULE-PROBABILITIES from the existing code base.
-;;;;   * The online sufficient-statistic update is:
+;;;;   * This implements one incremental E/M update per datum.
+;;;;   * The sufficient-statistic update is:
 ;;;;        S_t = (1 - eta_t) S_{t-1} + eta_t * ESS(x,u | o_t, theta_{t-1})
-;;;;     followed by a local M-step for each CPD.
+;;;;   * Running ONLINE-EM repeatedly with the returned network performs online learning.
 
 (defparameter *online-em-default-step-size*
   #'(lambda (n)
@@ -59,11 +57,6 @@
           do (setf (gethash (online-em--rule-key rule) map) rule))
     map))
 
-(defun online-em--cpd-by-id (bn dep-id)
-  (car (member dep-id (car bn)
-               :key #'rule-based-cpd-dependent-id
-               :test #'equal)))
-
 (defun online-em--posterior-map (posterior-factors)
   (let ((map (make-hash-table :test #'equal)))
     (dolist (factor posterior-factors map)
@@ -92,10 +85,10 @@
   (loop for rule being the elements of (rule-based-cpd-rules stats-cpd) do
     (setf (rule-count rule)
           (* (- 1.0d0 eta)
-             (float (rule-count rule) 1.0d0)))))
+             (float (or (rule-count rule) 0.0d0) 1.0d0)))))
 
 (defun online-em--accumulate-posterior (stats-cpd posterior-cpd eta)
-  "Blend the posterior ESS for POSTERIOR-CPD into STATS-CPD."
+  "Blend posterior ESS for POSTERIOR-CPD into STATS-CPD."
   (let ((posterior-map (online-em--rule-map posterior-cpd)))
     (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
           for key = (online-em--rule-key rule)
@@ -109,12 +102,10 @@
 Groups rules by parent-context and normalizes counts within each group."
   (let ((totals (make-hash-table :test #'equal))
         (stats-map (online-em--rule-map stats-cpd)))
-    ;; First pass: accumulate totals by parent context.
     (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
           for parent-key = (online-em--parent-key stats-cpd rule) do
             (incf (gethash parent-key totals 0.0d0)
                   (float (rule-count rule) 1.0d0)))
-    ;; Second pass: write updated probabilities into CPD.
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
           for key = (online-em--rule-key rule)
           for stats-rule = (gethash key stats-map)
@@ -124,7 +115,6 @@ Groups rules by parent-context and normalizes counts within each group."
                   (cond ((and stats-rule (> denom 0.0d0))
                          (max min-prob (/ (float (rule-count stats-rule) 1.0d0) denom)))
                         (t min-prob))))
-    ;; Rebuild any cached internal rule structure and normalize defensively.
     (normalize-rule-probabilities
      (update-cpd-rules cpd (rule-based-cpd-rules cpd)
                        :check-uniqueness nil
@@ -132,7 +122,7 @@ Groups rules by parent-context and normalizes counts within each group."
      (rule-based-cpd-dependent-id cpd))))
 
 (defun online-em--coerce-evidence (datum)
-  "Convert DATUM into the evidence structure expected by LOOPY-BELIEF-PROPAGATION."
+  "Convert DATUM into evidence expected by LOOPY-BELIEF-PROPAGATION."
   (cond
     ((hash-table-p datum)
      datum)
@@ -164,51 +154,67 @@ Groups rules by parent-context and normalizes counts within each group."
                 (setf (aref new-factors i) (copy-rule-based-cpd posterior)))))
     (cons new-factors (cdr bn))))
 
-(defun online-em-bn (bn latent-vars dataset
-                      &key
-                        (step-size *online-em-default-step-size*)
-                        (lr 1.0d0)
-                        (equivalent-sample-size 1.0d0)
-                        (return-learned-cpds t))
-  "Online EM for a Bayesian network represented as rule-based CPDs.
+(defun online-em-step (bn latent-vars datum
+                        &key
+                          (step-size 1.0d0)
+                          (lr 1.0d0)
+                          (equivalent-sample-size 1.0d0)
+                          (iteration 1)
+                          (return-learned-cpds t))
+  "Run a single online EM update using one DATUM.
 
-STEP-SIZE may be either a function of the 1-based datum index or a constant.
-If RETURN-LEARNED-CPDS is NIL, the learned BN is still used for inference, but the
-returned network will contain only latent posterior replacements over the current BN
-copy."
+STEP-SIZE may be a constant or a function of ITERATION (1-based)."
   (let* ((theta (online-em--copy-bn-factors-only bn))
          (stats (online-em--initialize-statistics theta equivalent-sample-size))
-         (last-posterior-singletons nil))
-    (loop for datum in dataset
-          for n from 1 do
-            (let* ((eta (float (if (functionp step-size)
-                                   (funcall step-size n)
-                                   step-size)
-                               1.0d0))
-                   (evidence (online-em--coerce-evidence datum)))
-              (multiple-value-bind (posterior-factors posterior-singletons)
-                  (online-em--infer theta evidence :lr lr)
-                (setq last-posterior-singletons posterior-singletons)
-                (let ((posterior-map (online-em--posterior-map posterior-factors)))
-                  (loop for i from 0 below (length (car theta)) do
-                    (let* ((cpd (aref (car theta) i))
-                           (stats-cpd (aref (car stats) i))
-                           (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
-                                                   posterior-map)))
-                      (online-em--apply-decay stats-cpd eta)
-                      (when posterior-cpd
-                        (online-em--accumulate-posterior stats-cpd posterior-cpd eta))
-                      (setf (aref (car theta) i)
-                            (online-em--m-step-cpd cpd stats-cpd))))))))
+         (eta (float (if (functionp step-size)
+                         (funcall step-size iteration)
+                         step-size)
+                     1.0d0))
+         (evidence (online-em--coerce-evidence datum))
+         (posterior-singletons nil))
+    (multiple-value-bind (posterior-factors singleton-factors)
+        (online-em--infer theta evidence :lr lr)
+      (setq posterior-singletons singleton-factors)
+      (let ((posterior-map (online-em--posterior-map posterior-factors)))
+        (loop for i from 0 below (length (car theta)) do
+          (let* ((cpd (aref (car theta) i))
+                 (stats-cpd (aref (car stats) i))
+                 (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
+                                         posterior-map)))
+            (online-em--apply-decay stats-cpd eta)
+            (when posterior-cpd
+              (online-em--accumulate-posterior stats-cpd posterior-cpd eta))
+            (setf (aref (car theta) i)
+                  (online-em--m-step-cpd cpd stats-cpd))))))
     (let ((result-bn (if return-learned-cpds
                          theta
                          (online-em--copy-bn-factors-only bn))))
-      (if last-posterior-singletons
+      (if posterior-singletons
           (online-em--replace-latents-with-posteriors
-           result-bn latent-vars last-posterior-singletons)
+           result-bn latent-vars posterior-singletons)
           result-bn))))
 
-;;; Convenience alias matching the task phrasing.
-(defun online-em (bn latent-vars dataset &rest keys &key &allow-other-keys)
-  (apply #'online-em-bn bn latent-vars dataset keys))
+(defun online-em (bn latent-vars datum &rest keys &key &allow-other-keys)
+  "Main entry point.
 
+If DATUM is a sequence, each element is processed incrementally and the final BN is
+returned. If DATUM is a single example (including cons form), one update is run."
+  (cond
+    ((or (null datum)
+         (hash-table-p datum)
+         (arrayp datum)
+         (and (consp datum) (arrayp (car datum))))
+     (apply #'online-em-step bn latent-vars datum keys))
+    ((and (listp datum)
+          (or (null datum)
+              (and (consp (car datum)) (or (arrayp (caar datum)) (listp (caar datum))))
+              (hash-table-p (car datum))))
+     (loop with current = bn
+           for example in datum
+           for n from 1
+           do (setf current (apply #'online-em-step current latent-vars example
+                                   :iteration n
+                                   keys))
+           finally (return current)))
+    (t
+     (apply #'online-em-step bn latent-vars datum keys))))

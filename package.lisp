@@ -85,6 +85,8 @@
 	   #:print-bn
 	   #:py-test-hash
 	   #:discrete-uniform
-	   #:make-messages))
+	   #:make-messages
+	   #:online-em
+	   #:online-em-step))
 
 (in-package :hems)

@@ -21,4 +21,5 @@
 	      (:file "hems-program-compiler" :depends-on ("graph-representation" "performance-stats"))
 	      (:file "segmentation" :depends-on ("episodic"))
 	      (:file "serializer" :depends-on ("episodic"))
+              (:file "online-em" :depends-on ("episodic" "graph-representation"))
 	      ))

@@ -205,7 +205,7 @@
 ;; bindings = variable bindings from p to q
 ;; q-first-bindings = variable bindings from q to p
 (defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings q-first-bindings)
-  (let (p q new-nodes)
+  (let (p q new-nodes latent-vars)
     (setq p (copy-factors (car ep2-bn)))
     (setq q (copy-factors (car ep1-bn)))
     (when nil
@@ -1593,9 +1593,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
    Second value is the retrieved event memory element. |#
 
 ;; eltm = event memory
-;; pstm = perceived objects in retrieval cue
-;; cstm = given relations in the retrieval cue
-;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
+;; cue-bn = retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable

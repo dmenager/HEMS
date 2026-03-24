@@ -63,6 +63,8 @@
 ;; step-sizes = array of number of steps to take before reaching variable's next assignment, for each variable
 ;; rules = array of rules = <context; probability, count>
 ;; concept-blocks = rule probability-block map. For each probability in rules, associate it with the rules with the same probability
+;; prior = program statements that, once compiled, generate a prior for this CPD
+;; latent-p = Flag to denote if the CPD is a latent variable or not
 ;; singleton-p = flag for whether this is a singleton cpd or not. If so, then rules represent potential fields, not probability
 ;; count = total number of times this CPD was observed
 ;; lvl = height of CPD in bayesian network
@@ -85,6 +87,7 @@
   rules
   concept-blocks
   prior
+  latent-p
   (singleton-p nil)
   count
   (lvl 1))
@@ -836,6 +839,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (copy-hash-table (rule-based-cpd-concept-blocks cpd))
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -883,6 +887,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -930,6 +935,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -4686,6 +4692,8 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :step-sizes steps
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
 				       :prior (rule-based-cpd-prior phi1)
+				       :latent-p (or (rule-based-cpd-latent-p phi1)
+						     (rule-based-cpd-latent-p phi2))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
     (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi :compute-count-p (if (or (eq op '+) (eq op #'+)) t))))

@@ -67,13 +67,9 @@
     (dolist (factor posterior-singletons map)
       (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
 
-(defun online-em--copy-bn-factors-only (bn)
-  (cons (map 'vector #'copy-rule-based-cpd (car (copy-bn bn)))
-        (cdr bn)))
-
 (defun online-em--initialize-statistics (bn equivalent-sample-size)
   "Create a mirrored BN of sufficient statistics, storing counts in RULE-COUNT."
-  (let* ((bn-copy (online-em--copy-bn-factors-only bn))
+  (let* ((bn-copy (copy-bn bn))
          (alpha (float equivalent-sample-size 1.0d0)))
     (loop for cpd being the elements of (car bn-copy) do
       (loop for rule being the elements of (rule-based-cpd-rules cpd) do
@@ -164,7 +160,7 @@ Groups rules by parent-context and normalizes counts within each group."
   "Run a single online EM update using one DATUM.
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
-  (let* ((theta (online-em--copy-bn-factors-only bn))
+  (let* ((theta (copy-bn bn))
          (stats (online-em--initialize-statistics theta equivalent-sample-size))
          (eta (float (if (functionp step-size)
                          (funcall step-size iteration)
@@ -176,7 +172,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
         (online-em--infer theta evidence :lr lr)
       (setq posterior-singletons singleton-factors)
       (let ((posterior-map (online-em--posterior-map posterior-factors)))
-        (loop for i from 0 below (length (car theta)) do
+        (loop for i from 0 below (array-dimension (car theta) 0) do
           (let* ((cpd (aref (car theta) i))
                  (stats-cpd (aref (car stats) i))
                  (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
@@ -188,7 +184,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                   (online-em--m-step-cpd cpd stats-cpd))))))
     (let ((result-bn (if return-learned-cpds
                          theta
-                         (online-em--copy-bn-factors-only bn))))
+                         (copy-bn bn))))
       (if posterior-singletons
           (online-em--replace-latents-with-posteriors
            result-bn latent-vars posterior-singletons)
@@ -199,22 +195,24 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
 
 If DATUM is a sequence, each element is processed incrementally and the final BN is
 returned. If DATUM is a single example (including cons form), one update is run."
-  (cond
-    ((or (null datum)
-         (hash-table-p datum)
-         (arrayp datum)
-         (and (consp datum) (arrayp (car datum))))
-     (apply #'online-em-step bn latent-vars datum keys))
-    ((and (listp datum)
-          (or (null datum)
-              (and (consp (car datum)) (or (arrayp (caar datum)) (listp (caar datum))))
-              (hash-table-p (car datum))))
-     (loop with current = bn
-           for example in datum
-           for n from 1
-           do (setf current (apply #'online-em-step current latent-vars example
+  (cond((or (null datum)
+            (hash-table-p datum)
+            (arrayp datum)
+            (and (consp datum) (arrayp (car datum))))
+	(apply #'online-em-step bn latent-vars datum keys))
+       ((and (listp datum)
+             (or (null datum)
+		 (and (consp (car datum)) (or (arrayp (caar datum)) (listp (caar datum))))
+		 (hash-table-p (car datum))))
+	(loop
+	      with current = bn
+              for example in datum
+              for n from 1
+              do
+	      (setf current (apply #'online-em-step current latent-vars example
                                    :iteration n
                                    keys))
-           finally (return current)))
-    (t
-     (apply #'online-em-step bn latent-vars datum keys))))
+              finally
+	      (return current)))
+       (t
+	(apply #'online-em-step bn latent-vars datum keys))))

@@ -2706,6 +2706,7 @@
            :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
            :concept-ids trunc-cids
            :qualified-vars trunc-qvars
+	   :latent-p (rule-based-cpd-latent-p cpd)
 	   :rules (make-array 0)))
     trunc-cpd))
 
@@ -4997,6 +4998,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					    :rules (rule-based-cpd-rules phi)
 					    :count (rule-based-cpd-count phi)
 					    :prior (rule-based-cpd-prior phi)
+					    :latent-p (rule-based-cpd-latent-p phi)
                                             :singleton-p (rule-based-cpd-singleton-p phi)
                                             :lvl (rule-based-cpd-lvl phi)))
     marginalized))
@@ -6321,6 +6323,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 			 :var-values (add-hash-key-value-pair (make-hash-table) 0 (gethash 0 (rule-based-cpd-var-values cpd)))
 			 :cardinalities (make-array 1 :initial-contents (list (aref (rule-based-cpd-cardinalities cpd) 0)) :fill-pointer t)
 			 :step-sizes (make-array 1 :initial-element 1 :fill-pointer t)
+			 :latent-p (rule-based-cpd-latent-p cpd)
 			 :rules (if probability-distribution-p
 				    (make-singleton-prob-distribution (gethash 0 (rule-based-cpd-var-values cpd)) nil 0)
 				    (initialize-rule-potentials factor 1))
@@ -6485,6 +6488,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                                               :var-values var-values
                                               :cardinalities cards
                                               :step-sizes steps
+					      :latent-p (rule-based-cpd-latent-p factor)
                                               :rules rules
                                               :singleton-p t
                                               :lvl lvl))
@@ -6588,6 +6592,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :lower-approx-var-value-block-map (rule-based-cpd-lower-approx-var-value-block-map factor)
 						 :step-sizes (rule-based-cpd-step-sizes factor)
 						 :var-values (rule-based-cpd-var-values factor)
+						 :latent-p (rule-based-cpd-latent-p factor)
 						 :rules rules
 						 :singleton-p t
 						 :lvl (rule-based-cpd-lvl factor)))
@@ -7849,6 +7854,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                      :cardinalities cards
                      :step-sizes steps
 		     :prior (rule-based-cpd-prior q-cpd)
+		     :latent-p (rule-based-cpd-latent-p q-cpd)
                      :count 1
                      :lvl (rule-based-cpd-lvl q-cpd)))
 	      (setq rules (make-initial-rules dummy-match assn))

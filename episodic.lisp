@@ -222,6 +222,8 @@
 	   (if q-match (print-cpd (aref q q-match)))
 	   (format t "~%bindings:~%~S" bindings))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
+	 (when (rule-based-cpd-latent-p p-cpd)
+	   (setq latent-vars (cons (rule-based-cpd-dependent-id p-cpd) latent-vars)))
          (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
            (format t "~%p-cpd after subst:")
 	   (print-cpd p-cpd))
@@ -229,7 +231,9 @@
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                ;;(break)
 	       )
-         (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
+	 (multiple-value-setq (node p-cpd)
+           (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
+	 (setf (aref p p-match) p-cpd)
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
 	   (format t "~%filtered p-match:")
 	   (print-cpd node)
@@ -257,7 +261,10 @@
          (setq new-nodes (nreverse (cons node (nreverse new-nodes)))))
     (setq new-nodes (topological-sort new-nodes)) ;;(sort new-nodes #'higher-lvl-cpd))
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
-    (cons new-nodes (make-graph-edges new-nodes))))
+    (setq new-nodes (cons new-nodes (make-graph-edges new-nodes)))
+    (if latent-vars
+	(online-em new-nodes latent-vars (cons p (make-array 0)))
+	new-nodes)))
 
 #| Update distribution over states |#
 

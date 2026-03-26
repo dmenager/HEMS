@@ -216,3 +216,18 @@ returned. If DATUM is a single example (including cons form), one update is run.
 	      (return current)))
        (t
 	(apply #'online-em-step bn latent-vars datum keys))))
+
+#| TESTS
+
+I have added a :latent-p flag to the rule-based cpd so now I can set it whenever a cpd is latent which will trigger the online-em during insertion, rather than the standard method that currently in place. I have identified some things in the code that may be bugs and want to bring it by you. 
+
+1. After doing EM, we want to replace the latent variables with their inferred posterior distributions. These variables may not be singleton factors, but it appears that they are assumed to be singletons in the code.
+
+2. when initializing the stats  variable in (online-em-one-step), it appears that (online-em--initialize-statistics) sets the rule counts of each rule is to 1.0. Why not use the existing rule counts that are already in the cpd?
+
+3. After doing EM, do the rule counts of the inferred latent variables mean anything? Check (loopy-belief-propagation) and see that we convert all the rule counts to 1 before calibrationg the model. Will this even be a problem if the posterior counts for latent variables are always 1? I'm not sure that this will cause an issue.
+
+
+I have also pushed the control logic for EM inside (new-combine-bns) and I'd like your opinion on whether I have placed the code in the proper place and if there are any outstanding bugs now.
+
+|#

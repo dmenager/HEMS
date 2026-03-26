@@ -4866,7 +4866,9 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	   (setq phi1 (disambiguate-rules phi1 phi2))
 	   (setq phi2 (disambiguate-rules phi2 phi1))
-           (factor-filter phi2 phi1 '+)))))
+	   (if (not (rule-based-cpd-latent-p phi1))
+               (values (factor-filter phi2 phi1 '+) phi1)
+	       (values phi2 phi1)))))
 
 #| Perform a marginalize operation over rules.
    Returns: Array of CPD rules|#

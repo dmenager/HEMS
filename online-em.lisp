@@ -62,19 +62,17 @@
     (dolist (factor posterior-factors map)
       (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
 
-(defun online-em--singleton-map (posterior-singletons)
-  (let ((map (make-hash-table :test #'equal)))
-    (dolist (factor posterior-singletons map)
-      (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
-
 (defun online-em--initialize-statistics (bn equivalent-sample-size)
-  "Create a mirrored BN of sufficient statistics, storing counts in RULE-COUNT."
+  "Create a mirrored BN of sufficient statistics, storing counts in RULE-COUNT.
+If a rule already has a count, preserve it; otherwise initialize from alpha*P(rule)."
   (let* ((bn-copy (copy-bn bn))
          (alpha (float equivalent-sample-size 1.0d0)))
     (loop for cpd being the elements of (car bn-copy) do
       (loop for rule being the elements of (rule-based-cpd-rules cpd) do
         (setf (rule-count rule)
-              (* alpha (float (rule-probability rule) 1.0d0)))))
+              (if (numberp (rule-count rule))
+                  (float (rule-count rule) 1.0d0)
+                  (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
 
 (defun online-em--apply-decay (stats-cpd eta)
@@ -138,14 +136,14 @@ Groups rules by parent-context and normalizes counts within each group."
       (compile-bn-priors bn)
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
-(defun online-em--replace-latents-with-posteriors (bn latent-vars posterior-singletons)
-  (let ((singleton-map (online-em--singleton-map posterior-singletons))
+(defun online-em--replace-latents-with-posteriors (bn latent-vars posterior-factors)
+  (let ((posterior-map (online-em--posterior-map posterior-factors))
         (new-factors (map 'vector #'copy-rule-based-cpd (car bn))))
     (loop for i from 0 below (length new-factors)
           for cpd = (aref new-factors i)
           for dep-id = (rule-based-cpd-dependent-id cpd)
           when (member dep-id latent-vars :test #'equal) do
-            (let ((posterior (gethash dep-id singleton-map)))
+            (let ((posterior (gethash dep-id posterior-map)))
               (when posterior
                 (setf (aref new-factors i) (copy-rule-based-cpd posterior)))))
     (cons new-factors (cdr bn))))
@@ -167,11 +165,12 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                          step-size)
                      1.0d0))
          (evidence (online-em--coerce-evidence datum))
-         (posterior-singletons nil))
-    (multiple-value-bind (posterior-factors singleton-factors)
+         (posterior-factors nil))
+    (multiple-value-bind (inferred-factors ignored-singleton-factors)
         (online-em--infer theta evidence :lr lr)
-      (setq posterior-singletons singleton-factors)
-      (let ((posterior-map (online-em--posterior-map posterior-factors)))
+      (declare (ignore ignored-singleton-factors))
+      (setq posterior-factors inferred-factors)
+      (let ((posterior-map (online-em--posterior-map inferred-factors)))
         (loop for i from 0 below (array-dimension (car theta) 0) do
           (let* ((cpd (aref (car theta) i))
                  (stats-cpd (aref (car stats) i))
@@ -185,9 +184,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
     (let ((result-bn (if return-learned-cpds
                          theta
                          (copy-bn bn))))
-      (if posterior-singletons
+      (if posterior-factors
           (online-em--replace-latents-with-posteriors
-           result-bn latent-vars posterior-singletons)
+           result-bn latent-vars posterior-factors)
           result-bn))))
 
 (defun online-em (bn latent-vars datum &rest keys &key &allow-other-keys)

@@ -223,7 +223,7 @@
 	   (format t "~%bindings:~%~S" bindings))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
 	 (when (rule-based-cpd-latent-p p-cpd)
-	   (setq latent-vars (cons (rule-based-cpd-dependent-id p-cpd) latent-vars)))
+	   (pushnew (rule-based-cpd-dependent-id p-cpd) latent-vars :test #'equal))
          (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
            (format t "~%p-cpd after subst:")
 	   (print-cpd p-cpd))

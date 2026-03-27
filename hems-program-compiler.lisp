@@ -712,7 +712,8 @@
       )
     ;;(modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)
     (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery
-			  :compute-new-rules-p (not (rule-based-cpd-latent-p cpd2)))
+			  :compute-new-rules-p  (and (not (rule-based-cpd-latent-p cpd2))
+						     (not (rule-based-cpd-latent-p cpd2))))
     ))
 
 #| Sort a list of factors in topological order. Returns a list. |#

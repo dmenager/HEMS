@@ -266,9 +266,18 @@
         (let ((evidence-factors
                 (make-array 0 :fill-pointer t :adjustable t)))
           (loop
+	    with remove and keep
             for factor being the elements of p
-            when (not (rule-based-cpd-latent-p factor)) do
-              (vector-push-extend factor evidence-factors))
+            when (not (rule-based-cpd-latent-p factor))
+	      do
+		 (loop
+		   for ident being the hash-keys of (rule-based-cpd-identifiers factor)
+		   do
+		      (if (equal ident (rule-based-cpd-dependent-id factor))
+			  (setq keep (list ident))
+			  (setq remove (cons ident remove))))
+		 (setq factor (factor-operation factor keep remove '+))
+		 (vector-push-extend factor evidence-factors))
           (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))))
         new-nodes)))
 

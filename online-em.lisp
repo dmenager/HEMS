@@ -134,18 +134,26 @@ Groups rules by parent-context and normalizes counts within each group."
 (defun online-em-infer (bn evidence &key (lr 1.0d0))
   (multiple-value-bind (bn-with-priors priors)
       (compile-bn-priors bn)
+    (setq bn-with-priors (copy-bn bn-with-priors))
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
 (defun online-em-replace-latents-with-posteriors (bn latent-vars posterior-factors)
   (let ((posterior-map (online-em-posterior-map posterior-factors))
         (new-factors (map 'vector #'copy-rule-based-cpd (car bn))))
-    (loop for i from 0 below (length new-factors)
-          for cpd = (aref new-factors i)
-          for dep-id = (rule-based-cpd-dependent-id cpd)
-          when (member dep-id latent-vars :test #'equal) do
-            (let ((posterior (gethash dep-id posterior-map)))
-              (when posterior
-                (setf (aref new-factors i) (copy-rule-based-cpd posterior)))))
+    (when t
+      (format t "~%latent vars:~%~S" latent-vars)
+      (print-bn bn))
+    (loop
+      for i from 0 below (length new-factors)
+      for cpd = (aref new-factors i)
+      for dep-id = (rule-based-cpd-dependent-id cpd)
+      when (member dep-id latent-vars :test #'equal)
+	do
+           (let ((posterior (gethash dep-id posterior-map)))
+	     (when posterior
+	       (setf (rule-based-cpd-count posterior)
+		     (rule-based-cpd-count (aref new-factors i)))
+               (setf (aref new-factors i) (copy-rule-based-cpd posterior)))))
     (cons new-factors (cdr bn))))
 
 (defun online-em-step (bn latent-vars datum

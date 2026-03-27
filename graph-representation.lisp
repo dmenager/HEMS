@@ -4866,9 +4866,13 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	   (setq phi1 (disambiguate-rules phi1 phi2))
 	   (setq phi2 (disambiguate-rules phi2 phi1))
-	   (if (not (rule-based-cpd-latent-p phi1))
-               (values (factor-filter phi2 phi1 '+) phi1)
-	       (values phi2 phi1))))))
+	   (cond ((not (rule-based-cpd-latent-p phi1))
+		  (values (factor-filter phi2 phi1 '+) phi1))
+		 (t
+		  (setf (rule-based-cpd-count phi2)
+			(+ (rule-based-cpd-count phi2)
+			   (rule-based-cpd-count phi1)))
+		  (values phi2 phi1)))))))
 
 #| Perform a marginalize operation over rules.
    Returns: Array of CPD rules|#
@@ -6493,6 +6497,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					      :latent-p (rule-based-cpd-latent-p factor)
                                               :rules rules
                                               :singleton-p t
+					      :count (rule-based-cpd-count factor) 
                                               :lvl lvl))
       collect (get-local-coverings (update-cpd-rules singleton (rule-based-cpd-rules singleton))) into singletons
       finally (setq singleton-factors-list singletons)
@@ -6597,6 +6602,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :latent-p (rule-based-cpd-latent-p factor)
 						 :rules rules
 						 :singleton-p t
+						 :count (rule-based-cpd-count factor)
 						 :lvl (rule-based-cpd-lvl factor)))
 		  (when nil
 		    (format t "~%final rules:~%~A" rules))

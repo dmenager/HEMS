@@ -263,8 +263,14 @@
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
     (setq new-nodes (cons new-nodes (make-graph-edges new-nodes)))
     (if latent-vars
-	(online-em new-nodes latent-vars (cons p (make-array 0)))
-	new-nodes)))
+        (let ((evidence-factors
+                (make-array 0 :fill-pointer t :adjustable t)))
+          (loop
+            for factor being the elements of p
+            when (not (rule-based-cpd-latent-p factor)) do
+              (vector-push-extend factor evidence-factors))
+          (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))))
+        new-nodes)))
 
 #| Update distribution over states |#
 

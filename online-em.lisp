@@ -28,41 +28,41 @@
   #'(lambda (n)
       (/ 1.0d0 (sqrt (max 1 n)))))
 
-(defun online-em--hash-keys-sorted (hash)
+(defun online-em-hash-keys-sorted (hash)
   (sort (loop for k being the hash-keys of hash collect k)
         #'string< :key #'prin1-to-string))
 
-(defun online-em--normalize-idx-list (idxs)
+(defun online-em-normalize-idx-list (idxs)
   (sort (copy-list (if (listp idxs) idxs (list idxs))) #'<))
 
-(defun online-em--rule-key (rule)
+(defun online-em-rule-key (rule)
   "Canonical key for a rule: sorted ((identifier . sorted-idx-list) ...)."
-  (loop for ident in (online-em--hash-keys-sorted (rule-conditions rule))
+  (loop for ident in (online-em-hash-keys-sorted (rule-conditions rule))
         collect (cons ident
-                      (online-em--normalize-idx-list
+                      (online-em-normalize-idx-list
                        (copy-list (gethash ident (rule-conditions rule)))))))
 
-(defun online-em--parent-key (cpd rule)
+(defun online-em-parent-key (cpd rule)
   "Canonical parent-context key for RULE in CPD."
   (let ((dep-id (rule-based-cpd-dependent-id cpd)))
     (remove dep-id
-            (online-em--rule-key rule)
+            (online-em-rule-key rule)
             :test #'equal
             :key #'car)))
 
-(defun online-em--rule-map (cpd)
+(defun online-em-rule-map (cpd)
   "Map canonical rule key -> rule object for CPD."
   (let ((map (make-hash-table :test #'equal)))
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
-          do (setf (gethash (online-em--rule-key rule) map) rule))
+          do (setf (gethash (online-em-rule-key rule) map) rule))
     map))
 
-(defun online-em--posterior-map (posterior-factors)
+(defun online-em-posterior-map (posterior-factors)
   (let ((map (make-hash-table :test #'equal)))
     (dolist (factor posterior-factors map)
       (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
 
-(defun online-em--initialize-statistics (bn equivalent-sample-size)
+(defun online-em-initialize-statistics (bn equivalent-sample-size)
   "Create a mirrored BN of sufficient statistics, storing counts in RULE-COUNT.
 If a rule already has a count, preserve it; otherwise initialize from alpha*P(rule)."
   (let* ((bn-copy (copy-bn bn))
@@ -75,35 +75,35 @@ If a rule already has a count, preserve it; otherwise initialize from alpha*P(ru
                   (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
 
-(defun online-em--apply-decay (stats-cpd eta)
+(defun online-em-apply-decay (stats-cpd eta)
   (loop for rule being the elements of (rule-based-cpd-rules stats-cpd) do
     (setf (rule-count rule)
           (* (- 1.0d0 eta)
              (float (or (rule-count rule) 0.0d0) 1.0d0)))))
 
-(defun online-em--accumulate-posterior (stats-cpd posterior-cpd eta)
+(defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta)
   "Blend posterior ESS for POSTERIOR-CPD into STATS-CPD."
-  (let ((posterior-map (online-em--rule-map posterior-cpd)))
+  (let ((posterior-map (online-em-rule-map posterior-cpd)))
     (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
-          for key = (online-em--rule-key rule)
+          for key = (online-em-rule-key rule)
           for post-rule = (gethash key posterior-map)
           when post-rule do
             (incf (rule-count rule)
                   (* eta (float (rule-probability post-rule) 1.0d0))))))
 
-(defun online-em--m-step-cpd (cpd stats-cpd &key (min-prob 1.0d-12))
+(defun online-em-m-step-cpd (cpd stats-cpd &key (min-prob 1.0d-12))
   "Closed-form local M-step for a rule-based CPD.
 Groups rules by parent-context and normalizes counts within each group."
   (let ((totals (make-hash-table :test #'equal))
-        (stats-map (online-em--rule-map stats-cpd)))
+        (stats-map (online-em-rule-map stats-cpd)))
     (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
-          for parent-key = (online-em--parent-key stats-cpd rule) do
+          for parent-key = (online-em-parent-key stats-cpd rule) do
             (incf (gethash parent-key totals 0.0d0)
                   (float (rule-count rule) 1.0d0)))
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
-          for key = (online-em--rule-key rule)
+          for key = (online-em-rule-key rule)
           for stats-rule = (gethash key stats-map)
-          for parent-key = (online-em--parent-key cpd rule)
+          for parent-key = (online-em-parent-key cpd rule)
           for denom = (gethash parent-key totals 0.0d0) do
             (setf (rule-probability rule)
                   (cond ((and stats-rule (> denom 0.0d0))
@@ -115,7 +115,7 @@ Groups rules by parent-context and normalizes counts within each group."
                        :check-prob-sum nil)
      (rule-based-cpd-dependent-id cpd))))
 
-(defun online-em--coerce-evidence (datum)
+(defun online-em-coerce-evidence (datum)
   "Convert DATUM into evidence expected by LOOPY-BELIEF-PROPAGATION."
   (cond
     ((hash-table-p datum)
@@ -123,7 +123,7 @@ Groups rules by parent-context and normalizes counts within each group."
     ((and (consp datum)
           (or (arrayp (car datum))
               (listp (car datum))))
-     (online-em--coerce-evidence (car datum)))
+     (online-em-coerce-evidence (car datum)))
     ((arrayp datum)
      (make-observations datum))
     ((listp datum)
@@ -131,13 +131,13 @@ Groups rules by parent-context and normalizes counts within each group."
     (t
      (error "Unsupported online-EM datum format: ~S" datum))))
 
-(defun online-em--infer (bn evidence &key (lr 1.0d0))
+(defun online-em-infer (bn evidence &key (lr 1.0d0))
   (multiple-value-bind (bn-with-priors priors)
       (compile-bn-priors bn)
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
-(defun online-em--replace-latents-with-posteriors (bn latent-vars posterior-factors)
-  (let ((posterior-map (online-em--posterior-map posterior-factors))
+(defun online-em-replace-latents-with-posteriors (bn latent-vars posterior-factors)
+  (let ((posterior-map (online-em-posterior-map posterior-factors))
         (new-factors (map 'vector #'copy-rule-based-cpd (car bn))))
     (loop for i from 0 below (length new-factors)
           for cpd = (aref new-factors i)
@@ -159,33 +159,33 @@ Groups rules by parent-context and normalizes counts within each group."
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
   (let* ((theta (copy-bn bn))
-         (stats (online-em--initialize-statistics theta equivalent-sample-size))
+         (stats (online-em-initialize-statistics theta equivalent-sample-size))
          (eta (float (if (functionp step-size)
                          (funcall step-size iteration)
                          step-size)
                      1.0d0))
-         (evidence (online-em--coerce-evidence datum))
+         (evidence (online-em-coerce-evidence datum))
          (posterior-factors nil))
     (multiple-value-bind (inferred-factors ignored-singleton-factors)
-        (online-em--infer theta evidence :lr lr)
+        (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
-      (let ((posterior-map (online-em--posterior-map inferred-factors)))
+      (let ((posterior-map (online-em-posterior-map inferred-factors)))
         (loop for i from 0 below (array-dimension (car theta) 0) do
           (let* ((cpd (aref (car theta) i))
                  (stats-cpd (aref (car stats) i))
                  (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
                                          posterior-map)))
-            (online-em--apply-decay stats-cpd eta)
+            (online-em-apply-decay stats-cpd eta)
             (when posterior-cpd
-              (online-em--accumulate-posterior stats-cpd posterior-cpd eta))
+              (online-em-accumulate-posterior stats-cpd posterior-cpd eta))
             (setf (aref (car theta) i)
-                  (online-em--m-step-cpd cpd stats-cpd))))))
+                  (online-em-m-step-cpd cpd stats-cpd))))))
     (let ((result-bn (if return-learned-cpds
                          theta
                          (copy-bn bn))))
       (if posterior-factors
-          (online-em--replace-latents-with-posteriors
+          (online-em-replace-latents-with-posteriors
            result-bn latent-vars posterior-factors)
           result-bn))))
 
@@ -222,7 +222,7 @@ I have added a :latent-p flag to the rule-based cpd so now I can set it whenever
 
 1. After doing EM, we want to replace the latent variables with their inferred posterior distributions. These variables may not be singleton factors, but it appears that they are assumed to be singletons in the code.
 
-2. when initializing the stats  variable in (online-em-one-step), it appears that (online-em--initialize-statistics) sets the rule counts of each rule is to 1.0. Why not use the existing rule counts that are already in the cpd?
+2. when initializing the stats  variable in (online-em-one-step), it appears that (online-em-initialize-statistics) sets the rule counts of each rule is to 1.0. Why not use the existing rule counts that are already in the cpd?
 
 3. After doing EM, do the rule counts of the inferred latent variables mean anything? Check (loopy-belief-propagation) and see that we convert all the rule counts to 1 before calibrationg the model. Will this even be a problem if the posterior counts for latent variables are always 1? I'm not sure that this will cause an issue.
 

@@ -223,14 +223,19 @@
 		 (arguments (getf node-def :arguments))
 		 (generator (getf node-def :generator))
 		 (functional-type (getf node-def :type))
+		 (latent-p (getf node-def :latent-p))
 		 (parents)
 		 (parent-domains)
-		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments :type))
+		 (supported-keywords '(:value :kb-concept-id :values :generator :arguments :type :latent-p))
 		 (node-def-kwds (remove-if-not #'keywordp node-def))
 		 (unsupported))
 	     (setq unsupported (set-difference node-def-kwds supported-keywords :test #'equal))
 	     (when unsupported
 	       (error "Unsupported keywords ~{~A~^, ~} in node defintion list." unsupported))
+	     (when (not (typep latent-p 'boolean))
+	       (error ":latent-p argument takes boolean value, T or NIL.~%Received: ~S" latent-p))
+	     (when (not (typep (second node-def) 'symbol))
+	       (error "Declared node name takes takes Symbol value.~%Received: ~S" (second node-def)))	     
 	     (setq type (symbol-name (second node-def)))
 	     (setf (gethash 0 vars) type)
 	     (setq type-identifier (symbol-name (gensym (concatenate 'string type "_"))))
@@ -240,6 +245,7 @@
 	     (setf (rule-based-cpd-dependent-var cpd) type)
 	     (setf (rule-based-cpd-vars cpd) vars)
 	     (setf (rule-based-cpd-types cpd) types-hash)
+	     (setf (rule-based-cpd-latent-p cpd) latent-p)
 	     (cond ((or (null concept-id)
 			(stringp concept-id))
 		    (if concept-id
@@ -252,6 +258,8 @@
 		    (error "Unsupported value, ~A, for concept id in node definition list.~%Received type ~A. Expected string." concept-id (type-of concept-id))))
 	     (setf (rule-based-cpd-concept-blocks cpd) (make-hash-table))
 	     (setf (rule-based-cpd-count cpd) 1)
+	     (cond ((and (not values) latent-p)
+		    (error "Cannot declare latent variable without a known domain.~%Must specify :values field.~%Received: ~S" node-def)))
 	     (cond ((or (string-equal "FUNCTIONAL-NODE" (symbol-name (car node-def))))
 		    (cond ((or value values)
 			   (error "'value' and 'values' fields not supported for functional node definition.~%Received: ~S" node-def))
@@ -425,10 +433,15 @@
 			(string-equal "STATE-NODE" (symbol-name (car node-def)))
 			(string-equal "ACTION-NODE" (symbol-name (car node-def))))
 		    (cond ((and (null value)
-				(null values))
+				(null values)
+				(null latent-p))
 			   (error "No 'value' or 'values' field found in node definition list.~%Received: ~S" node-def))
 			  ((and value values)
-			   (error "Found 'value' and 'values' field in node definition, but they are mutually exclusive.~%Received: ~S" node-def)))
+			   (error "Found 'value' and 'values' field in node definition, but they are mutually exclusive.~%Received: ~S" node-def))
+			  (generator
+			   (error "Found :generator keyword found in non-functional node.~%Received: ~S" node-def))
+			  (arguments
+			   (error "Found :arguments keyword found in non-functional node.~%Received: ~S" node-def)))
 		    (cond ((and (symbolp (second node-def))
 				(not (null (second node-def))))
 			   (cond ((equal "PERCEPT-NODE" (symbol-name (car node-def)))
@@ -456,16 +469,16 @@
 			   |#
 			   (when value
 			     (cond ((string-equal "NA" value)
-				    (setq values (list (list :value value :probability 1 :count 1))))
+				    (setq values (list (list :value value :probability (if latent-p NIL 1) :count (if latent-p nil 1)))))
 				   (t
-				    (setq values (list (list :value "NA" :probability 0 :count 0)
-						       (list :value value :probability 1 :count 1))))))
+				    (setq values (list (list :value "NA" :probability (if latent-p nil 0) :count (if latent-p nil 0))
+						       (list :value value :probability (if latent-p nil 1) :count (If latent-p nil 1)))))))
 			   (when (not (member "NA" values :test #'equal :key #'(lambda (lst)
 										 (getf lst :value))))
 			     (let (count-val)
 			       (if (numberp (getf (car values) :count))
 				   (setq count-val 0))
-			       (setq values (cons (list :value "NA" :probability 0 :count count-val) values))))
+			       (setq values (cons (list :value "NA" :probability (if latent-p nil 0) :count (if latent-p nil count-val)) values))))
 			   (loop
 			     with greatest-idx-val = 1 and idx
 			     with rule and rules = (make-array (length values))
@@ -474,9 +487,13 @@
 			     ;;for idx from 0
 			     do
 				(setq value (getf value-list :value))
-				(setq prob (getf value-list :probability))
-				(setq count (getf value-list :count))
-				(if (equal "NA" value)
+				(cond (latent-p
+				       (setq prob (/ 1 (length values)))
+				       (setq count 1))
+				      (t
+				       (setq prob (getf value-list :probability))
+				       (setq count (getf value-list :count))))
+			        (if (equal "NA" value)
 				    (setq idx 0)
 				    (setq idx greatest-idx-val))
 				(setq rule (make-rule
@@ -694,7 +711,8 @@
       ;;(break)
       )
     ;;(modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)
-    (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery)
+    (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery
+			  :compute-new-rules-p (not (rule-based-cpd-latent-p cpd2)))
     ))
 
 #| Sort a list of factors in topological order. Returns a list. |#

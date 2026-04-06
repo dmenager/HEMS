@@ -4563,7 +4563,7 @@
 
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
-  (when t nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil (and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))
@@ -4598,7 +4598,8 @@
                 (format t "~%multiple rules fire for assignment:~%~S~%cpd:~%~S~%compatible rules:~%~S" index-rule cpd compatible-rule)
                 (error "check compatible rules"))
                ((and (not check-uniqueness)
-                     (= -1 (reduce #'(lambda(x y) (if (= x y) x -1))
+                     (= -1 (reduce #'(lambda(x y)
+				       (if (= x y) x -1))
                                    (mapcar #'(lambda (rule)
                                                (rule-probability rule))
                                            compatible-rule)))
@@ -5732,7 +5733,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;;DHM: I don't call (factor-filter) here because it gives a new cpd that isn't the same as 'cpd. new cpd rules don't get properly added to bn. Not sure why.
 	;;     The following code, which was the original implementation, works.
 	(setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
-	(when (string-equal "ACUITY_240" (rule-based-cpd-dependent-id cpd))
+	(when nil (string-equal "ACUITY_240" (rule-based-cpd-dependent-id cpd))
 	      (format t "~%~%modified cpd:~%")
 	      (print-cpd cpd)
 	      (format t "~%modifier cpd:~%")

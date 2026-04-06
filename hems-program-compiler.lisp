@@ -680,11 +680,20 @@
 			  finally
 			     (return remove))
 			'+
-			:rule-count
-			(- (length
-			    (gethash 0 (rule-based-cpd-var-value-block-map cpd1)))
-			   1))))
-    (when nil (equal "BELIEF_225" (rule-based-cpd-dependent-id cpd2))
+			:rule-count 0))
+	res)
+    (loop
+      for r being the elements of (rule-based-cpd-rules marginal-cpd1)
+      do
+	 (loop
+	   named finder
+	   for r2 being the elements of (rule-based-cpd-rules cpd1)
+	   when (and (compatible-rule-p r r2 nil nil)
+		     (> (rule-count r2) 0))
+	     do
+		(setf (rule-count r) (rule-count r2))
+		(return-from finder nil)))
+    (when nil (equal "ACUITY" (rule-based-cpd-dependent-var cpd2))
       (format t "~%~%cpd1")
       (print-cpd cpd1)
       (format t "~%marginalized cpd1")
@@ -694,7 +703,12 @@
       ;;(break)
       )
     ;;(modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery)
-    (modify-cpd cpd2 cpd1 :causal-discovery causal-discovery)
+    (setq res (modify-cpd cpd2 marginal-cpd1 :causal-discovery causal-discovery))
+    (when nil (equal "ACUITY" (rule-based-cpd-dependent-var res))
+      (format t "~%result:")
+      (print-cpd res)
+      (break)
+      )
     ))
 
 #| Sort a list of factors in topological order. Returns a list. |#
@@ -974,6 +988,8 @@
 					      (not (null (third ,args))))
 					 (when (not  (gethash (third ,args) ,hash))
 					   (error "Reference to ~A before assignment in statement ~{~A~^ ~}." (third ,args) (subseq ,args 0 3)))
+					 (when nil
+					   (format t "~%adding edge: ~A --> ~A" (first ,args) (third ,args)))
 					 (directed-edge (gethash (first ,args) ,hash)
 							(gethash (third ,args) ,hash)
 							,causal-discovery))
@@ -1043,4 +1059,30 @@
 (hems:compile-program nil 
 c2 = (percept-node b :value "10")
 c2 ~ (discrete-uniform :values ("10" "20" "30" "40")))
+
+(compile-program nil
+temperature = (percept-node temperature :value "normal")
+heartrate = (percept-node heartrate :value "normal")
+resprate = (percept-node resprate :value "normal")
+o2sat = (percept-node o2sat :value "normal")
+sbp = (percept-node sbp :value "high")
+dbp = (percept-node dbp :value "normal")
+pain = (percept-node pain :value "0")
+chiefcomplaint = (percept-node chiefcomplaint :value "None")
+acuity = (percept-node acuity :value "delayed")
+complications_of_surgical_and_medical_care_not_elsewhere_classified = (relation-node complications_of_surgical_and_medical_care_not_elsewhere_classified :value "T" :kb-concept-id "INJURY")
+death = (percept-node death :value "Nil")
+shock = (relation-node shock :value "T")
+temperature --> acuity
+shock --> heartrate
+heartrate --> acuity
+resprate --> acuity
+o2sat --> acuity
+shock --> sbp
+sbp --> acuity
+shock --> dbp
+dbp --> acuity
+pain --> acuity
+chiefcomplaint --> acuity
+shock --> death)
 |#

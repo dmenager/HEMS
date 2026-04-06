@@ -132,51 +132,34 @@ Groups rules by parent-context and normalizes counts within each group."
       (compile-bn-priors bn)
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
-(defun online-em-affected-vars (bn latent-vars)
-  "Return LATENT-VARS and every descendant variable reachable via child links."
-  (loop
-    with queue = (copy-list latent-vars)
-    with affected = (make-hash-table :test #'equal)
-    with factors = (car bn)
-    while queue
-    for current = (pop queue)
-    for current-cpd = (find current factors :key #'rule-based-cpd-dependent-id :test #'equal)
-    do
-       (unless (gethash current affected)
-         (setf (gethash current affected) t)
-         (when current-cpd
-           (loop
-             for child-cpd being the elements of factors
-             for child-id = (rule-based-cpd-dependent-id child-cpd)
-             when (and (not (gethash child-id affected))
-                       (cpd-child-p child-cpd current-cpd))
-               do
-                  (push child-id queue))))
-    finally
-       (return affected)))
+(defun online-em-latent-set (latent-vars)
+  "Create a set for fast latent-variable membership checks."
+  (let ((latent-set (make-hash-table :test #'equal)))
+    (dolist (latent-var latent-vars latent-set)
+      (setf (gethash latent-var latent-set) t))))
 
 (defun online-em-replace-latents-with-posteriors (bn posterior-bn latent-vars)
   (loop
     with dim = (array-dimension (car bn) 0)
-    with affected-vars = (online-em-affected-vars bn latent-vars)
+    with latent-set = (online-em-latent-set latent-vars)
     with new-bn-arr = (make-array dim)
-    for i from 0 below dim 
+    for i from 0 below dim
     for cpd = (aref (car bn) i)
     for dep-id = (rule-based-cpd-dependent-id cpd)
     for posterior-cpd = (aref (car posterior-bn) i)
-    when (gethash dep-id affected-vars)
+    if (gethash dep-id latent-set)
       do
-	 (setf (rule-based-cpd-count posterior-cpd)
-	       (rule-based-cpd-count cpd))
-	 (setf (aref new-bn-arr i)
-	       (get-local-coverings
-		(update-cpd-rules posterior-cpd
-				  (rule-based-cpd-rules posterior-cpd))))
+         (setf (rule-based-cpd-count posterior-cpd)
+               (rule-based-cpd-count cpd))
+         (setf (aref new-bn-arr i)
+               (get-local-coverings
+                (update-cpd-rules posterior-cpd
+                                  (rule-based-cpd-rules posterior-cpd))))
     else
       do
-	 (setf (aref new-bn-arr i) cpd)
+         (setf (aref new-bn-arr i) cpd)
     finally
-	 (return (cons new-bn-arr (cdr bn)))))
+       (return (cons new-bn-arr (cdr bn)))))
 
 (defun online-em-step (bn latent-vars datum
                         &key
@@ -197,21 +180,10 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
          (evidence (online-em-coerce-evidence datum))
          (posterior-factors nil))
 
-    (when t
-      (format t "~%model:")
-      (print-bn theta)
-      (format t "~%evidence:~%~S" evidence)
-      (break))
     (multiple-value-bind (inferred-factors ignored-singleton-factors)
         (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
-      (when t
-	(format t "~%theta again:")
-	(print-bn theta)
-	(format t "~%inferred factors:")
-	(map nil #'print-cpd inferred-factors)
-	(break))
       (let ((posterior-map (online-em-posterior-map inferred-factors)))
         (loop for i from 0 below (array-dimension (car theta) 0) do
           (let* ((cpd (aref (car theta) i))
@@ -226,12 +198,6 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
     (let ((result-bn (if return-learned-cpds
                          theta
                          (copy-bn bn))))
-      (when t
-	(format t "~%~%theta after m-step")
-	(print-bn result-bn)
-	(format t "~%model:")
-	(print-bn bn)
-	(break))
       (online-em-replace-latents-with-posteriors
        bn result-bn latent-vars))))
 

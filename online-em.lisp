@@ -109,11 +109,7 @@ Groups rules by parent-context and normalizes counts within each group."
                   (cond ((and stats-rule (> denom 0.0d0))
                          (max min-prob (/ (float (rule-count stats-rule) 1.0d0) denom)))
                         (t min-prob))))
-    (normalize-rule-probabilities
-     (update-cpd-rules cpd (rule-based-cpd-rules cpd)
-                       :check-uniqueness nil
-                       :check-prob-sum nil)
-     (rule-based-cpd-dependent-id cpd))))
+    (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
 
 (defun online-em-coerce-evidence (datum)
   "Convert DATUM into evidence expected by LOOPY-BELIEF-PROPAGATION."
@@ -134,27 +130,29 @@ Groups rules by parent-context and normalizes counts within each group."
 (defun online-em-infer (bn evidence &key (lr 1.0d0))
   (multiple-value-bind (bn-with-priors priors)
       (compile-bn-priors bn)
-    (setq bn-with-priors (copy-bn bn-with-priors))
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
-(defun online-em-replace-latents-with-posteriors (bn latent-vars posterior-factors)
-  (let ((posterior-map (online-em-posterior-map posterior-factors))
-        (new-factors (map 'vector #'copy-rule-based-cpd (car bn))))
-    (when t
-      (format t "~%latent vars:~%~S" latent-vars)
-      (print-bn bn))
-    (loop
-      for i from 0 below (length new-factors)
-      for cpd = (aref new-factors i)
-      for dep-id = (rule-based-cpd-dependent-id cpd)
-      when (member dep-id latent-vars :test #'equal)
-	do
-           (let ((posterior (gethash dep-id posterior-map)))
-	     (when posterior
-	       (setf (rule-based-cpd-count posterior)
-		     (rule-based-cpd-count (aref new-factors i)))
-               (setf (aref new-factors i) (copy-rule-based-cpd posterior)))))
-    (cons new-factors (cdr bn))))
+(defun online-em-replace-latents-with-posteriors (bn posterior-bn latent-vars)
+  (loop
+    with dim = (array-dimension (car bn) 0)
+    with new-bn-arr = (make-array dim)
+    for i from 0 below dim 
+    for cpd = (aref (car bn) i)
+    for dep-id = (rule-based-cpd-dependent-id cpd)
+    for posterior-cpd = (aref (car posterior-bn) i)
+    when (member dep-id latent-vars :test #'equal)
+      do
+	 (setf (rule-based-cpd-count posterior-cpd)
+	       (rule-based-cpd-count cpd))
+	 (setf (aref new-bn-arr i)
+	       (get-local-coverings
+		(update-cpd-rules posterior-cpd
+				  (rule-based-cpd-rules posterior-cpd))))
+    else
+      do
+	 (setf (aref new-bn-arr i) cpd)
+    finally
+	 (return (cons new-bn-arr (cdr bn)))))
 
 (defun online-em-step (bn latent-vars datum
                         &key
@@ -174,10 +172,22 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                      1.0d0))
          (evidence (online-em-coerce-evidence datum))
          (posterior-factors nil))
+
+    (when t
+      (format t "~%model:")
+      (print-bn theta)
+      (format t "~%evidence:~%~S" evidence)
+      (break))
     (multiple-value-bind (inferred-factors ignored-singleton-factors)
         (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
+      (when t
+	(format t "~%theta again:")
+	(print-bn theta)
+	(format t "~%inferred factors:")
+	(map nil #'print-cpd inferred-factors)
+	(break))
       (let ((posterior-map (online-em-posterior-map inferred-factors)))
         (loop for i from 0 below (array-dimension (car theta) 0) do
           (let* ((cpd (aref (car theta) i))
@@ -192,10 +202,14 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
     (let ((result-bn (if return-learned-cpds
                          theta
                          (copy-bn bn))))
-      (if posterior-factors
-          (online-em-replace-latents-with-posteriors
-           result-bn latent-vars posterior-factors)
-          result-bn))))
+      (when t
+	(format t "~%~%theta after m-step")
+	(print-bn result-bn)
+	(format t "~%model:")
+	(print-bn bn)
+	(break))
+      (online-em-replace-latents-with-posteriors
+       bn result-bn latent-vars))))
 
 (defun online-em (bn latent-vars datum &rest keys &key &allow-other-keys)
   "Main entry point.

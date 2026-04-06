@@ -132,15 +132,39 @@ Groups rules by parent-context and normalizes counts within each group."
       (compile-bn-priors bn)
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
 
+(defun online-em-affected-vars (bn latent-vars)
+  "Return LATENT-VARS and every descendant variable reachable via child links."
+  (loop
+    with queue = (copy-list latent-vars)
+    with affected = (make-hash-table :test #'equal)
+    with factors = (car bn)
+    while queue
+    for current = (pop queue)
+    for current-cpd = (find current factors :key #'rule-based-cpd-dependent-id :test #'equal)
+    do
+       (unless (gethash current affected)
+         (setf (gethash current affected) t)
+         (when current-cpd
+           (loop
+             for child-cpd being the elements of factors
+             for child-id = (rule-based-cpd-dependent-id child-cpd)
+             when (and (not (gethash child-id affected))
+                       (cpd-child-p child-cpd current-cpd))
+               do
+                  (push child-id queue))))
+    finally
+       (return affected)))
+
 (defun online-em-replace-latents-with-posteriors (bn posterior-bn latent-vars)
   (loop
     with dim = (array-dimension (car bn) 0)
+    with affected-vars = (online-em-affected-vars bn latent-vars)
     with new-bn-arr = (make-array dim)
     for i from 0 below dim 
     for cpd = (aref (car bn) i)
     for dep-id = (rule-based-cpd-dependent-id cpd)
     for posterior-cpd = (aref (car posterior-bn) i)
-    when (member dep-id latent-vars :test #'equal)
+    when (gethash dep-id affected-vars)
       do
 	 (setf (rule-based-cpd-count posterior-cpd)
 	       (rule-based-cpd-count cpd))

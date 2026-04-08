@@ -98,28 +98,34 @@ If a rule already has a count, preserve it; otherwise initialize from alpha*P(ru
 (defun online-em-m-step-cpd (cpd posterior-cpd &key (min-prob 1.0d-12))
   "Closed-form local M-step for a rule-based CPD.
 Groups rules by parent-context and normalizes counts within each group."
-  (let ((totals (make-hash-table :test #'equal))
-        (posterior-map (online-em-rule-map posterior-cpd)))
-    ;; I think this totals computation is incorrect. Rules that belong to the same row/parent context can have different rule conditions. For example, the parent context X=1 is compatible with this other context X=1, A=2. But it appears that this version only updates the totals for exact matches to the rule parent context. (normalize-cpd-rules) handles this, but I'm unsure of how much I need to cut/copy/abstract out into a function to reuse that code here.
-    (loop
-	  for rule being the elements of (rule-based-cpd-rules posterior-cpd)
-          for parent-key = (online-em-parent-key posterior-cpd rule)
-	  do
-          (incf (gethash parent-key totals 0.0d0)
-                (float (rule-count rule) 1.0d0)))
-    (loop
-	  for rule being the elements of (rule-based-cpd-rules cpd)
-          for key = (online-em-rule-key rule)
-          for posterior-rule = (gethash key stats-map)
-          for parent-key = (online-em-parent-key cpd rule)
-          for denom = (gethash parent-key totals 0.0d0)
-	  do
-            (setf (rule-probability rule)
-                  (cond ((and posterior-rule (> denom 0.0d0))
-                         (max min-prob (/ (float (rule-count posterior-rule) 1.0d0) denom)))
-                        (t min-prob)))
-	  (setf (rule-count rule) denom))
-    (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
+  (if (null posterior-cpd)
+      cpd
+      (labels ((parent-setting-rule (rule phi)
+                 (let ((parent-setting (copy-cpd-rule rule)))
+                   (remhash (rule-based-cpd-dependent-id phi)
+                            (rule-conditions parent-setting))
+                   parent-setting))
+               (normalization-total (rule)
+                 (let ((parent-setting (parent-setting-rule rule cpd)))
+                   (loop for posterior-rule being the elements of (rule-based-cpd-rules posterior-cpd)
+                         when (compatible-rule-p posterior-rule parent-setting
+                                                 posterior-cpd posterior-cpd)
+                         sum (float (or (rule-count posterior-rule) 0.0d0) 1.0d0)))))
+        (let ((posterior-map (online-em-rule-map posterior-cpd)))
+          (loop
+            for rule being the elements of (rule-based-cpd-rules cpd)
+            for key = (online-em-rule-key rule)
+            for posterior-rule = (gethash key posterior-map)
+            for denom = (normalization-total rule)
+            do
+               (setf (rule-probability rule)
+                     (cond ((and posterior-rule (> denom 0.0d0))
+                            (max min-prob
+                                 (/ (float (or (rule-count posterior-rule) 0.0d0) 1.0d0)
+                                    denom)))
+                           (t min-prob)))
+               (setf (rule-count rule) denom)))
+        (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))))
 
 (defun online-em-coerce-evidence (datum)
   "Convert DATUM into evidence expected by LOOPY-BELIEF-PROPAGATION."

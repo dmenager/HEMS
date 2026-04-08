@@ -76,39 +76,49 @@ If a rule already has a count, preserve it; otherwise initialize from alpha*P(ru
     bn-copy))
 
 (defun online-em-apply-decay (stats-cpd eta)
-  (loop for rule being the elements of (rule-based-cpd-rules stats-cpd) do
-    (setf (rule-count rule)
-          (* (- 1.0d0 eta)
-             (float (or (rule-count rule) 0.0d0) 1.0d0)))))
+  (loop
+	for rule being the elements of (rule-based-cpd-rules stats-cpd)
+	do
+	(setf (rule-count rule)
+              (* (- 1.0d0 eta)
+		 (float (or (rule-count rule) 0.0d0) 1.0d0)))))
 
 (defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta)
   "Blend posterior ESS for POSTERIOR-CPD into STATS-CPD."
   (let ((posterior-map (online-em-rule-map posterior-cpd)))
-    (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
+    (loop
+	  for rule being the elements of (rule-based-cpd-rules stats-cpd)
           for key = (online-em-rule-key rule)
           for post-rule = (gethash key posterior-map)
-          when post-rule do
-            (incf (rule-count rule)
-                  (* eta (float (rule-probability post-rule) 1.0d0))))))
+          when post-rule
+	  do
+          (incf (rule-count rule)
+                (* eta (float (rule-probability post-rule) 1.0d0))))))
 
-(defun online-em-m-step-cpd (cpd stats-cpd &key (min-prob 1.0d-12))
+(defun online-em-m-step-cpd (cpd posterior-cpd &key (min-prob 1.0d-12))
   "Closed-form local M-step for a rule-based CPD.
 Groups rules by parent-context and normalizes counts within each group."
   (let ((totals (make-hash-table :test #'equal))
-        (stats-map (online-em-rule-map stats-cpd)))
-    (loop for rule being the elements of (rule-based-cpd-rules stats-cpd)
-          for parent-key = (online-em-parent-key stats-cpd rule) do
-            (incf (gethash parent-key totals 0.0d0)
-                  (float (rule-count rule) 1.0d0)))
-    (loop for rule being the elements of (rule-based-cpd-rules cpd)
+        (posterior-map (online-em-rule-map posterior-cpd)))
+    ;; I think this totals computation is incorrect. Rules that belong to the same row/parent context can have different rule conditions. For example, the parent context X=1 is compatible with this other context X=1, A=2. But it appears that this version only updates the totals for exact matches to the rule parent context. (normalize-cpd-rules) handles this, but I'm unsure of how much I need to cut/copy/abstract out into a function to reuse that code here.
+    (loop
+	  for rule being the elements of (rule-based-cpd-rules posterior-cpd)
+          for parent-key = (online-em-parent-key posterior-cpd rule)
+	  do
+          (incf (gethash parent-key totals 0.0d0)
+                (float (rule-count rule) 1.0d0)))
+    (loop
+	  for rule being the elements of (rule-based-cpd-rules cpd)
           for key = (online-em-rule-key rule)
-          for stats-rule = (gethash key stats-map)
+          for posterior-rule = (gethash key stats-map)
           for parent-key = (online-em-parent-key cpd rule)
-          for denom = (gethash parent-key totals 0.0d0) do
+          for denom = (gethash parent-key totals 0.0d0)
+	  do
             (setf (rule-probability rule)
-                  (cond ((and stats-rule (> denom 0.0d0))
-                         (max min-prob (/ (float (rule-count stats-rule) 1.0d0) denom)))
-                        (t min-prob))))
+                  (cond ((and posterior-rule (> denom 0.0d0))
+                         (max min-prob (/ (float (rule-count posterior-rule) 1.0d0) denom)))
+                        (t min-prob)))
+	  (setf (rule-count rule) denom))
     (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd))))
 
 (defun online-em-coerce-evidence (datum)
@@ -171,8 +181,9 @@ Groups rules by parent-context and normalizes counts within each group."
   "Run a single online EM update using one DATUM.
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
+  ;; Don't need stats bn since sufficient statistics are computed during inference and stored as posterior-factors
   (let* ((theta (copy-bn bn))
-         (stats (online-em-initialize-statistics theta equivalent-sample-size))
+         ;;(stats (online-em-initialize-statistics theta equivalent-sample-size))
          (eta (float (if (functionp step-size)
                          (funcall step-size iteration)
                          step-size)
@@ -184,17 +195,30 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
         (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
+      (when t
+	(format t "~%E step:")
+	(loop
+	  for posterior-factor in posterior-factors
+	  do
+	     (print-cpd posterior-factor)))
       (let ((posterior-map (online-em-posterior-map inferred-factors)))
-        (loop for i from 0 below (array-dimension (car theta) 0) do
-          (let* ((cpd (aref (car theta) i))
-                 (stats-cpd (aref (car stats) i))
-                 (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
-                                         posterior-map)))
-            (online-em-apply-decay stats-cpd eta)
-            (when posterior-cpd
-              (online-em-accumulate-posterior stats-cpd posterior-cpd eta))
-            (setf (aref (car theta) i)
-                  (online-em-m-step-cpd cpd stats-cpd))))))
+        (loop
+	      for i from 0 below (array-dimension (car theta) 0)
+	      do
+              (let* ((cpd (aref (car theta) i))
+                     ;;(stats-cpd (aref (car stats) i))
+                     (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
+                                             posterior-map)))
+		#|
+		(online-em-apply-decay stats-cpd eta)
+		(when posterior-cpd
+		  (online-em-accumulate-posterior stats-cpd posterior-cpd eta))
+		|#
+		(setf (aref (car theta) i)
+                      (online-em-m-step-cpd cpd posterior-cpd))))))
+    (when t
+      (format t "~%M step:")
+      (print-bn theta))
     (let ((result-bn (if return-learned-cpds
                          theta
                          (copy-bn bn))))

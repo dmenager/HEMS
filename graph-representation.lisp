@@ -4941,9 +4941,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 		      (funcall op
 			       (rule-probability marginalized-rule)
 			       (rule-probability r)))
-		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
-		      (format t "~%  updated marginalized rule:")
-		      (print-cpd-rule marginalized-rule :indent "        "))
+	       (when (not (rule-based-cpd-singleton-p phi))
+		 (setf (rule-count marginalized-rule)
+		       (funcall op
+				(rule-count marginalized-rule)
+				(rule-count r))))
+	       (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
+		     (format t "~%  updated marginalized rule:")
+		     (print-cpd-rule marginalized-rule :indent "        "))
 	   finally
 	      (loop
 		with new-vv

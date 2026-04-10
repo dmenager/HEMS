@@ -108,8 +108,7 @@ Groups rules by parent-context and normalizes counts within each group."
                (normalization-total (rule)
                  (let ((parent-setting (parent-setting-rule rule cpd)))
                    (loop for posterior-rule being the elements of (rule-based-cpd-rules posterior-cpd)
-                         when (compatible-rule-p posterior-rule parent-setting
-                                                 posterior-cpd posterior-cpd)
+                         when (compatible-rule-p posterior-rule parent-setting nil nil)
                          sum (float (or (rule-count posterior-rule) 0.0d0) 1.0d0)))))
         (let ((posterior-map (online-em-rule-map posterior-cpd)))
           (loop
@@ -236,6 +235,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
 
 If DATUM is a sequence, each element is processed incrementally and the final BN is
 returned. If DATUM is a single example (including cons form), one update is run."
+  (when t
+    (format t "~%updating bn:")
+    (print-bn bn))
   (cond((or (null datum)
             (hash-table-p datum)
             (arrayp datum)

@@ -4169,7 +4169,7 @@
 ;; new-rules = accumulator for the created filtered rules
 ;; rule-keys = hash table (test #'equal) for keeping track of visited rules
 ;; new-cpd = cpd to store the filtered rules
-(defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t))
+(defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t) (preserve-rule-counts nil))
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -4407,8 +4407,12 @@
 		  (cond (same-rule-p
 			 ;; for each rule condtion, there is a non-empty subset of the values of that conditions
 			 (setq new-rule (rule-filter r1 r2 op num-rules new-conditions compute-count-p))
-			 (when (rule-based-cpd-singleton-p phi2)
-                           (setf (rule-count new-rule) nil)))
+			 (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p phi2))
+                                (setf (rule-count new-rule) (rule-count r1)))
+			       ((and preserve-rule-counts (rule-based-cpd-singleton-p phi1))
+                                (setf (rule-count new-rule) (rule-count r2)))
+			       ((rule-based-cpd-singleton-p phi2)
+                                (setf (rule-count new-rule) nil))))
 			((compatible-rule-p r1 r2 phi1 phi2)
 			 ;; compatible, but not the same rule
 			 (let (new-r2s
@@ -4425,8 +4429,12 @@
 			   (cond ((and (null missing-r1-attributes)
 				       (null missing-r2-attributes))
 				  (setq new-rule (rule-filter r1 r2 op num-rules new-conditions compute-count-p))
-				  (when (rule-based-cpd-singleton-p phi2)
-				    (setf (rule-count new-rule) nil)))
+				  (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p phi2))
+					 (setf (rule-count new-rule) (rule-count r1)))
+					((and preserve-rule-counts (rule-based-cpd-singleton-p phi1))
+					 (setf (rule-count new-rule) (rule-count r2)))
+					((rule-based-cpd-singleton-p phi2)
+					 (setf (rule-count new-rule) nil))))
 				 ((and missing-r1-attributes
 				       (null missing-r2-attributes))
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
@@ -4437,21 +4445,25 @@
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s))
 				  (let (new-phi1 new-phi2)
-				    (setq new-phi1 (make-rule-based-cpd
-						    :identifiers (rule-based-cpd-identifiers phi1)
-						    :dependent-id (rule-based-cpd-dependent-id phi1)
-						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
-				    (setq new-phi2 (make-rule-based-cpd
-						    :identifiers (rule-based-cpd-identifiers phi2)
-						    :dependent-id (rule-based-cpd-dependent-id phi2)
-						    :rules (make-array 1 :initial-contents (list r2))))
+					    (setq new-phi1 (make-rule-based-cpd
+							    :identifiers (rule-based-cpd-identifiers phi1)
+							    :dependent-id (rule-based-cpd-dependent-id phi1)
+							    :singleton-p (rule-based-cpd-singleton-p phi1)
+							    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
+					    (setq new-phi2 (make-rule-based-cpd
+							    :identifiers (rule-based-cpd-identifiers phi2)
+							    :dependent-id (rule-based-cpd-dependent-id phi2)
+							    :singleton-p (rule-based-cpd-singleton-p phi2)
+							    :rules (make-array 1 :initial-contents (list r2))))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
 					       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))
 				 ((and (null missing-r1-attributes)
 				       missing-r2-attributes)
 				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
@@ -4465,10 +4477,12 @@
 				    (setq new-phi1 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi1)
 						    :dependent-id (rule-based-cpd-dependent-id phi1)
+						    :singleton-p (rule-based-cpd-singleton-p phi1)
 						    :rules (make-array 1 :initial-contents (list r1))))
 				    (setq new-phi2 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
+						    :singleton-p (rule-based-cpd-singleton-p phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
@@ -4476,7 +4490,9 @@
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))
 				 ((and missing-r1-attributes
 				       missing-r2-attributes)
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
@@ -4493,10 +4509,12 @@
 				    (setq new-phi1 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi1)
 						    :dependent-id (rule-based-cpd-dependent-id phi1)
+						    :singleton-p (rule-based-cpd-singleton-p phi1)
 						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
 				    (setq new-phi2 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
+						    :singleton-p (rule-based-cpd-singleton-p phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
@@ -4504,7 +4522,9 @@
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))))))
 		  (when new-rule
 		    (setf (gethash num-rules (rule-block new-rule)) num-rules)
 		    (setq rule-key (polynomial-encoding new-rule))
@@ -4658,7 +4678,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi1 = conditional probability density 1
 ;; phi2 = conditional probability density 2
 ;; op = operation to apply to factor (* or +)
-(defun factor-filter (phi1 phi2 &optional (op '*))
+(defun factor-filter (phi1 phi2 &optional (op '*) (preserve-rule-counts nil))
   (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
          (return-from factor-filter phi2))
         ((and (numberp phi2) (rule-based-cpd-p phi1))
@@ -4700,7 +4720,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 						     (rule-based-cpd-latent-p phi2))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
-    (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi :compute-count-p (if (or (eq op '+) (eq op #'+)) t))))
+    (setq new-rules
+	  (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi
+					 :compute-count-p (if (or (eq op '+) (eq op #'+)) t)
+					 :preserve-rule-counts preserve-rule-counts)))
     (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
       (format t "~%~%filtered rules before compression:")
       (mapcar #'print-cpd-rule new-rules)
@@ -5117,7 +5140,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; factors = array of conditional probability densities
 ;; edges = array of edges in factor graph
 ;; messages = messages from factor to factor
-(defun compute-belief (i factors edges messages)
+(defun compute-belief (i factors edges messages &key (preserve-rule-counts nil))
   (loop
     with factor
     for k from 0 below (array-dimension edges 0)
@@ -5139,7 +5162,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     do
 	       (format t "~%neighbor ~d:" idx )
 	       (print-cpd nbr)))
-       (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (setq factor
+	     (reduce #'(lambda (phi1 phi2)
+			 (factor-filter phi1 phi2 '* preserve-rule-counts))
+		     (cons (aref factors i) nbrs)))
        (when nil
 	 (format t "~%intermediate belief:")
 	 (print-cpd factor))
@@ -5249,7 +5275,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
-(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil))
+(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil) (preserve-rule-counts nil))
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
@@ -5340,9 +5366,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 when (rule-based-cpd-singleton-p (aref factors i))
-                   collect (compute-belief i factors edges messages) into posterior-marginals
+                   collect (compute-belief i factors edges messages
+					   :preserve-rule-counts preserve-rule-counts) into posterior-marginals
 		  else if (not singleton-only)
-		    collect (compute-belief i factors edges messages) into posterior-distribution
+		    collect (compute-belief i factors edges messages
+					    :preserve-rule-counts preserve-rule-counts) into posterior-distribution
 		  finally
 		     (return (values posterior-distribution posterior-marginals))))
                ((or (eq op 'max)
@@ -6416,7 +6444,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil))
+(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil) (preserve-rule-counts nil))
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -6440,7 +6468,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   for rule being the elements of (rule-based-cpd-rules new-factor)
 	   do
 	      (setf (rule-probability rule) (float (rule-probability rule)))
-	      (when (> (rule-count rule) 0)
+	      (when (and (not preserve-rule-counts)
+			 (> (rule-count rule) 0))
 		(setf (rule-count rule) 1)))
 	 (setq factors-list (cons new-factor factors-list))
       finally
@@ -6625,7 +6654,9 @@ Roughly based on (Koller and Friedman, 2009) |#
       (format t "~%~%initial messages:~%~A" initial-messages)
       (break)
       )
-    (calibrate-factor-graph all-factors op edges initial-messages lr :singleton-only singleton-only)))
+    (calibrate-factor-graph all-factors op edges initial-messages lr
+			    :singleton-only singleton-only
+			    :preserve-rule-counts preserve-rule-counts)))
 
 #| Move assignment by 1 |#
 
@@ -18551,4 +18582,3 @@ nil nil)
    :COUNT NIL
    :LVL 1))
 |#
-

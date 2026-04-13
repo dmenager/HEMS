@@ -145,7 +145,9 @@ Groups rules by parent-context and normalizes counts within each group."
 (defun online-em-infer (bn evidence &key (lr 1.0d0))
   (multiple-value-bind (bn-with-priors priors)
       (compile-bn-priors bn)
-    (loopy-belief-propagation bn-with-priors evidence priors '+ lr :singleton-only nil)))
+    (loopy-belief-propagation bn-with-priors evidence priors '+ lr
+                              :singleton-only nil
+                              :preserve-rule-counts t)))
 
 (defun online-em-latent-set (latent-vars)
   "Create a set for fast latent-variable membership checks."

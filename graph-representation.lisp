@@ -4895,9 +4895,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   (cond ((not (rule-based-cpd-latent-p phi1))
 		  (values (factor-filter phi2 phi1 '+) phi1))
 		 (t
-		  (setf (rule-based-cpd-count phi2)
-			(+ (rule-based-cpd-count phi2)
-			   (rule-based-cpd-count phi1)))
+		  (let ((increment (rule-based-cpd-count phi1)))
+		    (setf (rule-based-cpd-count phi2)
+			  (+ (rule-based-cpd-count phi2)
+			     increment))
+		    (loop
+		      for schema-rule being the elements of (rule-based-cpd-rules phi2)
+		      for matching-event-rules = (get-compatible-rules phi1 phi2 schema-rule :find-all t)
+		      when (some #'(lambda (event-rule)
+				     (> (rule-probability event-rule) 0))
+				 matching-event-rules)
+			do
+			   (incf (rule-count schema-rule) increment)))
 		  (values phi2 phi1)))))))
 
 #| Perform a marginalize operation over rules.
@@ -4907,7 +4916,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; vars = list variables to keep
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
-(defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1))
+(defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1) (preserve-rule-counts nil))
   (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	(format t "~%marginalizing phi:")
 	(print-cpd phi)
@@ -4966,9 +4975,12 @@ Roughly based on (Koller and Friedman, 2009) |#
 			       (rule-probability r)))
 	       (when (not (rule-based-cpd-singleton-p phi))
 		 (setf (rule-count marginalized-rule)
-		       (funcall op
-				(rule-count marginalized-rule)
-				(rule-count r))))
+		       (if preserve-rule-counts
+			   (max (or (rule-count marginalized-rule) 0)
+				(or (rule-count r) 0))
+			   (funcall op
+				    (rule-count marginalized-rule)
+				    (rule-count r)))))
 	       (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 		     (format t "~%  updated marginalized rule:")
 		     (print-cpd-rule marginalized-rule :indent "        "))
@@ -5047,9 +5059,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; vars = variables to keep
 ;; op = operation to apply to factor (max or +)
 ;; rule-count = count for each marginalized rule
-(defun operate-factor (phi vars op &key (rule-count 1))
+(defun operate-factor (phi vars op &key (rule-count 1) (preserve-rule-counts nil))
   (setf (rule-based-cpd-rules phi)
-	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi) :rule-count rule-count))
+	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi)
+				       :rule-count rule-count
+				       :preserve-rule-counts preserve-rule-counts))
   (update-cpd-rules phi (rule-based-cpd-rules phi)))
 
 #| Generate intermediate factor by marginalization or max |#
@@ -5058,11 +5072,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; keep = vars to keep
 ;; remove = variables to op out
 ;; op = operation to apply to factor (max or +)
-(defun factor-operation (phi keep remove op &key (rule-count 1))
+(defun factor-operation (phi keep remove op &key (rule-count 1) (preserve-rule-counts nil))
   (cond ((null remove)
-	 (operate-factor phi keep op :rule-count rule-count))
+	 (operate-factor phi keep op
+			 :rule-count rule-count
+			 :preserve-rule-counts preserve-rule-counts))
 	(t
-	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op :rule-count rule-count))))
+	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op
+			   :rule-count rule-count
+			   :preserve-rule-counts preserve-rule-counts))))
 
 #| Prepare factor graph for message passing |#
 
@@ -5090,7 +5108,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; messages = messages from factor to factor
 ;; sepset = separating set preserving the Running Intersection Property
-(defun send-message (i j factors op edges messages sepset)
+(defun send-message (i j factors op edges messages sepset &key (preserve-rule-counts nil))
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
   (when t nil (and (= i 8) (= j 13))
@@ -5126,13 +5144,16 @@ Roughly based on (Koller and Friedman, 2009) |#
 		 (format t "~%non-cpd neighbor: ~S" nbr))
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
-    (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
+    (setq reduced (reduce #'(lambda (phi1 phi2)
+			      (factor-filter phi1 phi2 '* preserve-rule-counts))
+			  (cons (aref factors i) nbrs-minus-j)))
     (when t nil (and (= i 8) (= j 13))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
               (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
-    (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
+    (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op
+		      :preserve-rule-counts preserve-rule-counts)))
 
 #| Compute final belief of a factor |#
 
@@ -5304,7 +5325,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      (if nil ;;(and (= j 6) (= k 15))
 		  (setq print-special* t)
 		  (setq print-special* nil))
-              (setq new-message (send-message j k factors op edges messages sepset))
+              (setq new-message (send-message j k factors op edges messages sepset
+					       :preserve-rule-counts preserve-rule-counts))
 	      ;; when doing sum-product message passing, normalize after getting the message
 	      (when (or (eq #'+ op) (eq '+ op))
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))

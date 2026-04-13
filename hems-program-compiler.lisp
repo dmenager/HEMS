@@ -489,7 +489,8 @@
 				(setq value (getf value-list :value))
 				(cond (latent-p
 				       (setq prob (/ 1 (length values)))
-				       (setq count (length values)))
+				       ;;(setq count (length values))
+				       (setq count 1))
 				      (t
 				       (setq prob (getf value-list :probability))
 				       (setq count (getf value-list :count))))

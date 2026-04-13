@@ -355,37 +355,13 @@ Groups rules by parent-context and normalizes counts within each group."
                     :epsilon epsilon))))
   bn)
 
-(defun online-em-replace-latents-with-posteriors (bn posterior-bn latent-vars)
-  (loop
-    with dim = (array-dimension (car bn) 0)
-    with latent-set = (online-em-latent-set latent-vars)
-    with new-bn-arr = (make-array dim)
-    for i from 0 below dim
-    for cpd = (aref (car bn) i)
-    for dep-id = (rule-based-cpd-dependent-id cpd)
-    for posterior-cpd = (aref (car posterior-bn) i)
-    if (gethash dep-id latent-set)
-      do
-         (setf (rule-based-cpd-count posterior-cpd)
-               (rule-based-cpd-count cpd))
-         (setf (aref new-bn-arr i)
-               (get-local-coverings
-                (update-cpd-rules posterior-cpd
-                                  (rule-based-cpd-rules posterior-cpd))))
-    else
-      do
-         (setf (aref new-bn-arr i) cpd)
-    finally
-       (return (cons new-bn-arr (cdr bn)))))
-
 (defun online-em-step (bn latent-vars datum
                         &key
                           (step-size 1.0d0)
                           (lr 1.0d0)
                           (equivalent-sample-size 1.0d0)
                           (latent-perturbation 1.0d-3)
-                          (iteration 1)
-                          (return-learned-cpds t))
+                          (iteration 1))
   "Run a single online EM update using one DATUM.
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
@@ -434,11 +410,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
     (when t
       (format t "~%M step:")
       (print-bn theta))
-    (let ((result-bn (if return-learned-cpds
-                         theta
-                         (copy-bn bn))))
-      (online-em-replace-latents-with-posteriors
-       bn result-bn latent-vars))))
+    theta))
 
 (defun online-em (bn latent-vars datum &rest keys &key &allow-other-keys)
   "Main entry point.

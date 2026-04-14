@@ -231,8 +231,10 @@
 	       )
 	 (multiple-value-setq (node p-cpd)
            (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
-	 (when (rule-based-cpd-latent-p p-cpd)
-	   (setq latent-vars (cons (rule-based-cpd-dependent-id p-cpd) latent-vars)))
+	 (when (or (rule-based-cpd-latent-p p-cpd)
+                   (rule-based-cpd-latent-p node))
+           (setf (rule-based-cpd-latent-p node) t)
+	   (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
 	 (setf (aref p p-match) p-cpd)
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
 	   (format t "~%filtered p-match:")
@@ -253,6 +255,8 @@
 	       (print-cpd (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
          (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
+         (when (rule-based-cpd-latent-p node)
+           (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
          (when nil (and (equal "ROAD_DIST_1_219" (rule-based-cpd-dependent-id (aref q unmatched-q))))
                (format t "~%node:~%")
 	       (print-cpd node)
@@ -266,18 +270,18 @@
         (let ((evidence-factors
                 (make-array 0 :fill-pointer t :adjustable t)))
           (loop
-	    with remove and keep
             for factor being the elements of p
             when (not (rule-based-cpd-latent-p factor))
 	      do
-		 (loop
-		   for ident being the hash-keys of (rule-based-cpd-identifiers factor)
-		   do
-		      (if (equal ident (rule-based-cpd-dependent-id factor))
-			  (setq keep (list ident))
-			  (setq remove (cons ident remove))))
-		 (setq factor (factor-operation factor keep remove '+))
-		 (vector-push-extend factor evidence-factors))
+                 (let (remove keep)
+                   (loop
+                     for ident being the hash-keys of (rule-based-cpd-identifiers factor)
+                     do
+                        (if (equal ident (rule-based-cpd-dependent-id factor))
+                            (setq keep (list ident))
+                            (setq remove (cons ident remove))))
+                   (setq factor (factor-operation factor keep remove '+))
+                   (vector-push-extend factor evidence-factors)))
           (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))))
         new-nodes)))
 

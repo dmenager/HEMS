@@ -488,14 +488,16 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
 	      do
               (let* ((cpd (aref (car theta) i))
                      (stats-cpd (aref (car stats) i))
+                     (latent-identifiers
+                       (online-em-latent-identifiers cpd latent-set))
                      (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
                                              posterior-map)))
-                (declare (ignore cpd))
-                (online-em-accumulate-posterior
-                 stats-cpd posterior-cpd eta posterior-map latent-set)
-                (setf (aref (car theta) i)
-                      (online-em-normalize-statistics-cpd
-                       stats-cpd :latent-set latent-set))))))
+                (when latent-identifiers
+                  (online-em-accumulate-posterior
+                   stats-cpd posterior-cpd eta posterior-map latent-set)
+                  (setf (aref (car theta) i)
+                        (online-em-normalize-statistics-cpd
+                         stats-cpd :latent-set latent-set)))))))
     (when t
       (format t "~%M step:")
       (print-bn theta))

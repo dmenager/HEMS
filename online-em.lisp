@@ -104,6 +104,7 @@
                                          zero-counts
                                          normalize-probabilities)
   (let ((row-sums (make-hash-table :test #'equal))
+        (row-rules (make-hash-table :test #'equal))
         row-key)
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
           do
@@ -389,6 +390,7 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
                                              latent-set
                                              (min-prob 1.0d-12))
   (let ((row-sums (make-hash-table :test #'equal))
+        (row-rules (make-hash-table :test #'equal))
         row-key)
     (when latent-set
       (online-em-zero-latent-na-rules stats-cpd latent-set :zero-counts t))
@@ -396,6 +398,7 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
       for rule being the elements of (rule-based-cpd-rules stats-cpd)
       do
          (setq row-key (online-em-parent-key stats-cpd rule))
+         (push rule (gethash row-key row-rules))
          (incf (gethash row-key row-sums 0.0d0)
                (float (or (rule-count rule) 0.0d0) 1.0d0)))
     (loop
@@ -414,6 +417,29 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
                       (max min-prob (/ numerator denom)))
                      (t 0.0d0)))
          (setf (rule-count rule) denom))
+    (loop
+      for rules being the hash-values of row-rules
+      for positive-rules = (remove-if-not
+                            #'(lambda (rule)
+                                (> (float (rule-probability rule) 1.0d0)
+                                   0.0d0))
+                            rules)
+      for probability-sum = (loop for rule in positive-rules
+                                  sum (float (rule-probability rule) 1.0d0))
+      when (> probability-sum 0.0d0)
+        do
+           (loop
+             with remaining = 1.0d0
+             for tail on positive-rules
+             for rule = (car tail)
+             do
+                (cond ((null (cdr tail))
+                       (setf (rule-probability rule) remaining))
+                      (t
+                       (setf (rule-probability rule)
+                             (/ (float (rule-probability rule) 1.0d0)
+                                probability-sum))
+                       (decf remaining (rule-probability rule))))))
     (update-cpd-rules stats-cpd (rule-based-cpd-rules stats-cpd)
                       :check-prob-sum nil)))
 

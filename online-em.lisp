@@ -408,9 +408,11 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
                            (online-em-rule-contains-latent-na-p
                             rule stats-cpd latent-set))
                       0.0d0)
+                     ((<= numerator 0.0d0)
+                      0.0d0)
                      ((> denom 0.0d0)
                       (max min-prob (/ numerator denom)))
-                     (t min-prob)))
+                     (t 0.0d0)))
          (setf (rule-count rule) denom))
     (update-cpd-rules stats-cpd (rule-based-cpd-rules stats-cpd)
                       :check-prob-sum nil)))

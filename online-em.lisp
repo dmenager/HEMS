@@ -86,6 +86,18 @@
                     (online-em-na-value-p (car label-value)))
             collect (cdr label-value))))
 
+(defun online-em-na-domain-labels (cpd ident)
+  (let* ((idx (gethash ident (rule-based-cpd-identifiers cpd)))
+         (vvbm (and idx (gethash idx (rule-based-cpd-var-value-block-map cpd)))))
+    (loop for entry in vvbm
+          for label-value = (if (and (consp entry)
+                                     (consp (car entry)))
+                                (car entry)
+                                entry)
+          when (and (consp label-value)
+                    (online-em-na-value-p (car label-value)))
+            collect (car label-value))))
+
 (defun online-em-rule-contains-na-p (rule cpd ident)
   (let ((na-values (online-em-na-domain-values cpd ident)))
     (and na-values
@@ -158,6 +170,52 @@
                             (online-em-cpd-domain cpd ident))
                         evidence-values
                         :test #'equal)))))))
+
+(defun online-em-dependent-cpd (bn ident)
+  (loop for cpd being the elements of (car bn)
+        when (equal ident (rule-based-cpd-dependent-id cpd))
+          return cpd))
+
+(defun online-em-rule-mass (rule)
+  (* (float (or (rule-count rule) 0.0d0) 1.0d0)
+     (float (or (rule-probability rule) 0.0d0) 1.0d0)))
+
+(defun online-em-parent-assignment-count (bn parent-ident parent-values)
+  (let ((parent-cpd (online-em-dependent-cpd bn parent-ident))
+        (query-rule (make-rule :conditions (make-hash-table :test #'equal))))
+    (when parent-cpd
+      (setf (gethash parent-ident (rule-conditions query-rule))
+            parent-values)
+      (loop for parent-rule being the elements of (rule-based-cpd-rules parent-cpd)
+            when (compatible-rule-p parent-rule query-rule nil nil)
+              sum (online-em-rule-mass parent-rule)))))
+
+(defun online-em-parent-row-count (bn cpd rule latent-set)
+  (loop
+    with counts = nil
+    for ident being the hash-keys of (rule-conditions rule)
+    for values = (gethash ident (rule-conditions rule))
+    unless (or (equal ident (rule-based-cpd-dependent-id cpd))
+               (gethash ident latent-set))
+      do
+         (let ((count (online-em-parent-assignment-count bn ident values)))
+           (when (> count 0.0d0)
+             (push count counts)))
+    finally
+       (return (if counts
+                   (reduce #'min counts)
+                   0.0d0))))
+
+(defun online-em-augment-evidence-with-na (bn evidence latent-set)
+  (loop for cpd being the elements of (car bn)
+        for dep-id = (rule-based-cpd-dependent-id cpd)
+        for na-label = (first (online-em-na-domain-labels cpd dep-id))
+        when (and na-label
+                  (not (gethash dep-id latent-set))
+                  (null (gethash dep-id evidence)))
+          do
+             (setf (gethash dep-id evidence)
+                   (list (cons na-label 1.0d0)))))
 
 (defun online-em-rule-explicit-over-identifiers-p (rule identifiers)
   (every #'(lambda (ident)
@@ -387,11 +445,19 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
 
 (defun online-em-normalize-statistics-cpd (stats-cpd
                                            &key
+                                             bn
                                              latent-set
                                              (min-prob 1.0d-12))
-  (let ((row-sums (make-hash-table :test #'equal))
+  (let ((pre-zero-row-sums (make-hash-table :test #'equal))
+        (row-sums (make-hash-table :test #'equal))
         (row-rules (make-hash-table :test #'equal))
         row-key)
+    (loop
+      for rule being the elements of (rule-based-cpd-rules stats-cpd)
+      do
+         (setq row-key (online-em-parent-key stats-cpd rule))
+         (incf (gethash row-key pre-zero-row-sums 0.0d0)
+               (float (or (rule-count rule) 0.0d0) 1.0d0)))
     (when latent-set
       (online-em-zero-latent-na-rules stats-cpd latent-set :zero-counts t))
     (loop
@@ -401,6 +467,44 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
          (push rule (gethash row-key row-rules))
          (incf (gethash row-key row-sums 0.0d0)
                (float (or (rule-count rule) 0.0d0) 1.0d0)))
+    (when latent-set
+      (loop
+        for row-key being the hash-keys of row-rules
+          using (hash-value rules)
+        for row-sum = (gethash row-key row-sums 0.0d0)
+        for pre-zero-row-sum = (gethash row-key pre-zero-row-sums 0.0d0)
+        for parent-row-sum = (if (and bn
+                                      rules
+                                      (gethash (rule-based-cpd-dependent-id stats-cpd)
+                                               latent-set))
+                                 (online-em-parent-row-count
+                                  bn stats-cpd (first rules) latent-set)
+                                 0.0d0)
+        for seed-row-sum = (max pre-zero-row-sum parent-row-sum)
+        for viable-rules = (remove-if
+                            #'(lambda (rule)
+                                (online-em-rule-contains-latent-na-p
+                                 rule stats-cpd latent-set))
+                            rules)
+        when (and (<= row-sum 0.0d0)
+                  (> seed-row-sum 0.0d0)
+                  viable-rules)
+          do
+             (let ((weight-sum (loop for rule in viable-rules
+                                     sum (max 0.0d0
+                                              (float (rule-probability rule)
+                                                     1.0d0)))))
+               (loop for rule in viable-rules
+                     for weight = (if (> weight-sum 0.0d0)
+                                      (/ (max 0.0d0
+                                              (float (rule-probability rule)
+                                                     1.0d0))
+                                         weight-sum)
+                                      (/ 1.0d0 (length viable-rules)))
+                     do
+                        (setf (rule-count rule)
+                              (* seed-row-sum weight)))
+               (setf (gethash row-key row-sums) seed-row-sum))))
     (loop
       for rule being the elements of (rule-based-cpd-rules stats-cpd)
       for numerator = (float (or (rule-count rule) 0.0d0) 1.0d0)
@@ -534,22 +638,25 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                          step-size)
                      1.0d0))
          (evidence (online-em-coerce-evidence datum))
-         (stats (online-em-initialize-statistics
-                 theta equivalent-sample-size eta evidence))
+         (latent-set (online-em-latent-set latent-vars))
+         stats
          (posterior-factors nil))
+    (online-em-augment-evidence-with-na theta evidence latent-set)
+    (setq stats
+          (online-em-initialize-statistics
+           theta equivalent-sample-size eta evidence))
 
     (multiple-value-bind (inferred-factors ignored-singleton-factors)
         (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
-      (when t
+      (when nil
 	(format t "~%E step:")
 	(loop
 	  for posterior-factor in posterior-factors
 	  do
 	     (print-cpd posterior-factor)))
-      (let ((posterior-map (online-em-posterior-map inferred-factors))
-            (latent-set (online-em-latent-set latent-vars)))
+      (let ((posterior-map (online-em-posterior-map inferred-factors)))
         (loop
 	      for i from 0 below (array-dimension (car theta) 0)
 	      do
@@ -564,8 +671,8 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                    stats-cpd posterior-cpd eta posterior-map latent-set)
                   (setf (aref (car theta) i)
                         (online-em-normalize-statistics-cpd
-                         stats-cpd :latent-set latent-set)))))))
-    (when t
+                         stats-cpd :bn stats :latent-set latent-set)))))))
+    (when nil
       (format t "~%M step:")
       (print-bn theta))
     theta))
@@ -575,7 +682,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
 
 If DATUM is a sequence, each element is processed incrementally and the final BN is
 returned. If DATUM is a single example (including cons form), one update is run."
-  (when t
+  (when nil
     (format t "~%updating bn:")
     (print-bn bn))
   (cond((or (null datum)

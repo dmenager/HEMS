@@ -125,6 +125,39 @@
                           (gethash row-key row-sums)))))))
   cpd)
 
+(defun online-em-label-index (cpd ident label)
+  (let* ((idx (gethash ident (rule-based-cpd-identifiers cpd)))
+         (vvbm (and idx (gethash idx (rule-based-cpd-var-value-block-map cpd)))))
+    (loop for entry in vvbm
+          for label-value = (if (and (consp entry)
+                                     (consp (car entry)))
+                                (car entry)
+                                entry)
+          when (and (consp label-value)
+                    (equal (car label-value) label))
+            return (cdr label-value))))
+
+(defun online-em-evidence-indexes (cpd ident evidence)
+  (loop for (label . probability) in (gethash ident evidence)
+        for idx = (online-em-label-index cpd ident label)
+        when (and idx (> (float probability 1.0d0) 0.0d0))
+          collect idx))
+
+(defun online-em-rule-compatible-with-evidence-p (rule cpd evidence)
+  (let ((dep-id (rule-based-cpd-dependent-id cpd)))
+    (loop for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+          always
+             (or (equal ident dep-id)
+                 (let ((evidence-values
+                         (and evidence
+                              (online-em-evidence-indexes cpd ident evidence))))
+                   (or (null evidence-values)
+                       (intersection
+                        (or (gethash ident (rule-conditions rule))
+                            (online-em-cpd-domain cpd ident))
+                        evidence-values
+                        :test #'equal)))))))
+
 (defun online-em-rule-explicit-over-identifiers-p (rule identifiers)
   (every #'(lambda (ident)
              (let ((values (gethash ident (rule-conditions rule))))
@@ -281,7 +314,10 @@
     (dolist (factor posterior-factors map)
       (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
 
-(defun online-em-initialize-statistics (bn equivalent-sample-size current-sample-weight)
+(defun online-em-initialize-statistics (bn
+                                        equivalent-sample-size
+                                        current-sample-weight
+                                        evidence)
   "Create a mirrored BN of sufficient statistics, storing numerator counts in RULE-COUNT.
 Existing rule counts are row support, so convert them to rule mass by multiplying
 by the current probability. If a rule has no count, initialize from alpha*P(rule)."
@@ -293,7 +329,10 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
               (if (numberp (rule-count rule))
                   (* (max 0.0d0
                           (- (float (rule-count rule) 1.0d0)
-                             current-sample-weight))
+                             (if (online-em-rule-compatible-with-evidence-p
+                                  rule cpd evidence)
+                                 current-sample-weight
+                                 0.0d0)))
                      (float (rule-probability rule) 1.0d0))
                   (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
@@ -466,9 +505,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                          (funcall step-size iteration)
                          step-size)
                      1.0d0))
-         (stats (online-em-initialize-statistics
-                 theta equivalent-sample-size eta))
          (evidence (online-em-coerce-evidence datum))
+         (stats (online-em-initialize-statistics
+                 theta equivalent-sample-size eta evidence))
          (posterior-factors nil))
 
     (multiple-value-bind (inferred-factors ignored-singleton-factors)

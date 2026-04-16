@@ -1,4 +1,4 @@
-(load "/home/david/quicklisp/setup.lisp")
+(load (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname)))
 (ql:quickload :hems)
 
 (defpackage :hems-rule-compression-regression

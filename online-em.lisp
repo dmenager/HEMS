@@ -376,23 +376,36 @@
 (defun online-em-initialize-statistics (bn
                                         equivalent-sample-size
                                         current-sample-weight
-                                        evidence)
+                                        evidence
+                                        &key
+                                          (current-sample-already-counted-p nil)
+                                          (decay-statistics-p t))
   "Create a mirrored BN of sufficient statistics, storing numerator counts in RULE-COUNT.
 Existing rule counts are row support, so convert them to rule mass by multiplying
-by the current probability. If a rule has no count, initialize from alpha*P(rule)."
+by the current probability. If a rule has no count, initialize from alpha*P(rule).
+When CURRENT-SAMPLE-ALREADY-COUNTED-P is true, remove the incoming observation's
+observed support before adding the posterior ESS, preserving the merge path where
+the new case has already been folded into the BN counts. When DECAY-STATISTICS-P
+is true, apply the online EM recurrence S_t = (1 - eta_t) S_{t-1} before adding
+eta_t times the current posterior ESS."
   (let* ((bn-copy (copy-bn bn))
          (alpha (float equivalent-sample-size 1.0d0)))
     (loop for cpd being the elements of (car bn-copy) do
       (loop for rule being the elements of (rule-based-cpd-rules cpd) do
         (setf (rule-count rule)
               (if (numberp (rule-count rule))
-                  (* (max 0.0d0
-                          (- (float (rule-count rule) 1.0d0)
-                             (if (online-em-rule-compatible-with-evidence-p
-                                  rule cpd evidence)
-                                 current-sample-weight
-                                 0.0d0)))
-                     (float (rule-probability rule) 1.0d0))
+                  (let ((old-count
+                          (max 0.0d0
+                               (- (float (rule-count rule) 1.0d0)
+                                  (if (and current-sample-already-counted-p
+                                           (online-em-rule-compatible-with-evidence-p
+                                            rule cpd evidence))
+                                      current-sample-weight
+                                      0.0d0)))))
+                    (* (if decay-statistics-p
+                           (* (- 1.0d0 current-sample-weight) old-count)
+                           old-count)
+                       (float (rule-probability rule) 1.0d0)))
                   (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
 
@@ -624,7 +637,10 @@ by the current probability. If a rule has no count, initialize from alpha*P(rule
                           (lr 1.0d0)
                           (equivalent-sample-size 1.0d0)
                           (latent-perturbation 5.0d-2)
-                          (iteration 1))
+                          (iteration 1)
+                          (current-sample-already-counted-p nil)
+                          (decay-statistics-p t)
+                          (update-latent-child-cpds-p t))
   "Run a single online EM update using one DATUM.
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
@@ -644,7 +660,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
     (online-em-augment-evidence-with-na theta evidence latent-set)
     (setq stats
           (online-em-initialize-statistics
-           theta equivalent-sample-size eta evidence))
+           theta equivalent-sample-size eta evidence
+           :current-sample-already-counted-p current-sample-already-counted-p
+           :decay-statistics-p decay-statistics-p))
 
     (multiple-value-bind (inferred-factors ignored-singleton-factors)
         (online-em-infer theta evidence :lr lr)
@@ -666,7 +684,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                        (online-em-latent-identifiers cpd latent-set))
                      (posterior-cpd (gethash (rule-based-cpd-dependent-id cpd)
                                              posterior-map)))
-                (when latent-identifiers
+                (when (and latent-identifiers
+                           (or update-latent-child-cpds-p
+                               (rule-based-cpd-latent-p cpd)))
                   (online-em-accumulate-posterior
                    stats-cpd posterior-cpd eta posterior-map latent-set)
                   (setf (aref (car theta) i)

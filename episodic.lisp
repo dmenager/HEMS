@@ -205,7 +205,7 @@
 ;; bindings = variable bindings from p to q
 ;; q-first-bindings = variable bindings from q to p
 (defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings q-first-bindings)
-  (let (p q new-nodes)
+  (let (p q new-nodes latent-vars)
     (setq p (copy-factors (car ep2-bn)))
     (setq q (copy-factors (car ep1-bn)))
     (when nil
@@ -222,14 +222,20 @@
 	   (if q-match (print-cpd (aref q q-match)))
 	   (format t "~%bindings:~%~S" bindings))
          (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) bindings :deep nil))
-         (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
+	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
            (format t "~%p-cpd after subst:")
 	   (print-cpd p-cpd))
          (when (and nil print-special* (equal "SIX_483" (rule-based-cpd-dependent-id (aref p p-match))))
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                ;;(break)
 	       )
-         (setq node (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
+	 (multiple-value-setq (node p-cpd)
+           (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
+	 (when (or (rule-based-cpd-latent-p p-cpd)
+                   (rule-based-cpd-latent-p node))
+           (setf (rule-based-cpd-latent-p node) t)
+	   (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
+	 (setf (aref p p-match) p-cpd)
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
 	   (format t "~%filtered p-match:")
 	   (print-cpd node)
@@ -249,6 +255,8 @@
 	       (print-cpd (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
          (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
+         (when (rule-based-cpd-latent-p node)
+           (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
          (when nil (and (equal "ROAD_DIST_1_219" (rule-based-cpd-dependent-id (aref q unmatched-q))))
                (format t "~%node:~%")
 	       (print-cpd node)
@@ -257,7 +265,27 @@
          (setq new-nodes (nreverse (cons node (nreverse new-nodes)))))
     (setq new-nodes (topological-sort new-nodes)) ;;(sort new-nodes #'higher-lvl-cpd))
     (setq new-nodes (make-array (length new-nodes) :initial-contents new-nodes :fill-pointer t))
-    (cons new-nodes (make-graph-edges new-nodes))))
+    (setq new-nodes (cons new-nodes (make-graph-edges new-nodes)))
+    (if latent-vars
+        (let ((evidence-factors
+                (make-array 0 :fill-pointer t :adjustable t)))
+          (loop
+            for factor being the elements of p
+            when (not (rule-based-cpd-latent-p factor))
+	      do
+                 (let (remove keep)
+                   (loop
+                     for ident being the hash-keys of (rule-based-cpd-identifiers factor)
+                     do
+                        (if (equal ident (rule-based-cpd-dependent-id factor))
+                            (setq keep (list ident))
+                            (setq remove (cons ident remove))))
+                   (setq factor (factor-operation factor keep remove '+))
+                   (vector-push-extend factor evidence-factors)))
+          (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))
+                     :current-sample-already-counted-p t
+                     :decay-statistics-p nil))
+        new-nodes)))
 
 #| Update distribution over states |#
 
@@ -1593,9 +1621,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
    Second value is the retrieved event memory element. |#
 
 ;; eltm = event memory
-;; pstm = perceived objects in retrieval cue
-;; cstm = given relations in the retrieval cue
-;; cue = temporal retrieval cue ;;retrieval cue states (list (factors . edges))
+;; cue-bn = retrieval cue ;;retrieval cue states (list (factors . edges))
 ;; mode = inference mode ('+ or 'max)
 ;; lr = learning rate
 ;; observability = percent of state observable

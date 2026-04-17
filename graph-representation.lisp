@@ -63,6 +63,8 @@
 ;; step-sizes = array of number of steps to take before reaching variable's next assignment, for each variable
 ;; rules = array of rules = <context; probability, count>
 ;; concept-blocks = rule probability-block map. For each probability in rules, associate it with the rules with the same probability
+;; prior = program statements that, once compiled, generate a prior for this CPD
+;; latent-p = Flag to denote if the CPD is a latent variable or not
 ;; singleton-p = flag for whether this is a singleton cpd or not. If so, then rules represent potential fields, not probability
 ;; count = total number of times this CPD was observed
 ;; lvl = height of CPD in bayesian network
@@ -85,6 +87,7 @@
   rules
   concept-blocks
   prior
+  latent-p
   (singleton-p nil)
   count
   (lvl 1))
@@ -836,6 +839,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (copy-hash-table (rule-based-cpd-concept-blocks cpd))
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -883,6 +887,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -930,6 +935,7 @@
    :rules (map 'vector #'(lambda (rule) (copy-cpd-rule rule :count rule-counts)) (rule-based-cpd-rules cpd))
    :concept-blocks (rule-based-cpd-concept-blocks cpd)
    :prior (rule-based-cpd-prior cpd)
+   :latent-p (rule-based-cpd-latent-p cpd)
    :singleton-p (rule-based-cpd-singleton-p cpd)
    :count (rule-based-cpd-count cpd)
    :lvl (rule-based-cpd-lvl cpd)))
@@ -1888,7 +1894,7 @@
 	       finally
 		  (return conditions))))
     (check-cpd phi :check-prob-sum nil :check-uniqueness nil :check-counts nil :check-count-prob-agreement nil :check-rule-count nil)
-    (when (equal "ACUITY_300" (rule-based-cpd-dependent-id phi))
+    (when nil (equal "ACUITY_300" (rule-based-cpd-dependent-id phi))
       (format t "~%~%~%normalizing phi:")
       (print-cpd phi))
     (loop
@@ -2702,6 +2708,7 @@
            :lower-approx-var-value-block-map trunc-lower-approx-var-value-block-map
            :concept-ids trunc-cids
            :qualified-vars trunc-qvars
+	   :latent-p (rule-based-cpd-latent-p cpd)
 	   :rules (make-array 0)))
     trunc-cpd))
 
@@ -3217,13 +3224,14 @@
     (loop
       with copy-rule and padding = 0.00001
       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection = -1 and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum and best-condition-conflicts = most-positive-fixnum
-      with best-rule-block-size = most-positive-fixnum and best-rule-block-intersection = most-positive-fixnum and best-condition-block-size = most-positive-fixnum and best-condition-entropy = most-positive-fixnum and best-condition-entropy-2 = most-positive-fixnum
+      with best-rule-block-size = most-positive-fixnum and best-rule-block-intersection = most-positive-fixnum and best-condition-block-size = most-positive-fixnum and best-condition-conflicts-2 = most-positive-fixnum and best-condition-entropy = most-positive-fixnum and best-condition-entropy-2 = most-positive-fixnum
       with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
       with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
       with best-pos-condition and best-pos-rule and best-pos-info-gain = most-negative-fixnum
+      with best-pos-condition-entropy = most-positive-fixnum and best-pos-rule-block-size = most-positive-fixnum and best-pos-rule-block-intersection = most-positive-fixnum
       with best-zero-condition and best-zero-rule and best-zero-new-negs = (hash-table-count (rule-avoid-list rule)) and best-zero-uncertain = most-negative-fixnum
-      with best-zero-ub-ig = most-negative-fixnum and best-zero-ub-pos = most-negative-fixnum
-      with best-info-gain = most-negative-fixnum and best-entropy = most-negative-fixnum
+      with best-zero-info-gain = most-negative-fixnum and best-zero-ub-ig = most-negative-fixnum and best-zero-ub-pos = most-negative-fixnum
+      with best-p = most-negative-fixnum and best-info-gain = most-negative-fixnum and best-upper-bound-info-gain = most-negative-fixnum and best-entropy = most-negative-fixnum
       with best-condition-retention = most-negative-fixnum
       with best-num-constraints = -1
       with best-rule
@@ -3235,7 +3243,7 @@
 	 (setq att-blocks (car att-blocks-num-constraints))
 	 (setq num-constraints (cdr att-blocks-num-constraints))
 	 (setq certain-att-blocks (car certain-att-blocks-num-constraints))
-	 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -3248,14 +3256,18 @@
            with size-penalty and hardness
 	   with cert-conflicts and cert-redundancies and cert-g and cert-all-conflicts and cert-all-redundancies ;;and cert-all-partial-coverings
 	   with conflicts and redundancies and g and all-conflicts and all-redundancies ;;and all-partial-coverings
-	   with info-gain and new-covered-pos and new-covered-negs and covered-pos and covered-negs and new-entropy and entropy and p and q
-	   with upper-bound-info-gain and new-upper-bound-focus and upper-bound-focus
-	   with new-upper-bound-covered-pos and new-upper-bound-entropy and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p and upper-bound-q
+		   with info-gain and parent-pos and parent-neg and yes-pos and yes-neg and no-pos and no-neg
+		   with new-covered-pos and new-covered-negs and no-covered-pos and no-covered-negs and covered-pos and covered-negs and new-entropy and no-entropy and entropy and p and no-p and q
+		   with upper-bound-info-gain and new-upper-bound-focus and upper-bound-focus
+		   with upper-bound-no-pos and upper-bound-no-covered-pos and upper-bound-no-entropy and upper-bound-no-p
+		   with new-upper-bound-covered-pos and new-upper-bound-entropy and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p and upper-bound-q
+		   with condition-conflicts and condition-conflicts-2 and condition-entropy and condition-entropy-2 and condition-retention
+		   with expanding-existing-attribute-p
 	   with rule-block-intersection
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+	      (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%intersection size: ~d~%condition value in rule?:~A" condition-block intersection (hash-table-count intersection)
 			(member (cdar condition-block)
@@ -3271,6 +3283,8 @@
 		(setq copy-rule (copy-cpd-rule rule))
 		(setq condition (car condition-block))
 		(setq condition-idx (gethash (car condition) (rule-based-cpd-identifiers cpd)))
+		(setq expanding-existing-attribute-p
+		      (gethash (car condition) (rule-conditions rule)))
 		(setf (gethash (car condition)
 			       (rule-conditions copy-rule))
 		      (cons (cdr condition)
@@ -3284,7 +3298,7 @@
 			(block-difference (rule-block copy-rule)
 					  concept-block
 					  :output-hash-p t))
-		(when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		(when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
 		  (format t "~%pass 1!~%candidate new rule:~%~S" copy-rule)
 		  ;;(print-cpd-rule copy-rule)
 		  (format t "goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
@@ -3292,36 +3306,67 @@
 			  num-conflicts
 			  (hash-table-count (rule-avoid-list copy-rule))))
 		(when (and (> (hash-table-count (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) 0)
+			   (or (not expanding-existing-attribute-p)
+			       (< (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
+			       (> (hash-table-count (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
+				  (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
+			       (and (> num-conflicts 0)
+				    (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts))
+			       (and expanding-existing-attribute-p
+				    (= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
+				    (not (hash-intersection-p (rule-certain-block rule) goal))))
 			   (not (and (= (hash-table-count (rule-avoid-list rule)) 0)
 				     (< (hash-table-count (rule-certain-block copy-rule))
 					(hash-table-count (rule-certain-block rule)))))
 			   (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
 			   )
-		 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		 (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
 		       (format t "~%pass 2!"))
-		 (setq focus (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
-		 (setq new-covered-pos (hash-table-count focus))
-		 (setq new-covered-negs (hash-table-count (rule-avoid-list copy-rule)))
-		 (setq new-upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
-		 (setq new-upper-bound-covered-pos (hash-table-count new-upper-bound-focus))
-		 (setq p (handler-case
-			     (/ new-covered-pos
-				(+ new-covered-pos new-covered-negs))
-			   (error (c)
-			     0)))
-		 (setq upper-bound-p (handler-case
-					 (/ new-upper-bound-covered-pos
-					    (+ new-upper-bound-covered-pos new-covered-negs))
-				       (error (c)
-					 0)))
-		 (setq new-entropy (binary-entropy p))
-		 (setq new-upper-bound-entropy (binary-entropy upper-bound-p))
-		 (setq covered-pos (hash-table-count (hash-intersection (rule-certain-block rule) goal :output-hash-p t)))
-		 (setq covered-negs (hash-table-count (rule-avoid-list rule)))
-		 (setq upper-bound-focus (hash-intersection (rule-block rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
-		 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
-		 (setq q (handler-case
-			     (/ covered-pos 
+			 (setq parent-pos (hash-intersection (rule-certain-block rule) goal :output-hash-p t))
+			 (setq parent-neg (rule-avoid-list rule))
+			 (setq yes-pos (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
+			 (setq yes-neg (rule-avoid-list copy-rule))
+			 (setq no-pos (block-difference parent-pos yes-pos :output-hash-p t))
+			 (setq no-neg (block-difference parent-neg yes-neg :output-hash-p t))
+			 (setq focus yes-pos)
+			 (setq new-covered-pos (hash-table-count yes-pos))
+			 (setq new-covered-negs (hash-table-count yes-neg))
+			 (setq no-covered-pos (hash-table-count no-pos))
+			 (setq no-covered-negs (hash-table-count no-neg))
+			 (setq new-upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
+			 (setq new-upper-bound-covered-pos (hash-table-count new-upper-bound-focus))
+			 (setq upper-bound-focus (hash-intersection (rule-block rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
+			 (setq upper-bound-no-pos (block-difference upper-bound-focus new-upper-bound-focus :output-hash-p t))
+			 (setq upper-bound-no-covered-pos (hash-table-count upper-bound-no-pos))
+			 (setq p (handler-case
+				     (/ new-covered-pos
+					(+ new-covered-pos new-covered-negs))
+				   (error (c)
+				     0)))
+			 (setq no-p (handler-case
+					(/ no-covered-pos
+					   (+ no-covered-pos no-covered-negs))
+				      (error (c)
+					0)))
+			 (setq upper-bound-p (handler-case
+						 (/ new-upper-bound-covered-pos
+						    (+ new-upper-bound-covered-pos new-covered-negs))
+					       (error (c)
+						 0)))
+			 (setq upper-bound-no-p (handler-case
+						 (/ upper-bound-no-covered-pos
+						    (+ upper-bound-no-covered-pos no-covered-negs))
+					       (error (c)
+						 0)))
+			 (setq new-entropy (binary-entropy p))
+			 (setq no-entropy (binary-entropy no-p))
+			 (setq new-upper-bound-entropy (binary-entropy upper-bound-p))
+			 (setq upper-bound-no-entropy (binary-entropy upper-bound-no-p))
+			 (setq covered-pos (hash-table-count parent-pos))
+			 (setq covered-negs (hash-table-count parent-neg))
+			 (setq upper-bound-covered-pos (hash-table-count upper-bound-focus))
+			 (setq q (handler-case
+				     (/ covered-pos 
 				(+ covered-pos covered-negs))
 			   (error (c)
 			     0)))
@@ -3330,176 +3375,118 @@
 				(+ upper-bound-covered-pos covered-negs))
 			   (error (c)
 			     0)))
-		 (setq entropy (binary-entropy q))		  
-		 (setq upper-bound-entropy (binary-entropy upper-bound-q))
-		 (setq info-gain (- (* (+ covered-pos covered-negs) entropy)
-				    (* (+ new-covered-pos new-covered-negs) new-entropy)))		  
+			 (setq entropy (binary-entropy q))		  
+			 (setq upper-bound-entropy (binary-entropy upper-bound-q))
+			 (setq info-gain (- (* (+ covered-pos covered-negs) entropy)
+					    (* (+ new-covered-pos new-covered-negs) new-entropy)
+					    (* (+ no-covered-pos no-covered-negs) no-entropy)))		  
 		 #|
 		 (setq upper-bound-info-gain (- (* (+ covered-pos covered-negs) entropy)
 						(* (+ upper-bound-covered-pos new-covered-negs) upper-bound-entropy)))
 		 |#
-		 (setq upper-bound-info-gain (- (* (+ upper-bound-covered-pos covered-negs) upper-bound-entropy)
-						(* (+ new-upper-bound-covered-pos new-covered-negs) new-upper-bound-entropy)))
-		 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
-		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
-		 (cond ((> p 0)
-			(when (> info-gain best-pos-info-gain)
-			  (setq best-pos-info-gain info-gain)
-			  (setq best-entropy new-entropy)
-			  (setq best-pos-condition condition)
-			  (setq best-pos-rule (copy-cpd-rule copy-rule))
-			  (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%updated rule:~%~S" copy-rule))))
-		       ((> upper-bound-p 0)
-			(let (condition-conflicts
-			      condition-conflicts-2
-			      condition-entropy
-			      condition-entropy-2
-			      condition-gini
-			      condition-retention)
-			  (setq condition-conflicts new-covered-negs)
-			  (setq condition-conflicts-2 (hash-table-count (hash-difference (rule-block copy-rule) goal cpd :output-hash-p t)))
-			  (setq rule-block-intersection new-upper-bound-focus)
-
-			  ;;(setq rule-block-intersection (hash-table-count (hash-intersection (second condition-block) goal :output-hash-p t)))
-			  ;;(setq condition-conflicts (hash-table-count (hash-difference (second condition-block) concept-block cpd :output-hash-p t)))
-			  
-			  ;;(setq condition-concept-intersection (hash-intersection (second condition-block) concept-block :output-hash-p t))
-			  #|
-			  (setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
-								     (hash-table-count (second condition-block)))))
-			  |#
-			  ;; dhm: argument computes condition positives over positives and negatives
-			  #|(setq condition-entropy (binary-entropy (/ (hash-table-count intersection)
-								     (+ (hash-table-count intersection)
-									condition-conflicts))))
-			  |#
-			  ;; dhm: argument computes condition positives over positives and negatives
-			  (if (> (+ (hash-table-count rule-block-intersection)
-				    condition-conflicts)
-				 0)
-			      (setq condition-entropy (binary-entropy (/ (hash-table-count rule-block-intersection)
-									 (+ (hash-table-count rule-block-intersection) condition-conflicts))))
-			      (setq condition-entropy most-positive-fixnum))
-			  (if (> (+ (hash-table-count rule-block-intersection)
-				    condition-conflicts-2)
-				 0)
-			      (setq condition-entropy-2 (binary-entropy (/ (hash-table-count rule-block-intersection)
-									 (+ (hash-table-count rule-block-intersection) condition-conflicts-2))))
-			      (setq condition-entropy-2 most-positive-fixnum))
-			  (setq condition-gini (- 1 (+ (expt (/ (hash-table-count rule-block-intersection)
-								(+ (hash-table-count rule-block-intersection) condition-conflicts))
-							     2)
-						       (expt (/ condition-conflicts
-								(+ (hash-table-count rule-block-intersection) condition-conflicts))
-							     2))))
-			  (setq condition-retention (/ (hash-table-count (rule-block copy-rule))
-						       (hash-table-count (rule-block rule))))
-			  (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
-			    (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block))))
-			  (when (or (> upper-bound-info-gain best-zero-ub-ig)
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (< condition-entropy best-condition-entropy))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (< (hash-table-count (rule-block copy-rule)) best-rule-block-size))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
-					 (< (hash-table-count rule-block-intersection) best-rule-block-intersection))
-				    #|
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (< condition-entropy-2 best-condition-entropy-2))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= condition-entropy-2 best-condition-entropy-2)
-					 (> num-constraints best-num-constraints))
-				    |#
-				    #|
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (> (hash-table-count rule-block-intersection) best-rule-block-intersection))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
-					 (> num-constraints best-num-constraints))
-				    |#
-				    #|
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
-					 (< new-covered-negs best-zero-new-negs))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
-					 (= new-covered-negs best-zero-new-negs)
-					 (> (hash-table-count (rule-block copy-rule)) best-rule-block-size))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
-					 (= new-covered-negs best-zero-new-negs)
-					 (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
-					 (> condition-retention best-condition-retention))
-				    (and (= upper-bound-info-gain best-zero-ub-ig)
-					 (= condition-entropy best-condition-entropy)
-					 (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
-					 (= new-covered-negs best-zero-new-negs)
-					 (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
-					 (= condition-retention best-condition-retention)
-					 (< (hash-table-count (second condition-block)) best-condition-block-size))
-				    |#
-				    
-				    
-				    #|
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (< new-covered-negs best-zero-new-negs))
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (< condition-entropy best-condition-entropy))
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (= condition-entropy best-condition-entropy)
-					  (< (hash-table-count (second condition-block)) best-rule-block-size))
-				     |#
-				     
-				     #|
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (> intersection-size best-intersection))
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (= intersection-size best-intersection)
-					  (< condition-entropy best-condition-entropy))				    
-				     (and (= upper-bound-info-gain best-zero-ub-ig)
-					  (= new-covered-negs best-zero-new-negs)
-					  (= intersection-size best-intersection)
-					  (= condition-entropy best-condition-entropy)
-				     (< (hash-table-count (second condition-block)) best-rule-block-size))
-				     |#)
-			     (setq best-zero-ub-ig upper-bound-info-gain)
-			     (setq best-zero-new-negs new-covered-negs)
-			     (setq best-zero-condition condition)
-			     (setq best-zero-rule (copy-cpd-rule copy-rule))
-			     (setq best-num-constraints num-constraints)
-			     ;;(setq best-intersection intersection-size)
-			     (setq best-condition-conflicts condition-conflicts)
-			     (setq best-condition-block-size (hash-table-count (second condition-block)))
-			     (setq best-rule-block-intersection (hash-table-count rule-block-intersection))
-			     (setq best-rule-block-size (hash-table-count (rule-block copy-rule)))
-			     (setq best-condition-entropy condition-entropy)
-			     (setq best-condition-entropy-2 condition-entropy-2)
-			     (setq best-condition-retention condition-retention)
-			     (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
-			       (format t "~%updated rule:~%~S" copy-rule))))))))
+			 (setq upper-bound-info-gain (- (* (+ upper-bound-covered-pos covered-negs) upper-bound-entropy)
+							(* (+ new-upper-bound-covered-pos new-covered-negs) new-upper-bound-entropy)
+							(* (+ upper-bound-no-covered-pos no-covered-negs) upper-bound-no-entropy)))
+			 (setq condition-conflicts new-covered-negs)
+			 (setq condition-conflicts-2 (hash-table-count (hash-difference (rule-block copy-rule) goal cpd :output-hash-p t)))
+			 (setq rule-block-intersection new-upper-bound-focus)
+			 (if (> (+ (hash-table-count rule-block-intersection)
+				   condition-conflicts)
+				0)
+			     (setq condition-entropy (binary-entropy (/ (hash-table-count rule-block-intersection)
+									(+ (hash-table-count rule-block-intersection)
+									   condition-conflicts))))
+			     (setq condition-entropy most-positive-fixnum))
+			 (if (> (+ (hash-table-count rule-block-intersection)
+				   condition-conflicts-2)
+				0)
+			     (setq condition-entropy-2 (binary-entropy (/ (hash-table-count rule-block-intersection)
+									  (+ (hash-table-count rule-block-intersection)
+									     condition-conflicts-2))))
+			     (setq condition-entropy-2 most-positive-fixnum))
+			 (setq condition-retention (/ (hash-table-count (rule-block copy-rule))
+						      (hash-table-count (rule-block rule))))
+		 (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain)
+		   (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block))))
+		 (when (and (or (> p 0)
+				(and (> upper-bound-p 0)
+				     (<= condition-conflicts num-conflicts)
+				     (or (> condition-conflicts 0)
+					 (> new-covered-pos 0)
+					 (< condition-conflicts num-conflicts)
+					 (and (= condition-conflicts num-conflicts)
+					      (not (hash-intersection-p (rule-certain-block rule) goal))))))
+			    (or (> p best-p)
+				(and (= p best-p)
+				     (> p 0)
+				     (> info-gain best-info-gain))
+				(and (= p best-p)
+				     (> p 0)
+				     (= info-gain best-info-gain)
+				     (> upper-bound-info-gain best-upper-bound-info-gain))
+				(and (= p best-p)
+				     (> p 0)
+				     (= info-gain best-info-gain)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (< condition-entropy best-condition-entropy))
+				(and (= p best-p)
+				     (> p 0)
+				     (= info-gain best-info-gain)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (= condition-entropy best-condition-entropy)
+				     (< (hash-table-count (rule-block copy-rule)) best-rule-block-size))
+				(and (= p best-p)
+				     (> p 0)
+				     (= info-gain best-info-gain)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (= condition-entropy best-condition-entropy)
+				     (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
+				     (< (hash-table-count rule-block-intersection) best-rule-block-intersection))
+				(and (= p best-p)
+				     (= p 0)
+				     (> upper-bound-info-gain best-upper-bound-info-gain))
+				(and (= p best-p)
+				     (= p 0)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (< condition-entropy best-condition-entropy))
+				(and (= p best-p)
+				     (= p 0)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (= condition-entropy best-condition-entropy)
+				     (< (hash-table-count (rule-block copy-rule)) best-rule-block-size))
+				(and (= p best-p)
+				     (= p 0)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (= condition-entropy best-condition-entropy)
+				     (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
+				     (< (hash-table-count rule-block-intersection) best-rule-block-intersection))
+				(and (= p best-p)
+				     (= p 0)
+				     (= upper-bound-info-gain best-upper-bound-info-gain)
+				     (= condition-entropy best-condition-entropy)
+				     (= (hash-table-count (rule-block copy-rule)) best-rule-block-size)
+				     (= (hash-table-count rule-block-intersection) best-rule-block-intersection)
+				     (> info-gain best-info-gain))))
+		   (setq best-p p)
+		   (setq best-info-gain info-gain)
+		   (setq best-upper-bound-info-gain upper-bound-info-gain)
+		   (setq best-entropy new-entropy)
+		   (setq best-condition condition)
+		   (setq best-rule (copy-cpd-rule copy-rule))
+		   (setq best-num-constraints num-constraints)
+		   (setq best-condition-conflicts condition-conflicts)
+		   (setq best-condition-conflicts-2 condition-conflicts-2)
+		   (setq best-condition-block-size (hash-table-count (second condition-block)))
+		   (setq best-rule-block-intersection (hash-table-count rule-block-intersection))
+		   (setq best-rule-block-size (hash-table-count (rule-block copy-rule)))
+		   (setq best-condition-entropy condition-entropy)
+		   (setq best-condition-entropy-2 condition-entropy-2)
+		   (setq best-condition-retention condition-retention)
+		   (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		     (format t "~%updated rule:~%~S" copy-rule)))))
       finally
-	 (cond (best-pos-condition
-		(setq best-condition best-pos-condition)
-		(setq best-rule best-pos-rule))
-	       (best-zero-condition
-		(setq best-condition best-zero-condition)
-		(setq best-rule best-zero-rule)))
-	 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+	 (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
 
@@ -3632,7 +3619,7 @@
 				    (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
-    (when (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
+    (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
       (format t "~%~%getting local covering for:")
       (print-cpd cpd)
       (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
@@ -3678,8 +3665,8 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if (and (= probability-concept 0)
-			    (= (length rule-set) 12))
+		   (if (and nil (= probability-concept 0)
+			    (= (length rule-set) 7))
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -4162,7 +4149,7 @@
 ;; new-rules = accumulator for the created filtered rules
 ;; rule-keys = hash table (test #'equal) for keeping track of visited rules
 ;; new-cpd = cpd to store the filtered rules
-(defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t))
+(defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t) (preserve-rule-counts nil))
   (labels ((find-matched-rules (r1s r2s matched-rules-hash no-match-list)
              (loop
                with matched = nil
@@ -4400,8 +4387,12 @@
 		  (cond (same-rule-p
 			 ;; for each rule condtion, there is a non-empty subset of the values of that conditions
 			 (setq new-rule (rule-filter r1 r2 op num-rules new-conditions compute-count-p))
-			 (when (rule-based-cpd-singleton-p phi2)
-                           (setf (rule-count new-rule) nil)))
+			 (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p phi2))
+                                (setf (rule-count new-rule) (rule-count r1)))
+			       ((and preserve-rule-counts (rule-based-cpd-singleton-p phi1))
+                                (setf (rule-count new-rule) (rule-count r2)))
+			       ((rule-based-cpd-singleton-p phi2)
+                                (setf (rule-count new-rule) nil))))
 			((compatible-rule-p r1 r2 phi1 phi2)
 			 ;; compatible, but not the same rule
 			 (let (new-r2s
@@ -4418,8 +4409,12 @@
 			   (cond ((and (null missing-r1-attributes)
 				       (null missing-r2-attributes))
 				  (setq new-rule (rule-filter r1 r2 op num-rules new-conditions compute-count-p))
-				  (when (rule-based-cpd-singleton-p phi2)
-				    (setf (rule-count new-rule) nil)))
+				  (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p phi2))
+					 (setf (rule-count new-rule) (rule-count r1)))
+					((and preserve-rule-counts (rule-based-cpd-singleton-p phi1))
+					 (setf (rule-count new-rule) (rule-count r2)))
+					((rule-based-cpd-singleton-p phi2)
+					 (setf (rule-count new-rule) nil))))
 				 ((and missing-r1-attributes
 				       (null missing-r2-attributes))
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
@@ -4430,21 +4425,25 @@
 				    (format t "~%new r1s after splititng on missing variables:")
 				    (map nil #'print-cpd-rule new-r1s))
 				  (let (new-phi1 new-phi2)
-				    (setq new-phi1 (make-rule-based-cpd
-						    :identifiers (rule-based-cpd-identifiers phi1)
-						    :dependent-id (rule-based-cpd-dependent-id phi1)
-						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
-				    (setq new-phi2 (make-rule-based-cpd
-						    :identifiers (rule-based-cpd-identifiers phi2)
-						    :dependent-id (rule-based-cpd-dependent-id phi2)
-						    :rules (make-array 1 :initial-contents (list r2))))
+					    (setq new-phi1 (make-rule-based-cpd
+							    :identifiers (rule-based-cpd-identifiers phi1)
+							    :dependent-id (rule-based-cpd-dependent-id phi1)
+							    :singleton-p (rule-based-cpd-singleton-p phi1)
+							    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
+					    (setq new-phi2 (make-rule-based-cpd
+							    :identifiers (rule-based-cpd-identifiers phi2)
+							    :dependent-id (rule-based-cpd-dependent-id phi2)
+							    :singleton-p (rule-based-cpd-singleton-p phi2)
+							    :rules (make-array 1 :initial-contents (list r2))))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
 					       ;;(equal (rule-based-cpd-dependent-var phi1) "ONE_1")
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))
 				 ((and (null missing-r1-attributes)
 				       missing-r2-attributes)
 				  (setq new-r2s (make-split-rules (list r2) r1 missing-r2-attributes))
@@ -4458,10 +4457,12 @@
 				    (setq new-phi1 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi1)
 						    :dependent-id (rule-based-cpd-dependent-id phi1)
+						    :singleton-p (rule-based-cpd-singleton-p phi1)
 						    :rules (make-array 1 :initial-contents (list r1))))
 				    (setq new-phi2 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
+						    :singleton-p (rule-based-cpd-singleton-p phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
@@ -4469,7 +4470,9 @@
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))
 				 ((and missing-r1-attributes
 				       missing-r2-attributes)
 				  (setq new-r1s (make-split-rules (list r1) r2 missing-r1-attributes))
@@ -4486,10 +4489,12 @@
 				    (setq new-phi1 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi1)
 						    :dependent-id (rule-based-cpd-dependent-id phi1)
+						    :singleton-p (rule-based-cpd-singleton-p phi1)
 						    :rules (make-array (length new-r1s) :initial-contents new-r1s)))
 				    (setq new-phi2 (make-rule-based-cpd
 						    :identifiers (rule-based-cpd-identifiers phi2)
 						    :dependent-id (rule-based-cpd-dependent-id phi2)
+						    :singleton-p (rule-based-cpd-singleton-p phi2)
 						    :rules (make-array (length new-r2s) :initial-contents new-r2s)))
 				    (when nil (and (or (eq op '*)
 						   (eq op #'*))
@@ -4497,7 +4502,9 @@
 					       )
 				      (format t "~%recursing..."))
 				    (multiple-value-setq (new-rules rule-keys)
-				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd :compute-count-p compute-count-p))))))))
+				      (operate-filter-rules new-phi1 new-phi2 op new-rules rule-keys new-cpd
+							    :compute-count-p compute-count-p
+							    :preserve-rule-counts preserve-rule-counts))))))))
 		  (when new-rule
 		    (setf (gethash num-rules (rule-block new-rule)) num-rules)
 		    (setq rule-key (polynomial-encoding new-rule))
@@ -4651,7 +4658,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; phi1 = conditional probability density 1
 ;; phi2 = conditional probability density 2
 ;; op = operation to apply to factor (* or +)
-(defun factor-filter (phi1 phi2 &optional (op '*))
+(defun factor-filter (phi1 phi2 &optional (op '*) (preserve-rule-counts nil))
   (cond ((and (numberp phi1) (rule-based-cpd-p phi2))
          (return-from factor-filter phi2))
         ((and (numberp phi2) (rule-based-cpd-p phi1))
@@ -4689,13 +4696,18 @@ Roughly based on (Koller and Friedman, 2009) |#
                                        :step-sizes steps
                                        :count (if (or (eq #'+ op) (eq '+ op)) (+ (rule-based-cpd-count phi1) (rule-based-cpd-count phi2)))
 				       :prior (rule-based-cpd-prior phi1)
+				       :latent-p (or (rule-based-cpd-latent-p phi1)
+						     (rule-based-cpd-latent-p phi2))
                                        :singleton-p (rule-based-cpd-singleton-p phi1)
                                        :lvl (rule-based-cpd-lvl phi1)))
-    (setq new-rules (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi :compute-count-p (if (or (eq op '+) (eq op #'+)) t))))
-    (when nil (and (equal (rule-based-cpd-dependent-var phi1) "ACUITY"))
+    (setq new-rules
+	  (reverse (operate-filter-rules phi2 phi1 op nil (make-hash-table :test #'equal) new-phi
+					 :compute-count-p (if (or (eq op '+) (eq op #'+)) t)
+					 :preserve-rule-counts preserve-rule-counts)))
+    (when nil (and (equal (rule-based-cpd-dependent-id phi1) "DECISION_2_261"))
       (format t "~%~%filtered rules before compression:")
       (mapcar #'print-cpd-rule new-rules)
-      (break)
+      ;;(break)
       )
     
     (cond ((eq op '*)
@@ -4829,7 +4841,7 @@ Roughly based on (Koller and Friedman, 2009) |#
              )
 	   ;;(check-cpd phi1 :check-uniqueness nil :check-rule-count nil :check-counts nil)
            (setq phi2 (cpd-update-existing-vvms phi2 bindings new-nodes))
-           (when nil (and (equal "ACUITY_240" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema:~%~S" phi2)
 	     (print-cpd phi2)
                  ;;(break)
@@ -4837,20 +4849,20 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi2 :check-uniqueness nil)
            (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
 	   ;;(check-cpd phi2 :check-uniqueness nil :check-rule-count nil)
-           (when nil (and (equal "ACUITY_240" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
              (format t "~%intermediate schema2:~%~S" phi2)
 	     (print-cpd phi2)
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
 	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
-           (when nil (and (equal "ACUITY_240" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
                  (format t "~%intermediate episode:~%~S" phi1)
                  (break)
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when nil (and (equal "ACUITY_240" (rule-based-cpd-dependent-id phi2)))
+	   (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
 	     (print-cpd phi2)
 	     (format t "~%~%episode rules:~%")
@@ -4860,7 +4872,22 @@ Roughly based on (Koller and Friedman, 2009) |#
            ;;(check-cpd phi1 :check-uniqueness nil :check-counts nil)
 	   (setq phi1 (disambiguate-rules phi1 phi2))
 	   (setq phi2 (disambiguate-rules phi2 phi1))
-           (factor-filter phi2 phi1 '+)))))
+	   (cond ((not (rule-based-cpd-latent-p phi1))
+		  (values (factor-filter phi2 phi1 '+) phi1))
+		 (t
+		  (let ((increment (rule-based-cpd-count phi1)))
+		    (setf (rule-based-cpd-count phi2)
+			  (+ (rule-based-cpd-count phi2)
+			     increment))
+		    (loop
+		      for schema-rule being the elements of (rule-based-cpd-rules phi2)
+		      for matching-event-rules = (get-compatible-rules phi1 phi2 schema-rule :find-all t)
+		      when (some #'(lambda (event-rule)
+				     (> (rule-probability event-rule) 0))
+				 matching-event-rules)
+			do
+			   (incf (rule-count schema-rule) increment)))
+		  (values phi2 phi1)))))))
 
 #| Perform a marginalize operation over rules.
    Returns: Array of CPD rules|#
@@ -4869,7 +4896,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; vars = list variables to keep
 ;; op = operation to apply on rules
 ;; new-dep-id = dependent variable after marginalization step is complete
-(defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1))
+(defun operate-marginalize-rules-keep (phi vars op new-dep-id &key (rule-count 1) (preserve-rule-counts nil))
   (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
 	(format t "~%marginalizing phi:")
 	(print-cpd phi)
@@ -4926,9 +4953,17 @@ Roughly based on (Koller and Friedman, 2009) |#
 		      (funcall op
 			       (rule-probability marginalized-rule)
 			       (rule-probability r)))
-		(when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
-		      (format t "~%  updated marginalized rule:")
-		      (print-cpd-rule marginalized-rule :indent "        "))
+	       (when (not (rule-based-cpd-singleton-p phi))
+		 (setf (rule-count marginalized-rule)
+		       (if preserve-rule-counts
+			   (max (or (rule-count marginalized-rule) 0)
+				(or (rule-count r) 0))
+			   (funcall op
+				    (rule-count marginalized-rule)
+				    (rule-count r)))))
+	       (when nil (and (equal "NPOSITION_PREV_187" (rule-based-cpd-dependent-id phi)))
+		     (format t "~%  updated marginalized rule:")
+		     (print-cpd-rule marginalized-rule :indent "        "))
 	   finally
 	      (loop
 		with new-vv
@@ -4992,6 +5027,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 					    :rules (rule-based-cpd-rules phi)
 					    :count (rule-based-cpd-count phi)
 					    :prior (rule-based-cpd-prior phi)
+					    :latent-p (rule-based-cpd-latent-p phi)
                                             :singleton-p (rule-based-cpd-singleton-p phi)
                                             :lvl (rule-based-cpd-lvl phi)))
     marginalized))
@@ -5003,9 +5039,11 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; vars = variables to keep
 ;; op = operation to apply to factor (max or +)
 ;; rule-count = count for each marginalized rule
-(defun operate-factor (phi vars op &key (rule-count 1))
+(defun operate-factor (phi vars op &key (rule-count 1) (preserve-rule-counts nil))
   (setf (rule-based-cpd-rules phi)
-	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi) :rule-count rule-count))
+	(operate-marginalize-rules-keep phi vars op (rule-based-cpd-dependent-id phi)
+				       :rule-count rule-count
+				       :preserve-rule-counts preserve-rule-counts))
   (update-cpd-rules phi (rule-based-cpd-rules phi)))
 
 #| Generate intermediate factor by marginalization or max |#
@@ -5014,11 +5052,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; keep = vars to keep
 ;; remove = variables to op out
 ;; op = operation to apply to factor (max or +)
-(defun factor-operation (phi keep remove op &key (rule-count 1))
+(defun factor-operation (phi keep remove op &key (rule-count 1) (preserve-rule-counts nil))
   (cond ((null remove)
-	 (operate-factor phi keep op :rule-count rule-count))
+	 (operate-factor phi keep op
+			 :rule-count rule-count
+			 :preserve-rule-counts preserve-rule-counts))
 	(t
-	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op :rule-count rule-count))))
+	 (factor-operation (reduce-cpd-meta-data phi (car remove)) keep (rest remove) op
+			   :rule-count rule-count
+			   :preserve-rule-counts preserve-rule-counts))))
 
 #| Prepare factor graph for message passing |#
 
@@ -5046,7 +5088,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; messages = messages from factor to factor
 ;; sepset = separating set preserving the Running Intersection Property
-(defun send-message (i j factors op edges messages sepset)
+(defun send-message (i j factors op edges messages sepset &key (preserve-rule-counts nil))
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
   (when nil (and (= i 8) (= j 13))
@@ -5082,13 +5124,16 @@ Roughly based on (Koller and Friedman, 2009) |#
 		 (format t "~%non-cpd neighbor: ~S" nbr))
 	  (format t "~%~%i:")
 	  (print-cpd (aref factors i)))
-    (setq reduced (reduce 'factor-filter (cons (aref factors i) nbrs-minus-j)))
+    (setq reduced (reduce #'(lambda (phi1 phi2)
+			      (factor-filter phi1 phi2 '* preserve-rule-counts))
+			  (cons (aref factors i) nbrs-minus-j)))
     (when nil (and (= i 8) (= j 13))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset
               (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal)))
-    (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op)))
+    (factor-operation reduced sepset (set-difference (hash-keys-to-list (rule-based-cpd-identifiers reduced)) sepset :test #'equal) op
+		      :preserve-rule-counts preserve-rule-counts)))
 
 #| Compute final belief of a factor |#
 
@@ -5096,7 +5141,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; factors = array of conditional probability densities
 ;; edges = array of edges in factor graph
 ;; messages = messages from factor to factor
-(defun compute-belief (i factors edges messages)
+(defun compute-belief (i factors edges messages &key (preserve-rule-counts nil))
   (loop
     with factor
     for k from 0 below (array-dimension edges 0)
@@ -5118,7 +5163,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     do
 	       (format t "~%neighbor ~d:" idx )
 	       (print-cpd nbr)))
-       (setq factor (reduce 'factor-filter (cons (aref factors i) nbrs)))
+       (setq factor
+	     (reduce #'(lambda (phi1 phi2)
+			 (factor-filter phi1 phi2 '* preserve-rule-counts))
+		     (cons (aref factors i) nbrs)))
        (when nil
 	 (format t "~%intermediate belief:")
 	 (print-cpd factor))
@@ -5228,14 +5276,14 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
-(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil))
+(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil) (preserve-rule-counts nil))
   (loop
     with round = t
     with j and k and sepset and messages = (initialize-graph edges evidence)
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil t
+       (when nil
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -5257,14 +5305,15 @@ Roughly based on (Koller and Friedman, 2009) |#
 	      (if nil ;;(and (= j 6) (= k 15))
 		  (setq print-special* t)
 		  (setq print-special* nil))
-              (setq new-message (send-message j k factors op edges messages sepset))
+              (setq new-message (send-message j k factors op edges messages sepset
+					       :preserve-rule-counts preserve-rule-counts))
 	      ;; when doing sum-product message passing, normalize after getting the message
 	      (when (or (eq #'+ op) (eq '+ op))
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
 		;;(check-cpd new-message :check-uniqueness nil :check-prob-sum nil #|(when (not (rule-based-cpd-singleton-p marginalized)) t)|# :check-counts nil :check-count-prob-agreement nil)
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when (and (= j 8) (= k 13))
+	      (when nil (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -5302,13 +5351,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil t
+       (when nil
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil t
+       (when nil
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t
@@ -5319,9 +5368,11 @@ Roughly based on (Koller and Friedman, 2009) |#
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
 		 when (rule-based-cpd-singleton-p (aref factors i))
-                   collect (compute-belief i factors edges messages) into posterior-marginals
+                   collect (compute-belief i factors edges messages
+					   :preserve-rule-counts preserve-rule-counts) into posterior-marginals
 		  else if (not singleton-only)
-		    collect (compute-belief i factors edges messages) into posterior-distribution
+		    collect (compute-belief i factors edges messages
+					    :preserve-rule-counts preserve-rule-counts) into posterior-distribution
 		  finally
 		     (return (values posterior-distribution posterior-marginals))))
                ((or (eq op 'max)
@@ -6317,6 +6368,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 			 :var-values (add-hash-key-value-pair (make-hash-table) 0 (gethash 0 (rule-based-cpd-var-values cpd)))
 			 :cardinalities (make-array 1 :initial-contents (list (aref (rule-based-cpd-cardinalities cpd) 0)) :fill-pointer t)
 			 :step-sizes (make-array 1 :initial-element 1 :fill-pointer t)
+			 :latent-p (rule-based-cpd-latent-p cpd)
 			 :rules (if probability-distribution-p
 				    (make-singleton-prob-distribution (gethash 0 (rule-based-cpd-var-values cpd)) nil 0)
 				    (initialize-rule-potentials factor 1))
@@ -6394,7 +6446,7 @@ Roughly based on (Koller and Friedman, 2009) |#
   ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil))
+(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil) (preserve-rule-counts nil))
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -6418,7 +6470,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 	   for rule being the elements of (rule-based-cpd-rules new-factor)
 	   do
 	      (setf (rule-probability rule) (float (rule-probability rule)))
-	      (when (> (rule-count rule) 0)
+	      (when (and (not preserve-rule-counts)
+			 (> (rule-count rule) 0))
 		(setf (rule-count rule) 1)))
 	 (setq factors-list (cons new-factor factors-list))
       finally
@@ -6481,8 +6534,10 @@ Roughly based on (Koller and Friedman, 2009) |#
                                               :var-values var-values
                                               :cardinalities cards
                                               :step-sizes steps
+					      :latent-p (rule-based-cpd-latent-p factor)
                                               :rules rules
                                               :singleton-p t
+					      :count (rule-based-cpd-count factor) 
                                               :lvl lvl))
       collect (get-local-coverings (update-cpd-rules singleton (rule-based-cpd-rules singleton))) into singletons
       finally (setq singleton-factors-list singletons)
@@ -6584,8 +6639,10 @@ Roughly based on (Koller and Friedman, 2009) |#
 						 :lower-approx-var-value-block-map (rule-based-cpd-lower-approx-var-value-block-map factor)
 						 :step-sizes (rule-based-cpd-step-sizes factor)
 						 :var-values (rule-based-cpd-var-values factor)
+						 :latent-p (rule-based-cpd-latent-p factor)
 						 :rules rules
 						 :singleton-p t
+						 :count (rule-based-cpd-count factor)
 						 :lvl (rule-based-cpd-lvl factor)))
 		  (when nil
 		    (format t "~%final rules:~%~A" rules))
@@ -6597,9 +6654,11 @@ Roughly based on (Koller and Friedman, 2009) |#
     (when nil t
       (format t "~%~%Factors:~%~A~%Edges:~%~A" all-factors edges)
       (format t "~%~%initial messages:~%~A" initial-messages)
-      ;;(break)
+      (break)
       )
-    (calibrate-factor-graph all-factors op edges initial-messages lr :singleton-only singleton-only)))
+    (calibrate-factor-graph all-factors op edges initial-messages lr
+			    :singleton-only singleton-only
+			    :preserve-rule-counts preserve-rule-counts)))
 
 #| Move assignment by 1 |#
 
@@ -7845,6 +7904,7 @@ Roughly based on (Koller and Friedman, 2009) |#
                      :cardinalities cards
                      :step-sizes steps
 		     :prior (rule-based-cpd-prior q-cpd)
+		     :latent-p (rule-based-cpd-latent-p q-cpd)
                      :count 1
                      :lvl (rule-based-cpd-lvl q-cpd)))
 	      (setq rules (make-initial-rules dummy-match assn))
@@ -18524,4 +18584,3 @@ nil nil)
    :COUNT NIL
    :LVL 1))
 |#
-

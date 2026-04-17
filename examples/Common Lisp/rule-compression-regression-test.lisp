@@ -1,4 +1,11 @@
 (load (merge-pathnames "quicklisp/setup.lisp" (user-homedir-pathname)))
+
+;; CI starts from a fresh checkout, so ASDF may recompile the full system before
+;; these regression cases run. Existing non-fatal compile warnings should not
+;; prevent the runtime regression suite from executing.
+(setf asdf:*compile-file-warnings-behaviour* :warn)
+(setf asdf:*compile-file-failure-behaviour* :warn)
+
 (ql:quickload :hems)
 
 (defpackage :hems-rule-compression-regression

@@ -1,0 +1,33 @@
+name: Rule Compression Regression
+
+on:
+  push:
+
+jobs:
+  rule-compression-regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install SBCL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sbcl
+
+      - name: Install Quicklisp
+        run: |
+          curl -O https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --non-interactive \
+            --load quicklisp.lisp \
+            --eval '(quicklisp-quickstart:install :path (merge-pathnames "quicklisp/" (user-homedir-pathname)))'
+
+      - name: Link HEMS into Quicklisp local-projects
+        run: |
+          mkdir -p ~/quicklisp/local-projects
+          ln -s "$GITHUB_WORKSPACE" ~/quicklisp/local-projects/HEMS
+
+      - name: Run rule compression regression
+        working-directory: examples/Common Lisp
+        run: timeout 900s sbcl --disable-debugger --script rule-compression-regression-test.lisp

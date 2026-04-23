@@ -267,4 +267,4 @@
     (format t "Wrote convergence trace to ~A~%" convergence-path)
     model))
 
-(write-online-em-demo-convergence :n 1000)
+(write-online-em-demo-convergence :n 2000)

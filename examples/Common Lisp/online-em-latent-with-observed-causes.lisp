@@ -314,4 +314,4 @@
     (format t "Wrote convergence trace to ~A~%" convergence-path)
     model))
 
-(write-middle-demo-convergence :n 2000)
+(write-middle-demo-convergence :n 4000)

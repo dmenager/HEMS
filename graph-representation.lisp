@@ -2321,7 +2321,7 @@
                     (positive-values (remove 0 dep-values :test #'=))
                     (zero-rule (make-rule :id (symbol-name (gensym "RULE-"))
                                           :conditions (make-hash-table :test #'equal)
-                                          :probability 1
+                                          :probability 0
                                           :block (make-hash-table)
                                           :count 0))
                     (positive-rule (make-rule :id (symbol-name (gensym "RULE-"))
@@ -2381,7 +2381,7 @@
                 (loop
                   for record in records
                   collect (cons (getf record :label) (getf record :idx)))))))
-    (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id phi1)))
+    (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id phi1)))
       (format t "~%~%updating schema:")
       (print-cpd phi1)
       (format t "~%with episode:")
@@ -2551,7 +2551,7 @@
         (setq new-rules (remove-duplicate-rules-max-count new-rules phi1))
         (setf (rule-based-cpd-rules phi1)
               (make-array (length new-rules) :initial-contents (reverse new-rules))))
-      (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id phi1)))
+      (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id phi1)))
         (format t "~%updated schema:")
         (print-cpd phi1)
         (format t "~%additional rules created: ~d~%elapsed time: ~d seconds"

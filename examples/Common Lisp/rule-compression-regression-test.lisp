@@ -68,6 +68,10 @@
   (load (example-path "test-net2.lisp"))
   (funcall (intern "EX1" :hems)))
 
+(defun run-test-net2-ex2 ()
+  (load (example-path "test-net2.lisp"))
+  (funcall (intern "EX2" :hems)))
+
 (defun run-load-model-commented-tests ()
   (load (example-path "load-model-test.lisp"))
   (loop
@@ -88,6 +92,7 @@
 
 (defun run-all-regressions ()
   (run-regression "test-net2.lisp ex1" #'run-test-net2-ex1)
+  (run-regression "test-net2.lisp ex2" #'run-test-net2-ex2)
   (run-load-model-commented-tests)
   (run-input-example)
   (format t "~&All rule compression regression examples passed.~%"))

@@ -348,6 +348,7 @@
 				 resp_compromise --> death
 				 )
 		bns))
+  
     (setq bns
 	  (cons (compile-program nil
 				 temperature = (percept-node temperature :value "normal")
@@ -397,7 +398,7 @@
 				 shock --> death
 				 resp_compromise --> death
 				 )
-		bns))
+    bns))
     (reverse bns)))
 
 (defun run ()

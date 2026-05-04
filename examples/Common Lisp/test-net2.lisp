@@ -401,10 +401,16 @@
     bns))
     (reverse bns)))
 
-(defun run ()
+(defun run (fun)
   (loop
-	for bn in (ex2)
+	for bn in (funcall fun)
 	do
 	;; (format t "~%~%inserting:")
 	;; (print-bn bn)
 	(new-push-to-ep-buffer :observation bn :hidden-state-p nil :insertp t :temporal-p nil)))
+
+(defun run-chain ()
+  (run 'ex2)
+  (format t "~%~%ex2 complete")
+  (run 'ex1)
+  (format t "~%~%ex1 complete"))

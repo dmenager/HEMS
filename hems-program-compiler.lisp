@@ -144,24 +144,47 @@
   (labels ((alistp (alist)
 	     (and (listp alist)
 		  (every #'consp alist)))
-	   (cartesian-product (lists)
-	     (reduce #'(lambda (acc domain)
-			 (mapcan #'(lambda (partial)
-				     (mapcar #'(lambda (val)
-						 (append partial (list val)))
-					     domain))
-				 acc))
-		     lists
-		     :initial-value (list nil)))
-	   (enumerate-assignments (vars domains)
-	     (let ((tuples (cartesian-product domains))
-		   ret)
-	       (setq ret (mapcar #'(lambda (values)
-				     (mapcar #'cons vars values))
-				 tuples))
-	       (if ret
-		   ret
-		   (list nil))))
+	   (make-assignment-generator (vars domains)
+	     (let* ((domain-vectors (mapcar #'(lambda (domain)
+						 (coerce domain 'vector))
+					     domains))
+		    (domain-vector-array (coerce domain-vectors 'vector))
+		    (n-vars (length vars))
+		    (indices (make-array (length vars) :initial-element 0))
+		    (done-p nil))
+	       (labels ((advance ()
+			  (loop
+			    for i from (1- n-vars) downto 0
+			    do
+			       (incf (aref indices i))
+			       (cond ((< (aref indices i)
+					 (length (aref domain-vector-array i)))
+				      (return))
+				     (t
+				      (setf (aref indices i) 0)
+				      (when (= i 0)
+					(setq done-p t)))))))
+		 #'(lambda ()
+		     (cond (done-p
+			    (values nil t))
+			   ((zerop n-vars)
+			    (setq done-p t)
+			    (values nil nil))
+			   ((some #'(lambda (domain-vector)
+				      (zerop (length domain-vector)))
+				  domain-vectors)
+			    (setq done-p t)
+			    (values nil t))
+			   (t
+			    (let ((assn (loop
+					  for var in vars
+					  for domain-vector in domain-vectors
+					  for i from 0
+					  collect (cons var
+							(aref domain-vector
+							      (aref indices i))))))
+			      (advance)
+			      (values assn nil))))))))
 	   (n-cpd-populate-vvbm-sva-vals (value idx vvbm sva vals)
 	     (when (null (gethash 0 vvbm))
 	       (setf (gethash 0 vvbm) nil))
@@ -308,11 +331,15 @@
 		    (loop
 		      with prob-row
 		      with domain
-		      with assns = (enumerate-assignments arguments parent-domains)
-		      ;;with print = (format t "~%~%assns:~%~S" assns)
+		      with assignment-generator = (make-assignment-generator arguments parent-domains)
+		      with assn
+		      with exhausted-p
 		      with rules
-		      for assn in assns
 		      for j from 0
+		      do
+			 (multiple-value-setq (assn exhausted-p)
+			   (funcall assignment-generator))
+		      while (not exhausted-p)
 		      do
 			 (setq prob-row (apply (eval `(lambda ,arguments
 							,generator))

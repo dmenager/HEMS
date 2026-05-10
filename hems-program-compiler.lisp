@@ -331,6 +331,8 @@
 		    (loop
 		      with prob-row
 		      with domain
+		      with generator-fn = (eval `(lambda ,arguments
+						   ,generator))
 		      with assignment-generator = (make-assignment-generator arguments parent-domains)
 		      with assn
 		      with exhausted-p
@@ -341,8 +343,7 @@
 			   (funcall assignment-generator))
 		      while (not exhausted-p)
 		      do
-			 (setq prob-row (apply (eval `(lambda ,arguments
-							,generator))
+			 (setq prob-row (apply generator-fn
 					       (mapcar #'cdr assn)))
 			 (when (null prob-row)
 			   (error "Functional node generator: Expected non-empty probability distribution associated with assignment ~A. Received nil." assn))

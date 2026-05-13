@@ -4437,6 +4437,7 @@
       with best-info-gain = most-negative-fixnum and best-entropy = most-negative-fixnum
       with best-condition-retention = most-negative-fixnum
       with best-goal-constraint-support-count = most-negative-fixnum
+      with best-goal-constraint-support-ratio = most-negative-fixnum
       with best-num-constraints = -1
       with best-candidate-num-conflicts = most-positive-fixnum
       with best-certain-goal-gain = most-negative-fixnum
@@ -4642,18 +4643,23 @@
 						  (hash-table-count (rule-block rule))))
 		     (when nil print-special*
 		       (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block))))
-                     (let ((certain-goal-gain (- new-covered-pos covered-pos))
-                           (certain-goal-count new-covered-pos)
-                           (rule-block-size (hash-table-count (rule-block copy-rule)))
-                           (rule-block-intersection-count (hash-table-count rule-block-intersection))
-                           (goal-constraint-support-count (goal-constraint-support-count condition rule-block-intersection))
-                           (condition-block-size (hash-table-count (second condition-block)))
-                           (condition-block-conflicts (hash-table-count
-                                                       (hash-intersection (second condition-block)
-                                                                          (rule-avoid-list rule)
-                                                                          :output-hash-p t))))
+                     (let* ((certain-goal-gain (- new-covered-pos covered-pos))
+                            (certain-goal-count new-covered-pos)
+                            (rule-block-size (hash-table-count (rule-block copy-rule)))
+                            (rule-block-intersection-count (hash-table-count rule-block-intersection))
+                            (goal-constraint-support-count (goal-constraint-support-count condition intersection))
+                            (goal-constraint-support-ratio (if (> (hash-table-count intersection) 0)
+                                                               (/ goal-constraint-support-count
+                                                                  (hash-table-count intersection))
+                                                               0))
+                            (condition-goal-intersection-count (hash-table-count intersection))
+                            (condition-block-size (hash-table-count (second condition-block)))
+                            (condition-block-conflicts (hash-table-count
+                                                        (hash-intersection (second condition-block)
+                                                                           (rule-avoid-list rule)
+                                                                           :output-hash-p t))))
                        (when print-special*
-                         (format t "~%candidate score: ~S branch=~A p=~d ig=~d ub-ig=~d conflicts=~d entropy=~d certain-goal-gain=~d certain-goal-count=~d goal-constraint-support=~d rule-size=~d goal-intersection=~d condition-size=~d condition-block-conflicts=~d num-constraints=~d"
+                         (format t "~%candidate score: ~S branch=~A p=~d ig=~d ub-ig=~d conflicts=~d entropy=~d certain-goal-gain=~d certain-goal-count=~d goal-constraint-support=~d goal-support-ratio=~d rule-size=~d goal-intersection=~d condition-goal-intersection=~d condition-size=~d condition-block-conflicts=~d num-constraints=~d"
                                  condition
                                  (if (> p 0) :positive :zero)
                                  p
@@ -4664,8 +4670,10 @@
                                  certain-goal-gain
                                  certain-goal-count
                                  goal-constraint-support-count
+                                 goal-constraint-support-ratio
                                  rule-block-size
                                  rule-block-intersection-count
+                                 condition-goal-intersection-count
                                  condition-block-size
                                  condition-block-conflicts
                                  num-constraints))
@@ -4696,6 +4704,14 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (> goal-constraint-support-ratio best-goal-constraint-support-ratio))
+                                 (and (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (> goal-constraint-support-count best-goal-constraint-support-count))
                                  (and (= p best-p)
                                       (= info-gain best-info-gain)
@@ -4703,6 +4719,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (> num-constraints best-num-constraints))
                                  (and (= p best-p)
@@ -4711,6 +4728,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (= num-constraints best-num-constraints)
                                       (> rule-block-intersection-count best-rule-block-intersection))
@@ -4720,6 +4738,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (= num-constraints best-num-constraints)
                                       (= rule-block-intersection-count best-rule-block-intersection)
@@ -4730,6 +4749,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (= num-constraints best-num-constraints)
                                       (= rule-block-intersection-count best-rule-block-intersection)
@@ -4741,6 +4761,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (= num-constraints best-num-constraints)
                                       (= rule-block-intersection-count best-rule-block-intersection)
@@ -4753,6 +4774,7 @@
                                       (= condition-entropy best-condition-entropy)
                                       (= certain-goal-gain best-certain-goal-gain)
                                       (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
                                       (= goal-constraint-support-count best-goal-constraint-support-count)
                                       (= num-constraints best-num-constraints)
                                       (= rule-block-intersection-count best-rule-block-intersection)
@@ -4768,6 +4790,7 @@
                          (setq best-certain-goal-gain certain-goal-gain)
                          (setq best-certain-goal-count certain-goal-count)
                          (setq best-goal-constraint-support-count goal-constraint-support-count)
+                         (setq best-goal-constraint-support-ratio goal-constraint-support-ratio)
                          (setq best-rule-block-size rule-block-size)
                          (setq best-rule-block-intersection rule-block-intersection-count)
                          (setq best-condition-block-size condition-block-size)

@@ -1792,9 +1792,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (when nil t
 			   (format t "~%intermediate cpd:")
 			   (print-cpd cpd))
-			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
-			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setf (aref soft-cpds i) cpd)
 			 (when nil
 			   (format t "~%final cpd:")

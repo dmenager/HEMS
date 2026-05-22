@@ -1864,9 +1864,237 @@
 #| Normalize factor rules to maintain probability measure.
    Returns: Destructively modified phi |#
 
+(defun canonical-value-set (values)
+  (sort (copy-list values) #'<))
+
+(defun same-value-set-p (values1 values2)
+  (and (null (set-difference values1 values2))
+       (null (set-difference values2 values1))))
+
+(defun cpd-parent-specs (cpd dependent-id)
+  (sort
+   (loop
+     for attribute being the hash-keys of (rule-based-cpd-identifiers cpd)
+       using (hash-value idx)
+     when (not (equal attribute dependent-id))
+       collect (list :attribute attribute
+		     :idx idx
+		     :domain (canonical-value-set
+			      (gethash idx (rule-based-cpd-var-values cpd)))))
+   #'<
+   :key #'(lambda (spec) (getf spec :idx))))
+
+(defun cpd-rule-value-set (cpd rule attribute)
+  (canonical-value-set (lookup-rule-condition attribute rule cpd)))
+
+(defun make-cpd-parent-cell (parent-specs &optional rule cpd)
+  (make-array (length parent-specs)
+	      :initial-contents
+	      (loop
+		for spec in parent-specs
+		collect
+		(cond (rule
+		       (cpd-rule-value-set cpd rule (getf spec :attribute)))
+		      (t
+		       (copy-list (getf spec :domain)))))))
+
+(defun copy-cpd-parent-cell (cell)
+  (make-array (length cell)
+	      :initial-contents
+	      (loop
+		for i from 0 to (- (length cell) 1)
+		collect (copy-list (aref cell i)))))
+
+(defun cpd-parent-cell-key (cell)
+  (format nil "~{~{~S~^,~}~^|~}"
+	  (loop
+	    for i from 0 to (- (length cell) 1)
+	    collect (aref cell i))))
+
+(defun cpd-parent-cell-subset-p (cell region)
+  (loop
+    for i from 0 to (- (length cell) 1)
+    always (null (set-difference (aref cell i) (aref region i)))))
+
+(defun cpd-parent-cell-intersection (cell region)
+  (loop
+    with intersection = (make-array (length cell))
+    for i from 0 to (- (length cell) 1)
+    for vals = (intersection (aref cell i) (aref region i))
+    when (null vals)
+      do (return-from cpd-parent-cell-intersection nil)
+    do
+       (setf (aref intersection i) (canonical-value-set vals))
+    finally
+       (return intersection)))
+
+(defun split-cpd-parent-cell-by-region (cell region)
+  (let ((intersection (cpd-parent-cell-intersection cell region)))
+    (cond ((null intersection)
+	   (list cell))
+	  ((cpd-parent-cell-subset-p cell region)
+	   (list cell))
+	  (t
+	   (loop
+	     with residuals = nil
+	     for i from 0 to (- (length cell) 1)
+	     for diff = (set-difference (aref cell i) (aref intersection i))
+	     when diff
+	       do
+		  (let ((residual (copy-cpd-parent-cell cell)))
+		    (loop
+		      for j from 0 to (- i 1)
+		      do
+			 (setf (aref residual j) (copy-list (aref intersection j))))
+		    (setf (aref residual i) (canonical-value-set diff))
+		    (setq residuals (cons residual residuals)))
+	     finally
+		(return (cons intersection (nreverse residuals))))))))
+
+(defun add-cpd-parent-cell-if-new (cell cells seen)
+  (let ((key (cpd-parent-cell-key cell)))
+    (unless (gethash key seen)
+      (setf (gethash key seen) t)
+      (setq cells (cons cell cells))))
+  cells)
+
+(defun build-cpd-parent-partition (parent-specs rule-caches)
+  (loop
+    with cells = (list (make-cpd-parent-cell parent-specs))
+    for cache in rule-caches
+    do
+       (loop
+	 with next-cells = nil
+	 with seen = (make-hash-table :test #'equal)
+	 for cell in cells
+	 do
+	    (loop
+	      for split-cell in (split-cpd-parent-cell-by-region cell (getf cache :parent-region))
+	      do
+		 (setq next-cells (add-cpd-parent-cell-if-new split-cell next-cells seen)))
+	 finally
+	    (setq cells (nreverse next-cells)))
+    finally
+       (return cells)))
+
+(defun cpd-parent-cell-conditions (cell parent-specs)
+  (loop
+    with conditions = (make-hash-table :test #'equal)
+    for i from 0 to (- (length cell) 1)
+    for spec in parent-specs
+    for vals = (aref cell i)
+    when (not (same-value-set-p vals (getf spec :domain)))
+      do
+	 (setf (gethash (getf spec :attribute) conditions) (copy-list vals))
+    finally
+       (return conditions)))
+
+(defun copy-rule-conditions-with-dependent-values (conditions dependent-id dep-values dep-domain)
+  (let ((new-conditions (copy-hash-table conditions)))
+    (when (not (same-value-set-p dep-values dep-domain))
+      (setf (gethash dependent-id new-conditions) (copy-list dep-values)))
+    new-conditions))
+
+(defun group-dependent-values-by-probability (dep-probs dep-domain)
+  (loop
+    with groups = (make-hash-table :test #'equal)
+    for dep-value in dep-domain
+    for prob = (gethash dep-value dep-probs 0)
+    do
+       (setf (gethash prob groups)
+	     (cons dep-value (gethash prob groups)))
+    finally
+       (return groups)))
+
+(defun make-normalized-cpd-rule (conditions probability count block)
+  (let ((rule (make-rule :id (symbol-name (gensym "RULE-"))
+			 :conditions conditions
+			 :probability probability
+			 :block (make-hash-table)
+			 :certain-block (make-hash-table)
+			 :avoid-list (make-hash-table)
+			 :redundancies (make-hash-table)
+			 :count count)))
+    (setf (gethash block (rule-block rule)) block)
+    rule))
+
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
 (defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (declare (ignore var-val-mappings))
+  (loop
+    with dep-domain = (cpd-rule-value-set phi (make-rule :conditions (make-hash-table :test #'equal)) new-dep-id)
+    with parent-specs = (cpd-parent-specs phi new-dep-id)
+    with rule-caches = (loop
+			 for rule being the elements of (rule-based-cpd-rules phi)
+			 collect (list :rule rule
+				       :parent-region (make-cpd-parent-cell parent-specs rule phi)
+				       :dep-values (cpd-rule-value-set phi rule new-dep-id)))
+    with parent-cells = (build-cpd-parent-partition parent-specs rule-caches)
+    with new-rules = nil
+    with block = 0
+    for cell in parent-cells
+    do
+       (loop
+	 with dep-probs = (make-hash-table :test #'equal)
+	 with row-counts = nil
+	 with row-count = nil
+	 for cache in rule-caches
+	 when (cpd-parent-cell-subset-p cell (getf cache :parent-region))
+	   do
+	      (let ((rule (getf cache :rule)))
+		(loop
+		  for dep-value in (getf cache :dep-values)
+		  for old-prob = (gethash dep-value dep-probs)
+		  do
+		     (cond ((and old-prob
+				 (not (= old-prob (rule-probability rule))))
+			    (format t "~%compatible rules have different probabilities during normalization.~%cpd:~%~S~%cell:~%~S~%dependent value: ~S~%old probability: ~S~%new rule:"
+				    phi cell dep-value old-prob)
+			    (print-cpd-rule rule)
+			    (error "Normalization compatible rule probability conflict"))
+			   (t
+			    (setf (gethash dep-value dep-probs) (rule-probability rule))
+			    (when (rule-count rule)
+			      (setq row-counts (cons (rule-count rule) row-counts)))))))
+	 finally
+	    (when row-counts
+	      (setq row-count (apply #'max row-counts)))
+	    (loop
+	      with norm-const = (loop
+				  for dep-value in dep-domain
+				  sum (gethash dep-value dep-probs 0))
+	      with parent-conditions = (cpd-parent-cell-conditions cell parent-specs)
+	      with groups = (group-dependent-values-by-probability dep-probs dep-domain)
+	      for prob being the hash-keys of groups
+		using (hash-value dep-values)
+	      do
+		 (let ((new-rule
+			 (make-normalized-cpd-rule
+			  (copy-rule-conditions-with-dependent-values
+			   parent-conditions
+			   new-dep-id
+			   (canonical-value-set dep-values)
+			   dep-domain)
+			  (if (> norm-const 0)
+			      (/ prob norm-const)
+			      0)
+			  row-count
+			  block)))
+		   (when (or (> (rule-probability new-rule) 1)
+			     (< (rule-probability new-rule) 0))
+		     (format t "~%new dep-id: ~S~%cpd:~%~S~%cell:~%~S~%normalizing constant: ~d~%new rule:"
+			     new-dep-id phi cell norm-const)
+		     (print-cpd-rule new-rule)
+		     (error "Normalization error"))
+		   (setq new-rules (cons new-rule new-rules))
+		   (setq block (+ block 1)))))
+    finally
+       (setf (rule-based-cpd-rules phi)
+	     (make-array block :initial-contents (reverse new-rules)))
+       (return phi)))
+
+(defun normalize-rule-probabilities-old (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
   (labels ((intersect-rule-conditions (r1 r2)
 	     (loop
 	       with conditions = (make-hash-table :test #'equal)
@@ -6216,23 +6444,14 @@
 	  (return (nreverse new-rules)))))
 
 (defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t) (preserve-rule-counts nil))
-  (labels ((full-domain (attribute)
-             (gethash (gethash attribute (rule-based-cpd-identifiers new-cpd))
-                      (rule-based-cpd-var-values new-cpd)))
-           (condition-values (rule attribute)
-             (or (gethash attribute (rule-conditions rule))
-                 (full-domain attribute)))
-           (same-value-set-p (values1 values2)
-             (and (null (set-difference values1 values2))
-                  (null (set-difference values2 values1))))
-           (intersect-rule-conditions (r1 r2)
+  (labels ((intersect-rule-conditions (r1 r2)
              (loop
                with conditions = (make-hash-table :test #'equal)
                for attribute being the hash-keys of (rule-based-cpd-identifiers new-cpd)
                  using (hash-value idx)
                for domain = (gethash idx (rule-based-cpd-var-values new-cpd))
-               for values1 = (condition-values r1 attribute)
-               for values2 = (condition-values r2 attribute)
+               for values1 = (cpd-rule-value-set new-cpd r1 attribute)
+               for values2 = (cpd-rule-value-set new-cpd r2 attribute)
                for intersection = (intersection values1 values2)
                when (null intersection)
                  do (return-from intersect-rule-conditions nil)
@@ -6335,7 +6554,7 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (setq check-uniqueness nil)
-  (when nil t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))

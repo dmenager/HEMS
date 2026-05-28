@@ -5641,6 +5641,1096 @@
     shock --> sbp
     shock --> dbp))
 
+(defun mimic-log-test-case-0-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "10")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    acute_respiratory_failure = (relation-node acute_respiratory_failure :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    acute_respiratory_failure --> resp_compromise
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-0-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "10")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acute_respiratory_failure = (relation-node acute_respiratory_failure :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    acute_respiratory_failure --> resp_compromise
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-1-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-1-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-2-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "delayed")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-2-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-3-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "4")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-3-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "4")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-4-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    myocardial_infarction = (relation-node myocardial_infarction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-4-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    myocardial_infarction = (relation-node myocardial_infarction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-5-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "7")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-5-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "7")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-6-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "6")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "expectant")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-6-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "6")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-7-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "low")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-7-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "low")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-8-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "7")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "delayed")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-8-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "7")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-9-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "unknown")
+    dbp = (percept-node dbp :value "unknown")
+    pain = (percept-node pain :value "13")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "expectant")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-9-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "unknown")
+    dbp = (percept-node dbp :value "unknown")
+    pain = (percept-node pain :value "13")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-10-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "unknown")
+    o2sat = (percept-node o2sat :value "unknown")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "low")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "expectant")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-10-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "unknown")
+    o2sat = (percept-node o2sat :value "unknown")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "low")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-11-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "2")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-11-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "low")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "2")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-12-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "unknown")
+    heartrate = (percept-node heartrate :value "unknown")
+    resprate = (percept-node resprate :value "unknown")
+    o2sat = (percept-node o2sat :value "unknown")
+    sbp = (percept-node sbp :value "unknown")
+    dbp = (percept-node dbp :value "unknown")
+    pain = (percept-node pain :value "unknown")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "unknown")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-12-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "unknown")
+    heartrate = (percept-node heartrate :value "unknown")
+    resprate = (percept-node resprate :value "unknown")
+    o2sat = (percept-node o2sat :value "unknown")
+    sbp = (percept-node sbp :value "unknown")
+    dbp = (percept-node dbp :value "unknown")
+    pain = (percept-node pain :value "unknown")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-13-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "delayed")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-13-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    chronic_airway_obstruction = (relation-node chronic_airway_obstruction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-14-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "unknown")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "expectant")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-14-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "unknown")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    semicoma_stupor = (relation-node semicoma_stupor :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> semicoma_stupor
+    resp_compromise --> semicoma_stupor
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-15-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "13")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "expectant")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-15-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "13")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-16-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "6")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    myocardial_infarction = (relation-node myocardial_infarction :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-16-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "6")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    myocardial_infarction = (relation-node myocardial_infarction :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-17-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "unknown")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-17-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "high")
+    heartrate = (percept-node heartrate :value "high")
+    resprate = (percept-node resprate :value "high")
+    o2sat = (percept-node o2sat :value "low")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "unknown")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    sepsis = (relation-node sepsis :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "T")
+    shock = (percept-node shock :value "T")
+    sepsis --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-18-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "2")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "immediate")
+    intracerebral_hemorrhage = (relation-node intracerebral_hemorrhage :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    intracerebral_hemorrhage --> shock
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-18-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "low")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "high")
+    dbp = (percept-node dbp :value "high")
+    pain = (percept-node pain :value "2")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    intracerebral_hemorrhage = (relation-node intracerebral_hemorrhage :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    intracerebral_hemorrhage --> shock
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-19-ground-truth ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    acuity = (percept-node acuity :value "delayed")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    death = (percept-node death :value "Nil")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    temperature --> acuity
+    heartrate --> acuity
+    resprate --> acuity
+    o2sat --> acuity
+    sbp --> acuity
+    dbp --> acuity
+    pain --> acuity
+    chiefcomplaint --> acuity
+    shock --> death
+    resp_compromise --> death
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defun mimic-log-test-case-19-cue ()
+  (compile-program nil
+    temperature = (percept-node temperature :value "normal")
+    heartrate = (percept-node heartrate :value "normal")
+    resprate = (percept-node resprate :value "normal")
+    o2sat = (percept-node o2sat :value "normal")
+    sbp = (percept-node sbp :value "normal")
+    dbp = (percept-node dbp :value "normal")
+    pain = (percept-node pain :value "0")
+    chiefcomplaint = (percept-node chiefcomplaint :value "None")
+    malignant_neoplasm_of_bronchus = (relation-node malignant_neoplasm_of_bronchus :value "T" :kb-concept-id "INJURY")
+    resp_compromise = (percept-node resp_compromise :value "Nil")
+    shock = (percept-node shock :value "T")
+    shock --> heartrate
+    resp_compromise --> resprate
+    resp_compromise --> o2sat
+    shock --> sbp
+    shock --> dbp
+    ))
+
+(defparameter *mimic-log-test-cases*
+  (list
+   (list :id 0 :cue #'mimic-log-test-case-0-cue :ground-truth #'mimic-log-test-case-0-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 1 :cue #'mimic-log-test-case-1-cue :ground-truth #'mimic-log-test-case-1-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 2 :cue #'mimic-log-test-case-2-cue :ground-truth #'mimic-log-test-case-2-ground-truth :death "Nil" :acuity "delayed")
+   (list :id 3 :cue #'mimic-log-test-case-3-cue :ground-truth #'mimic-log-test-case-3-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 4 :cue #'mimic-log-test-case-4-cue :ground-truth #'mimic-log-test-case-4-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 5 :cue #'mimic-log-test-case-5-cue :ground-truth #'mimic-log-test-case-5-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 6 :cue #'mimic-log-test-case-6-cue :ground-truth #'mimic-log-test-case-6-ground-truth :death "Nil" :acuity "expectant")
+   (list :id 7 :cue #'mimic-log-test-case-7-cue :ground-truth #'mimic-log-test-case-7-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 8 :cue #'mimic-log-test-case-8-cue :ground-truth #'mimic-log-test-case-8-ground-truth :death "Nil" :acuity "delayed")
+   (list :id 9 :cue #'mimic-log-test-case-9-cue :ground-truth #'mimic-log-test-case-9-ground-truth :death "Nil" :acuity "expectant")
+   (list :id 10 :cue #'mimic-log-test-case-10-cue :ground-truth #'mimic-log-test-case-10-ground-truth :death "Nil" :acuity "expectant")
+   (list :id 11 :cue #'mimic-log-test-case-11-cue :ground-truth #'mimic-log-test-case-11-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 12 :cue #'mimic-log-test-case-12-cue :ground-truth #'mimic-log-test-case-12-ground-truth :death "Nil" :acuity "unknown")
+   (list :id 13 :cue #'mimic-log-test-case-13-cue :ground-truth #'mimic-log-test-case-13-ground-truth :death "Nil" :acuity "delayed")
+   (list :id 14 :cue #'mimic-log-test-case-14-cue :ground-truth #'mimic-log-test-case-14-ground-truth :death "Nil" :acuity "expectant")
+   (list :id 15 :cue #'mimic-log-test-case-15-cue :ground-truth #'mimic-log-test-case-15-ground-truth :death "Nil" :acuity "expectant")
+   (list :id 16 :cue #'mimic-log-test-case-16-cue :ground-truth #'mimic-log-test-case-16-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 17 :cue #'mimic-log-test-case-17-cue :ground-truth #'mimic-log-test-case-17-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 18 :cue #'mimic-log-test-case-18-cue :ground-truth #'mimic-log-test-case-18-ground-truth :death "Nil" :acuity "immediate")
+   (list :id 19 :cue #'mimic-log-test-case-19-cue :ground-truth #'mimic-log-test-case-19-ground-truth :death "Nil" :acuity "delayed")
+   ))
+
 (defun mimic-log-remember (&key (soft-likelihoods t) score-only singleton-only)
   (let ((cue (mimic-log-test-cue)))
     (remember eltm* cue '+ 1 t
@@ -5658,6 +6748,16 @@
       do (progn
            (format stream "~&~%[~D] ~A~%" i (rule-based-cpd-dependent-id cpd))
            (print-cpd cpd :stream stream))))
+
+(defparameter *mimic-log-trained-eltm-file*
+  "examples/Common Lisp/mimic-log-trained-eltm.txt")
+
+(defun mimic-log-save-and-reload-eltm (file)
+  (with-mimic-log-timing ("save trained ELTM")
+    (save-eltm-to-file eltm* :path "" :filename file))
+  (with-mimic-log-timing ("reload trained ELTM")
+    (load-eltm-from-file file))
+  eltm*)
 
 (defun run-mimic-log-inference-benchmark (&key limit (bic-p t) trace-filter-ops-p (print-posterior-singletons-p t))
   (reset-mimic-log-benchmark)
@@ -5684,3 +6784,128 @@
     (when print-posterior-singletons-p
       (print-mimic-log-singleton-posteriors (second result)))
     result))
+
+(defun mimic-log-value-label (value)
+  (cond ((null value) "Nil")
+        ((symbolp value) (symbol-name value))
+        (t (write-to-string value))))
+
+(defun mimic-log-cpd-value-labels (cpd dep-values)
+  (let* ((dep-id (rule-based-cpd-dependent-id cpd))
+         (idx (gethash dep-id (rule-based-cpd-identifiers cpd)))
+         (vvbm (and idx (gethash idx (rule-based-cpd-var-value-block-map cpd)))))
+    (loop
+      for (value . block) in vvbm
+      when (member (cdr value) dep-values)
+        collect (car value))))
+
+(defun mimic-log-prediction-from-cpd (cpd)
+  (loop
+    with dep-id = (rule-based-cpd-dependent-id cpd)
+    with best-rule = nil
+    with best-prob = nil
+    for rule being the elements of (rule-based-cpd-rules cpd)
+    for prob = (rule-probability rule)
+    when (or (null best-prob) (> prob best-prob))
+      do (setq best-rule rule
+               best-prob prob)
+    finally
+       (let* ((dep-values (and best-rule
+                               (or (gethash dep-id (rule-conditions best-rule))
+                                   (let ((dep-idx (gethash dep-id (rule-based-cpd-identifiers cpd))))
+                                     (and dep-idx
+                                          (copy-list (gethash dep-idx (rule-based-cpd-var-values cpd))))))))
+              (labels (and dep-values (mimic-log-cpd-value-labels cpd dep-values))))
+         (return (list :dependent-id dep-id
+                       :probability best-prob
+                       :values labels
+                       :assigned-p (not (null labels)))))))
+
+(defun mimic-log-find-posterior-cpd (posterior-marginals var-name)
+  (find var-name posterior-marginals
+        :key #'rule-based-cpd-dependent-var
+        :test #'string-equal))
+
+(defun mimic-log-positive-death-p (value)
+  (and value (string-equal value "T")))
+
+(defun mimic-log-prediction-correct-p (prediction truth)
+  (member truth (getf prediction :values) :test #'string-equal))
+
+(defun mimic-log-safe-ratio (num den)
+  (if (zerop den) nil (/ (float num) den)))
+
+(defun mimic-log-print-binary-metrics (tp fp tn fn &key (stream t))
+  (let ((total (+ tp fp tn fn)))
+    (format stream "~&Death confusion matrix: TP=~D FP=~D TN=~D FN=~D~%" tp fp tn fn)
+    (format stream "Death accuracy: ~A~%" (mimic-log-safe-ratio (+ tp tn) total))
+    (format stream "Death precision: ~A~%" (mimic-log-safe-ratio tp (+ tp fp)))
+    (format stream "Death recall: ~A~%" (mimic-log-safe-ratio tp (+ tp fn)))))
+
+(defun mimic-log-run-one-test-case (case &key (print-case-p t))
+  (let* ((cue (funcall (getf case :cue)))
+         (result (multiple-value-list
+                  (remember eltm* cue '+ 1 t :type "observation")))
+         (posterior-marginals (second result))
+         (episode-ref (fifth result))
+         (death-cpd (mimic-log-find-posterior-cpd posterior-marginals "death"))
+         (acuity-cpd (mimic-log-find-posterior-cpd posterior-marginals "acuity"))
+         (death-pred (and death-cpd (mimic-log-prediction-from-cpd death-cpd)))
+         (acuity-pred (and acuity-cpd (mimic-log-prediction-from-cpd acuity-cpd)))
+         (death-truth (getf case :death))
+         (acuity-truth (getf case :acuity)))
+    (when print-case-p
+      (format t "~&~%Test case ~D~%" (getf case :id))
+      (format t "Episode id: ~A~%" (if (and episode-ref (car episode-ref)) (episode-id (car episode-ref)) nil))
+      (format t "~%Inferred death belief:")
+      (print-cpd death-cpd)
+      (format t "~%Inferred acuity belief:")
+      (print-cpd acuity-cpd)
+      (format t "Death truth=~A prediction=~S correct=~A~%"
+              death-truth death-pred (and death-pred (mimic-log-prediction-correct-p death-pred death-truth)))
+      (format t "Acuity truth=~A prediction=~S correct=~A~%"
+              acuity-truth acuity-pred (and acuity-pred (mimic-log-prediction-correct-p acuity-pred acuity-truth))))
+    (list :id (getf case :id)
+          :episode-id (if (and episode-ref (car episode-ref)) (episode-id (car episode-ref)) nil)
+          :death-truth death-truth
+          :death-prediction death-pred
+          :death-correct-p (and death-pred (mimic-log-prediction-correct-p death-pred death-truth))
+          :acuity-truth acuity-truth
+          :acuity-prediction acuity-pred
+          :acuity-correct-p (and acuity-pred (mimic-log-prediction-correct-p acuity-pred acuity-truth)))))
+
+(defun run-mimic-log-predictive-performance-benchmark (&key training-limit (bic-p t)
+                                                       (insert-training-bns-p t)
+                                                       (eltm-cache-file *mimic-log-trained-eltm-file*))
+  (reset-mimic-log-benchmark)
+  (let (bns inserted results (tp 0) (fp 0) (tn 0) (fn 0) (death-correct 0) (acuity-correct 0) (total 0))
+    (cond (insert-training-bns-p
+           (setq bns (with-mimic-log-timing ("compile static log training programs")
+                       (mimic-log-training-bns :limit training-limit)))
+           (setq inserted (with-mimic-log-timing ("insert training observations")
+                            (insert-mimic-log-training-bns bns :bic-p bic-p)))
+           (format t "~&Inserted ~D training observations.~%" inserted)
+           (mimic-log-save-and-reload-eltm eltm-cache-file))
+          (t
+           (with-mimic-log-timing ("load trained ELTM")
+             (load-eltm-from-file eltm-cache-file))))
+    (setq results
+          (with-mimic-log-timing ("run 20 ground-truth retrieval cues")
+            (loop for case in *mimic-log-test-cases*
+                  collect (mimic-log-run-one-test-case case))))
+    (loop for result in results
+          for truth-pos = (mimic-log-positive-death-p (getf result :death-truth))
+          for pred-values = (getf (getf result :death-prediction) :values)
+          for pred-pos = (member "T" pred-values :test #'string-equal)
+          do (cond ((and truth-pos pred-pos) (incf tp))
+                   ((and (not truth-pos) pred-pos) (incf fp))
+                   ((and (not truth-pos) (not pred-pos)) (incf tn))
+                   (t (incf fn)))
+             (when (getf result :death-correct-p) (incf death-correct))
+             (when (getf result :acuity-correct-p) (incf acuity-correct))
+             (incf total))
+    (format t "~&~%Predictive performance over ~D test cases~%" total)
+    (format t "Death max-probability accuracy: ~A~%" (mimic-log-safe-ratio death-correct total))
+    (mimic-log-print-binary-metrics tp fp tn fn)
+    (format t "Acuity max-probability accuracy: ~A~%" (mimic-log-safe-ratio acuity-correct total))
+    results))

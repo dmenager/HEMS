@@ -2027,9 +2027,14 @@
     with parent-specs = (cpd-parent-specs phi new-dep-id)
     with rule-caches = (loop
 			 for rule being the elements of (rule-based-cpd-rules phi)
-			 collect (list :rule rule
-				       :parent-region (make-cpd-parent-cell parent-specs rule phi)
-				       :dep-values (cpd-rule-value-set phi rule new-dep-id)))
+			 for unsupported-zero-count-rule-p = (and (numberp (rule-count rule))
+								  (zerop (rule-count rule)))
+			 when unsupported-zero-count-rule-p
+			   do (setf (rule-probability rule) 0)
+			 unless unsupported-zero-count-rule-p
+			   collect (list :rule rule
+					 :parent-region (make-cpd-parent-cell parent-specs rule phi)
+					 :dep-values (cpd-rule-value-set phi rule new-dep-id)))
     with parent-cells = (build-cpd-parent-partition parent-specs rule-caches)
     with new-rules = nil
     with block = 0
@@ -2079,7 +2084,9 @@
 			  (if (> norm-const 0)
 			      (/ prob norm-const)
 			      0)
-			  row-count
+			  (if (rule-based-cpd-singleton-p phi)
+			      nil
+			      (or row-count 0))
 			  block)))
 		   (when (or (> (rule-probability new-rule) 1)
 			     (< (rule-probability new-rule) 0))
@@ -2620,74 +2627,73 @@
         for pos = (gethash ident2 (rule-based-cpd-identifiers phi1))
         for vvbm2 = (gethash idx (rule-based-cpd-var-value-block-map phi2))
         do
-           (cond
-             (pos
-             (let* ((vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
-                     (old-vvbm1 (mapcar #'(lambda (entry)
-                                            (cons (caar entry) (cdar entry)))
-                                        vvbm1))
-                     (lower-vvbm1 (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)))
-                      (new-bindings (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
-                                          #'< :key #'cdar)))
-                (when new-bindings
-                  (multiple-value-bind (new-vvbm1 new-lower-vvbm1 new-sva1 new-var-values final-label-map)
-                      (merge-domain-bindings vvbm1 lower-vvbm1 new-bindings)
-                    (setf (gethash pos (rule-based-cpd-var-value-block-map phi1)) new-vvbm1)
-                    (setf (gethash pos (rule-based-cpd-set-valued-attributes phi1)) new-sva1)
-                    (setf (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)) new-lower-vvbm1)
-                    (setf (gethash pos (rule-based-cpd-var-values phi1)) new-var-values)
-                    (let ((transform
-                            (mapcar #'(lambda (old-binding)
-                                        (cons (cdr old-binding)
-                                              (cdr (assoc (car old-binding)
-                                                          final-label-map
-                                                          :test #'equal))))
-                                    old-vvbm1)))
+           (cond (pos
+		  (let* ((vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
+			 (old-vvbm1 (mapcar #'(lambda (entry)
+						(cons (caar entry) (cdar entry)))
+                                            vvbm1))
+			 (lower-vvbm1 (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)))
+			 (new-bindings (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
+                                             #'< :key #'cdar)))
+                    (when new-bindings
+                      (multiple-value-bind (new-vvbm1 new-lower-vvbm1 new-sva1 new-var-values final-label-map)
+			  (merge-domain-bindings vvbm1 lower-vvbm1 new-bindings)
+			(setf (gethash pos (rule-based-cpd-var-value-block-map phi1)) new-vvbm1)
+			(setf (gethash pos (rule-based-cpd-set-valued-attributes phi1)) new-sva1)
+			(setf (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)) new-lower-vvbm1)
+			(setf (gethash pos (rule-based-cpd-var-values phi1)) new-var-values)
+			(let ((transform
+				(mapcar #'(lambda (old-binding)
+                                            (cons (cdr old-binding)
+						  (cdr (assoc (car old-binding)
+                                                              final-label-map
+                                                              :test #'equal))))
+					old-vvbm1)))
+			  (push (list :ident ident2
+                                      :position pos
+                                      :type (if (= pos 0) :dependent :parent)
+                                      :transform transform
+                                      :old-values (mapcar #'cdr transform)
+                                      :new-values (mapcar #'(lambda (binding)
+                                                              (cdr (assoc (caar binding)
+									  final-label-map
+									  :test #'equal)))
+							  new-bindings))
+				changes))))))
+		 ((gethash ident2 q-first-bindings)
+		  (let* ((parent-cpd (get-cpd-by-id ident2 new-nodes))
+			 (new-idx (hash-table-count (rule-based-cpd-identifiers phi1)))
+			 (full-vvbm (copy-list (gethash 0 (rule-based-cpd-var-value-block-map parent-cpd))))
+			 (observed-values (remove 0
+						  (copy-list (gethash idx (rule-based-cpd-var-values phi2)))
+						  :test #'=)))
+                    (setf (gethash ident2 (rule-based-cpd-identifiers phi1)) new-idx)
+                    (setf (gethash new-idx (rule-based-cpd-vars phi1))
+			  (gethash 0 (rule-based-cpd-vars parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-types phi1))
+			  (gethash 0 (rule-based-cpd-types parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-concept-ids phi1))
+			  (gethash 0 (rule-based-cpd-concept-ids parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-qualified-vars phi1))
+			  (gethash 0 (rule-based-cpd-qualified-vars parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-var-value-block-map phi1)) full-vvbm)
+                    (setf (gethash new-idx (rule-based-cpd-lower-approx-var-value-block-map phi1))
+			  (mapcar #'(lambda (vvb)
+                                      (list (first vvb) (make-hash-table)))
+				  full-vvbm))
+                    (setf (gethash new-idx (rule-based-cpd-set-valued-attributes phi1))
+			  (gethash 0 (rule-based-cpd-set-valued-attributes parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-var-values phi1))
+			  (copy-list (gethash 0 (rule-based-cpd-var-values parent-cpd))))
                     (push (list :ident ident2
-                                :position pos
-                                :type (if (= pos 0) :dependent :parent)
-                                :transform transform
-                                :old-values (mapcar #'cdr transform)
-                                :new-values (mapcar #'(lambda (binding)
-                                                        (cdr (assoc (caar binding)
-                                                                    final-label-map
-                                                                    :test #'equal)))
-                                                    new-bindings))
-                          changes))))))
-             ((gethash ident2 q-first-bindings)
-              (let* ((parent-cpd (get-cpd-by-id ident2 new-nodes))
-                     (new-idx (hash-table-count (rule-based-cpd-identifiers phi1)))
-                     (full-vvbm (copy-list (gethash 0 (rule-based-cpd-var-value-block-map parent-cpd))))
-                     (observed-values (remove 0
-                                              (copy-list (gethash idx (rule-based-cpd-var-values phi2)))
-                                              :test #'=)))
-                (setf (gethash ident2 (rule-based-cpd-identifiers phi1)) new-idx)
-                (setf (gethash new-idx (rule-based-cpd-vars phi1))
-                      (gethash 0 (rule-based-cpd-vars parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-types phi1))
-                      (gethash 0 (rule-based-cpd-types parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-concept-ids phi1))
-                      (gethash 0 (rule-based-cpd-concept-ids parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-qualified-vars phi1))
-                      (gethash 0 (rule-based-cpd-qualified-vars parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-var-value-block-map phi1)) full-vvbm)
-                (setf (gethash new-idx (rule-based-cpd-lower-approx-var-value-block-map phi1))
-                      (mapcar #'(lambda (vvb)
-                                  (list (first vvb) (make-hash-table)))
-                              full-vvbm))
-                (setf (gethash new-idx (rule-based-cpd-set-valued-attributes phi1))
-                      (gethash 0 (rule-based-cpd-set-valued-attributes parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-var-values phi1))
-                      (copy-list (gethash 0 (rule-based-cpd-var-values parent-cpd))))
-                (push (list :ident ident2
-                            :position new-idx
-                            :type :introduced-parent
-                            :old-values (set-difference
-                                         (copy-list (gethash new-idx (rule-based-cpd-var-values phi1)))
-                                         observed-values
-                                         :test #'=)
-                            :new-values observed-values)
-                      changes)))))
+				:position new-idx
+				:type :introduced-parent
+				:old-values (set-difference
+                                             (copy-list (gethash new-idx (rule-based-cpd-var-values phi1)))
+                                             observed-values
+                                             :test #'=)
+				:new-values observed-values)
+			  changes)))))
       (setf (rule-based-cpd-cardinalities phi1)
             (get-var-cardinalities (rule-based-cpd-var-value-block-map phi1)))
       (setf (rule-based-cpd-step-sizes phi1)
@@ -6463,15 +6469,23 @@
                   (return conditions)))
            (set-filtered-rule-count (new-rule r1 r2 cpd1 cpd2)
              (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p cpd2))
-                    (setf (rule-count new-rule) (rule-count r1)))
+		    (setf (rule-count new-rule) (rule-count r1)))
                    ((and preserve-rule-counts (rule-based-cpd-singleton-p cpd1))
-                    (setf (rule-count new-rule) (rule-count r2)))
-                   ((rule-based-cpd-singleton-p cpd2)
+		    (setf (rule-count new-rule) (rule-count r2)))
+                   ((rule-based-cpd-singleton-p cpd2)		    
                     (setf (rule-count new-rule) nil)))
              new-rule)
+           (zero-unsupported-rule-probability (rule)
+             (when (and rule
+                        (numberp (rule-count rule))
+                        (zerop (rule-count rule)))
+               (setf (rule-probability rule) 0))
+             rule)
            (add-rule (rule num-rules)
+             (zero-unsupported-rule-probability rule)
              (let* ((rule-key (polynomial-encoding rule new-cpd))
                     (existing (gethash rule-key rule-keys)))
+               (zero-unsupported-rule-probability existing)
                (cond (existing
                       (when (> (or (rule-count rule) 0)
                                (or (rule-count existing) 0))
@@ -6554,7 +6568,7 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (setq check-uniqueness nil)
-  (when t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))
@@ -6826,7 +6840,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     (print-cpd phi2)
                  ;;(break)
                  )
-	   (when t
+	   (when nil t
 	     (setq print-special* t))
 	   (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
            (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
@@ -6835,7 +6849,7 @@ Roughly based on (Koller and Friedman, 2009) |#
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
-	   (when t
+	   (when nil t
 	     (setq print-special* nil))
 	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
            (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
@@ -6843,10 +6857,10 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (break)
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
-	   (when t
+	   (when nil t
 	     (setq print-special* t))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when t
+	   (when nil t
 	     (setq print-special* nil))
 	   (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
@@ -8442,7 +8456,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%new factor:")
 	   (print-cpd new-factor)
-	   (break)
+	   ;;(break)
 	   )
 	 (loop
 	   for rule being the elements of (rule-based-cpd-rules new-factor)

@@ -45,10 +45,7 @@
 (defun hash-rule-conditions (conditions)
   (if (listp conditions)
       (loop
-	with hash-table =
-			(if (stringp (caar conditions))
-			    (make-hash-table :test #'equal)
-			    (make-hash-table))
+	with hash-table = (make-rule-condition-table)
 	for (att . set-values) in conditions
 	do
 	   (setf (gethash att hash-table) set-values)

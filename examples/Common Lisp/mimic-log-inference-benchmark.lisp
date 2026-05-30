@@ -6848,6 +6848,8 @@
                   (remember eltm* cue '+ 1 t :type "observation")))
          (posterior-marginals (second result))
          (episode-ref (fifth result))
+	 (prior-death-cpd (mimic-log-find-posterior-cpd (car (episode-observation (car episode-ref))) "death"))
+         (prior-acuity-cpd (mimic-log-find-posterior-cpd (car (episode-observation (car episode-ref))) "acuity"))
          (death-cpd (mimic-log-find-posterior-cpd posterior-marginals "death"))
          (acuity-cpd (mimic-log-find-posterior-cpd posterior-marginals "acuity"))
          (death-pred (and death-cpd (mimic-log-prediction-from-cpd death-cpd)))
@@ -6857,8 +6859,22 @@
     (when print-case-p
       (format t "~&~%Test case ~D~%" (getf case :id))
       (format t "Episode id: ~A~%" (if (and episode-ref (car episode-ref)) (episode-id (car episode-ref)) nil))
+      (format t "~%Prior death marginal belief:")
+      (print-cpd (factor-operation prior-death-cpd (list (rule-based-cpd-dependent-id prior-death-cpd))
+				   (loop
+				     for ident being the hash-keys of (rule-based-cpd-identifiers prior-death-cpd)
+				     when (not (equal ident (rule-based-cpd-dependent-id prior-death-cpd)))
+				       collect ident)
+				   '+))
       (format t "~%Inferred death belief:")
       (print-cpd death-cpd)
+      (format t "~%Prior acuity marginal belief:")
+      (print-cpd (factor-operation prior-acuity-cpd (list (rule-based-cpd-dependent-id prior-acuity-cpd))
+				   (loop
+				     for ident being the hash-keys of (rule-based-cpd-identifiers prior-acuity-cpd)
+				     when (not (equal ident (rule-based-cpd-dependent-id prior-acuity-cpd)))
+				       collect ident)
+				   '+))
       (format t "~%Inferred acuity belief:")
       (print-cpd acuity-cpd)
       (format t "Death truth=~A prediction=~S correct=~A~%"

@@ -33,7 +33,7 @@
                collect (list (cons value value) (make-hash-table))))
     finally (return map)))
 
-(defun cpd-shell (rules &key (name "normalization-example"))
+(defun cpd-shell (rules &key (name "normalization-example") count)
   (let* ((identifiers (hash "A" 0 "B" 1 "C" 2))
          (var-values (hash 0 '(0 1 2) 1 '(0 1 2) 2 '(0 1 2)))
          (cardinalities (make-array 3 :initial-contents '(3 3 3) :fill-pointer t))
@@ -57,7 +57,7 @@
                :step-sizes (generate-cpd-step-sizes cardinalities)
                :rules rules
                :concept-blocks (make-hash-table)
-               :count nil
+               :count count
                :singleton-p nil
                :prior name)))
     (update-cpd-rules cpd rules :check-prob-sum nil)))
@@ -132,6 +132,22 @@
     ((2 1) . (0.08d0 0.08d0 0.12d0))
     ((2 2) . (0.08d0 0.08d0 0.12d0))))
 
+(defparameter *sum-counts*
+  '(((0 0) . 18) ((0 1) . 18) ((0 2) . 18)
+    ((1 0) . 18) ((1 1) . 18) ((1 2) . 18)
+    ((2 0) . 20) ((2 1) . 20) ((2 2) . 20)))
+
+(defparameter *sum-rows*
+  '(((0 0) . (0.5d0 0.3333333333333333d0 0.16666666666666666d0))
+    ((0 1) . (0.5d0 0.3333333333333333d0 0.16666666666666666d0))
+    ((0 2) . (0.5d0 0.3333333333333333d0 0.16666666666666666d0))
+    ((1 0) . (0.2777777777777778d0 0.4444444444444444d0 0.2777777777777778d0))
+    ((1 1) . (0.2777777777777778d0 0.4444444444444444d0 0.2777777777777778d0))
+    ((1 2) . (0.2222222222222222d0 0.2222222222222222d0 0.5555555555555556d0))
+    ((2 0) . (0.3d0 0.3d0 0.4d0))
+    ((2 1) . (0.3d0 0.3d0 0.4d0))
+    ((2 2) . (0.3d0 0.3d0 0.4d0))))
+
 (defparameter *normalized-reference-rows*
   '(((0 0) . (0.5833333333333334d0 0.33333333333333337d0 0.08333333333333334d0))
     ((0 1) . (0.5833333333333334d0 0.33333333333333337d0 0.08333333333333334d0))
@@ -146,13 +162,17 @@
 (defun make-cpd1 ()
   (cpd-shell (dense-rules-from-rows "CPD1" *cpd1-rows*
                                     (loop for row in *cpd1-rows*
-                                          collect (cons (car row) 10)))))
+                                          collect (cons (car row) 10)))
+             :name "cpd1"
+             :count 10))
 
 (defun make-cpd2 ()
   (cpd-shell (dense-rules-from-rows "CPD2" *cpd2-rows*
                                     (loop for row in *cpd2-rows*
                                           collect (cons (car row)
-                                                        (if (= (first (car row)) 2) 10 8))))))
+                                                        (if (= (first (car row)) 2) 10 8))))
+             :name "cpd2"
+             :count 10))
 
 (defun make-unnormalized-product-cpd ()
   (cpd-shell (dense-rules-from-rows "PRODUCT" *product-rows* *product-counts*)
@@ -162,6 +182,11 @@
   (cpd-shell (dense-rules-from-rows "REFERENCE" *normalized-reference-rows*
                                     *product-counts*)
              :name "normalized-reference"))
+
+(defun make-unnormalized-sum-cpd ()
+  (cpd-shell (dense-rules-from-rows "SUM" *sum-rows* *sum-counts*)
+             :name "unnormalized-sum"
+             :count 20))
 
 (defun normalize-copy (cpd)
   (normalize-rule-probabilities (copy-rule-based-cpd cpd) "A"))
@@ -178,7 +203,7 @@
         (compatible-rule-p reference-rule actual-rule reference-cpd actual-cpd)
       (and forward-p backward-p))))
 
-(defun assert-compatible-rule-agreement (actual-cpd reference-cpd)
+(defun assert-compatible-rule-agreement (actual-cpd reference-cpd &key (check-counts t))
   (loop
     for reference-rule being the elements of (rule-based-cpd-rules reference-cpd)
     for matched = nil
@@ -190,9 +215,10 @@
                                (rule-probability reference-rule))
                 (error "Probability mismatch.~%Actual: ~S~%Reference: ~S"
                        actual-rule reference-rule))
-              (unless (equal (rule-count actual-rule) (rule-count reference-rule))
-                (error "Count mismatch.~%Actual: ~S~%Reference: ~S"
-                       actual-rule reference-rule)))
+              (when check-counts
+                (unless (equal (rule-count actual-rule) (rule-count reference-rule))
+                  (error "Count mismatch.~%Actual: ~S~%Reference: ~S"
+                         actual-rule reference-rule))))
        (unless matched
          (error "No actual rule compatible with reference rule: ~S" reference-rule)))
   (loop
@@ -216,6 +242,16 @@
         (reference (make-reference-normalized-cpd)))
     (assert-compatible-rule-agreement actual reference)))
 
+(defun run-factor-filter-product-test ()
+  (let ((actual (factor-filter (make-cpd1) (make-cpd2) '*))
+        (reference (make-unnormalized-product-cpd)))
+    (assert-compatible-rule-agreement actual reference :check-counts nil)))
+
+(defun run-factor-filter-sum-test ()
+  (let ((actual (factor-filter (make-cpd1) (make-cpd2) '+))
+        (reference (make-unnormalized-sum-cpd)))
+    (assert-compatible-rule-agreement actual reference)))
+
 (defun run-regression-case (name thunk)
   (format t "~&~A ... " name)
   (finish-output)
@@ -233,6 +269,10 @@
   ;; factors next to the product factor that is actually normalized.
   (make-cpd1)
   (make-cpd2)
+  (run-regression-case "factor-filter product"
+                       #'run-factor-filter-product-test)
+  (run-regression-case "factor-filter sum"
+                       #'run-factor-filter-sum-test)
   (run-regression-case "Uncompressed normalization"
                        #'run-uncompressed-normalization-test)
   (run-regression-case "Compressed normalization"

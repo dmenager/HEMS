@@ -188,6 +188,15 @@
              :name "unnormalized-sum"
              :count 20))
 
+(defun compressed-copy (cpd)
+  (get-local-coverings (copy-rule-based-cpd cpd)))
+
+(defun make-compressed-cpd1 ()
+  (compressed-copy (make-cpd1)))
+
+(defun make-compressed-cpd2 ()
+  (compressed-copy (make-cpd2)))
+
 (defun normalize-copy (cpd)
   (normalize-rule-probabilities (copy-rule-based-cpd cpd) "A"))
 
@@ -243,14 +252,24 @@
     (assert-compatible-rule-agreement actual reference)))
 
 (defun run-factor-filter-product-test ()
-  (let ((actual (factor-filter (make-cpd1) (make-cpd2) '*))
-        (reference (make-unnormalized-product-cpd)))
-    (assert-compatible-rule-agreement actual reference :check-counts nil)))
+  (let ((reference (make-unnormalized-product-cpd)))
+    (assert-compatible-rule-agreement
+     (factor-filter (make-cpd1) (make-cpd2) '*)
+     reference
+     :check-counts nil)
+    (assert-compatible-rule-agreement
+     (factor-filter (make-compressed-cpd1) (make-compressed-cpd2) '*)
+     reference
+     :check-counts nil)))
 
 (defun run-factor-filter-sum-test ()
-  (let ((actual (factor-filter (make-cpd1) (make-cpd2) '+))
-        (reference (make-unnormalized-sum-cpd)))
-    (assert-compatible-rule-agreement actual reference)))
+  (let ((reference (make-unnormalized-sum-cpd)))
+    (assert-compatible-rule-agreement
+     (factor-filter (make-cpd1) (make-cpd2) '+)
+     reference)
+    (assert-compatible-rule-agreement
+     (factor-filter (make-compressed-cpd1) (make-compressed-cpd2) '+)
+     reference)))
 
 (defparameter *normalization-regression-exit-on-failure* nil)
 

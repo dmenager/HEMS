@@ -34,4 +34,4 @@ jobs:
 
       - name: Run normalization and factor-filter regression
         working-directory: examples/Common Lisp
-        run: timeout 900s sbcl --disable-debugger --script normalization-regression-example.lisp
+        run: timeout 900s sbcl --disable-debugger --load normalization-regression-example.lisp --eval '(hems::run-normalization-regression-script)'

@@ -252,6 +252,8 @@
         (reference (make-unnormalized-sum-cpd)))
     (assert-compatible-rule-agreement actual reference)))
 
+(defparameter *normalization-regression-exit-on-failure* nil)
+
 (defun run-regression-case (name thunk)
   (format t "~&~A ... " name)
   (finish-output)
@@ -262,7 +264,9 @@
     (error (condition)
       (format t "FAIL~%")
       (format *error-output* "~&~A failed:~%~A~%" name condition)
-      (uiop:quit 1))))
+      (when *normalization-regression-exit-on-failure*
+        (uiop:quit 1))
+      (error condition))))
 
 (defun run-normalization-regression-example ()
   ;; CPD1 and CPD2 are constructed here so the example keeps the training
@@ -278,5 +282,21 @@
   (run-regression-case "Compressed normalization"
                        #'run-compressed-normalization-test))
 
-(run-normalization-regression-example)
-(uiop:quit 0)
+(defun normalization-regression-script-p ()
+  #+sbcl
+  (and *load-truename*
+       (not (member "--load" sb-ext:*posix-argv* :test #'string=))
+       (some #'(lambda (arg)
+                 (ignore-errors
+                   (equal (truename arg) (truename *load-truename*))))
+             sb-ext:*posix-argv*))
+  #-sbcl
+  nil)
+
+(defun run-normalization-regression-script ()
+  (let ((*normalization-regression-exit-on-failure* t))
+    (run-normalization-regression-example)
+    (uiop:quit 0)))
+
+(when (normalization-regression-script-p)
+  (run-normalization-regression-script))

@@ -6904,7 +6904,8 @@
            (mimic-log-save-and-reload-eltm eltm-cache-file))
           (t
            (with-mimic-log-timing ("load trained ELTM")
-             (load-eltm-from-file eltm-cache-file))))
+             (load-eltm-from-file eltm-cache-file)
+	     (setq eltm* (list (car eltm*))))))
     (setq results
           (with-mimic-log-timing ("run 20 ground-truth retrieval cues")
             (loop for case in *mimic-log-test-cases*

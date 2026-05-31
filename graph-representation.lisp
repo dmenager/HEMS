@@ -1921,10 +1921,23 @@
 		collect (copy-list (aref cell i)))))
 
 (defun cpd-parent-cell-key (cell)
-  (format nil "~{~{~S~^,~}~^|~}"
-	  (loop
-	    for i from 0 to (- (length cell) 1)
-	    collect (aref cell i))))
+  (loop
+    for i from 0 to (- (length cell) 1)
+    collect (copy-list (aref cell i))))
+
+(defun unique-cpd-parent-regions (rule-caches)
+  (loop
+    with seen = (make-hash-table :test #'equal)
+    with regions = nil
+    for cache in rule-caches
+    for region = (getf cache :parent-region)
+    for key = (cpd-parent-cell-key region)
+    unless (gethash key seen)
+      do
+         (setf (gethash key seen) t)
+         (setq regions (cons (list :parent-region region) regions))
+    finally
+       (return (nreverse regions))))
 
 (defun cpd-parent-cell-subset-p (cell region)
   (loop
@@ -2050,7 +2063,8 @@
                            collect (list :rule rule
                                          :parent-region (make-cpd-parent-cell parent-specs rule phi)
                                          :dep-values (cpd-rule-value-set phi rule new-dep-id)))
-      with parent-cells = (build-cpd-parent-partition parent-specs rule-caches)
+      with parent-cells = (build-cpd-parent-partition parent-specs
+						      (unique-cpd-parent-regions rule-caches))
       with new-rules = nil
       with block = 0
       for cell in parent-cells

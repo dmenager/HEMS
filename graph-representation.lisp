@@ -2005,6 +2005,60 @@
     finally
        (return cells)))
 
+(defun cpd-parent-cells-overlap-p (cell1 cell2)
+  (loop
+    for i from 0 to (- (length cell1) 1)
+    always (intersection (aref cell1 i) (aref cell2 i))))
+
+(defun split-cpd-parent-cells-by-region (cells region)
+  (loop
+    with next-cells = nil
+    with seen = (make-hash-table :test #'equal)
+    for cell in cells
+    do
+       (loop
+         for split-cell in (split-cpd-parent-cell-by-region cell region)
+         do
+            (setq next-cells (add-cpd-parent-cell-if-new split-cell next-cells seen)))
+    finally
+       (return (nreverse next-cells))))
+
+(defun build-local-cpd-parent-partition (seed-region parent-regions)
+  (loop
+    with cells = (list (copy-cpd-parent-cell seed-region))
+    for region in parent-regions
+    when (and (not (cpd-parent-cell-subset-p seed-region region))
+              (cpd-parent-cells-overlap-p seed-region region))
+      do
+         (setq cells (split-cpd-parent-cells-by-region cells region))
+    finally
+       (return cells)))
+
+(defun remove-emitted-cpd-parent-cells (cell emitted-cells)
+  (loop
+    with cells = (list cell)
+    for emitted in emitted-cells
+    while cells
+    do
+       (setq cells
+             (loop
+               with next-cells = nil
+               for candidate in cells
+               do
+                  (cond ((cpd-parent-cell-subset-p candidate emitted)
+                         nil)
+                        ((cpd-parent-cells-overlap-p candidate emitted)
+                         (loop
+                           for split-cell in (split-cpd-parent-cell-by-region candidate emitted)
+                           unless (cpd-parent-cell-subset-p split-cell emitted)
+                             do (setq next-cells (cons split-cell next-cells))))
+                        (t
+                         (setq next-cells (cons candidate next-cells))))
+               finally
+                  (return (nreverse next-cells))))
+    finally
+       (return cells)))
+
 (defun cpd-parent-cell-conditions (cell parent-specs)
   (loop
     with conditions = (make-rule-condition-table)
@@ -2048,7 +2102,7 @@
 
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
-(defun normalize-rule-probabilities-parent-partition (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+(defun normalize-rule-probabilities-global-parent-partition (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
   (declare (ignore var-val-mappings))
   (labels ((add-assignment-group (groups probability dep-values)
              (let ((vals (gethash probability groups)))
@@ -2123,6 +2177,110 @@
                        (error "Normalization error"))
                      (setq new-rules (cons new-rule new-rules))
                      (setq block (+ block 1)))))
+      finally
+         (setf (rule-based-cpd-rules phi)
+               (make-array block :initial-contents (reverse new-rules)))
+         (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
+         (return phi))))
+
+
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test (function equal))))
+  (declare (ignore var-val-mappings))
+  (labels ((add-assignment-group (groups probability dep-values)
+             (let ((vals (gethash probability groups)))
+               (setf (gethash probability groups)
+                     (append dep-values vals)))
+             groups)
+           (make-normalized-rules-for-cell (cell dep-domain parent-specs rule-caches block)
+             (loop
+               with remaining-dep-values = (copy-list dep-domain)
+               with row-counts = nil
+               with row-count = nil
+               with assignment-groups = (make-hash-table :test (function equal))
+               for cache in rule-caches
+               while remaining-dep-values
+               when (cpd-parent-cell-subset-p cell (getf cache :parent-region))
+                 do
+                    (let* ((rule (getf cache :rule))
+                           (covered-dep-values
+                             (intersection remaining-dep-values (getf cache :dep-values))))
+                      (when covered-dep-values
+                        (add-assignment-group assignment-groups
+                                              (rule-probability rule)
+                                              covered-dep-values)
+                        (when (numberp (rule-count rule))
+                          (setq row-counts (cons (rule-count rule) row-counts)))
+                        (setq remaining-dep-values
+                              (set-difference remaining-dep-values covered-dep-values))))
+               finally
+                  (when row-counts
+                    (setq row-count (apply (function max) row-counts)))
+                  (return
+                    (loop
+                      with norm-const = (loop
+                                          for prob being the hash-keys of assignment-groups
+                                            using (hash-value dep-values)
+                                          sum (* prob (length dep-values)))
+                      with parent-conditions = (cpd-parent-cell-conditions cell parent-specs)
+                      with rules = nil
+                      for prob being the hash-keys of assignment-groups
+                        using (hash-value dep-values)
+                      do
+                         (let ((new-rule
+                                 (make-normalized-cpd-rule
+                                  (copy-rule-conditions-with-dependent-values
+                                   parent-conditions
+                                   new-dep-id
+                                   (canonical-value-set dep-values)
+                                   dep-domain)
+                                  (if (> norm-const 0)
+                                      (/ prob norm-const)
+                                      0)
+                                  (if (rule-based-cpd-singleton-p phi)
+                                      nil
+                                      (or row-count 0))
+                                  block)))
+                           (when (or (> (rule-probability new-rule) 1)
+                                     (< (rule-probability new-rule) 0))
+                             (format t "~%new dep-id: ~S~%cpd:~%~S~%cell:~%~S~%normalizing constant: ~d~%new rule:"
+                                     new-dep-id phi cell norm-const)
+                             (print-cpd-rule new-rule)
+                             (error "Normalization error"))
+                           (setq rules (cons new-rule rules))
+                           (setq block (+ block 1)))
+                      finally
+                         (return (values (nreverse rules) block)))))))
+    (loop
+      with dep-domain = (cpd-rule-value-set phi (make-rule :conditions (make-rule-condition-table)) new-dep-id)
+      with parent-specs = (cpd-parent-specs phi new-dep-id)
+      with rule-caches = (loop
+                           for rule being the elements of (rule-based-cpd-rules phi)
+                           collect (list :rule rule
+                                         :parent-region (make-cpd-parent-cell parent-specs rule phi)
+                                         :dep-values (cpd-rule-value-set phi rule new-dep-id)))
+      with parent-regions = (loop
+                              for cache in (unique-cpd-parent-regions rule-caches)
+                              collect (getf cache :parent-region))
+      with emitted-cells = nil
+      with new-rules = nil
+      with block = 0
+      for cache in rule-caches
+      do
+         (loop
+           for local-cell in (build-local-cpd-parent-partition (getf cache :parent-region)
+                                                               parent-regions)
+           do
+              (loop
+                for cell in (remove-emitted-cpd-parent-cells local-cell emitted-cells)
+                do
+                   (multiple-value-bind (cell-rules next-block)
+                       (make-normalized-rules-for-cell cell dep-domain parent-specs rule-caches block)
+                     (when cell-rules
+                       (loop
+                         for rule in cell-rules
+                         do (setq new-rules (cons rule new-rules)))
+                       (setq block next-block)
+                       (setq emitted-cells (cons cell emitted-cells))))))
       finally
          (setf (rule-based-cpd-rules phi)
                (make-array block :initial-contents (reverse new-rules)))
@@ -2520,9 +2678,6 @@
 	 (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
     phi)
 
-
-(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
-  (normalize-rule-probabilities-parent-partition phi new-dep-id :var-val-mappings var-val-mappings))
 
 #| split rules compatible with new zero-count rules |#
 

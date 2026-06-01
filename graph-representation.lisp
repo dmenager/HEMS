@@ -302,7 +302,7 @@
 (defun swap-rule-conditions (rules bindings var-val-mappings)
   (labels ((substitute-rule-conditions (rule-conditions)
              (loop
-	       with hash = (copy-hash-table rule-conditions)
+	       with hash = (copy-rule-condition-table rule-conditions)
                for id being the hash-keys of rule-conditions
                  using (hash-value set)
                do
@@ -646,6 +646,21 @@
                             value)))
 	 finally (return h)))))
 
+
+(defun make-rule-condition-table ()
+  (make-hash-table :test #'equal))
+
+(defun copy-rule-condition-table (conditions)
+  (when conditions
+    (loop
+      with copy = (make-rule-condition-table)
+      for ident being the hash-keys of conditions
+        using (hash-value values)
+      do
+         (setf (gethash ident copy) (copy-list values))
+      finally
+         (return copy))))
+
 #| Copy edge information in Bayesian network |#
 
 ;; edge-hash = hash table containing edge information
@@ -775,7 +790,7 @@
 ;; count = count we wish to assign to rule, if not default value
 (defun copy-cpd-rule (rule &key (fresh-id nil) (count nil))
   (make-rule :id (if fresh-id (symbol-name (gensym "RULE-")) (rule-id rule))
-             :conditions (copy-hash-table (rule-conditions rule))
+             :conditions (copy-rule-condition-table (rule-conditions rule))
              :probability (rule-probability rule)
              :block (copy-hash-table (rule-block rule))
              :certain-block (copy-hash-table (rule-certain-block rule))
@@ -1794,7 +1809,7 @@
     do
        (when (= (mod i row-len) 0)
 	 (setq row nil))
-       (setq index-rule (make-rule :conditions (make-hash-table :test #'equal)))
+       (setq index-rule (make-rule :conditions (make-rule-condition-table)))
        (setq assn (get-cpd-assignment-from-index phi i :var-val-mappings var-val-mappings))
        (loop
          for ident being the hash-keys of (rule-based-cpd-identifiers phi)
@@ -1864,12 +1879,482 @@
 #| Normalize factor rules to maintain probability measure.
    Returns: Destructively modified phi |#
 
+(defun canonical-value-set (values)
+  (sort (copy-list values) #'<))
+
+(defun same-value-set-p (values1 values2)
+  (and (null (set-difference values1 values2))
+       (null (set-difference values2 values1))))
+
+(defun cpd-parent-specs (cpd dependent-id)
+  (sort
+   (loop
+     for attribute being the hash-keys of (rule-based-cpd-identifiers cpd)
+       using (hash-value idx)
+     when (not (equal attribute dependent-id))
+       collect (list :attribute attribute
+		     :idx idx
+		     :domain (canonical-value-set
+			      (gethash idx (rule-based-cpd-var-values cpd)))))
+   #'<
+   :key #'(lambda (spec) (getf spec :idx))))
+
+(defun cpd-rule-value-set (cpd rule attribute)
+  (canonical-value-set (lookup-rule-condition attribute rule cpd)))
+
+(defun make-cpd-parent-cell (parent-specs &optional rule cpd)
+  (make-array (length parent-specs)
+	      :initial-contents
+	      (loop
+		for spec in parent-specs
+		collect
+		(cond (rule
+		       (cpd-rule-value-set cpd rule (getf spec :attribute)))
+		      (t
+		       (copy-list (getf spec :domain)))))))
+
+(defun copy-cpd-parent-cell (cell)
+  (make-array (length cell)
+	      :initial-contents
+	      (loop
+		for i from 0 to (- (length cell) 1)
+		collect (copy-list (aref cell i)))))
+
+(defun cpd-parent-cell-key (cell)
+  (loop
+    for i from 0 to (- (length cell) 1)
+    collect (copy-list (aref cell i))))
+
+(defun unique-cpd-parent-regions (rule-caches)
+  (loop
+    with seen = (make-hash-table :test #'equal)
+    with regions = nil
+    for cache in rule-caches
+    for region = (getf cache :parent-region)
+    for key = (cpd-parent-cell-key region)
+    unless (gethash key seen)
+      do
+         (setf (gethash key seen) t)
+         (setq regions (cons (list :parent-region region) regions))
+    finally
+       (return (nreverse regions))))
+
+(defun cpd-parent-cell-subset-p (cell region)
+  (loop
+    for i from 0 to (- (length cell) 1)
+    always (null (set-difference (aref cell i) (aref region i)))))
+
+(defun cpd-parent-cell-intersection (cell region)
+  (loop
+    with intersection = (make-array (length cell))
+    for i from 0 to (- (length cell) 1)
+    for vals = (intersection (aref cell i) (aref region i))
+    when (null vals)
+      do (return-from cpd-parent-cell-intersection nil)
+    do
+       (setf (aref intersection i) (canonical-value-set vals))
+    finally
+       (return intersection)))
+
+(defun split-cpd-parent-cell-by-region (cell region)
+  (let ((intersection (cpd-parent-cell-intersection cell region)))
+    (cond ((null intersection)
+	   (list cell))
+	  ((cpd-parent-cell-subset-p cell region)
+	   (list cell))
+	  (t
+	   (loop
+	     with residuals = nil
+	     for i from 0 to (- (length cell) 1)
+	     for diff = (set-difference (aref cell i) (aref intersection i))
+	     when diff
+	       do
+		  (let ((residual (copy-cpd-parent-cell cell)))
+		    (loop
+		      for j from 0 to (- i 1)
+		      do
+			 (setf (aref residual j) (copy-list (aref intersection j))))
+		    (setf (aref residual i) (canonical-value-set diff))
+		    (setq residuals (cons residual residuals)))
+	     finally
+		(return (cons intersection (nreverse residuals))))))))
+
+(defun add-cpd-parent-cell-if-new (cell cells seen)
+  (let ((key (cpd-parent-cell-key cell)))
+    (unless (gethash key seen)
+      (setf (gethash key seen) t)
+      (setq cells (cons cell cells))))
+  cells)
+
+(defun build-cpd-parent-partition (parent-specs rule-caches)
+  (loop
+    with cells = (list (make-cpd-parent-cell parent-specs))
+    for cache in rule-caches
+    do
+       (loop
+	 with next-cells = nil
+	 with seen = (make-hash-table :test #'equal)
+	 for cell in cells
+	 do
+	    (loop
+	      for split-cell in (split-cpd-parent-cell-by-region cell (getf cache :parent-region))
+	      do
+		 (setq next-cells (add-cpd-parent-cell-if-new split-cell next-cells seen)))
+	 finally
+	    (setq cells (nreverse next-cells)))
+    finally
+       (return cells)))
+
+(defun cpd-parent-cells-overlap-p (cell1 cell2)
+  (loop
+    for i from 0 to (- (length cell1) 1)
+    always (intersection (aref cell1 i) (aref cell2 i))))
+
+(defun split-cpd-parent-cells-by-region (cells region)
+  (loop
+    with next-cells = nil
+    with seen = (make-hash-table :test #'equal)
+    for cell in cells
+    do
+       (loop
+         for split-cell in (split-cpd-parent-cell-by-region cell region)
+         do
+            (setq next-cells (add-cpd-parent-cell-if-new split-cell next-cells seen)))
+    finally
+       (return (nreverse next-cells))))
+
+(defun build-local-cpd-parent-partition (seed-region parent-regions)
+  (loop
+    with cells = (list (copy-cpd-parent-cell seed-region))
+    for region in parent-regions
+    when (and (not (cpd-parent-cell-subset-p seed-region region))
+              (cpd-parent-cells-overlap-p seed-region region))
+      do
+         (setq cells (split-cpd-parent-cells-by-region cells region))
+    finally
+       (return cells)))
+
+(defun remove-emitted-cpd-parent-cells (cell emitted-cells)
+  (loop
+    with cells = (list cell)
+    for emitted in emitted-cells
+    while cells
+    do
+       (setq cells
+             (loop
+               with next-cells = nil
+               for candidate in cells
+               do
+                  (cond ((cpd-parent-cell-subset-p candidate emitted)
+                         nil)
+                        ((cpd-parent-cells-overlap-p candidate emitted)
+                         (loop
+                           for split-cell in (split-cpd-parent-cell-by-region candidate emitted)
+                           unless (cpd-parent-cell-subset-p split-cell emitted)
+                             do (setq next-cells (cons split-cell next-cells))))
+                        (t
+                         (setq next-cells (cons candidate next-cells))))
+               finally
+                  (return (nreverse next-cells))))
+    finally
+       (return cells)))
+
+(defun cpd-parent-cell-conditions (cell parent-specs)
+  (loop
+    with conditions = (make-rule-condition-table)
+    for i from 0 to (- (length cell) 1)
+    for spec in parent-specs
+    for vals = (aref cell i)
+    when (not (same-value-set-p vals (getf spec :domain)))
+      do
+	 (setf (gethash (getf spec :attribute) conditions) (copy-list vals))
+    finally
+       (return conditions)))
+
+(defun copy-rule-conditions-with-dependent-values (conditions dependent-id dep-values dep-domain)
+  (let ((new-conditions (copy-rule-condition-table conditions)))
+    (when (not (same-value-set-p dep-values dep-domain))
+      (setf (gethash dependent-id new-conditions) (copy-list dep-values)))
+    new-conditions))
+
+(defun group-dependent-values-by-probability (dep-probs)
+  (loop
+    with groups = (make-hash-table :test #'equal)
+    for dep-value being the hash-keys of dep-probs
+      using (hash-value prob)
+    do
+       (setf (gethash prob groups)
+	     (cons dep-value (gethash prob groups)))
+    finally
+       (return groups)))
+
+(defun make-normalized-cpd-rule (conditions probability count block)
+  (let ((rule (make-rule :id (symbol-name (gensym "RULE-"))
+			 :conditions conditions
+			 :probability probability
+			 :block (make-hash-table)
+			 :certain-block (make-hash-table)
+			 :avoid-list (make-hash-table)
+			 :redundancies (make-hash-table)
+			 :count count)))
+    (setf (gethash block (rule-block rule)) block)
+    rule))
+
 ;; phi = conditional probability distribution
 ;; new-dep-id = dependent variable name of the conditional distribution
-(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
-  (labels ((intersect-rule-conditions (r1 r2)
+(defun normalize-rule-probabilities-global-parent-partition (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (declare (ignore var-val-mappings))
+  (labels ((add-assignment-group (groups probability dep-values)
+             (let ((vals (gethash probability groups)))
+               (setf (gethash probability groups)
+                     (append dep-values vals)))
+             groups))
+    (loop
+      with dep-domain = (cpd-rule-value-set phi (make-rule :conditions (make-rule-condition-table)) new-dep-id)
+      with parent-specs = (cpd-parent-specs phi new-dep-id)
+      with rule-caches = (loop
+                           for rule being the elements of (rule-based-cpd-rules phi)
+                           collect (list :rule rule
+                                         :parent-region (make-cpd-parent-cell parent-specs rule phi)
+                                         :dep-values (cpd-rule-value-set phi rule new-dep-id)))
+      with parent-cells = (build-cpd-parent-partition parent-specs
+						      (unique-cpd-parent-regions rule-caches))
+      with new-rules = nil
+      with block = 0
+      for cell in parent-cells
+      do
+         (loop
+           with remaining-dep-values = (copy-list dep-domain)
+           with row-counts = nil
+           with row-count = nil
+           with assignment-groups = (make-hash-table :test #'equal)
+           for cache in rule-caches
+           while remaining-dep-values
+           when (cpd-parent-cell-subset-p cell (getf cache :parent-region))
+             do
+                (let* ((rule (getf cache :rule))
+                       (covered-dep-values
+                         (intersection remaining-dep-values (getf cache :dep-values))))
+                  (when covered-dep-values
+                    (add-assignment-group assignment-groups
+                                          (rule-probability rule)
+                                          covered-dep-values)
+                    (when (numberp (rule-count rule))
+                      (setq row-counts (cons (rule-count rule) row-counts)))
+                    (setq remaining-dep-values
+                          (set-difference remaining-dep-values covered-dep-values))))
+           finally
+              (when row-counts
+                (setq row-count (apply #'max row-counts)))
+              (loop
+                with norm-const = (loop
+                                    for prob being the hash-keys of assignment-groups
+                                      using (hash-value dep-values)
+                                    sum (* prob (length dep-values)))
+                with parent-conditions = (cpd-parent-cell-conditions cell parent-specs)
+                for prob being the hash-keys of assignment-groups
+                  using (hash-value dep-values)
+                do
+                   (let ((new-rule
+                           (make-normalized-cpd-rule
+                            (copy-rule-conditions-with-dependent-values
+                             parent-conditions
+                             new-dep-id
+                             (canonical-value-set dep-values)
+                             dep-domain)
+                            (if (> norm-const 0)
+                                (/ prob norm-const)
+                                0)
+                            (if (rule-based-cpd-singleton-p phi)
+                                nil
+                                (or row-count 0))
+                            block)))
+                     (when (or (> (rule-probability new-rule) 1)
+                               (< (rule-probability new-rule) 0))
+                       (format t "~%new dep-id: ~S~%cpd:~%~S~%cell:~%~S~%normalizing constant: ~d~%new rule:"
+                               new-dep-id phi cell norm-const)
+                       (print-cpd-rule new-rule)
+                       (error "Normalization error"))
+                     (setq new-rules (cons new-rule new-rules))
+                     (setq block (+ block 1)))))
+      finally
+         (setf (rule-based-cpd-rules phi)
+               (make-array block :initial-contents (reverse new-rules)))
+         (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
+         (return phi))))
+
+
+(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test (function equal))))
+  (declare (ignore var-val-mappings))
+  (labels ((add-assignment-group (groups probability dep-values)
+             (let ((vals (gethash probability groups)))
+               (setf (gethash probability groups)
+                     (append dep-values vals)))
+             groups)
+           (make-normalized-rules-for-cell (cell dep-domain parent-specs rule-caches block)
+             (loop
+               with remaining-dep-values = (copy-list dep-domain)
+               with row-counts = nil
+               with row-count = nil
+               with assignment-groups = (make-hash-table :test (function equal))
+               for cache in rule-caches
+               while remaining-dep-values
+               when (cpd-parent-cell-subset-p cell (getf cache :parent-region))
+                 do
+                    (let* ((rule (getf cache :rule))
+                           (covered-dep-values
+                             (intersection remaining-dep-values (getf cache :dep-values))))
+                      (when covered-dep-values
+                        (add-assignment-group assignment-groups
+                                              (rule-probability rule)
+                                              covered-dep-values)
+                        (when (numberp (rule-count rule))
+                          (setq row-counts (cons (rule-count rule) row-counts)))
+                        (setq remaining-dep-values
+                              (set-difference remaining-dep-values covered-dep-values))))
+               finally
+                  (when row-counts
+                    (setq row-count (apply (function max) row-counts)))
+                  (return
+                    (loop
+                      with norm-const = (loop
+                                          for prob being the hash-keys of assignment-groups
+                                            using (hash-value dep-values)
+                                          sum (* prob (length dep-values)))
+                      with parent-conditions = (cpd-parent-cell-conditions cell parent-specs)
+                      with rules = nil
+                      for prob being the hash-keys of assignment-groups
+                        using (hash-value dep-values)
+                      do
+                         (let ((new-rule
+                                 (make-normalized-cpd-rule
+                                  (copy-rule-conditions-with-dependent-values
+                                   parent-conditions
+                                   new-dep-id
+                                   (canonical-value-set dep-values)
+                                   dep-domain)
+                                  (if (> norm-const 0)
+                                      (/ prob norm-const)
+                                      0)
+                                  (if (rule-based-cpd-singleton-p phi)
+                                      nil
+                                      (or row-count 0))
+                                  block)))
+                           (when (or (> (rule-probability new-rule) 1)
+                                     (< (rule-probability new-rule) 0))
+                             (format t "~%new dep-id: ~S~%cpd:~%~S~%cell:~%~S~%normalizing constant: ~d~%new rule:"
+                                     new-dep-id phi cell norm-const)
+                             (print-cpd-rule new-rule)
+                             (error "Normalization error"))
+                           (setq rules (cons new-rule rules))
+                           (setq block (+ block 1)))
+                      finally
+                         (return (values (nreverse rules) block)))))))
+    (loop
+      with dep-domain = (cpd-rule-value-set phi (make-rule :conditions (make-rule-condition-table)) new-dep-id)
+      with parent-specs = (cpd-parent-specs phi new-dep-id)
+      with rule-caches = (loop
+                           for rule being the elements of (rule-based-cpd-rules phi)
+                           collect (list :rule rule
+                                         :parent-region (make-cpd-parent-cell parent-specs rule phi)
+                                         :dep-values (cpd-rule-value-set phi rule new-dep-id)))
+      with parent-regions = (loop
+                              for cache in (unique-cpd-parent-regions rule-caches)
+                              collect (getf cache :parent-region))
+      with emitted-cells = nil
+      with new-rules = nil
+      with block = 0
+      for cache in rule-caches
+      do
+         (loop
+           for local-cell in (build-local-cpd-parent-partition (getf cache :parent-region)
+                                                               parent-regions)
+           do
+              (loop
+                for cell in (remove-emitted-cpd-parent-cells local-cell emitted-cells)
+                do
+                   (multiple-value-bind (cell-rules next-block)
+                       (make-normalized-rules-for-cell cell dep-domain parent-specs rule-caches block)
+                     (when cell-rules
+                       (loop
+                         for rule in cell-rules
+                         do (setq new-rules (cons rule new-rules)))
+                       (setq block next-block)
+                       (setq emitted-cells (cons cell emitted-cells))))))
+      finally
+         (setf (rule-based-cpd-rules phi)
+               (make-array block :initial-contents (reverse new-rules)))
+         (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
+         (return phi))))
+
+
+(defun normalize-rule-probabilities-old (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
+  (labels ((rule-list-length< (rules1 rules2)
+             (< (length rules1) (length rules2)))
+           (add-rule-once (rule rules)
+             (if (member rule rules :test #'eq)
+                 rules
+                 (cons rule rules)))
+           (add-rules-once (new-rules rules)
+             (loop
+               for rule in new-rules
+               do (setq rules (add-rule-once rule rules))
+               finally (return rules)))
+           (normalizer-parent-index (rules parent-specs)
+             (let ((index (make-hash-table :test #'equal)))
+               (loop
+                 for rule being the elements of rules
+                 do
+                    (loop
+                      for spec in parent-specs
+                      for attribute = (getf spec :attribute)
+                      for values = (gethash attribute (rule-conditions rule))
+                      for entry = (or (gethash attribute index)
+                                      (setf (gethash attribute index)
+                                            (list :wildcards nil
+                                                  :values (make-hash-table :test #'equal))))
+                      do
+                         (cond (values
+                                (loop
+                                  for value in values
+                                  do
+                                     (setf (gethash value (getf entry :values))
+                                           (add-rule-once rule (gethash value (getf entry :values))))))
+                               (t
+                                (setf (getf entry :wildcards)
+                                      (add-rule-once rule (getf entry :wildcards)))))))
+               index))
+           (candidate-normalization-rules (r1 parent-index parent-specs all-rules)
+             (loop
+               with candidates = nil
+               for spec in parent-specs
+               for attribute = (getf spec :attribute)
+               for values = (gethash attribute (rule-conditions r1))
+               when values
+                 do
+                    (let* ((entry (gethash attribute parent-index))
+                           (attribute-candidates (copy-list (getf entry :wildcards))))
+                      (loop
+                        for value in values
+                        do
+                           (setq attribute-candidates
+                                 (add-rules-once (gethash value (getf entry :values))
+                                                 attribute-candidates)))
+                      (when (or (null candidates)
+                                (rule-list-length< attribute-candidates candidates))
+                        (setq candidates attribute-candidates)))
+               finally
+                  (return
+                    (cond (candidates
+                           (loop
+                             for rule in all-rules
+                             when (member rule candidates :test #'eq)
+                               collect rule))
+                          (t
+                           all-rules))))))
+           (intersect-rule-conditions (r1 r2)
 	     (loop
-	       with conditions = (make-hash-table :test #'equal)
+	       with conditions = (make-rule-condition-table)
 	       with r1-vals and r2-vals and new-vals
 	       for ident being the hash-keys of (rule-based-cpd-identifiers phi)
 		 using (hash-value idx)
@@ -1898,6 +2383,9 @@
       with context-hash and counts-hash and rows-hash and dep-values-hash
       with dep-id-pos = (gethash new-dep-id (rule-based-cpd-identifiers phi))
       with rules = (rule-based-cpd-rules phi)
+      with parent-specs = (cpd-parent-specs phi new-dep-id)
+      with all-rules-list = (coerce rules 'list)
+      with parent-index = (normalizer-parent-index rules parent-specs)
       with new-rules and block = 0 and new-rule and matched-p and r1-dep-values
       for r1 being the elements of rules
       for j from 0
@@ -1938,9 +2426,8 @@
 	 (loop
 	   with parent-setting and norm-const and r2-dep-values
 	   with new-r2-dep-id-vals and remaining-dep-vals
-	   for r2 being the elements of rules
-	   for k from 0
-	   when (not (= j k))
+	   for r2 in (candidate-normalization-rules r1 parent-index parent-specs all-rules-list)
+	   when (not (eq r1 r2))
 	     do
 		(setq r2-dep-values (gethash new-dep-id (rule-conditions r2)))
 		(when (null r2-dep-values)
@@ -2189,7 +2676,8 @@
 	   (format t "~%~%max new rules index: ~d~%new rules:" (- (length new-rules) 1))
 	   (mapcar #'print-cpd-rule (reverse new-rules)))
 	 (setf (rule-based-cpd-rules phi) (make-array block :initial-contents (reverse new-rules))))
-    phi))
+    phi)
+
 
 #| split rules compatible with new zero-count rules |#
 
@@ -2392,74 +2880,73 @@
         for pos = (gethash ident2 (rule-based-cpd-identifiers phi1))
         for vvbm2 = (gethash idx (rule-based-cpd-var-value-block-map phi2))
         do
-           (cond
-             (pos
-             (let* ((vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
-                     (old-vvbm1 (mapcar #'(lambda (entry)
-                                            (cons (caar entry) (cdar entry)))
-                                        vvbm1))
-                     (lower-vvbm1 (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)))
-                      (new-bindings (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
-                                          #'< :key #'cdar)))
-                (when new-bindings
-                  (multiple-value-bind (new-vvbm1 new-lower-vvbm1 new-sva1 new-var-values final-label-map)
-                      (merge-domain-bindings vvbm1 lower-vvbm1 new-bindings)
-                    (setf (gethash pos (rule-based-cpd-var-value-block-map phi1)) new-vvbm1)
-                    (setf (gethash pos (rule-based-cpd-set-valued-attributes phi1)) new-sva1)
-                    (setf (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)) new-lower-vvbm1)
-                    (setf (gethash pos (rule-based-cpd-var-values phi1)) new-var-values)
-                    (let ((transform
-                            (mapcar #'(lambda (old-binding)
-                                        (cons (cdr old-binding)
-                                              (cdr (assoc (car old-binding)
-                                                          final-label-map
-                                                          :test #'equal))))
-                                    old-vvbm1)))
+           (cond (pos
+		  (let* ((vvbm1 (gethash pos (rule-based-cpd-var-value-block-map phi1)))
+			 (old-vvbm1 (mapcar #'(lambda (entry)
+						(cons (caar entry) (cdar entry)))
+                                            vvbm1))
+			 (lower-vvbm1 (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)))
+			 (new-bindings (sort (set-difference vvbm2 vvbm1 :key #'caar :test #'equal)
+                                             #'< :key #'cdar)))
+                    (when new-bindings
+                      (multiple-value-bind (new-vvbm1 new-lower-vvbm1 new-sva1 new-var-values final-label-map)
+			  (merge-domain-bindings vvbm1 lower-vvbm1 new-bindings)
+			(setf (gethash pos (rule-based-cpd-var-value-block-map phi1)) new-vvbm1)
+			(setf (gethash pos (rule-based-cpd-set-valued-attributes phi1)) new-sva1)
+			(setf (gethash pos (rule-based-cpd-lower-approx-var-value-block-map phi1)) new-lower-vvbm1)
+			(setf (gethash pos (rule-based-cpd-var-values phi1)) new-var-values)
+			(let ((transform
+				(mapcar #'(lambda (old-binding)
+                                            (cons (cdr old-binding)
+						  (cdr (assoc (car old-binding)
+                                                              final-label-map
+                                                              :test #'equal))))
+					old-vvbm1)))
+			  (push (list :ident ident2
+                                      :position pos
+                                      :type (if (= pos 0) :dependent :parent)
+                                      :transform transform
+                                      :old-values (mapcar #'cdr transform)
+                                      :new-values (mapcar #'(lambda (binding)
+                                                              (cdr (assoc (caar binding)
+									  final-label-map
+									  :test #'equal)))
+							  new-bindings))
+				changes))))))
+		 ((gethash ident2 q-first-bindings)
+		  (let* ((parent-cpd (get-cpd-by-id ident2 new-nodes))
+			 (new-idx (hash-table-count (rule-based-cpd-identifiers phi1)))
+			 (full-vvbm (copy-list (gethash 0 (rule-based-cpd-var-value-block-map parent-cpd))))
+			 (observed-values (remove 0
+						  (copy-list (gethash idx (rule-based-cpd-var-values phi2)))
+						  :test #'=)))
+                    (setf (gethash ident2 (rule-based-cpd-identifiers phi1)) new-idx)
+                    (setf (gethash new-idx (rule-based-cpd-vars phi1))
+			  (gethash 0 (rule-based-cpd-vars parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-types phi1))
+			  (gethash 0 (rule-based-cpd-types parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-concept-ids phi1))
+			  (gethash 0 (rule-based-cpd-concept-ids parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-qualified-vars phi1))
+			  (gethash 0 (rule-based-cpd-qualified-vars parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-var-value-block-map phi1)) full-vvbm)
+                    (setf (gethash new-idx (rule-based-cpd-lower-approx-var-value-block-map phi1))
+			  (mapcar #'(lambda (vvb)
+                                      (list (first vvb) (make-hash-table)))
+				  full-vvbm))
+                    (setf (gethash new-idx (rule-based-cpd-set-valued-attributes phi1))
+			  (gethash 0 (rule-based-cpd-set-valued-attributes parent-cpd)))
+                    (setf (gethash new-idx (rule-based-cpd-var-values phi1))
+			  (copy-list (gethash 0 (rule-based-cpd-var-values parent-cpd))))
                     (push (list :ident ident2
-                                :position pos
-                                :type (if (= pos 0) :dependent :parent)
-                                :transform transform
-                                :old-values (mapcar #'cdr transform)
-                                :new-values (mapcar #'(lambda (binding)
-                                                        (cdr (assoc (caar binding)
-                                                                    final-label-map
-                                                                    :test #'equal)))
-                                                    new-bindings))
-                          changes))))))
-             ((gethash ident2 q-first-bindings)
-              (let* ((parent-cpd (get-cpd-by-id ident2 new-nodes))
-                     (new-idx (hash-table-count (rule-based-cpd-identifiers phi1)))
-                     (full-vvbm (copy-list (gethash 0 (rule-based-cpd-var-value-block-map parent-cpd))))
-                     (observed-values (remove 0
-                                              (copy-list (gethash idx (rule-based-cpd-var-values phi2)))
-                                              :test #'=)))
-                (setf (gethash ident2 (rule-based-cpd-identifiers phi1)) new-idx)
-                (setf (gethash new-idx (rule-based-cpd-vars phi1))
-                      (gethash 0 (rule-based-cpd-vars parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-types phi1))
-                      (gethash 0 (rule-based-cpd-types parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-concept-ids phi1))
-                      (gethash 0 (rule-based-cpd-concept-ids parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-qualified-vars phi1))
-                      (gethash 0 (rule-based-cpd-qualified-vars parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-var-value-block-map phi1)) full-vvbm)
-                (setf (gethash new-idx (rule-based-cpd-lower-approx-var-value-block-map phi1))
-                      (mapcar #'(lambda (vvb)
-                                  (list (first vvb) (make-hash-table)))
-                              full-vvbm))
-                (setf (gethash new-idx (rule-based-cpd-set-valued-attributes phi1))
-                      (gethash 0 (rule-based-cpd-set-valued-attributes parent-cpd)))
-                (setf (gethash new-idx (rule-based-cpd-var-values phi1))
-                      (copy-list (gethash 0 (rule-based-cpd-var-values parent-cpd))))
-                (push (list :ident ident2
-                            :position new-idx
-                            :type :introduced-parent
-                            :old-values (set-difference
-                                         (copy-list (gethash new-idx (rule-based-cpd-var-values phi1)))
-                                         observed-values
-                                         :test #'=)
-                            :new-values observed-values)
-                      changes)))))
+				:position new-idx
+				:type :introduced-parent
+				:old-values (set-difference
+                                             (copy-list (gethash new-idx (rule-based-cpd-var-values phi1)))
+                                             observed-values
+                                             :test #'=)
+				:new-values observed-values)
+			  changes)))))
       (setf (rule-based-cpd-cardinalities phi1)
             (get-var-cardinalities (rule-based-cpd-var-value-block-map phi1)))
       (setf (rule-based-cpd-step-sizes phi1)
@@ -5900,7 +6387,7 @@
 		      (setq compatible-rule (car (get-compatible-rules factor2 factor1 rule1 :find-all nil)))
 		      ;; get compatible rule from cpd and multiply the probabilities.
 		      (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                :conditions (copy-hash-table (rule-conditions rule1))
+                                                :conditions (copy-rule-condition-table (rule-conditions rule1))
                                                 :probability (cond ((or (eq op '*) (eq op #'*))
 								    (funcall op (rule-probability rule1) (rule-probability compatible-rule)))
 								   (t
@@ -5946,7 +6433,7 @@
 			  (setq rk (copy-array rule-key))
 			  (setq compatible-rule (car (get-compatible-rules factor2 factor1 rule1 :find-all nil)))
 			  (setq new-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                    :conditions (copy-hash-table (rule-conditions rule1))
+                                                    :conditions (copy-rule-condition-table (rule-conditions rule1))
                                                     :probability (cond ((or (eq op '*) (eq op #'*))
 									(if (= val 0) 0 0))
 								       (t
@@ -6215,24 +6702,21 @@
 		)
 	  (return (nreverse new-rules)))))
 
+
 (defun operate-filter-rules (phi1 phi2 op new-rules rule-keys new-cpd &key (compute-count-p t) (preserve-rule-counts nil))
-  (labels ((full-domain (attribute)
-             (gethash (gethash attribute (rule-based-cpd-identifiers new-cpd))
-                      (rule-based-cpd-var-values new-cpd)))
-           (condition-values (rule attribute)
-             (or (gethash attribute (rule-conditions rule))
-                 (full-domain attribute)))
-           (same-value-set-p (values1 values2)
-             (and (null (set-difference values1 values2))
-                  (null (set-difference values2 values1))))
+  (declare (ignore preserve-rule-counts))
+  (labels ((product-op-p ()
+             (or (eq op '*) (eq op #'*)))
+           (sum-op-p ()
+             (or (eq op '+) (eq op #'+)))
            (intersect-rule-conditions (r1 r2)
              (loop
-               with conditions = (make-hash-table :test #'equal)
+               with conditions = (make-rule-condition-table)
                for attribute being the hash-keys of (rule-based-cpd-identifiers new-cpd)
                  using (hash-value idx)
                for domain = (gethash idx (rule-based-cpd-var-values new-cpd))
-               for values1 = (condition-values r1 attribute)
-               for values2 = (condition-values r2 attribute)
+               for values1 = (cpd-rule-value-set new-cpd r1 attribute)
+               for values2 = (cpd-rule-value-set new-cpd r2 attribute)
                for intersection = (intersection values1 values2)
                when (null intersection)
                  do (return-from intersect-rule-conditions nil)
@@ -6242,20 +6726,17 @@
                           (sort (copy-list intersection) #'<))
                finally
                   (return conditions)))
-           (set-filtered-rule-count (new-rule r1 r2 cpd1 cpd2)
-             (cond ((and preserve-rule-counts (rule-based-cpd-singleton-p cpd2))
-                    (setf (rule-count new-rule) (rule-count r1)))
-                   ((and preserve-rule-counts (rule-based-cpd-singleton-p cpd1))
-                    (setf (rule-count new-rule) (rule-count r2)))
-                   ((rule-based-cpd-singleton-p cpd2)
-                    (setf (rule-count new-rule) nil)))
+           (set-filtered-rule-count (new-rule)
+             (when (rule-based-cpd-singleton-p new-cpd)
+               (setf (rule-count new-rule) nil))
              new-rule)
            (add-rule (rule num-rules)
              (let* ((rule-key (polynomial-encoding rule new-cpd))
                     (existing (gethash rule-key rule-keys)))
                (cond (existing
-                      (when (> (or (rule-count rule) 0)
-                               (or (rule-count existing) 0))
+                      (when (and (numberp (rule-count rule))
+                                 (or (null (rule-count existing))
+                                     (> (rule-count rule) (rule-count existing))))
                         (setf (rule-count existing) (rule-count rule))
                         (setf (rule-probability existing) (rule-probability rule))))
                      (t
@@ -6265,15 +6746,11 @@
                       (setf (gethash rule-key rule-keys) rule)
                       (setq num-rules (+ num-rules 1)))))
              num-rules)
-           (make-zero-rule (rule other-cpd)
+           (make-zero-rule (rule)
              (let ((zero-rule (copy-cpd-rule rule)))
                (setf (rule-probability zero-rule) 0)
-               (cond ((or (eq op '+) (eq op #'+))
-                      (setf (rule-count zero-rule) 0))
-                     ((rule-based-cpd-singleton-p other-cpd)
-                      (setf (rule-count zero-rule) nil))
-                     (t
-                      (setf (rule-count zero-rule) 1)))
+               (setf (rule-count zero-rule)
+                     (if (rule-based-cpd-singleton-p new-cpd) nil 0))
                zero-rule))
            (add-filtered-rule (r1 r2 cpd1 cpd2 num-rules)
              (let ((conditions (intersect-rule-conditions r1 r2)))
@@ -6281,12 +6758,12 @@
                  (setq num-rules
                        (add-rule
                         (set-filtered-rule-count
-                         (rule-filter r1 r2 op num-rules conditions compute-count-p)
-                         r1 r2 cpd1 cpd2)
+                         (rule-filter r1 r2 op num-rules conditions compute-count-p))
                         num-rules))))
              num-rules)
            (add-no-match-rule (rule cpd other-cpd num-rules)
-             (add-filtered-rule rule (make-zero-rule rule other-cpd) cpd cpd num-rules)))
+             (declare (ignore other-cpd))
+             (add-filtered-rule rule (make-zero-rule rule) cpd cpd num-rules)))
     (loop
       with rules1 = (rule-based-cpd-rules phi1)
       with rules2 = (rule-based-cpd-rules phi2)
@@ -6294,27 +6771,31 @@
                                      :initial-element nil)
       with num-rules = (length new-rules)
       for r1 being the elements of rules1
-      do
-         (loop
-           with matched-r1-p = nil
-           for r2 being the elements of rules2
-           for j from 0
-           when (compatible-rule-p r1 r2 phi1 phi2)
-             do
-                (setq matched-r1-p t)
-                (setf (aref matched-r2s j) t)
-                (setq num-rules (add-filtered-rule r1 r2 phi1 phi2 num-rules))
-           finally
-              (when (null matched-r1-p)
-                (setq num-rules (add-no-match-rule r1 phi1 phi2 num-rules))))
+      when (or (sum-op-p) (product-op-p))
+        do
+           (loop
+             with matched-r1-p = nil
+             for r2 being the elements of rules2
+             for j from 0
+             when (and (or (sum-op-p) (product-op-p))
+                       (compatible-rule-p r1 r2 phi1 phi2))
+               do
+                  (setq matched-r1-p t)
+                  (setf (aref matched-r2s j) t)
+                  (setq num-rules (add-filtered-rule r1 r2 phi1 phi2 num-rules))
+             finally
+                (when (null matched-r1-p)
+                  (setq num-rules (add-no-match-rule r1 phi1 phi2 num-rules))))
       finally
          (loop
            for r2 being the elements of rules2
            for j from 0
-           when (null (aref matched-r2s j))
+           when (and (or (sum-op-p) (product-op-p))
+                     (null (aref matched-r2s j)))
              do
                 (setq num-rules (add-no-match-rule r2 phi2 phi1 num-rules)))
          (return (values new-rules rule-keys)))))
+
 
 #| Check cpd vvbms |#
 
@@ -6345,7 +6826,7 @@
                                     (map nil #'print-cpd-rule (rule-based-cpd-rules cpd))
                                     (error "check number of rules")))
       with row-len = (aref (rule-based-cpd-cardinalities cpd) 0)
-      with index-rule = (make-rule :conditions (make-hash-table :test #'equal))
+      with index-rule = (make-rule :conditions (make-rule-condition-table))
       with row-probs and row-counts = (make-list row-len :initial-element 0) and row-rules and row-assns and row-prob and compatible-rule and reference-count
       with assn = (make-array (hash-table-count (rule-based-cpd-identifiers cpd)) :initial-element 0)
       for i from 0 to (reduce #'* (rule-based-cpd-cardinalities cpd))
@@ -6607,7 +7088,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	     (print-cpd phi2)
                  ;;(break)
                  )
-	   (when t
+	   (when nil t
 	     (setq print-special* t))
 	   (setq phi2 (cpd-update-schema-domain phi2 phi1 new-nodes :q-first-bindings q-first-bindings))
            (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
@@ -6616,7 +7097,7 @@ Roughly based on (Koller and Friedman, 2009) |#
              ;;(break)
              )
            (setq phi1 (subst-cpd phi1 phi2 bindings))
-	   (when t
+	   (when nil t
 	     (setq print-special* nil))
 	   (setq phi1 (cpd-update-existing-vvms phi1 bindings new-nodes))
            (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
@@ -6624,10 +7105,10 @@ Roughly based on (Koller and Friedman, 2009) |#
                  (break)
                  )
            ;;(setq phi1 (cpd-transform-episode-domain phi1 phi2))
-	   (when t
+	   (when nil t
 	     (setq print-special* t))
 	   (setq phi1 (cpd-update-schema-domain phi1 phi2 new-nodes :q-first-bindings q-first-bindings))
-	   (when t
+	   (when nil t
 	     (setq print-special* nil))
 	   (when nil (and (equal "NPOSITION_24923" (rule-based-cpd-dependent-id phi2)))
              (format t "~%episode after update:~%~S~%schema after update:~%~S~%schema rules:~%" phi1 phi2)
@@ -8223,7 +8704,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id factor)))
 	   (format t "~%new factor:")
 	   (print-cpd new-factor)
-	   (break)
+	   ;;(break)
 	   )
 	 (loop
 	   for rule being the elements of (rule-based-cpd-rules new-factor)
@@ -8726,7 +9207,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          (let (zero-count-rule)
            (cond ((null event-dependent-id-vals)
 		  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                   :conditions (copy-hash-table (rule-conditions rule))
+                                                   :conditions (copy-rule-condition-table (rule-conditions rule))
 						   :probability 0
                                                    :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
                   (loop
@@ -8740,7 +9221,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		       (setq compatible-rules (cons zero-count-rule compatible-rules))))
                  (t
                   (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                   :conditions (copy-hash-table (rule-conditions rule))
+                                                   :conditions (copy-rule-condition-table (rule-conditions rule))
                                                    :probability 0
                                                    :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
                   (setq compatible-rules (cons zero-count-rule compatible-rules))))))
@@ -8802,7 +9283,7 @@ Roughly based on (Koller and Friedman, 2009) |#
          (let (zero-count-rule)
            (cond ((null event-dependent-id-vals)
 		  (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                   :conditions (copy-hash-table (rule-conditions rule))
+                                                   :conditions (copy-rule-condition-table (rule-conditions rule))
 						   :probability 0
                                                    :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
                   (loop
@@ -8816,7 +9297,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		       (setq compatible-rules (cons zero-count-rule compatible-rules))))
                  (t
                   (setq zero-count-rule (make-rule :id (symbol-name (gensym "RULE-"))
-                                                   :conditions (copy-hash-table (rule-conditions rule))
+                                                   :conditions (copy-rule-condition-table (rule-conditions rule))
                                                    :probability 0
                                                    :count (if (rule-based-cpd-singleton-p schema-cpd) nil 0)))
                   (setq compatible-rules (cons zero-count-rule compatible-rules))))))

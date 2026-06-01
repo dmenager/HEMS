@@ -407,7 +407,9 @@
 	do
 	;; (format t "~%~%inserting:")
 	;; (print-bn bn)
-	(new-push-to-ep-buffer :observation bn :hidden-state-p nil :insertp t :temporal-p nil)))
+	   (new-push-to-ep-buffer :observation bn :hidden-state-p nil :insertp t :temporal-p nil))
+  ;;(print-bn (episode-observation (car eltm*)))
+  )
 
 (defun run-chain ()
   (run 'ex2)

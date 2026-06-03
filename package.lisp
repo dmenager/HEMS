@@ -83,6 +83,7 @@
 	   #:print-cpd
 	   #:print-cpd-rule
 	   #:print-bn
+	   #:print-episode
 	   #:py-test-hash
 	   #:discrete-uniform
 	   #:make-messages

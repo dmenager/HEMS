@@ -1054,11 +1054,13 @@
 			     using (hash-value ,cpd)
 			   do
 			      (setq ,cpd (normalize-rule-probabilities ,cpd (rule-based-cpd-dependent-id ,cpd)))
+			      ;;(print-cpd ,cpd)
+			      ;;(check-cpd ,cpd :check-uniqueness nil :check-count-prob-agreement nil)
 			   collect
 			   (if ,causal-discovery
 			       ,cpd
-			       (get-local-coverings
-				(update-cpd-rules ,cpd (rule-based-cpd-rules ,cpd))))
+				 (get-local-coverings
+				  (update-cpd-rules ,cpd (rule-based-cpd-rules ,cpd))))
 			     into ,cpd-list
 			   when (and ,relational-invariants ,recurse-p)
 			     do
@@ -1066,6 +1068,12 @@
 			   finally
 			      (when ,sort-p
 				(setq ,cpd-list (topological-sort ,cpd-list)))
+			      #|
+			      (loop
+				for cpd in ,cpd-list
+				do
+				   (check-cpd cpd :check-uniqueness nil :check-count-prob-agreement nil :check-counts t :check-prob-sum nil :check-rule-count nil))
+			      |#
 			      (when (and ,relational-invariants ,recurse-p)
 				(setq ,cpd-arr (make-array (hash-table-count ,hash) :initial-contents ,cpd-list))
 				(setq ,new-body (add-invariants ,neighborhood-func ',nbr-func-args ,cpd-arr ,inv-hash ,invariant-list))

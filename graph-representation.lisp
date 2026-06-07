@@ -5518,11 +5518,11 @@
 					    (mapcar #'print-cpd-rule rule-set))
 					  (loop
 					    with rs = (rule-based-cpd-rules cpd)
-					    for g being the hash-keys of (hash-intersection (rule-block new-rule) goal :output-hash-p t) 
+					    for g being the hash-keys of goal ;;(hash-intersection (rule-block new-rule) goal :output-hash-p t) 
 					    do
 					       (setq new-rule (copy-cpd-rule (aref rs g)))
 					       (setq rule-set (reverse (cons new-rule (reverse rule-set))))
-					       (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
+					       (when nil (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
 						 (format t "~%adding rule for idx ~d:" g)
 						 (print-cpd-rule new-rule)))
 					  (when (and (equal "EVELOCITY" (rule-based-cpd-dependent-var cpd)))
@@ -6816,7 +6816,7 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (setq check-uniqueness nil)
-  (when nil t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))
@@ -7526,7 +7526,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when nil
+       (when t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -7541,7 +7541,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when (and (= j 8) (= k 13))
+              (when t (and (= j 8) (= k 13))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -7555,7 +7555,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil (and (= j 8) (= k 13))
+	      (when t (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -7593,13 +7593,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when nil
+       (when t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when nil
+       (when t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t

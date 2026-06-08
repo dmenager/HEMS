@@ -158,7 +158,20 @@
          for (p-match . q-match) being the elements of (car matches)
          with node and nodes and p-cpd
          do
-            (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
+	    (check-cpd (aref p p-match)
+		       :check-uniqueness nil
+		       :check-rule-count t
+		       :check-count-prob-agreement t
+		       :check-counts t
+		       :check-prob-sum t)
+	    (when q-match
+	      (check-cpd (aref q q-match)
+			 :check-uniqueness nil
+			 :check-rule-count t
+			 :check-count-prob-agreement t
+			 :check-counts t
+			 :check-prob-sum t))
+	    (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match
                   (format t "~%~%p-cpd before subst:~%~S~%q-match:~%~S" (aref p p-match) (if q-match (aref q q-match))))
             (setq p-cpd (subst-cpd (aref p p-match) (when q-match (aref q q-match)) (car bindings) :deep nil))
             (when nil (and (= cycle* 3) (equal "INTENTION2751" (rule-based-cpd-dependent-id (aref p p-match)))) nil q-match

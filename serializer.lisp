@@ -45,10 +45,7 @@
 (defun hash-rule-conditions (conditions)
   (if (listp conditions)
       (loop
-	with hash-table =
-			(if (stringp (caar conditions))
-			    (make-hash-table :test #'equal)
-			    (make-hash-table))
+	with hash-table = (make-rule-condition-table)
 	for (att . set-values) in conditions
 	do
 	   (setf (gethash att hash-table) set-values)
@@ -213,55 +210,77 @@
   (setf (cdr bn)
 	(hash-to-a-list (cdr bn))))
 
+(defun episode-branch-p (branch)
+  (or (episode-p branch)
+      (and (consp branch)
+           (episode-p (car branch)))))
+
+(defun normalize-episode-branch (branch)
+  (cond
+    ((episode-p branch) (list branch))
+    ((and (consp branch) (episode-p (car branch))) branch)))
+
+(defun episode-branch-episode (branch)
+  (car (normalize-episode-branch branch)))
+
 (defun hash-eltm (eltm)
   (loop
     with branch and episode and visited
     with stack = (list eltm)
     while stack
     do
-       (setq branch (car stack))
-       (setq episode (car branch))
+       (setq branch (normalize-episode-branch (car stack)))
        (setq stack (rest stack))
-       (setf (episode-backlinks episode) (backlinks-to-hash (episode-backlinks episode)))
-       ;;(format t "~%visiting: ~S" (episode-id episode))
-       (loop
-	 for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
-	 do
-	    (nhash-cpds (funcall slot episode)))
-       ;;(format t "~%episode:~%~S"episode)
-       (setq visited (cons (episode-id episode) visited))
-       (loop
-	 for child in (rest branch)
-	 when (not (member (episode-id (car child)) visited
-			   :test #'equal))
-	   do
-	      (setq stack (cons child stack))))
+       (when branch
+         (setq episode (car branch))
+         (when (and (episode-p episode)
+                    (not (member episode visited :test #'eq)))
+           (setf (episode-backlinks episode) (backlinks-to-hash (episode-backlinks episode)))
+           ;;(format t "~%visiting: ~S" (episode-id episode))
+           (loop
+             for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
+             do
+                (nhash-cpds (funcall slot episode)))
+           ;;(format t "~%episode:~%~S"episode)
+           (setq visited (cons episode visited))
+           (loop
+             for next-branch in (cons (episode-parent episode) (rest branch))
+             for normalized-branch = (normalize-episode-branch next-branch)
+             for child-episode = (and normalized-branch (car normalized-branch))
+             when (and child-episode
+                       (not (member child-episode visited :test #'eq)))
+               do
+                  (setq stack (cons normalized-branch stack))))))
   eltm)
 
 (defun unhash-eltm (eltm)
   (loop
-	with branch and episode and visited
-	with stack = (list eltm)
-	while stack
-	do
-	(setq branch (car stack))
-	(setq episode (car branch))
-	(setq stack (rest stack))
-	(when (episode-p episode)
-	  (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
-	  ;;(format t "~%visiting: ~S" (episode-id episode))
-	  (loop
-		for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
-		do
-		(nunhash-cpds (funcall slot episode)))
-	  ;;(format t "~%episode:~%~S"episode)
-	  (setq visited (cons (episode-id episode) visited))
-	  (loop
-		for child in (rest branch)
-		when (not (member (episode-id (car child)) visited
-				  :test #'equal))
-		do
-		(setq stack (cons child stack)))))
+        with branch and episode and visited
+        with stack = (list eltm)
+        while stack
+        do
+        (setq branch (normalize-episode-branch (car stack)))
+        (setq stack (rest stack))
+        (when branch
+          (setq episode (car branch))
+          (when (and (episode-p episode)
+                     (not (member episode visited :test #'eq)))
+            (setf (episode-backlinks episode) (hash-to-a-list (episode-backlinks episode)))
+            ;;(format t "~%visiting: ~S" (episode-id episode))
+            (loop
+                  for slot in (list 'episode-observation 'episode-state 'episode-state-transitions)
+                  do
+                  (nunhash-cpds (funcall slot episode)))
+            ;;(format t "~%episode:~%~S"episode)
+            (setq visited (cons episode visited))
+            (loop
+                  for next-branch in (cons (episode-parent episode) (rest branch))
+                  for normalized-branch = (normalize-episode-branch next-branch)
+                  for child-episode = (and normalized-branch (car normalized-branch))
+                  when (and child-episode
+                            (not (member child-episode visited :test #'eq)))
+                  do
+                  (setq stack (cons normalized-branch stack))))))
   eltm)
 
 #| Save contents of event memory to file which can be read later |#

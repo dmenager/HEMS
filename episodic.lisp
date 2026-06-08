@@ -1195,7 +1195,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		(if best-child
 		    (better-random-match? (list nil (second p-cost) (third p-cost) (fourth p-cost) nil (fifth p-cost) (sixth p-cost)) best-child)
 		    (<= (second p-cost) best-child-weighted-cost)))
-           (when t
+           (when nil
              (format t "~%1"))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (fourth p-cost) depth (second p-cost) (third p-cost) reject-list (seventh p-cost)))
           ((and (or (eq #'= lvl-func) (eq '= lvl-func)) (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))
@@ -1205,11 +1205,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (<= (second p-cost) best-child-weighted-cost))
 		;;(<= (- (second p-cost) best-child-weighted-cost) 0)
 		)
-           (when t
+           (when nil
              (format t "~%2"))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (fourth p-cost) depth (second p-cost) (third p-cost) reject-list (seventh p-cost)))
           ((and lvl-func (not (funcall lvl-func (episode-lvl (car eltm)) (episode-lvl cue))) (null (car best-child)))
-           (when t
+           (when nil
              (format t "~%3"))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (fourth p-cost) depth (second p-cost) (third p-cost) reject-list (seventh p-cost)))
           ((and (not lvl-func)
@@ -1218,11 +1218,11 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		    (not branch))
 		;;(<= (- (second p-cost) best-child-weighted-cost) 0)
 		)
-           (when t
+           (when nil
              (format t "~%4"))
            (values (if (member (episode-id (car eltm)) reject-list :test #'equal) nil eltm) (car p-cost) (fourth p-cost) depth (second p-cost) (third p-cost) reject-list (seventh p-cost)))
           (t
-           (when t
+           (when nil 
              (format t "~%Recursing on best child: ~A" (if (car best-child) (episode-id (caar best-child)))))
            (new-retrieve-episode (car best-child) cue reject-list :res res :depth (1+ depth) :bic-p bic-p :check-decomps check-decomps :forbidden-types forbidden-types :lvl-func lvl-func :check-abstraction-ptrs check-abstraction-ptrs :check-index-case check-index-case :type type)))))
 
@@ -1706,7 +1706,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 								   :key #'cdr)
                with p-copy and observed-factors and observed-factor and num-assignments and var-val-mappings
                with dep-id and dep-var and vars and idents and types-hash and cids and qvars and vvbm and var-values and cards and steps and rules and lvl
-	       with new-nodes
+	       with new-nodes and temp-idents and saved-idents
                do
 		  (setq p-copy (copy-rule-based-cpd (aref (car cue-bn) p-match)))
 		  (when (and q-match (not (member (rule-based-cpd-dependent-id (aref (car bn) q-match))
@@ -1717,7 +1717,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 				  (rule-based-cpd-identifiers (aref (car bn) q-match))
 				  (episode-id (car eme))
 				  bindings))
-		    (when t nil (and print-special* (string-equal type "state-transitions"))
+		    (when nil (and print-special* (string-equal type "state-transitions"))
 			  (format t "~%~%p-match: ~d~%q-match: ~d~%p-copy before subst:" p-match q-match)
 			  (print-cpd p-copy)
 			  (format t "~%q-cpd:")
@@ -1729,6 +1729,10 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			  (format t "~%subst p-copy:")
 			  (print-cpd p-copy))
 		    (setq dep-id (rule-based-cpd-dependent-id p-copy))
+		    (setq temp-idents (make-hash-table :test #'equal))
+		    (setf (gethash dep-id temp-idents) 0)
+		    (setq saved-idents (rule-based-cpd-identifiers p-copy))
+		    (setf (rule-based-cpd-identifiers p-copy) temp-idents)
 		    ;; debug this part right here..I'm trying to add any missing vvbms to the q-match bn (i.e. ones that are in the cue, but not in the model.)
 		    ;; That way, I can properly do inference. Check that I'm properly passing in (q-first-)bindings. Check to see that I'm correctly using new-nodes list.	   
 		    (loop
@@ -1747,6 +1751,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			     (format t "~%~%intermediate schema::")
 			     (print-cpd (aref (car bn) i)))
 			   (setf (aref (car bn) i)
+				 ;; I think I need to call upate-cpd-vvbms
 				 (cpd-update-schema-domain (aref (car bn) i) p-copy new-nodes :q-first-bindings q-first-bindings))
 			   (when nil (and (equal "A" (rule-based-cpd-dependent-var p-copy)))
 			     (format t "~%updated schema:")
@@ -1754,6 +1759,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			     ;;(break)
 			     )
 			   (setq new-nodes (cons (aref (car bn) i) new-nodes)))
+		    (setf (rule-based-cpd-identifiers p-copy) saved-idents)
 		    (loop
 		      for ident being the hash-keys of (rule-based-cpd-identifiers p-copy)
 		      when (not (equal ident dep-id))
@@ -1781,7 +1787,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 		      for cpd being the elements of (car bn)
 		      for i from 0
 		      do
-			 (when nil t
+			 (when nil 
 			   (format t "~%~%making soft likelihoods for cpd:")
 			   (print-cpd cpd))
 			 (loop
@@ -1792,9 +1798,7 @@ tree = \lambda v b1 b2 ....bn l b. (l v)
 			 (when nil t
 			   (format t "~%intermediate cpd:")
 			   (print-cpd cpd))
-			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setq cpd (normalize-rule-probabilities cpd (rule-based-cpd-dependent-id cpd)))
-			 ;; (check-cpd cpd :check-uniqueness nil :check-rule-count nil :check-count-prob-agreement nil :check-counts nil :check-prob-sum nil)
 			 (setf (aref soft-cpds i) cpd)
 			 (when nil
 			   (format t "~%final cpd:")

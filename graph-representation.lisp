@@ -3650,6 +3650,7 @@
                with all-conflicts and all-redundancies and all-partial-coverings
 	       with num-constraints = 0
                for value-block in vvbms
+	       counting value-block into num-vvbms
                when (not (member (cdar value-block) values))
 		 do
 		    
@@ -3664,11 +3665,11 @@
                     (setq condition (cons ident (cdar value-block)))
                     (setq att-blocks (cons (list (list condition att-block) intersection) att-blocks))
 		    (when nil
-		      (format t "~%vvbm value-block:~%~S~%goal:~%~S~%intersection:~%~S~%suppress-p: ~S" value-block new-g intersection suppress-p))
+		      (format t "~%vvbm value-block:~%~S~%goal:~%~S~%intersection:~%~S" value-block new-g intersection))
                finally
 		  (when nil
 			(format t "~%returning:~%~S" att-blocks))
-		  (return (values att-blocks num-constraints))))
+		  (return (values att-blocks (/ num-constraints num-vvbms)))))
            (pass-condition-p (ident rule-conditions)
              (multiple-value-bind (vals present-p)
 		 (gethash ident rule-conditions)
@@ -5490,7 +5491,7 @@
                    (return t))))
     (let ((debug-acuity-local-coverings-p
             (equal "ACUITY" (rule-based-cpd-dependent-var cpd))))
-      (when (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
+      (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
 		 eltm*
 		 (= (episode-count (car eltm*)) 8)
 		 )
@@ -5538,12 +5539,12 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if (and (= probability-concept 0)
+		   (if nil #|(and (= probability-concept 0)
 			    (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
                             (> (length rule-set) 29)
 			    eltm*
 		       (= (episode-count (car eltm*)) 8))
-		       
+		       |#
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -6909,7 +6910,7 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (setq check-uniqueness nil)
-  (when t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))

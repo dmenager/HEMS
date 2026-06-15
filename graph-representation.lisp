@@ -2799,6 +2799,29 @@
                (setf (rule-probability new-rule) 0)
                (setf (rule-count new-rule) 0)
                new-rule))
+           (same-update-new-dependent-parent-rule-covered-p (rules dependent-value parent-ident parent-value)
+             (let ((probe (make-rule :conditions (make-rule-condition-table))))
+               (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions probe))
+                     (list dependent-value))
+               (setf (gethash parent-ident (rule-conditions probe))
+                     (list parent-value))
+               (some (function (lambda (rule)
+                                 (compatible-rule-p rule probe phi1 phi1)))
+                     rules)))
+           (make-same-update-new-dependent-parent-rule (dependent-value parent-ident parent-value)
+             (let ((new-rule (make-rule :id (symbol-name (gensym "RULE-"))
+                                        :conditions (make-rule-condition-table)
+                                        :probability 0
+                                        :block (make-hash-table)
+                                        :certain-block (make-hash-table)
+                                        :avoid-list (make-hash-table)
+                                        :redundancies (make-hash-table)
+                                        :count 0)))
+               (setf (gethash (rule-based-cpd-dependent-id phi1) (rule-conditions new-rule))
+                     (list dependent-value))
+               (setf (gethash parent-ident (rule-conditions new-rule))
+                     (list parent-value))
+               new-rule))
            (make-parent-expansion-row-rules (ident new-value)
              (let* ((dep-values (copy-list (gethash 0 (rule-based-cpd-var-values phi1))))
                     (positive-values (remove 0 dep-values :test #'=))
@@ -3031,6 +3054,22 @@
                        ;; change later probability updates.
                        (push new-rule new-rules))))))))
         (setq new-rules (remove-duplicate-rules-max-count new-rules phi1))
+        (let ((dependent-change (find :dependent changes :key (function (lambda (change) (getf change :type))))))
+          (when dependent-change
+            (dolist (parent-change changes)
+              (when (member (getf parent-change :type) (list :parent :introduced-parent))
+                (dolist (dependent-value (getf dependent-change :new-values))
+                  (dolist (parent-value (getf parent-change :new-values))
+                    (unless (same-update-new-dependent-parent-rule-covered-p
+                             new-rules
+                             dependent-value
+                             (getf parent-change :ident)
+                             parent-value)
+                      (push (make-same-update-new-dependent-parent-rule
+                             dependent-value
+                             (getf parent-change :ident)
+                             parent-value)
+                            new-rules))))))))
         (setf (rule-based-cpd-rules phi1)
               (make-array (length new-rules) :initial-contents (reverse new-rules))))
       (when nil (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id phi1)))
@@ -3611,6 +3650,7 @@
                with all-conflicts and all-redundancies and all-partial-coverings
 	       with num-constraints = 0
                for value-block in vvbms
+	       counting value-block into num-vvbms
                when (not (member (cdar value-block) values))
 		 do
 		    
@@ -3625,11 +3665,11 @@
                     (setq condition (cons ident (cdar value-block)))
                     (setq att-blocks (cons (list (list condition att-block) intersection) att-blocks))
 		    (when nil
-		      (format t "~%vvbm value-block:~%~S~%goal:~%~S~%intersection:~%~S~%suppress-p: ~S" value-block new-g intersection suppress-p))
+		      (format t "~%vvbm value-block:~%~S~%goal:~%~S~%intersection:~%~S" value-block new-g intersection))
                finally
 		  (when nil
 			(format t "~%returning:~%~S" att-blocks))
-		  (return (values att-blocks num-constraints))))
+		  (return (values att-blocks (/ num-constraints num-vvbms)))))
            (pass-condition-p (ident rule-conditions)
              (multiple-value-bind (vals present-p)
 		 (gethash ident rule-conditions)
@@ -4004,7 +4044,7 @@
 								     :output-hash-p t))
 					(hash-table-count (hash-intersection (rule-certain-block rule)
 								     goal
-								     :output-hash-p t)))))
+								     :output-hash-p t))))
 			   (or (<= (hash-table-count (rule-avoid-list copy-rule)) num-conflicts)
 			       (and expanding-existing-attribute-p
 				    (= num-conflicts 0)
@@ -4297,7 +4337,7 @@
       finally
 	 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
                (format t "~%~%returning best condition:~%~S~%" best-condition))
-	 (return (values best-condition best-rule)))))
+	 (return (values best-condition best-rule))))
 
 )
 |#
@@ -4656,7 +4696,7 @@
                                         (cover-search (cdr pairs)
                                                       (hash-union covered
                                                                   removal-set
-                                                                  :output-hash-p t))))))))
+                                                                  :output-hash-p t)))))))
                (cover-search attr-removal-alist (make-hash-table))))
            (composable-conflict-coverage-p (candidate-rule)
              (let ((bad-out (rule-avoid-list candidate-rule))
@@ -4902,25 +4942,34 @@
                      (hash-table-count block2))
                   (= (hash-table-count
                       (block-difference block1 block2 :output-hash-p t))
-                     0))))
+                     0)))
+           (goal-constraint-support-count (condition rule-block-intersection)
+             (loop
+               with target-rule and target-values
+               for g being the hash-keys of rule-block-intersection
+               do
+                  (setq target-rule (aref (rule-based-cpd-rules cpd) g))
+                  (setq target-values (gethash (car condition)
+                                               (rule-conditions target-rule)))
+               count (and target-values
+                          (member (cdr condition) target-values)))))
     (loop
       with copy-rule and padding = 0.00001
       with best-condition and best-block and best-lower-approx and best-conflicts and best-redundancies and best-intersection = -1 and best-cert-intersection = most-negative-fixnum and best-cert-redundancies = most-positive-fixnum and best-num-conflicts = most-positive-fixnum and best-condition-conflicts = most-positive-fixnum
-      with best-rule-block-size = most-positive-fixnum and best-rule-block-intersection = most-negative-fixnum and best-condition-block-size = most-positive-fixnum and best-condition-entropy = most-positive-fixnum and best-condition-entropy-2 = most-positive-fixnum
+      with best-rule-block-size = most-positive-fixnum and best-rule-block-intersection = most-negative-fixnum and best-condition-block-size = most-positive-fixnum and best-condition-block-conflicts = most-positive-fixnum and best-condition-entropy = most-positive-fixnum and best-condition-entropy-2 = most-positive-fixnum
       with max-certain-discounted-coverage = most-negative-fixnum and max-discounted-coverage = most-negative-fixnum and best-cert-conflicts = most-negative-fixnum
       with smallest-certain-card = most-positive-fixnum and smallest-card = most-positive-fixnum and best-hardness = most-positive-fixnum
-      with best-pos-condition and best-pos-rule and best-pos-info-gain = most-negative-fixnum
-      with best-zero-condition and best-zero-rule and best-zero-new-negs = (hash-table-count (rule-avoid-list rule)) and best-zero-uncertain = most-negative-fixnum
-      with best-zero-ub-ig = most-negative-fixnum and best-zero-ub-pos = most-negative-fixnum
+      with best-p = most-negative-fixnum
+      with best-upper-bound-info-gain = most-negative-fixnum
       with best-info-gain = most-negative-fixnum and best-entropy = most-negative-fixnum
       with best-condition-retention = most-negative-fixnum
+      with best-goal-constraint-support-count = most-negative-fixnum
+      with best-goal-constraint-support-ratio = most-negative-fixnum
       with best-num-constraints = -1
-      with best-pos-num-conflicts = most-positive-fixnum
-      with best-zero-num-conflicts = most-positive-fixnum
-      with best-pos-certain-goal-gain = most-negative-fixnum
-      with best-zero-certain-goal-gain = most-negative-fixnum
-      with best-pos-certain-goal-count = most-negative-fixnum
-      with best-zero-certain-goal-count = most-negative-fixnum
+      with best-candidate-num-conflicts = most-positive-fixnum
+      with best-fallback-candidate-p = t
+      with best-certain-goal-gain = most-negative-fixnum
+      with best-certain-goal-count = most-negative-fixnum
       with best-rule
       with att-blocks-num-constraints and att-blocks and num-constraints and certain-att-blocks
       for ident being the hash-keys of certain-tog
@@ -4948,19 +4997,19 @@
 	   with upper-bound-info-gain and new-upper-bound-focus and upper-bound-focus
 	   with upper-bound-no-pos and upper-bound-no-covered-pos and upper-bound-no-entropy and upper-bound-no-p
 	   with new-upper-bound-covered-pos and new-upper-bound-entropy and upper-bound-covered-pos and upper-bound-entropy and upper-bound-p and upper-bound-q
-           with candidate-noop-p
+           with candidate-noop-p and goal-constraint-support-count and fallback-candidate-p and current-rule-complete-p
 	   with rule-block-intersection
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+	      (when (and print-special* (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%intersection size: ~d~%condition value in rule?:~A" condition-block intersection (hash-table-count intersection)
 			(member (cdar condition-block)
 				(gethash (caar condition-block)
 					   (rule-conditions rule)))))
 	   when (and (> (hash-table-count intersection) 0) ;; (> rule-block-intersection 0)
-		     ;;(> num-constraints 0)
+		     (> num-constraints 0)
 		     (not (member (cdar condition-block)
 				  (gethash (caar condition-block)
 					   (rule-conditions rule)))))
@@ -4991,7 +5040,7 @@
                                          (rule-avoid-list rule))))
 		(setq parent-pos (hash-intersection (rule-certain-block rule) goal :output-hash-p t))
 		(setq yes-pos (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
-		(when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		(when (and print-special* (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
 		  (format t "~%pass 1!~%candidate new rule:~%~S" copy-rule)
 		  ;;(print-cpd-rule copy-rule)
 		  (format t "goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
@@ -5007,7 +5056,7 @@
                                (> (hash-table-count yes-pos)
                                   (hash-table-count parent-pos)))
 			   )
-		 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+		 (when (and print-special* (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
 		       (format t "~%pass 2!"))
 		 (setq parent-neg (rule-avoid-list rule))
 		 (setq yes-neg (rule-avoid-list copy-rule))
@@ -5081,14 +5130,22 @@
 						(* (+ new-upper-bound-covered-pos new-covered-negs) new-upper-bound-entropy)
 						(* (+ upper-bound-no-covered-pos no-covered-negs) upper-bound-no-entropy)))
 		 |#
+		 (setq goal-constraint-support-count (goal-constraint-support-count condition new-upper-bound-focus))
+		 (setq fallback-candidate-p (and (= new-covered-negs 0)
+					       (= info-gain 0)
+					       (= upper-bound-info-gain 0)
+					       (= covered-pos new-covered-pos)))
+		 (setq current-rule-complete-p (and (= (hash-table-count (rule-avoid-list rule)) 0)
+						    (> covered-pos 0)))
 		 (when print-special*
-		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain))
+		   (format t "~%p: ~d~%info gain: ~d~%upper bound p: ~d~%upper bound entropy: ~d~%upper bound info gain: ~d~%goal constraint support count: ~d~%new covered negs: ~d~%covered pos: ~d~%new covered pos: ~d" p info-gain upper-bound-p upper-bound-entropy upper-bound-info-gain goal-constraint-support-count new-covered-negs covered-pos new-covered-pos))
 		 (when (and (> upper-bound-p 0)
                             (>= info-gain 0)
-                            (not (and (= new-covered-negs 0)
-                                      (= info-gain 0)
-                                      (= upper-bound-info-gain 0)
-				      (= covered-pos new-covered-pos))))
+			    (> goal-constraint-support-count 0)
+			    (or (not fallback-candidate-p)
+				(not current-rule-complete-p)))
+		   (when print-special*
+		     (format t "~%pass 3!"))
 		   (let (condition-conflicts
 			 condition-conflicts-2
 			 condition-entropy
@@ -5122,13 +5179,25 @@
 						  (hash-table-count (rule-block rule))))
 		     (when nil print-special*
 		       (format t "~%condition positives: ~d~%condition conflicts: ~d~%condition entropy: ~d~%condition entropy 2: ~d~%num constraints: ~d~%rule block size: ~d~%condition block size: ~d" (hash-table-count rule-block-intersection) condition-conflicts condition-entropy condition-entropy-2 num-constraints (hash-table-count (rule-block copy-rule)) (hash-table-count (second condition-block))))
-                     (let ((certain-goal-gain (- new-covered-pos covered-pos))
-                           (certain-goal-count new-covered-pos)
-                           (rule-block-size (hash-table-count (rule-block copy-rule)))
-                           (rule-block-intersection-count (hash-table-count rule-block-intersection))
-                           (condition-block-size (hash-table-count (second condition-block))))
+                     (let* ((certain-goal-gain (- new-covered-pos covered-pos))
+                            (certain-goal-count new-covered-pos)
+                            (rule-block-size (hash-table-count (rule-block copy-rule)))
+                            (rule-block-intersection-count (hash-table-count rule-block-intersection))
+                            (goal-constraint-support-ratio (if (> (hash-table-count rule-block-intersection) 0)
+                                                               (/ goal-constraint-support-count
+                                                                  (hash-table-count rule-block-intersection))
+                                                               0))
+                            (condition-goal-intersection-count (hash-table-count intersection))
+                            (condition-block-size (hash-table-count (second condition-block)))
+                            (condition-block-conflicts (hash-table-count
+                                                        (hash-difference (second condition-block)
+                                                                         concept-block cpd :output-hash-p t)
+                                                        #|(hash-intersection (second condition-block)
+                                                                           (rule-avoid-list rule)
+                                                                           :output-hash-p t)
+                                                        |#)))
                        (when print-special*
-                         (format t "~%candidate score: ~S branch=~A p=~d ig=~d ub-ig=~d conflicts=~d entropy=~d certain-goal-gain=~d certain-goal-count=~d rule-size=~d goal-intersection=~d condition-size=~d num-constraints=~d"
+                         (format t "~%candidate score: ~S branch=~A p=~d ig=~d ub-ig=~d conflicts=~d entropy=~d certain-goal-gain=~d certain-goal-count=~d goal-constraint-support=~d goal-support-ratio=~d rule-size=~d goal-intersection=~d condition-goal-intersection=~d condition-size=~d condition-block-conflicts=~d num-constraints=~d"
                                  condition
                                  (if (> p 0) :positive :zero)
                                  p
@@ -5138,134 +5207,155 @@
                                  condition-entropy
                                  certain-goal-gain
                                  certain-goal-count
+                                 goal-constraint-support-count
+                                 goal-constraint-support-ratio
                                  rule-block-size
                                  rule-block-intersection-count
+                                 condition-goal-intersection-count
                                  condition-block-size
+                                 condition-block-conflicts
                                  num-constraints))
-                       (if (> p 0)
-                           (when (or (> info-gain best-pos-info-gain)
-                                     (and (= info-gain best-pos-info-gain)
-                                          (< condition-entropy best-condition-entropy))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (> certain-goal-gain best-pos-certain-goal-gain))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (> certain-goal-count best-pos-certain-goal-count))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (= certain-goal-count best-pos-certain-goal-count)
-                                          (> num-constraints best-num-constraints))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (= certain-goal-count best-pos-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (> rule-block-intersection-count best-rule-block-intersection))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (= certain-goal-count best-pos-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (< condition-block-size best-condition-block-size))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (= certain-goal-count best-pos-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (= condition-block-size best-condition-block-size)
-                                          (< condition-conflicts best-pos-num-conflicts))
-                                     (and (= info-gain best-pos-info-gain)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-pos-certain-goal-gain)
-                                          (= certain-goal-count best-pos-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (= condition-block-size best-condition-block-size)
-                                          (= condition-conflicts best-pos-num-conflicts)
-                                          (< rule-block-size best-rule-block-size)))
-                             (setq best-pos-info-gain info-gain)
-                             (setq best-pos-num-conflicts condition-conflicts)
-                             (setq best-condition-entropy condition-entropy)
-                             (setq best-pos-certain-goal-gain certain-goal-gain)
-                             (setq best-pos-certain-goal-count certain-goal-count)
-                             (setq best-rule-block-size rule-block-size)
-                             (setq best-rule-block-intersection rule-block-intersection-count)
-                             (setq best-condition-block-size condition-block-size)
-                             (setq best-num-constraints num-constraints)
-                             (setq best-pos-condition condition)
-                             (setq best-pos-rule (copy-cpd-rule copy-rule))
-                             (when print-special*
-                               (format t "~%updated rule:~%~S" copy-rule)))
-                           (when (or (> upper-bound-info-gain best-zero-ub-ig)
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (< condition-entropy best-condition-entropy))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (> certain-goal-gain best-zero-certain-goal-gain))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (> certain-goal-count best-zero-certain-goal-count))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (= certain-goal-count best-zero-certain-goal-count)
-                                          (> num-constraints best-num-constraints))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (= certain-goal-count best-zero-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (> rule-block-intersection-count best-rule-block-intersection))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (= certain-goal-count best-zero-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (< condition-block-size best-condition-block-size))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (= certain-goal-count best-zero-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (= condition-block-size best-condition-block-size)
-                                          (< condition-conflicts best-zero-num-conflicts))
-                                     (and (= upper-bound-info-gain best-zero-ub-ig)
-                                          (= condition-entropy best-condition-entropy)
-                                          (= certain-goal-gain best-zero-certain-goal-gain)
-                                          (= certain-goal-count best-zero-certain-goal-count)
-                                          (= num-constraints best-num-constraints)
-                                          (= rule-block-intersection-count best-rule-block-intersection)
-                                          (= condition-block-size best-condition-block-size)
-                                          (= condition-conflicts best-zero-num-conflicts)
-                                          (< rule-block-size best-rule-block-size)))
-                             (setq best-zero-ub-ig upper-bound-info-gain)
-                             (setq best-zero-num-conflicts condition-conflicts)
-                             (setq best-condition-entropy condition-entropy)
-                             (setq best-zero-certain-goal-gain certain-goal-gain)
-                             (setq best-zero-certain-goal-count certain-goal-count)
-                             (setq best-rule-block-size rule-block-size)
-                             (setq best-rule-block-intersection rule-block-intersection-count)
-                             (setq best-condition-block-size condition-block-size)
-                             (setq best-num-constraints num-constraints)
-                             (setq best-zero-condition condition)
-                             (setq best-zero-rule (copy-cpd-rule copy-rule))
-                             (when print-special*
-                               (format t "~%updated rule:~%~S" copy-rule)))))))))
+                       (when (or (and best-fallback-candidate-p
+                                      (not fallback-candidate-p))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (> p best-p))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (> info-gain best-info-gain))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (> upper-bound-info-gain best-upper-bound-info-gain))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (< condition-entropy best-condition-entropy))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (> certain-goal-gain best-certain-goal-gain))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (> certain-goal-count best-certain-goal-count))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (> goal-constraint-support-ratio best-goal-constraint-support-ratio))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (> goal-constraint-support-count best-goal-constraint-support-count))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+                                      (> num-constraints best-num-constraints))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+                                      (= num-constraints best-num-constraints)
+                                      (< condition-block-conflicts best-condition-block-conflicts))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+                                      (= num-constraints best-num-constraints)
+                                      (= condition-block-conflicts best-condition-block-conflicts)
+				      (> rule-block-intersection-count best-rule-block-intersection))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+				      (= num-constraints best-num-constraints)
+                                      (= condition-block-conflicts best-condition-block-conflicts)
+                                      (= rule-block-intersection-count best-rule-block-intersection)
+				      (< condition-block-size best-condition-block-size))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+                                      (= num-constraints best-num-constraints)
+                                      (= rule-block-intersection-count best-rule-block-intersection)
+                                      (= condition-block-size best-condition-block-size)
+                                      (= condition-block-conflicts best-condition-block-conflicts)
+                                      (< condition-conflicts best-candidate-num-conflicts))
+                                 (and (eq best-fallback-candidate-p fallback-candidate-p)
+                                      (= p best-p)
+                                      (= info-gain best-info-gain)
+                                      (= upper-bound-info-gain best-upper-bound-info-gain)
+                                      (= condition-entropy best-condition-entropy)
+                                      (= certain-goal-gain best-certain-goal-gain)
+                                      (= certain-goal-count best-certain-goal-count)
+                                      (= goal-constraint-support-ratio best-goal-constraint-support-ratio)
+                                      (= goal-constraint-support-count best-goal-constraint-support-count)
+				      (= num-constraints best-num-constraints)
+                                      (= condition-block-conflicts best-condition-block-conflicts)
+                                      (= rule-block-intersection-count best-rule-block-intersection)
+                                      (= condition-block-size best-condition-block-size)
+                                      (= condition-conflicts best-candidate-num-conflicts)
+                                      (< rule-block-size best-rule-block-size)))
+                         (setq best-p p)
+                         (setq best-info-gain info-gain)
+                         (setq best-upper-bound-info-gain upper-bound-info-gain)
+                         (setq best-candidate-num-conflicts condition-conflicts)
+                         (setq best-condition-entropy condition-entropy)
+                         (setq best-certain-goal-gain certain-goal-gain)
+                         (setq best-certain-goal-count certain-goal-count)
+                         (setq best-goal-constraint-support-count goal-constraint-support-count)
+                         (setq best-goal-constraint-support-ratio goal-constraint-support-ratio)
+                         (setq best-rule-block-size rule-block-size)
+                         (setq best-rule-block-intersection rule-block-intersection-count)
+                         (setq best-condition-block-size condition-block-size)
+                         (setq best-condition-block-conflicts condition-block-conflicts)
+                         (setq best-num-constraints num-constraints)
+                         (setq best-fallback-candidate-p fallback-candidate-p)
+                         (setq best-condition condition)
+                         (setq best-rule (copy-cpd-rule copy-rule))
+                         (when print-special*
+                           (format t "~%updated rule:~%~S" copy-rule))))))))
       finally
-	 (cond (best-pos-condition
-		(setq best-condition best-pos-condition)
-		(setq best-rule best-pos-rule))
-	       (best-zero-condition
-		(setq best-condition best-zero-condition)
-		(setq best-rule best-zero-rule)))
 	 (when print-special*
                (format t "~%~%returning best condition:~%~S~%" best-condition))
 	 (return (values best-condition best-rule)))))
@@ -5401,9 +5491,10 @@
                    (return t))))
     (let ((debug-acuity-local-coverings-p
             (equal "ACUITY" (rule-based-cpd-dependent-var cpd))))
-      (when (and nil (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
+      (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
 		 eltm*
-		 (= (episode-count (car eltm*)) 5))
+		 (= (episode-count (car eltm*)) 8)
+		 )
         (format t "~%~%getting local covering for:")
         (print-cpd cpd)
 	    ;;(break)
@@ -5448,9 +5539,12 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if (and nil (= probability-concept 0)
-			    (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd))
-                            (= (length rule-set) 13))
+		   (if nil #|(and (= probability-concept 0)
+			    (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
+                            (> (length rule-set) 29)
+			    eltm*
+		       (= (episode-count (car eltm*)) 8))
+		       |#
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -6816,7 +6910,7 @@
 ;; cpd = conditional probability distribution
 (defun check-cpd (cpd &key (check-uniqueness t) (check-prob-sum t) (check-counts t) (check-count-prob-agreement t) (check-rule-count t))
   (setq check-uniqueness nil)
-  (when t ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
+  (when nil ;;(and print-special* (equal "DEATH_254" (rule-based-cpd-dependent-id cpd)))
 	(when (= (array-dimension (rule-based-cpd-rules cpd) 0) 0)
 	  (format t "~%CPD has no rules:~%~S" cpd)
 	  (error "~%CPD has no rules"))
@@ -6837,7 +6931,7 @@
              using (hash-value pos)
            do
               (setf (gethash ident (rule-conditions index-rule)) (list (aref assn pos))))
-         (setq compatible-rule (get-compatible-rules cpd cpd index-rule))
+         (setq compatible-rule (get-compatible-rules cpd cpd index-rule :make-zero-count-match-p nil))
          (when (and compatible-rule (null reference-count))
            (setq reference-count (rule-count (car compatible-rule))))
          (cond ((null compatible-rule)
@@ -7073,7 +7167,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       )
 	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count)))
           (t
-           (when nil (and (equal "ACUITY_240" (rule-based-cpd-dependent-id phi2)))
+           (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var phi2)))
              (format t "~%~%episode before update:")
 	     (print-cpd phi1)
 	     (format t "~%schema before update:")
@@ -7119,6 +7213,18 @@ Roughly based on (Koller and Friedman, 2009) |#
              )
 	   (setq phi1 (disambiguate-rules phi1 phi2))
 	   (setq phi2 (disambiguate-rules phi2 phi1))
+	   (check-cpd phi2
+	       :check-uniqueness nil
+	       :check-rule-count t
+	       :check-count-prob-agreement t
+	       :check-counts t
+	       :check-prob-sum t)
+	   (check-cpd phi1
+	       :check-uniqueness nil
+	       :check-rule-count t
+	       :check-count-prob-agreement t
+	       :check-counts t
+	       :check-prob-sum t)
 	   (cond ((not (rule-based-cpd-latent-p phi1))
 		  (values (factor-filter phi2 phi1 '+) phi1))
 		 (t
@@ -7526,7 +7632,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     with calibrated and conflicts and max-iter = 30 and deltas
     for count from 0
     do
-       (when t
+       (when nil t
          (format t "~%~%Iteration: ~d." count))
        (setq calibrated t)
        (setq conflicts nil)
@@ -7541,7 +7647,7 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
                                               (rule-based-cpd-identifiers (aref factors k))
                                               :test #'equal))
-              (when t (and (= j 8) (= k 13))
+              (when nil t (and (= j 8) (= k 13))
                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
               (setq current-message (gethash k (gethash j messages)))
               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
@@ -7555,7 +7661,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
 		)
 	      (setq new-message (smooth new-message j k messages lr))
-	      (when t (and (= j 8) (= k 13))
+	      (when nil t (and (= j 8) (= k 13))
                 (format t "~%current message from ~d:" j)
                 (print-hash-entry k current-message)
                 (format t "~%new message from ~d:" j)
@@ -7593,13 +7699,13 @@ Roughly based on (Koller and Friedman, 2009) |#
               (setq conflicts (cons (cons current-message new-message) conflicts))
               (setq calibrated nil))
        ;;(break "~%end of iteration")
-       (when t
+       (when nil t
 	 (format t "~%~%num conflicts: ~d" (length conflicts))
 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
     until (or calibrated (= (+ count 1) max-iter))
     finally
-       (when t
+       (when nil t
          (cond (calibrated
                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
                (t
@@ -8026,7 +8132,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 	;;DHM: I don't call (factor-filter) here because it gives a new cpd that isn't the same as 'cpd. new cpd rules don't get properly added to bn. Not sure why.
 	;;     The following code, which was the original implementation, works.
 	(setq new-rules (operate-filter-rules cpd modifier-cpd #'* nil (make-hash-table :test #'equal) cpd :compute-count-p t))
-	(when nil (string-equal "ACUITY_240" (rule-based-cpd-dependent-id cpd))
+	(when nil (string-equal "ACUITY" (rule-based-cpd-dependent-var cpd))
 	      (format t "~%~%modified cpd:~%")
 	      (print-cpd cpd)
 	      (format t "~%modifier cpd:~%")
@@ -9233,7 +9339,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; schema-cpd = conditional probability distribution
 ;; event-cpd = conditional probability distribution
 ;; rule = rule to reference (from event-cpd) when finding compatible rules
-(defun get-compatible-rules (schema-cpd event-cpd rule &key (find-all t) (best-matches nil) (check-count nil))
+(defun get-compatible-rules (schema-cpd event-cpd rule &key (find-all t) (best-matches nil) (check-count nil) (make-zero-count-match-p t))
   (cond ((and best-matches find-all)
 	 (error "Cannot return compatible rules when find-all and best-matches are simultaneously true. These are mutually exclusive")))
   (loop
@@ -9268,7 +9374,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 		  (setq max-num-compatible-conditions num-compatible-conditions)
 		  (setq min-num-compatible-set-values num-compatible-set-values)))))
     finally
-       (when (null match-p)
+       (when (and (null match-p)
+		  make-zero-count-match-p)
 	 (when nil
 	   (format t "~%no match to reference rule:")
 	   (print-cpd-rule rule)

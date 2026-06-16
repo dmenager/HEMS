@@ -5595,7 +5595,7 @@
 				 (setq continue nil)
 				 (when (or (not (= (hash-table-count (block-difference (rule-block new-rule) concept-block :output-hash-p t)) 0))
 					   (not (hash-intersection-p (rule-certain-block new-rule) goal)))
-				   (cond ((null patch)
+				   (cond (t (null patch)
 					  (format t "~%cpd:~%~S" cpd)
 					  (print-cpd cpd)
 					  (format t "~%goal:~%~S~%concept-block:~%~S~%rule:~%~S" goal concept-block new-rule)

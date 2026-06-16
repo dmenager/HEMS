@@ -4979,7 +4979,7 @@
 	 (setq att-blocks (car att-blocks-num-constraints))
 	 (setq num-constraints (cdr att-blocks-num-constraints))
 	 (setq certain-att-blocks (car certain-att-blocks-num-constraints))
-	 (when (and print-special* (equal "ACUITY_240" (rule-based-cpd-dependent-id cpd)))
+	 (when (and print-special* (equal "DIST_TO_INTERSECTION_NEXT" (rule-based-cpd-dependent-var cpd)))
                (format t "~%"))
 	  (loop
 	   with focus and num-conflicts
@@ -5002,7 +5002,7 @@
 	   for (cert-condition-block cert-intersection) in certain-att-blocks
            for (condition-block intersection) in att-blocks
 	   do
-	      (when (and print-special* (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
+	      (when (and print-special* (equal "DIST_TO_INTERSECTION_NEXT" (rule-based-cpd-dependent-var cpd)))
 		(format t "~%~%rule:~%~S" rule)
 		(format t "~%condition-block:~%~S~%intersection:~S~%intersection size: ~d~%condition value in rule?:~A" condition-block intersection (hash-table-count intersection)
 			(member (cdar condition-block)
@@ -5031,8 +5031,12 @@
 			(block-difference (rule-block copy-rule)
 					  concept-block
 					  :output-hash-p t))
-                (setq candidate-noop-p
-                      (and (same-block-p (rule-block copy-rule)
+		(setq upper-bound-focus (hash-intersection (rule-block rule) goal :output-hash-p t))
+		(setq new-upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t))
+		(setq goal-constraint-support-count (goal-constraint-support-count condition upper-bound-focus))
+		(setq candidate-noop-p
+                      (and (= goal-constraint-support-count 0)
+			   (same-block-p (rule-block copy-rule)
                                          (rule-block rule))
                            (same-block-p (rule-certain-block copy-rule)
                                          (rule-certain-block rule))
@@ -5040,7 +5044,7 @@
                                          (rule-avoid-list rule))))
 		(setq parent-pos (hash-intersection (rule-certain-block rule) goal :output-hash-p t))
 		(setq yes-pos (hash-intersection (rule-certain-block copy-rule) goal :output-hash-p t))
-		(when (and print-special* (equal "ACUITY" (rule-based-cpd-dependent-var cpd)))
+		(when (and print-special* (equal "DIST_TO_INTERSECTION_NEXT" (rule-based-cpd-dependent-var cpd)))
 		  (format t "~%pass 1!~%candidate new rule:~%~S" copy-rule)
 		  ;;(print-cpd-rule copy-rule)
 		  (format t "goal-relevant?: ~S~%prev conflicts: ~d~%new conflicts: ~d"
@@ -5067,9 +5071,7 @@
 		 (setq new-covered-negs (hash-table-count yes-neg))
 		 (setq no-covered-pos (hash-table-count no-pos))
 		 (setq no-covered-negs (hash-table-count no-neg))
-		 (setq new-upper-bound-focus (hash-intersection (rule-block copy-rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
 		 (setq new-upper-bound-covered-pos (hash-table-count new-upper-bound-focus))
-		 (setq upper-bound-focus (hash-intersection (rule-block rule) goal :output-hash-p t)) ;;(setq upper-bound-focus intersection)
 		 (setq upper-bound-no-pos (block-difference upper-bound-focus new-upper-bound-focus :output-hash-p t))
 		 (setq upper-bound-no-covered-pos (hash-table-count upper-bound-no-pos))
 		 (setq p (handler-case
@@ -5130,7 +5132,6 @@
 						(* (+ new-upper-bound-covered-pos new-covered-negs) new-upper-bound-entropy)
 						(* (+ upper-bound-no-covered-pos no-covered-negs) upper-bound-no-entropy)))
 		 |#
-		 (setq goal-constraint-support-count (goal-constraint-support-count condition new-upper-bound-focus))
 		 (setq fallback-candidate-p (and (= new-covered-negs 0)
 					       (= info-gain 0)
 					       (= upper-bound-info-gain 0)
@@ -5183,9 +5184,9 @@
                             (certain-goal-count new-covered-pos)
                             (rule-block-size (hash-table-count (rule-block copy-rule)))
                             (rule-block-intersection-count (hash-table-count rule-block-intersection))
-                            (goal-constraint-support-ratio (if (> (hash-table-count rule-block-intersection) 0)
+                            (goal-constraint-support-ratio (if (> upper-bound-covered-pos  0)
                                                                (/ goal-constraint-support-count
-                                                                  (hash-table-count rule-block-intersection))
+                                                                  upper-bound-covered-pos)
                                                                0))
                             (condition-goal-intersection-count (hash-table-count intersection))
                             (condition-block-size (hash-table-count (second condition-block)))
@@ -5479,21 +5480,21 @@
 			      (return-from rule-satisfy-case-constraints-p nil))
                             (setq condition-pos (gethash att (rule-based-cpd-identifiers cpd)))
 			    (loop
-				  with rule-sva
-				  for val in vals
-				  do
-				  (setq rule-sva (nth val
-						      (gethash condition-pos
-							       (rule-based-cpd-set-valued-attributes cpd))))
-				  (when (not (member rule-sva constraints :test #'equal));;(notany #'(lambda (constraint) (intersection rule-sva constraint)) constraints)
-				    (return-from rule-satisfy-case-constraints-p nil))))))
+			      with rule-sva
+			      for val in vals
+			      do
+				 (setq rule-sva (nth val
+						     (gethash condition-pos
+							      (rule-based-cpd-set-valued-attributes cpd))))
+				 (when (not (member rule-sva constraints :test #'equal));;(notany #'(lambda (constraint) (intersection rule-sva constraint)) constraints)
+				   (return-from rule-satisfy-case-constraints-p nil))))))
                finally
                    (return t))))
     (let ((debug-acuity-local-coverings-p
             (equal "ACUITY" (rule-based-cpd-dependent-var cpd))))
-      (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
+      (when (and (equal "DIST_TO_INTERSECTION_NEXT" (rule-based-cpd-dependent-var cpd))
 		 eltm*
-		 (= (episode-count (car eltm*)) 8)
+		 ;;(= (episode-count (car eltm*)) 8)
 		 )
         (format t "~%~%getting local covering for:")
         (print-cpd cpd)
@@ -5539,12 +5540,13 @@
                    (setq tog (get-tog cpd goal concept-block new-rule universe))
                    (setq certain-tog (get-tog cpd goal concept-block new-rule universe :certain-p t))
 		   
-		   (if nil #|(and (= probability-concept 0)
-			    (equal "ACUITY" (rule-based-cpd-dependent-var cpd))
-                            (> (length rule-set) 29)
+		   (if (and (= probability-concept 0)
+			    (equal "DIST_TO_INTERSECTION_NEXT" (rule-based-cpd-dependent-var cpd))
+                            (= (length rule-set) 38)
 			    eltm*
-		       (= (episode-count (car eltm*)) 8))
-		       |#
+			    ;;(= (episode-count (car eltm*)) 8)
+			    )
+		       
 		       (setq print-special* t)
 		       (setq print-special* nil))
 		   
@@ -5600,7 +5602,7 @@
 					  (print-cpd cpd)
 					  (format t "~%goal:~%~S~%concept-block:~%~S~%rule:~%~S" goal concept-block new-rule)
 					  (print-cpd-rule new-rule)
-					  (format t "~%rule-set:")
+					  (format t "~%rule-set (~d):" (length rule-set))
 					  (loop
 					    for r in rule-set
 					    do

@@ -17,8 +17,7 @@
     (print-bn bn)))
 
 (defun run7 ()
-  (let (obs
-	cpd
+  (let (cpd
 	compressed-cpd)
     (load-eltm-from-file "the_real_eltm_zero_check.txt")
     (setq cpd (aref (car (episode-observation (car eltm*))) 7))

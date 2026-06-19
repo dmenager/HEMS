@@ -16,6 +16,21 @@
 	       ))
     (print-bn bn)))
 
+
+(defun run8 ()
+  (let (obs)
+    (load-eltm-from-file "eltm_debug_repeated_domain.txt")
+    ;;(print-episode (car eltm*))
+    (setq obs (compile-program nil
+			       v5 = (percept-node threat_next :values ((:value "NA" :probability 0.000755 :count 1) (:value "threat" :probability 0.542608 :count 1) (:value "benign" :probability 0.456637 :count 1)))
+			       v6 = (percept-node road_next :values ((:value "NA" :probability 0.027534 :count 1) (:value "26" :probability 0.264159 :count 1) (:value "2" :probability 0.028511 :count 1) (:value "3" :probability 0.052976 :count 1) (:value "4" :probability 0.025892 :count 1) (:value "5" :probability 0.041475 :count 1) (:value "6" :probability 0.032005 :count 1) (:value "7" :probability 0.015720 :count 1) (:value "8" :probability 0.020725 :count 1) (:value "9" :probability 0.018676 :count 1) (:value "10" :probability 0.016957 :count 1) (:value "11" :probability 0.033400 :count 1) (:value "12" :probability 0.023090 :count 1) (:value "14" :probability 0.019739 :count 1) (:value "15" :probability 0.022475 :count 1) (:value "16" :probability 0.052367 :count 1) (:value "17" :probability 0.014186 :count 1) (:value "18" :probability 0.036977 :count 1) (:value "19" :probability 0.016055 :count 1) (:value "20" :probability 0.021623 :count 1) (:value "23" :probability 0.049608 :count 1) (:value "24" :probability 0.020306 :count 1) (:value "25" :probability 0.014229 :count 1) (:value "1" :probability 0.043015 :count 1) (:value "22" :probability 0.018961 :count 1) (:value "13" :probability 0.011469 :count 1) (:value "21" :probability 0.057870 :count 1)))
+			       v7 = (percept-node dist_to_intersection_next :values ((:value "NA" :probability 0.002594 :count 1) (:value "200" :probability 0.002734 :count 1) (:value "40" :probability 0.001394 :count 1) (:value "60" :probability 0.001394 :count 1) (:value "80" :probability 0.001394 :count 1) (:value "100" :probability 0.001394 :count 1) (:value "120" :probability 0.001394 :count 1) (:value "140" :probability 0.001394 :count 1) (:value "160" :probability 0.001394 :count 1) (:value "180" :probability 0.982456 :count 1) (:value "20" :probability 0.002457 :count 1)))
+			       v8 = (percept-node heading_next :values ((:value "NA" :probability 0.001326 :count 1) (:value "0" :probability 0.002654 :count 1) (:value "-1" :probability 0.570082 :count 1) (:value "1" :probability 0.425938 :count 1)))
+			       
+			       ))
+    ;;(print-bn (episode-observation (car eltm*)))
+    (remember eltm* obs '+ 1 t :type "OBSERVATION" :soft-likelihoods t)))
+
 (defun run7 ()
   (let (obs
 	cpd

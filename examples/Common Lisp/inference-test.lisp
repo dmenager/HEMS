@@ -17,6 +17,40 @@
     (print-bn bn)))
 
 
+(defun run9 ()
+  (let (obs st)
+    (load-eltm-from-file "pre-insertion-eltm.txt")
+    (setq obs (compile-program nil
+		v1 = (percept-node threat_curr :latent-p T :values ((:value "threat")(:value "benign")))
+		v2 = (percept-node threat_next :latent-p T :values ((:value "threat")(:value "benign")))
+		v3 = (percept-node road_curr :value "12")
+		v4 = (percept-node dist_to_intersection_curr :value "180")
+		v5 = (percept-node heading_curr :value "-1")
+		v6 = (percept-node transition_flag :value "0")
+		v7 = (percept-node road_next :value "12")
+		v8 = (percept-node dist_to_intersection_next :value "180")
+		v9 = (percept-node heading_next :value "-1")
+		v1 --> v2
+		v1 --> v3
+		v2 --> v7
+		v3 --> v4
+		v3 --> v7
+		v3 --> v9
+		v4 --> v6
+		v4 --> v8
+		v5 --> v7
+		v5 --> v9
+		v6 --> v7
+		v6 --> v8
+		v7 --> v8
+		v7 --> v9))
+    (setq st  (compile-program nil))
+    (format t "~%~%Before insertion")
+    (print-episode (car eltm*))
+    (new-push-to-ep-buffer :observation obs :state st :action-name "NIL" :insertp t :temporal-p t :hidden-state-p t)
+    (format t "~%~%After insertion")
+    (print-episode (car eltm*))))
+
 (defun run8 ()
   (let (obs)
     (load-eltm-from-file "eltm_debug_repeated_domain.txt")

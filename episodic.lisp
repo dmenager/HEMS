@@ -295,6 +295,11 @@
                             (setq remove (cons ident remove))))
                    (setq factor (factor-operation factor keep remove '+))
                    (vector-push-extend factor evidence-factors)))
+	  (when t
+	    (format t "~%~%starting em using schema:")
+	    (print-bn new-nodes)
+	    (format t "~%evidence:")
+	    (print-bn (cons evidence-factors (make-array 0))))
           (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))
                      :current-sample-already-counted-p t
                      :decay-statistics-p nil))

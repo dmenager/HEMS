@@ -295,7 +295,7 @@
                             (setq remove (cons ident remove))))
                    (setq factor (factor-operation factor keep remove '+))
                    (vector-push-extend factor evidence-factors)))
-	  (when t
+	  (when nil 
 	    (format t "~%~%starting em using schema:")
 	    (print-bn new-nodes)
 	    (format t "~%evidence:")

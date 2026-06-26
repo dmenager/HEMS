@@ -640,7 +640,7 @@ eta_t times the current posterior ESS."
 
 (defun online-em-step (bn latent-vars datum
                         &key
-                          (step-size .10d0)
+                          (step-size 1.0d0)
                           (lr 1.0d0)
                           (equivalent-sample-size 1.0d0)
                           (latent-perturbation 5.0d-2)

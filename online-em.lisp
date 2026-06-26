@@ -610,10 +610,17 @@ eta_t times the current posterior ESS."
                  (online-em-expand-cpd-over-identifiers cpd explicit-identifiers)
                (declare (ignore expanded-p))
                (if needs-perturb-p
-                   (if (online-em-latent-child-cpd-p expanded-cpd latent-set)
-                       (online-em-randomize-latent-child-cpd expanded-cpd)
-                       (online-em-perturb-cpd expanded-cpd
-                                              :epsilon (* 0.02d0 epsilon)))
+                   ;; Preserve insertion-derived priors for latent-child CPDs.
+                   ;; Full randomization breaks symmetry aggressively, but it
+                   ;; also discards useful prior information and can make early
+                   ;; online-EM updates swing away from the inserted model.
+                   ;; Empty or fully uniform latent models still get symmetry
+                   ;; breaking from the perturbation; increase LATENT-PERTURBATION
+                   ;; if that initialization needs stronger separation.
+                   (online-em-perturb-cpd expanded-cpd
+                                          :epsilon (if (online-em-latent-child-cpd-p expanded-cpd latent-set)
+                                                       epsilon
+                                                       (* 0.02d0 epsilon)))
                    expanded-cpd)
                (online-em-zero-latent-na-rules
                 expanded-cpd latent-set

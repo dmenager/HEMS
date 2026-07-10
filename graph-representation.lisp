@@ -7468,7 +7468,7 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun send-message (i j factors op edges messages sepset &key (preserve-rule-counts nil))
   ;;(format t "~%edges:~%~A" edges)
   ;;(print-messages messages)
-  (when t (and (= i 8) (= j 13))
+  (when nil (and (= i 8) (= j 13))
     (format t "~%~%sending message from ~d to ~d" i j)
     (format t "~%~d:" i)
     (print-cpd (aref factors i))
@@ -7484,7 +7484,7 @@ Roughly based on (Koller and Friedman, 2009) |#
       finally
 	 (setq nbrs-minus-j neighbors)
 	 (setq nbrs nrs))
-    (when t (and (= i 8) (= j 13))
+    (when nil (and (= i 8) (= j 13))
           (format t "~%neighbors of ~d (i) minus ~d (j):" i j)
           (loop
 	    for nbr in nbrs-minus-j
@@ -7501,7 +7501,7 @@ Roughly based on (Koller and Friedman, 2009) |#
     (setq reduced (reduce #'(lambda (phi1 phi2)
 			      (factor-filter phi1 phi2 '* preserve-rule-counts))
 			  (cons (aref factors i) nbrs-minus-j)))
-    (when t (and (= i 8) (= j 13))
+    (when nil (and (= i 8) (= j 13))
       (format t "~%evidence-collected:~%")
       (print-cpd reduced)
       (format t "~%sepset: ~S~%variables to eliminate: ~S"  sepset

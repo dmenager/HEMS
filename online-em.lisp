@@ -409,7 +409,13 @@ eta_t times the current posterior ESS."
                   (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
 
-(defun online-em-latent-posterior-weight (target-rule posterior-rule posterior-map latent-set)
+(defun online-em-latent-posterior-weight (target-rule posterior-cpd posterior-map latent-set)
+  "Return the posterior weight of latent parents in TARGET-RULE.
+
+The posterior factor for a child is conditional on its parents.  Consequently,
+the presence of a latent parent in one of that factor's rules does not mean its
+posterior mass has already been included.  Weight every latent parent here, but
+do not weight a latent dependent variable by its own posterior a second time."
   (loop
     with weight = 1.0d0
     for ident being the hash-keys of (rule-conditions target-rule)
@@ -418,7 +424,8 @@ eta_t times the current posterior ESS."
               posterior-map
               (gethash ident latent-set)
               target-values
-              (null (gethash ident (rule-conditions posterior-rule))))
+              (not (equal ident
+                          (rule-based-cpd-dependent-id posterior-cpd))))
       do
          (let ((latent-cpd (gethash ident posterior-map))
                (query-rule (make-rule
@@ -443,7 +450,7 @@ eta_t times the current posterior ESS."
             when (compatible-rule-p posterior-rule target-rule nil nil)
               sum (* (float (rule-probability posterior-rule) 1.0d0)
                      (online-em-latent-posterior-weight
-                      target-rule posterior-rule posterior-map latent-set)))))
+                      target-rule posterior-cpd posterior-map latent-set)))))
 
 (defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta posterior-map latent-set)
   "Add current-datum posterior ESS for POSTERIOR-CPD into STATS-CPD."

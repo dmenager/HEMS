@@ -379,6 +379,7 @@
     (update-cpd-rules cpd (rule-based-cpd-rules cpd) :check-prob-sum nil)))
 
 (defun online-em-posterior-map (posterior-factors)
+  "Map each full-family posterior by its dependent identifier."
   (let ((map (make-hash-table :test #'equal)))
     (dolist (factor posterior-factors map)
       (setf (gethash (rule-based-cpd-dependent-id factor) map) factor))))
@@ -420,42 +421,26 @@ eta_t times the current posterior ESS."
                   (* alpha (float (rule-probability rule) 1.0d0))))))
     bn-copy))
 
-(defun online-em-latent-posterior-weight (target-rule posterior-cpd posterior-map latent-set)
-  "Return the posterior weight of latent parents in TARGET-RULE.
+(defun online-em-compatible-assignment-count (target-rule posterior-rule cpd)
+  "Count atomic assignments shared by TARGET-RULE and POSTERIOR-RULE."
+  (loop with count = 1
+        for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+        for shared-values =
+          (intersection (cpd-rule-value-set cpd target-rule ident)
+                        (cpd-rule-value-set cpd posterior-rule ident)
+                        :test #'equal)
+        when (null shared-values) return 0
+        do (setq count (* count (length shared-values)))
+        finally (return count)))
 
-The posterior factor for a child is conditional on its parents.  Consequently,
-the presence of a latent parent in one of that factor's rules does not mean its
-posterior mass has already been included.  Weight every latent parent here, but
-do not weight a latent dependent variable by its own posterior a second time."
-  (loop
-    with weight = 1.0d0
-    for ident being the hash-keys of (rule-conditions target-rule)
-    for target-values = (gethash ident (rule-conditions target-rule))
-    when (and latent-set
-              posterior-map
-              (gethash ident latent-set)
-              target-values
-              (not (equal ident
-                          (rule-based-cpd-dependent-id posterior-cpd))))
-      do
-         (let ((latent-cpd (gethash ident posterior-map))
-               (query-rule (make-rule
-                            :conditions (make-hash-table :test #'equal)))
-               (latent-weight 0.0d0))
-           (when latent-cpd
-             (setf (gethash ident (rule-conditions query-rule))
-                   target-values)
-             (loop for latent-rule being the elements of (rule-based-cpd-rules latent-cpd)
-                   when (compatible-rule-p latent-rule query-rule nil nil)
-                     do
-                        (incf latent-weight
-                              (float (rule-probability latent-rule) 1.0d0)))
-             (setf weight (* weight latent-weight))))
-    finally
-       (return weight)))
-
-(defun online-em-current-ess (target-rule target-cpd posterior-cpd posterior-map
+(defun online-em-current-ess (target-rule target-cpd posterior-cpd
                               latent-set evidence)
+  "Return posterior expected support for TARGET-RULE.
+
+POSTERIOR-CPD must be a globally normalized full-family posterior, as returned
+by LOOPY-BELIEF-PROPAGATION with :FAMILY-JOINT-P true. Each rule probability is
+mass per atomic assignment; compressed compatible assignments are counted
+explicitly."
   (if (or (online-em-rule-contains-latent-na-p target-rule target-cpd latent-set)
           (not (online-em-rule-compatible-with-evidence-p
                 target-rule target-cpd evidence
@@ -464,10 +449,10 @@ do not weight a latent dependent variable by its own posterior a second time."
       (loop for posterior-rule being the elements of (rule-based-cpd-rules posterior-cpd)
             when (compatible-rule-p posterior-rule target-rule nil nil)
               sum (* (float (rule-probability posterior-rule) 1.0d0)
-                     (online-em-latent-posterior-weight
-                      target-rule posterior-cpd posterior-map latent-set)))))
+                     (online-em-compatible-assignment-count
+                      target-rule posterior-rule posterior-cpd)))))
 
-(defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta posterior-map
+(defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta
                                        latent-set evidence)
   "Add current-datum posterior ESS for POSTERIOR-CPD into STATS-CPD.
 Observed variables in EVIDENCE are clamped, so posterior mass for assignments
@@ -479,8 +464,7 @@ that contradict the inserted datum is not converted into CPD support."
          (incf (rule-count rule)
                (* eta
                   (online-em-current-ess
-                   rule stats-cpd posterior-cpd posterior-map
-                   latent-set evidence))))))
+                   rule stats-cpd posterior-cpd latent-set evidence))))))
 
 (defun online-em-normalize-statistics-cpd (stats-cpd
                                            &key
@@ -554,8 +538,6 @@ that contradict the inserted datum is not converted into CPD support."
                            (online-em-rule-contains-latent-na-p
                             rule stats-cpd latent-set))
                       0.0d0)
-                     ((<= numerator 0.0d0)
-                      0.0d0)
                      ((> denom 0.0d0)
                       (max min-prob (/ numerator denom)))
                      (t 0.0d0)))
@@ -607,7 +589,8 @@ that contradict the inserted datum is not converted into CPD support."
       (compile-bn-priors bn)
     (loopy-belief-propagation bn-with-priors evidence priors '+ lr
                               :singleton-only nil
-                              :preserve-rule-counts t)))
+                              :preserve-rule-counts t
+                              :family-joint-p t)))
 
 (defun online-em-latent-set (latent-vars)
   "Create a set for fast latent-variable membership checks."
@@ -669,7 +652,7 @@ that contradict the inserted datum is not converted into CPD support."
 
 (defun online-em-step (bn latent-vars datum
                         &key
-                          (step-size 1.0d0)
+                          (step-size *online-em-default-step-size*)
                           (lr 1.0d0)
                           (equivalent-sample-size 1.0d0)
                           (latent-perturbation 5.0d-2)
@@ -679,7 +662,12 @@ that contradict the inserted datum is not converted into CPD support."
                           (update-latent-child-cpds-p t))
   "Run a single online EM update using one DATUM.
 
-STEP-SIZE may be a constant or a function of ITERATION (1-based)."
+STEP-SIZE may be a constant or a function of ITERATION (1-based). Its value
+must be in [0,1]. The default is *ONLINE-EM-DEFAULT-STEP-SIZE*. With
+DECAY-STATISTICS-P true, sufficient statistics follow
+S_t = (1 - eta_t) S_{t-1} + eta_t ESS_t. With DECAY-STATISTICS-P nil, existing
+support is retained and eta_t ESS_t is added, as required by the insertion
+path after its already-counted observation is removed."
   ;; Don't need stats bn since sufficient statistics are computed during inference and stored as posterior-factors
   (let* ((theta (online-em-initialize-latent-parameters
                  (copy-bn bn)
@@ -693,6 +681,9 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
          (latent-set (online-em-latent-set latent-vars))
          stats
          (posterior-factors nil))
+    (unless (<= 0.0d0 eta 1.0d0)
+      (error "Online-EM step size must be between 0 and 1, got ~S at iteration ~S"
+             eta iteration))
     (online-em-augment-evidence-with-na theta evidence latent-set)
     (setq stats
           (online-em-initialize-statistics
@@ -710,6 +701,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
 	  for posterior-factor in posterior-factors
 	  do
 	     (print-cpd posterior-factor)))
+
       (let ((posterior-map (online-em-posterior-map inferred-factors)))
         (loop
 	      for i from 0 below (array-dimension (car theta) 0)
@@ -724,7 +716,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                            (or update-latent-child-cpds-p
                                (rule-based-cpd-latent-p cpd)))
                   (online-em-accumulate-posterior
-                   stats-cpd posterior-cpd eta posterior-map latent-set evidence)
+                   stats-cpd posterior-cpd eta latent-set evidence)
                   (setf (aref (car theta) i)
                         (online-em-normalize-statistics-cpd
                          stats-cpd :bn stats :latent-set latent-set)))))))

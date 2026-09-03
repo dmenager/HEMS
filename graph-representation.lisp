@@ -2181,7 +2181,37 @@
          (setf (rule-based-cpd-rules phi)
                (make-array block :initial-contents (reverse new-rules)))
          (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
-         (return phi))))
+	 (return phi))))
+
+(defun normalize-rule-probabilities-globally (phi)
+  "Normalize PHI once across every atomic assignment in its full scope.
+
+Unlike NORMALIZE-RULE-PROBABILITIES, this does not normalize the dependent
+variable separately for each parent context. A rule probability is treated as
+the probability of each atomic assignment covered by that rule, so compressed
+rules contribute once for every assignment they represent. PHI must have
+non-overlapping local coverings before this function is called."
+  (let ((normalizer
+          (loop for rule being the elements of (rule-based-cpd-rules phi)
+                for assignment-count =
+                  (loop with count = 1
+                        for ident being the hash-keys of
+                          (rule-based-cpd-identifiers phi)
+                        for values = (cpd-rule-value-set phi rule ident)
+                        do (when (null values)
+                             (error "Rule has no values for ~S during global normalization: ~S"
+                                    ident rule))
+                           (setq count (* count (length values)))
+                        finally (return count))
+                sum (* (float (rule-probability rule) 1.0d0)
+                       assignment-count))))
+    (when (<= normalizer 0.0d0)
+      (error "Cannot globally normalize a zero-mass factor: ~S" phi))
+    (loop for rule being the elements of (rule-based-cpd-rules phi)
+          do (setf (rule-probability rule)
+                   (/ (float (rule-probability rule) 1.0d0)
+                      normalizer)))
+    phi))
 
 
 (defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test (function equal))))
@@ -2285,7 +2315,7 @@
          (setf (rule-based-cpd-rules phi)
                (make-array block :initial-contents (reverse new-rules)))
          (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
-         (return phi))))
+	 (return phi))))
 
 
 (defun normalize-rule-probabilities-old (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
@@ -7515,7 +7545,18 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; factors = array of conditional probability densities
 ;; edges = array of edges in factor graph
 ;; messages = messages from factor to factor
-(defun compute-belief (i factors edges messages &key (preserve-rule-counts nil))
+(defun compute-belief (i factors edges messages
+                       &key
+                         (preserve-rule-counts nil)
+                         (family-joint-p nil))
+  "Compute the belief associated with factor I.
+
+By default, return the historical CPD-shaped belief: its full family scope is
+retained, but the dependent variable is normalized separately in each parent
+context. When FAMILY-JOINT-P is true, instead normalize once over the complete
+factor scope so rule probabilities are joint posterior masses per atomic
+assignment. The latter representation is intended for EM sufficient
+statistics."
   (loop
     with factor
     for k from 0 below (array-dimension edges 0)
@@ -7544,8 +7585,22 @@ Roughly based on (Koller and Friedman, 2009) |#
        (when nil
 	 (format t "~%intermediate belief:")
 	 (print-cpd factor))
-       (setq factor (normalize-rule-probabilities factor (rule-based-cpd-dependent-id factor)))
-       (setq factor (get-local-coverings (update-cpd-rules factor (rule-based-cpd-rules factor))))
+       (cond (family-joint-p
+              ;; Establish non-overlapping rule support before counting the
+              ;; atomic assignments represented by compressed rules.
+              (setq factor
+                    (get-local-coverings
+                     (update-cpd-rules factor
+                                       (rule-based-cpd-rules factor))))
+              (setq factor (normalize-rule-probabilities-globally factor)))
+             (t
+              (setq factor
+                    (normalize-rule-probabilities
+                     factor (rule-based-cpd-dependent-id factor)))
+              (setq factor
+                    (get-local-coverings
+                     (update-cpd-rules factor
+                                       (rule-based-cpd-rules factor))))))
        (when nil
 	 (format t "~%~%belief")
 	 (print-hash-entry k factor))
@@ -7844,7 +7899,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 (defun calibrate-factor-graph (factors op edges evidence lr
                                &key
                                  (singleton-only nil)
-                                 (preserve-rule-counts nil))
+                                 (preserve-rule-counts nil)
+                                 (family-joint-p nil))
   (with-open-file (log-stream *calibrate-factor-graph-log-file*
                               :direction :output
                               :if-exists :append
@@ -8003,12 +8059,14 @@ Roughly based on (Koller and Friedman, 2009) |#
                   when (rule-based-cpd-singleton-p (aref factors i))
                     collect
                       (compute-belief i factors edges messages
-                                      :preserve-rule-counts preserve-rule-counts)
+                                      :preserve-rule-counts preserve-rule-counts
+                                      :family-joint-p family-joint-p)
                       into posterior-marginals
                   else if (not singleton-only)
                     collect
                       (compute-belief i factors edges messages
-                                      :preserve-rule-counts preserve-rule-counts)
+                                      :preserve-rule-counts preserve-rule-counts
+                                      :family-joint-p family-joint-p)
                       into posterior-distribution
                   finally
                      (return
@@ -9149,7 +9207,18 @@ Roughly based on (Koller and Friedman, 2009) |#
   ;; priors = hash table mapping cpd dependent IDs to their associated priors
 ;; op = operation to apply to factor (max or +)
 ;; lr = learning rate
-(defun loopy-belief-propagation (state evidence priors op lr &key (singleton-only nil) (preserve-rule-counts nil))
+(defun loopy-belief-propagation (state evidence priors op lr
+                                 &key
+                                   (singleton-only nil)
+                                   (preserve-rule-counts nil)
+                                   (family-joint-p nil))
+  "Run belief propagation over STATE.
+
+The first return value contains non-singleton factors when SINGLETON-ONLY is
+false. Ordinarily those factors retain their full family scope but are
+normalized conditionally by dependent variable. FAMILY-JOINT-P requests a
+single global normalization instead, yielding full-family posterior factors
+for EM. The second return value contains singleton posterior marginals."
   (when nil
     (format t "~%evidence listing:~%")
     (maphash #'print-hash-entry evidence))
@@ -9360,8 +9429,9 @@ Roughly based on (Koller and Friedman, 2009) |#
       (break)
       )
     (calibrate-factor-graph all-factors op edges initial-messages lr
-			    :singleton-only singleton-only
-			    :preserve-rule-counts preserve-rule-counts)))
+                            :singleton-only singleton-only
+                            :preserve-rule-counts preserve-rule-counts
+                            :family-joint-p family-joint-p)))
 
 #| Move assignment by 1 |#
 

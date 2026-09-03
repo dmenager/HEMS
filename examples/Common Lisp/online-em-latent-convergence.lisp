@@ -225,6 +225,7 @@
        (step-size *online-em-default-step-size*)
        (equivalent-sample-size 2.0d0)
        (latent-perturbation 5.0d-2)
+       (update-latent-child-cpds-p nil)
        (lr 1.0d0))
   (let* ((model (online-em-demo-schema-bn))
          (samples (online-em-demo-training-set n :seed seed))
@@ -248,7 +249,8 @@
                                      :step-size step-size
                                      :equivalent-sample-size equivalent-sample-size
                                      :latent-perturbation latent-perturbation
-                                     :update-latent-child-cpds-p nil
+                                     :update-latent-child-cpds-p
+                                     update-latent-child-cpds-p
                                      :lr lr))
                (let* ((raw (h-hot-estimate model))
                       (fixed-error (online-em-demo-abs-error raw))
@@ -267,4 +269,7 @@
     (format t "Wrote convergence trace to ~A~%" convergence-path)
     model))
 
-(write-online-em-demo-convergence :n 2000)
+(defvar *run-online-em-latent-convergence-on-load* t)
+
+(when *run-online-em-latent-convergence-on-load*
+  (write-online-em-demo-convergence :n 2000))

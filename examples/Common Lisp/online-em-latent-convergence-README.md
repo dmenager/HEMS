@@ -92,6 +92,12 @@ network.
 Online EM is run once per sample. The convergence CSV records the latent prior
 estimate after each update.
 
+To exercise the full M-step, including CPDs whose parent is latent, call
+`write-online-em-demo-convergence` with
+`:update-latent-child-cpds-p t`. The regression suite uses this mode; the
+default remains `nil` so the original isolated latent-prior experiment is
+reproducible.
+
 ## Results
 
 In the latest 2000-example run, the generated sample contained 677 hidden `HOT`

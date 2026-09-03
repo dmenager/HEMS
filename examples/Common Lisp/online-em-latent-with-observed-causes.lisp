@@ -267,6 +267,7 @@
        (step-size *online-em-default-step-size*)
        (equivalent-sample-size 2.0d0)
        (latent-perturbation 5.0d-2)
+       (update-latent-child-cpds-p nil)
        (lr 1.0d0))
   (let* ((model (middle-demo-schema-bn))
          (samples (middle-demo-training-set n :seed seed))
@@ -292,7 +293,8 @@
                                      :step-size step-size
                                      :equivalent-sample-size equivalent-sample-size
                                      :latent-perturbation latent-perturbation
-                                     :update-latent-child-cpds-p nil
+                                     :update-latent-child-cpds-p
+                                     update-latent-child-cpds-p
                                      :lr lr))
                (let* ((raw (middle-h-hot-estimate model target-a target-d))
                       (fixed-error (middle-demo-abs-error raw target-a target-d))
@@ -314,4 +316,7 @@
     (format t "Wrote convergence trace to ~A~%" convergence-path)
     model))
 
-(write-middle-demo-convergence :n 4000)
+(defvar *run-online-em-middle-latent-convergence-on-load* t)
+
+(when *run-online-em-middle-latent-convergence-on-load*
+  (write-middle-demo-convergence :n 4000))

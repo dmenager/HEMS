@@ -97,6 +97,10 @@ Online EM is run once per sample. Each update infers a posterior over the
 hidden `H` value from the observed `A`, `D`, and `E` values, then updates the
 hidden CPD. The convergence CSV records the tracked row after each update.
 
+Pass `:update-latent-child-cpds-p t` to exercise the full M-step and update the
+observed effect CPD as well. The default remains `nil` so this example continues
+to isolate learning of the middle latent CPD.
+
 By default, the tracked row is:
 
 ```text

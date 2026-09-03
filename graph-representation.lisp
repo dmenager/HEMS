@@ -7649,193 +7649,526 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; edges = array of edges in factor graph
 ;; evidence = hashtable of self-messages from conditional probability densities
 ;; lr = learning rate to dampen updates, and help convergence
-(defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil) (preserve-rule-counts nil))
-  (loop
-    with round = t
-    with j and k and sepset and messages = (initialize-graph edges evidence)
-    with calibrated and conflicts and max-iter = 30 and deltas
-    for count from 0
-    do
-       (when nil t
-         (format t "~%~%Iteration: ~d." count))
-       (setq calibrated t)
-       (setq conflicts nil)
-       (setq deltas nil)
-       (loop
-         with current-message and new-message
-         for i from 0 to (- (array-dimension edges 0) 1)
-         do
-            (setq j (car (aref edges i)))
-            (setq k (cdr (aref edges i)))
-            (when (not (= j k))
-              (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
-                                              (rule-based-cpd-identifiers (aref factors k))
-                                              :test #'equal))
-              (when nil t (and (= j 8) (= k 13))
-                    (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
-              (setq current-message (gethash k (gethash j messages)))
-              ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
-	      (if nil ;;(and (= j 6) (= k 15))
-		  (setq print-special* t)
-		  (setq print-special* nil))
-              (setq new-message (send-message j k factors op edges messages sepset
-					       :preserve-rule-counts preserve-rule-counts))
-	      ;; when doing sum-product message passing, normalize after getting the message
-	      (when (or (eq #'+ op) (eq '+ op))
-		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
-		)
-	      (setq new-message (smooth new-message j k messages lr))
-	      (when nil t (and (= j 8) (= k 13))
-                (format t "~%current message from ~d:" j)
-                (print-hash-entry k current-message)
-                (format t "~%new message from ~d:" j)
-                (print-hash-entry k new-message)
-		;;(break)
-		)
-              (loop
-                for new-rule being the elements of (rule-based-cpd-rules new-message)
-                do
-                   (cond (round
-                          (setq deltas (cons (abs (- (float (rule-probability new-rule))
-                                                     (if (rule-based-cpd-p current-message)
-                                                                                   (float (rule-probability (car (get-compatible-rules
-                                                                                                           current-message
-                                                                                                           new-message
-                                                                                                           new-rule
-                                                                                                           :find-all nil
-													   :best-matches t))))
-                                                                                   current-message)))
-                                             deltas)))
+; (defun calibrate-factor-graph (factors op edges evidence lr &key (singleton-only nil) (preserve-rule-counts nil))
+;   (loop
+;     with round = t
+;     with j and k and sepset and messages = (initialize-graph edges evidence)
+;     with calibrated and conflicts and max-iter = 30 and deltas
+;     for count from 0
+;     do
+;        (when t
+;          (format t "~%~%Iteration: ~d." count))
+;        (setq calibrated t)
+;        (setq conflicts nil)
+;        (setq deltas nil)
+;        (loop
+;          with current-message and new-message
+;          for i from 0 to (- (array-dimension edges 0) 1)
+;          do
+;             (setq j (car (aref edges i)))
+;             (setq k (cdr (aref edges i)))
+;             (when (not (= j k))
+;               (setq sepset (hash-intersection (rule-based-cpd-identifiers (aref factors j))
+;                                               (rule-based-cpd-identifiers (aref factors k))
+;                                               :test #'equal))
+;               (when t (and (= j 8) (= k 13))
+;                     (format t "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A" j (rule-based-cpd-identifiers (aref factors j)) (rule-based-cpd-singleton-p (aref factors j)) k (rule-based-cpd-identifiers (aref factors k)) (rule-based-cpd-singleton-p (aref factors k)) sepset))
+;               (setq current-message (gethash k (gethash j messages)))
+;               ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
+; 	      (if nil ;;(and (= j 6) (= k 15))
+; 		  (setq print-special* t)
+; 		  (setq print-special* nil))
+;               (setq new-message (send-message j k factors op edges messages sepset
+; 					       :preserve-rule-counts preserve-rule-counts))
+; 	      ;; when doing sum-product message passing, normalize after getting the message
+; 	      (when (or (eq #'+ op) (eq '+ op))
+; 		(setq new-message (normalize-rule-probabilities new-message (rule-based-cpd-dependent-id new-message)))
+; 		)
+; 	      (setq new-message (smooth new-message j k messages lr))
+; 	      (when t (and (= j 8) (= k 13))
+;                 (format t "~%current message from ~d:" j)
+;                 (print-hash-entry k current-message)
+;                 (format t "~%new message from ~d:" j)
+;                 (print-hash-entry k new-message)
+; 		;;(break)
+; 		)
+;               (loop
+;                 for new-rule being the elements of (rule-based-cpd-rules new-message)
+;                 do
+;                    (cond (round
+;                           (setq deltas (cons (abs (- (float (rule-probability new-rule))
+;                                                      (if (rule-based-cpd-p current-message)
+;                                                                                    (float (rule-probability (car (get-compatible-rules
+;                                                                                                            current-message
+;                                                                                                            new-message
+;                                                                                                            new-rule
+;                                                                                                            :find-all nil
+; 													   :best-matches t))))
+;                                                                                    current-message)))
+;                                              deltas)))
+;                          (t
+;                           (setq deltas (cons (abs (- (rule-probability new-rule)
+;                                                      (if (rule-based-cpd-p current-message)
+;                                                          (rule-probability (car (get-compatible-rules
+;                                                                                  current-message
+;                                                                                  new-message
+;                                                                                  new-rule
+;                                                                                  :find-all nil
+; 										 :best-matches t)))
+;                                                          current-message)))
+;                                              deltas)))))
+;               (setf (gethash k (gethash j messages)) new-message))
+;          when (not (same-message-p current-message new-message :round t))
+;            do
+;               (setq conflicts (cons (cons current-message new-message) conflicts))
+;               (setq calibrated nil))
+;        ;;(break "~%end of iteration")
+;        (when nil t
+; 	 (format t "~%~%num conflicts: ~d" (length conflicts))
+; 	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
+;        ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
+;     until (or calibrated (= (+ count 1) max-iter))
+;     finally
+;        (when t
+;          (cond (calibrated
+;                 (format t "~%Reached convergence after ~d iterations." (+ count 1)))
+;                (t
+;                 (format t "~%Reached inference limit at iteration ~d." (+ count 1)))))
+;        (return
+;          (cond ((or (eq op '+)
+; 		    (eq op #'+))	
+;                 (loop
+;                   for i from 0 to (- (array-dimension factors 0) 1)
+; 		 when (rule-based-cpd-singleton-p (aref factors i))
+;                    collect (compute-belief i factors edges messages
+; 					   :preserve-rule-counts preserve-rule-counts) into posterior-marginals
+; 		  else if (not singleton-only)
+; 		    collect (compute-belief i factors edges messages
+; 					    :preserve-rule-counts preserve-rule-counts) into posterior-distribution
+; 		  finally
+; 		     (return (values posterior-distribution posterior-marginals))))
+;                ((or (eq op 'max)
+; 		    (eq op #'max))
+;                 (when nil
+;                   (format t "~%Computing most likely state."))
+;                 ;;(break)
+;                 (let (constraints vars unassigned csp copy-factors-list)
+;                   (when nil
+;                     (format t "~%factors:~%~A" factors))
+;                   (loop
+;                     for factor being the elements of factors
+;                     do
+;                        (setq copy-factors-list (cons (copy-rule-based-cpd factor) copy-factors-list))
+;                     finally
+;                        (setq copy-factors-list (reverse copy-factors-list)))
+;                   (when nil
+;                     (format t "~%Max marginals:~%~A" copy-factors-list))
+;                   (loop
+;                     for i from 0 to (- (array-dimension factors 0) 1)
+;                     for copy-factor in copy-factors-list
+;                     with constraint and max-val and new-assns and num-assignments
+;                     do
+;                        (setq max-val 0)
+;                        (setq constraint (compute-belief i factors edges messages))
+;                        (when nil
+;                          (format t "~%constraint:~%~A" constraint)
+;                          (break))
+;                        (setq num-assignments (reduce #'* (coerce (cpd-cardinalities constraint) 'list)))
+;                        (setf (cpd-counts constraint) (cpd-counts copy-factor))
+;                        (setq new-assns (make-hash-table))
+;                        (loop
+;                          for i from 0 to (- num-assignments 1)
+;                          with hashed-val and max = 0
+;                          do
+;                             (cond ((cpd-counts constraint)
+;                                    (when (> (access-counts (cpd-counts constraint) i (aref (cpd-cardinalities constraint) 0)) 0)
+;                                      (setq hashed-val (hash-access (cpd-assignments constraint) 0 constraint (list i)))
+;                                      (if (> hashed-val max)
+;                                          (setq max hashed-val))
+;                                      (if (> hashed-val 0)
+;                                          (setf (gethash i new-assns) hashed-val))))
+;                                   (t
+;                                    (setq hashed-val (hash-access (cpd-assignments constraint) 0 nil (list i)))
+;                                    (if (> hashed-val max)
+;                                        (setq max hashed-val))))
+;                          finally (setq max-val max))
+;                        (when (cpd-counts constraint)
+;                          (setf (cpd-assignments constraint) new-assns))
+;                        (loop
+;                          for j from 0 to (- num-assignments 1)
+;                          do
+;                             (cond ((and (> max-val 0) (= (hash-access (cpd-assignments constraint) 0 constraint (list j)) max-val))
+;                                    (setf (gethash j (cpd-assignments constraint)) 1))
+;                                   (t
+;                                    (remhash j (cpd-assignments constraint)))))
+;                     collect constraint into cnstrts
+;                     finally
+;                        ;;(break)
+;                        (setq constraints cnstrts))
+;                   (setq vars (remove-duplicates
+;                               (mapcan #'(lambda (cpd)
+;                                           (hash-keys-to-list (cpd-identifiers cpd)))
+;                                       constraints)
+;                               :test #'equal))
+;                   (loop
+;                     for constraint in constraints
+;                     do
+;                     #|
+;                        (when (= (length (cpd-identifiers constraint)) 1)
+;                        (format t "~%singleton constraint:~%~A~%assignments" constraint)
+;                        (maphash #'print-hash-entry (cpd-assignments constraint)))|#
+;                        (loop
+;                          with bindings and values
+;                          for var being the hash-keys of (cpd-identifiers constraint)
+;                            using (hash-value pos)
+;                          do
+;                             (setq bindings (gethash pos (cpd-var-value-map constraint)))
+;                             (setq values (mapcar 'car bindings))
+;                             (when (not (member (cons var values)
+;                                                unassigned :test #'equal))
+;                               (setq unassigned (cons (cons var values)
+;                                                      unassigned)))))
+;                   (setq unassigned (node-consistency unassigned constraints))
+;                   (setq csp (list ':constraints (make-array (length constraints) :initial-contents constraints :fill-pointer t) ':vars vars))
+;                   (when nil
+;                     (format t "~%constraints:~%~S" (getf csp :constraints))
+;                     ;;(break)
+;                     )
+;                   ;;(backtracking-search csp unassigned)
+;                   (min-conflicts csp)))))))
+
+; DGM!!!
+(defparameter *calibrate-factor-graph-log-file*
+  "message_passing_log.txt")
+
+(defun calibrate-factor-graph (factors op edges evidence lr
+                               &key
+                                 (singleton-only nil)
+                                 (preserve-rule-counts nil))
+  (with-open-file (log-stream *calibrate-factor-graph-log-file*
+                              :direction :output
+                              :if-exists :append
+                              :if-does-not-exist :create)
+    (let ((*standard-output*
+            (make-broadcast-stream *standard-output* log-stream)))
+
+      (format t "~%~%============================================================")
+      (format t "~%Starting calibrate-factor-graph call")
+      (format t "~%============================================================")
+
+      (loop
+        with round = t
+        with j and k and sepset and messages = (initialize-graph edges evidence)
+        with calibrated and conflicts and max-iter = 30 and deltas
+        for count from 0
+        do
+           (when t
+             (format t "~%~%Iteration: ~d." count))
+
+           (setq calibrated t)
+           (setq conflicts nil)
+           (setq deltas nil)
+
+           (loop
+             with current-message and new-message
+             for i from 0 to (- (array-dimension edges 0) 1)
+             do
+                (setq j (car (aref edges i)))
+                (setq k (cdr (aref edges i)))
+
+                (when (not (= j k))
+                  (setq sepset
+                        (hash-intersection
+                         (rule-based-cpd-identifiers (aref factors j))
+                         (rule-based-cpd-identifiers (aref factors k))
+                         :test #'equal))
+
+                  (when t
+                    (and (= j 8) (= k 13))
+                    (format t
+                            "~%~%factor j = ~d:~%~A singleton-p: ~S~%factor k = ~d:~%~A singleton-p: ~S~%sepset: ~A"
+                            j
+                            (rule-based-cpd-identifiers (aref factors j))
+                            (rule-based-cpd-singleton-p (aref factors j))
+                            k
+                            (rule-based-cpd-identifiers (aref factors k))
+                            (rule-based-cpd-singleton-p (aref factors k))
+                            sepset))
+
+                  (setq current-message (gethash k (gethash j messages)))
+
+                  ;;(setq new-message (smooth (send-message j k factors op edges messages sepset) j k messages lr))
+
+                  (if nil ;;(and (= j 6) (= k 15))
+                      (setq print-special* t)
+                      (setq print-special* nil))
+
+                  (setq new-message
+                        (send-message j k factors op edges messages sepset
+                                      :preserve-rule-counts preserve-rule-counts))
+
+                  ;; When doing sum-product message passing, normalize after getting the message.
+                  (when (or (eq #'+ op) (eq '+ op))
+                    (setq new-message
+                          (normalize-rule-probabilities
+                           new-message
+                           (rule-based-cpd-dependent-id new-message))))
+
+                  (setq new-message (smooth new-message j k messages lr))
+
+                  (when t
+                    (and (= j 8) (= k 13))
+                    (format t "~%current message from ~d:" j)
+                    (print-hash-entry k current-message)
+                    (format t "~%new message from ~d:" j)
+                    (print-hash-entry k new-message)
+                    ;;(break)
+                    )
+
+                  (loop
+                    for new-rule being the elements of (rule-based-cpd-rules new-message)
+                    do
+                       (cond
+                         (round
+                          (setq deltas
+                                (cons
+                                 (abs
+                                  (- (float (rule-probability new-rule))
+                                     (if (rule-based-cpd-p current-message)
+                                         (float
+                                          (rule-probability
+                                           (car
+                                            (get-compatible-rules
+                                             current-message
+                                             new-message
+                                             new-rule
+                                             :find-all nil
+                                             :best-matches t))))
+                                         current-message)))
+                                 deltas)))
                          (t
-                          (setq deltas (cons (abs (- (rule-probability new-rule)
-                                                     (if (rule-based-cpd-p current-message)
-                                                         (rule-probability (car (get-compatible-rules
-                                                                                 current-message
-                                                                                 new-message
-                                                                                 new-rule
-                                                                                 :find-all nil
-										 :best-matches t)))
-                                                         current-message)))
-                                             deltas)))))
-              (setf (gethash k (gethash j messages)) new-message))
-         when (not (same-message-p current-message new-message :round t))
-           do
-              (setq conflicts (cons (cons current-message new-message) conflicts))
-              (setq calibrated nil))
-       ;;(break "~%end of iteration")
-       (when nil t
-	 (format t "~%~%num conflicts: ~d" (length conflicts))
-	 (format t "~%delta_mean: ~d~%delta_std: ~d" (float (mean deltas)) (float (stdev deltas))))
-       ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
-    until (or calibrated (= (+ count 1) max-iter))
-    finally
-       (when nil t
-         (cond (calibrated
-                (format t "~%Reached convergence after ~d iterations." (+ count 1)))
+                          (setq deltas
+                                (cons
+                                 (abs
+                                  (- (rule-probability new-rule)
+                                     (if (rule-based-cpd-p current-message)
+                                         (rule-probability
+                                          (car
+                                           (get-compatible-rules
+                                            current-message
+                                            new-message
+                                            new-rule
+                                            :find-all nil
+                                            :best-matches t)))
+                                         current-message)))
+                                 deltas)))))
+
+                  (setf (gethash k (gethash j messages)) new-message))
+
+             when (not (same-message-p current-message new-message :round t))
+               do
+                  (setq conflicts (cons (cons current-message new-message)
+                                        conflicts))
+                  (setq calibrated nil))
+
+           ;;(break "~%end of iteration")
+
+           (when nil
+             t
+             (format t "~%~%num conflicts: ~d" (length conflicts))
+             (format t "~%delta_mean: ~d~%delta_std: ~d"
+                     (float (mean deltas))
+                     (float (stdev deltas))))
+
+           ;;(log-message (list "~d,~d,~d,~d,~d~%" lr count (length conflicts) (float (mean deltas)) (float (stdev deltas))) "learning-curves.csv")
+
+        until (or calibrated (= (+ count 1) max-iter))
+
+        finally
+           (when t
+             (cond
+               (calibrated
+                (format t "~%Reached convergence after ~d iterations."
+                        (+ count 1)))
                (t
-                (format t "~%Reached inference limit at iteration ~d." (+ count 1)))))
-       (return
-         (cond ((or (eq op '+)
-		    (eq op #'+))	
+                (format t "~%Reached inference limit at iteration ~d."
+                        (+ count 1)))))
+
+           (return
+             (cond
+               ((or (eq op '+)
+                    (eq op #'+))
                 (loop
                   for i from 0 to (- (array-dimension factors 0) 1)
-		 when (rule-based-cpd-singleton-p (aref factors i))
-                   collect (compute-belief i factors edges messages
-					   :preserve-rule-counts preserve-rule-counts) into posterior-marginals
-		  else if (not singleton-only)
-		    collect (compute-belief i factors edges messages
-					    :preserve-rule-counts preserve-rule-counts) into posterior-distribution
-		  finally
-		     (return (values posterior-distribution posterior-marginals))))
+                  when (rule-based-cpd-singleton-p (aref factors i))
+                    collect
+                      (compute-belief i factors edges messages
+                                      :preserve-rule-counts preserve-rule-counts)
+                      into posterior-marginals
+                  else if (not singleton-only)
+                    collect
+                      (compute-belief i factors edges messages
+                                      :preserve-rule-counts preserve-rule-counts)
+                      into posterior-distribution
+                  finally
+                     (return
+                       (values posterior-distribution
+                               posterior-marginals))))
+
                ((or (eq op 'max)
-		    (eq op #'max))
+                    (eq op #'max))
                 (when nil
                   (format t "~%Computing most likely state."))
+
                 ;;(break)
+
                 (let (constraints vars unassigned csp copy-factors-list)
+
                   (when nil
                     (format t "~%factors:~%~A" factors))
+
                   (loop
                     for factor being the elements of factors
                     do
-                       (setq copy-factors-list (cons (copy-rule-based-cpd factor) copy-factors-list))
+                       (setq copy-factors-list
+                             (cons (copy-rule-based-cpd factor)
+                                   copy-factors-list))
                     finally
-                       (setq copy-factors-list (reverse copy-factors-list)))
+                       (setq copy-factors-list
+                             (reverse copy-factors-list)))
+
                   (when nil
                     (format t "~%Max marginals:~%~A" copy-factors-list))
+
                   (loop
                     for i from 0 to (- (array-dimension factors 0) 1)
                     for copy-factor in copy-factors-list
                     with constraint and max-val and new-assns and num-assignments
                     do
                        (setq max-val 0)
-                       (setq constraint (compute-belief i factors edges messages))
+                       (setq constraint
+                             (compute-belief i factors edges messages))
+
                        (when nil
                          (format t "~%constraint:~%~A" constraint)
                          (break))
-                       (setq num-assignments (reduce #'* (coerce (cpd-cardinalities constraint) 'list)))
-                       (setf (cpd-counts constraint) (cpd-counts copy-factor))
+
+                       (setq num-assignments
+                             (reduce #'* (coerce (cpd-cardinalities constraint)
+                                                 'list)))
+
+                       (setf (cpd-counts constraint)
+                             (cpd-counts copy-factor))
+
                        (setq new-assns (make-hash-table))
+
                        (loop
                          for i from 0 to (- num-assignments 1)
                          with hashed-val and max = 0
                          do
-                            (cond ((cpd-counts constraint)
-                                   (when (> (access-counts (cpd-counts constraint) i (aref (cpd-cardinalities constraint) 0)) 0)
-                                     (setq hashed-val (hash-access (cpd-assignments constraint) 0 constraint (list i)))
-                                     (if (> hashed-val max)
-                                         (setq max hashed-val))
-                                     (if (> hashed-val 0)
-                                         (setf (gethash i new-assns) hashed-val))))
-                                  (t
-                                   (setq hashed-val (hash-access (cpd-assignments constraint) 0 nil (list i)))
-                                   (if (> hashed-val max)
-                                       (setq max hashed-val))))
-                         finally (setq max-val max))
+                            (cond
+                              ((cpd-counts constraint)
+                               (when (> (access-counts
+                                         (cpd-counts constraint)
+                                         i
+                                         (aref (cpd-cardinalities constraint) 0))
+                                        0)
+                                 (setq hashed-val
+                                       (hash-access
+                                        (cpd-assignments constraint)
+                                        0
+                                        constraint
+                                        (list i)))
+                                 (if (> hashed-val max)
+                                     (setq max hashed-val))
+                                 (if (> hashed-val 0)
+                                     (setf (gethash i new-assns)
+                                           hashed-val))))
+                              (t
+                               (setq hashed-val
+                                     (hash-access
+                                      (cpd-assignments constraint)
+                                      0
+                                      nil
+                                      (list i)))
+                               (if (> hashed-val max)
+                                   (setq max hashed-val))))
+                         finally
+                            (setq max-val max))
+
                        (when (cpd-counts constraint)
                          (setf (cpd-assignments constraint) new-assns))
+
                        (loop
                          for j from 0 to (- num-assignments 1)
                          do
-                            (cond ((and (> max-val 0) (= (hash-access (cpd-assignments constraint) 0 constraint (list j)) max-val))
-                                   (setf (gethash j (cpd-assignments constraint)) 1))
-                                  (t
-                                   (remhash j (cpd-assignments constraint)))))
+                            (cond
+                              ((and (> max-val 0)
+                                    (= (hash-access
+                                        (cpd-assignments constraint)
+                                        0
+                                        constraint
+                                        (list j))
+                                       max-val))
+                               (setf (gethash j (cpd-assignments constraint)) 1))
+                              (t
+                               (remhash j (cpd-assignments constraint)))))
                     collect constraint into cnstrts
                     finally
                        ;;(break)
                        (setq constraints cnstrts))
-                  (setq vars (remove-duplicates
-                              (mapcan #'(lambda (cpd)
-                                          (hash-keys-to-list (cpd-identifiers cpd)))
-                                      constraints)
-                              :test #'equal))
+
+                  (setq vars
+                        (remove-duplicates
+                         (mapcan #'(lambda (cpd)
+                                     (hash-keys-to-list
+                                      (cpd-identifiers cpd)))
+                                 constraints)
+                         :test #'equal))
+
                   (loop
                     for constraint in constraints
                     do
-                    #|
+                       #|
                        (when (= (length (cpd-identifiers constraint)) 1)
-                       (format t "~%singleton constraint:~%~A~%assignments" constraint)
-                       (maphash #'print-hash-entry (cpd-assignments constraint)))|#
+                         (format t "~%singleton constraint:~%~A~%assignments" constraint)
+                         (maphash #'print-hash-entry (cpd-assignments constraint)))
+                       |#
                        (loop
                          with bindings and values
                          for var being the hash-keys of (cpd-identifiers constraint)
-                           using (hash-value pos)
+                         using (hash-value pos)
                          do
-                            (setq bindings (gethash pos (cpd-var-value-map constraint)))
+                            (setq bindings
+                                  (gethash pos
+                                           (cpd-var-value-map constraint)))
                             (setq values (mapcar 'car bindings))
                             (when (not (member (cons var values)
-                                               unassigned :test #'equal))
-                              (setq unassigned (cons (cons var values)
-                                                     unassigned)))))
-                  (setq unassigned (node-consistency unassigned constraints))
-                  (setq csp (list ':constraints (make-array (length constraints) :initial-contents constraints :fill-pointer t) ':vars vars))
+                                               unassigned
+                                               :test #'equal))
+                              (setq unassigned
+                                    (cons (cons var values)
+                                          unassigned)))))
+
+                  (setq unassigned
+                        (node-consistency unassigned constraints))
+
+                  (setq csp
+                        (list ':constraints
+                              (make-array (length constraints)
+                                          :initial-contents constraints
+                                          :fill-pointer t)
+                              ':vars
+                              vars))
+
                   (when nil
-                    (format t "~%constraints:~%~S" (getf csp :constraints))
+                    (format t "~%constraints:~%~S"
+                            (getf csp :constraints))
                     ;;(break)
                     )
+
                   ;;(backtracking-search csp unassigned)
-                  (min-conflicts csp)))))))
+                  (min-conflicts csp)))))))))
 
 (defun ins (item lst &optional (key #'<))
   (if (null lst)

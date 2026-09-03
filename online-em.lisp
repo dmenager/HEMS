@@ -156,11 +156,14 @@
         when (and idx (> (float probability 1.0d0) 0.0d0))
           collect idx))
 
-(defun online-em-rule-compatible-with-evidence-p (rule cpd evidence)
+(defun online-em-rule-compatible-with-evidence-p (rule cpd evidence
+                                                  &key
+                                                    (include-dependent-p nil))
   (let ((dep-id (rule-based-cpd-dependent-id cpd)))
     (loop for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
           always
-             (or (equal ident dep-id)
+             (or (and (not include-dependent-p)
+                      (equal ident dep-id))
                  (let ((evidence-values
                          (and evidence
                               (online-em-evidence-indexes cpd ident evidence))))
@@ -322,15 +325,22 @@
               (online-em-rule-key rule)))
      1000000007.0d0))
 
-(defun online-em-perturb-cpd (cpd &key (epsilon 1.0d-3))
+(defun online-em-perturb-cpd (cpd &key
+                                    (epsilon 1.0d-3)
+                                    (preserve-zero-probabilities-p nil))
   (let ((row-sums (make-hash-table :test #'equal))
         row-key new-prob)
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
           do
              (setq row-key (online-em-parent-key cpd rule))
-             (setq new-prob (+ (float (rule-probability rule) 1.0d0)
-                               (* epsilon
-                                  (online-em-rule-perturbation cpd rule))))
+             (setq new-prob
+                   (if (and preserve-zero-probabilities-p
+                            (<= (float (rule-probability rule) 1.0d0)
+                                0.0d0))
+                       0.0d0
+                       (+ (float (rule-probability rule) 1.0d0)
+                          (* epsilon
+                             (online-em-rule-perturbation cpd rule)))))
              (setf (rule-probability rule) new-prob)
              (incf (gethash row-key row-sums 0.0d0) new-prob))
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
@@ -399,7 +409,8 @@ eta_t times the current posterior ESS."
                                (- (float (rule-count rule) 1.0d0)
                                   (if (and current-sample-already-counted-p
                                            (online-em-rule-compatible-with-evidence-p
-                                            rule cpd evidence))
+                                            rule cpd evidence
+                                            :include-dependent-p t))
                                       current-sample-weight
                                       0.0d0)))))
                     (* (if decay-statistics-p
@@ -443,8 +454,12 @@ do not weight a latent dependent variable by its own posterior a second time."
     finally
        (return weight)))
 
-(defun online-em-current-ess (target-rule posterior-cpd posterior-map latent-set)
-  (if (online-em-rule-contains-latent-na-p target-rule posterior-cpd latent-set)
+(defun online-em-current-ess (target-rule target-cpd posterior-cpd posterior-map
+                              latent-set evidence)
+  (if (or (online-em-rule-contains-latent-na-p target-rule target-cpd latent-set)
+          (not (online-em-rule-compatible-with-evidence-p
+                target-rule target-cpd evidence
+                :include-dependent-p t)))
       0.0d0
       (loop for posterior-rule being the elements of (rule-based-cpd-rules posterior-cpd)
             when (compatible-rule-p posterior-rule target-rule nil nil)
@@ -452,8 +467,11 @@ do not weight a latent dependent variable by its own posterior a second time."
                      (online-em-latent-posterior-weight
                       target-rule posterior-cpd posterior-map latent-set)))))
 
-(defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta posterior-map latent-set)
-  "Add current-datum posterior ESS for POSTERIOR-CPD into STATS-CPD."
+(defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta posterior-map
+                                       latent-set evidence)
+  "Add current-datum posterior ESS for POSTERIOR-CPD into STATS-CPD.
+Observed variables in EVIDENCE are clamped, so posterior mass for assignments
+that contradict the inserted datum is not converted into CPD support."
   (when posterior-cpd
     (loop
       for rule being the elements of (rule-based-cpd-rules stats-cpd)
@@ -461,7 +479,8 @@ do not weight a latent dependent variable by its own posterior a second time."
          (incf (rule-count rule)
                (* eta
                   (online-em-current-ess
-                   rule posterior-cpd posterior-map latent-set))))))
+                   rule stats-cpd posterior-cpd posterior-map
+                   latent-set evidence))))))
 
 (defun online-em-normalize-statistics-cpd (stats-cpd
                                            &key
@@ -624,10 +643,13 @@ do not weight a latent dependent variable by its own posterior a second time."
                    ;; Empty or fully uniform latent models still get symmetry
                    ;; breaking from the perturbation; increase LATENT-PERTURBATION
                    ;; if that initialization needs stronger separation.
-                   (online-em-perturb-cpd expanded-cpd
-                                          :epsilon (if (online-em-latent-child-cpd-p expanded-cpd latent-set)
-                                                       epsilon
-                                                       (* 0.02d0 epsilon)))
+                   (online-em-perturb-cpd
+                    expanded-cpd
+                    :epsilon (if (online-em-latent-child-cpd-p expanded-cpd latent-set)
+                                 epsilon
+                                 (* 0.02d0 epsilon))
+                    :preserve-zero-probabilities-p
+                    (online-em-latent-child-cpd-p expanded-cpd latent-set))
                    expanded-cpd)
                (online-em-zero-latent-na-rules
                 expanded-cpd latent-set
@@ -702,7 +724,7 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                            (or update-latent-child-cpds-p
                                (rule-based-cpd-latent-p cpd)))
                   (online-em-accumulate-posterior
-                   stats-cpd posterior-cpd eta posterior-map latent-set)
+                   stats-cpd posterior-cpd eta posterior-map latent-set evidence)
                   (setf (aref (car theta) i)
                         (online-em-normalize-statistics-cpd
                          stats-cpd :bn stats :latent-set latent-set)))))))

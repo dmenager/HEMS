@@ -743,43 +743,130 @@
                     (values x cost bindings t nil reject-list num-local-preds func))))))))
 
 #| print episode |#
-(defun print-episode (ep &key (stream t))
-  (let ((indent "    ")
-	  (large-indent "        ")
-	  (fields (list :episode-id :parent :observation :state :state-transitions :backlinks :count :depth :temporal-p)))
-      (when (episode-p ep)
-	(format stream "~%~aEPISODE:" indent)
-	(loop
-	  for field in fields
-	  do
-	     (case field
-	       (:episode-id
-		(format stream "~%~a  ID: ~a" indent (episode-id ep)))
-	       (:parent
-		(format stream "~%~a  Parent: ~a" indent (when (episode-parent ep)
-						      (episode-id (car (episode-parent ep))))))
-	       (:observation
-		(format stream "~%~a  Observation:" indent)
-		(print-bn (episode-observation ep) :indent large-indent :stream stream))
-	       (:state
-		(format stream "~%~a  State:" indent)
-		(print-bn (episode-state ep) :indent large-indent :stream stream))
-	       (:state-transitions
-		(format stream "~%~a  State Transitions:" indent)
-		(print-bn (episode-state-transitions ep) :indent large-indent :stream stream))
-	       (:backlinks
-		(format stream "~%~a  Backlinks:" indent)
-		(loop
-		  for pointer being the hash-keys of (episode-backlinks ep)
-		    using (hash-value subtree)
-		  do
-		     (format stream "~%~a  (~a . ~a)" large-indent pointer (episode-id (car subtree)))))
-	       (:depth
-		(format stream "~%~a  Depth: ~a" indent (episode-depth ep)))
-	       (:count
-		(format stream "~%~a  Count: ~a" indent (episode-count ep)))
-	       (:temporal-p
-		(format stream "~%~a  Temporal-p: ~a" indent (episode-temporal-p ep))))))))
+; (defun print-episode (ep &key (stream t))
+;   (let ((indent "    ")
+; 	  (large-indent "        ")
+; 	  (fields (list :episode-id :parent :observation :state :state-transitions :backlinks :count :depth :temporal-p)))
+;       (when (episode-p ep)
+; 	(format stream "~%~aEPISODE:" indent)
+; 	(loop
+; 	  for field in fields
+; 	  do
+; 	     (case field
+; 	       (:episode-id
+; 		(format stream "~%~a  ID: ~a" indent (episode-id ep)))
+; 	       (:parent
+; 		(format stream "~%~a  Parent: ~a" indent (when (episode-parent ep)
+; 						      (episode-id (car (episode-parent ep))))))
+; 	       (:observation
+; 		(format stream "~%~a  Observation:" indent)
+; 		(print-bn (episode-observation ep) :indent large-indent :stream stream))
+; 	       (:state
+; 		(format stream "~%~a  State:" indent)
+; 		(print-bn (episode-state ep) :indent large-indent :stream stream))
+; 	       (:state-transitions
+; 		(format stream "~%~a  State Transitions:" indent)
+; 		(print-bn (episode-state-transitions ep) :indent large-indent :stream stream))
+; 	       (:backlinks
+; 		(format stream "~%~a  Backlinks:" indent)
+; 		(loop
+; 		  for pointer being the hash-keys of (episode-backlinks ep)
+; 		    using (hash-value subtree)
+; 		  do
+; 		     (format stream "~%~a  (~a . ~a)" large-indent pointer (episode-id (car subtree)))))
+; 	       (:depth
+; 		(format stream "~%~a  Depth: ~a" indent (episode-depth ep)))
+; 	       (:count
+; 		(format stream "~%~a  Count: ~a" indent (episode-count ep)))
+; 	       (:temporal-p
+; 		(format stream "~%~a  Temporal-p: ~a" indent (episode-temporal-p ep))))))))
+
+; DGM !!!!
+(defun print-episode (ep &key (stream t) log-file)
+  (labels ((print-to-stream (out)
+             (let ((indent "    ")
+                   (large-indent "        ")
+                   (fields (list :episode-id
+                                 :parent
+                                 :observation
+                                 :state
+                                 :state-transitions
+                                 :backlinks
+                                 :count
+                                 :depth
+                                 :temporal-p)))
+               (when (episode-p ep)
+                 (format out "~%~aEPISODE:" indent)
+                 (loop
+                   for field in fields
+                   do
+                     (case field
+                       (:episode-id
+                        (format out "~%~a  ID: ~a"
+                                indent
+                                (episode-id ep)))
+
+                       (:parent
+                        (format out "~%~a  Parent: ~a"
+                                indent
+                                (when (episode-parent ep)
+                                  (episode-id (car (episode-parent ep))))))
+
+                       (:observation
+                        (format out "~%~a  Observation:" indent)
+                        (print-bn (episode-observation ep)
+                                  :indent large-indent
+                                  :stream out))
+
+                       (:state
+                        (format out "~%~a  State:" indent)
+                        (print-bn (episode-state ep)
+                                  :indent large-indent
+                                  :stream out))
+
+                       (:state-transitions
+                        (format out "~%~a  State Transitions:" indent)
+                        (print-bn (episode-state-transitions ep)
+                                  :indent large-indent
+                                  :stream out))
+
+                       (:backlinks
+                        (format out "~%~a  Backlinks:" indent)
+                        (loop
+                          for pointer being the hash-keys of (episode-backlinks ep)
+                            using (hash-value subtree)
+                          do
+                            (format out "~%~a  (~a . ~a)"
+                                    large-indent
+                                    pointer
+                                    (episode-id (car subtree)))))
+
+                       (:depth
+                        (format out "~%~a  Depth: ~a"
+                                indent
+                                (episode-depth ep)))
+
+                       (:count
+                        (format out "~%~a  Count: ~a"
+                                indent
+                                (episode-count ep)))
+
+                       (:temporal-p
+                        (format out "~%~a  Temporal-p: ~a"
+                                indent
+                                (episode-temporal-p ep)))))))))
+
+    ;; Preserve original behavior.
+    (print-to-stream stream)
+
+    ;; Optional file logging.
+    ;; :if-exists :supersede overwrites the file on each call.
+    (when log-file
+      (with-open-file (file-stream log-file
+                                   :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create)
+        (print-to-stream file-stream)))))
 
 (defun print-backlinks (backlinks)
   (format t "~%~%Backlinks:")

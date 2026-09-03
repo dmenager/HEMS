@@ -28,6 +28,87 @@
   #'(lambda (n)
       (/ 1.0d0 (sqrt (max 1 n)))))
 
+(defparameter *online-em-diagnostic-logging-p* t)
+(defparameter *online-em-diagnostic-log-file* "online_em_diagnostic_log.txt")
+(defparameter *online-em-rule-adjustment-logging-p* t)
+(defparameter *online-em-rule-adjustment-vars* '("STATUS" "ROAD_NEXT"))
+(defparameter *online-em-rule-adjustment-min-delta* 0.0d0)
+(defvar *online-em-diagnostic-event-counter* 0)
+
+(defun online-em-diagnostic-log (fmt &rest args)
+  (when *online-em-diagnostic-logging-p*
+    (with-open-file (stream *online-em-diagnostic-log-file*
+                            :direction :output
+                            :if-exists :append
+                            :if-does-not-exist :create)
+      (apply #'format stream fmt args))))
+
+(defun online-em-log-evidence (evidence)
+  (online-em-diagnostic-log "~%Evidence entering online EM:~%")
+  (maphash #'(lambda (ident values)
+               (online-em-diagnostic-log "  ~A -> ~S~%" ident values))
+           evidence))
+
+(defun online-em-find-cpd-by-dependent-var (bn dependent-var)
+  (loop for cpd being the elements of (car bn)
+        when (string-equal (rule-based-cpd-dependent-var cpd) dependent-var)
+          return cpd))
+
+(defun online-em-find-cpd-by-dependent-id (bn dependent-id)
+  (loop for cpd being the elements of (car bn)
+        when (string-equal (rule-based-cpd-dependent-id cpd) dependent-id)
+          return cpd))
+
+(defun online-em-log-cpd-by-var (bn dependent-var label)
+  (let ((cpd (online-em-find-cpd-by-dependent-var bn dependent-var)))
+    (online-em-diagnostic-log "~%~A:~%" label)
+    (with-open-file (stream *online-em-diagnostic-log-file*
+                            :direction :output
+                            :if-exists :append
+                            :if-does-not-exist :create)
+      (if cpd
+          (print-cpd cpd :stream stream)
+          (format stream "  <missing CPD for dependent var ~A>~%" dependent-var)))))
+
+(defun online-em-log-posterior-by-id (posterior-factors dependent-id label)
+  (let ((cpd (loop for posterior-factor in posterior-factors
+                  when (string-equal
+                        (rule-based-cpd-dependent-id posterior-factor)
+                        dependent-id)
+                    return posterior-factor)))
+    (online-em-diagnostic-log "~%~A:~%" label)
+    (with-open-file (stream *online-em-diagnostic-log-file*
+                            :direction :output
+                            :if-exists :append
+                            :if-does-not-exist :create)
+      (if cpd
+          (print-cpd cpd :stream stream)
+          (format stream "  <missing posterior for dependent id ~A>~%" dependent-id)))))
+
+(defun online-em-log-rule-adjustment-p (cpd)
+  (and *online-em-rule-adjustment-logging-p*
+       (or (null *online-em-rule-adjustment-vars*)
+           (member (rule-based-cpd-dependent-var cpd)
+                   *online-em-rule-adjustment-vars*
+                   :test #'string-equal))))
+
+(defun online-em-log-rule-adjustment
+    (event-id cpd rule old-count old-prob ess delta new-count)
+  (when (and (online-em-log-rule-adjustment-p cpd)
+             (> (float delta 1.0d0)
+                (float *online-em-rule-adjustment-min-delta* 1.0d0)))
+    (online-em-diagnostic-log
+     "~%[EM EVENT ~A] CPD rule ESS update~%  CPD: ~A / ~A~%  rule-key: ~S~%  old-prob: ~A old-count: ~A~%  ess: ~A delta: ~A new-count: ~A~%"
+     event-id
+     (rule-based-cpd-dependent-var cpd)
+     (rule-based-cpd-dependent-id cpd)
+     (online-em-rule-key rule)
+     old-prob
+     old-count
+     ess
+     delta
+     new-count)))
+
 (defun online-em-hash-keys-sorted (hash)
   (sort (loop for k being the hash-keys of hash collect k)
         #'string< :key #'prin1-to-string))
@@ -468,7 +549,7 @@ do not weight a latent dependent variable by its own posterior a second time."
                       target-rule posterior-cpd posterior-map latent-set)))))
 
 (defun online-em-accumulate-posterior (stats-cpd posterior-cpd eta posterior-map
-                                       latent-set evidence)
+                                       latent-set evidence &key event-id)
   "Add current-datum posterior ESS for POSTERIOR-CPD into STATS-CPD.
 Observed variables in EVIDENCE are clamped, so posterior mass for assignments
 that contradict the inserted datum is not converted into CPD support."
@@ -476,12 +557,17 @@ that contradict the inserted datum is not converted into CPD support."
     (loop
       for rule being the elements of (rule-based-cpd-rules stats-cpd)
       do
-         (incf (rule-count rule)
-               (* eta
-                  (online-em-current-ess
-                   rule stats-cpd posterior-cpd posterior-map
-                   latent-set evidence))))))
-
+         (let* ((old-count (float (or (rule-count rule) 0.0d0) 1.0d0))
+                (old-prob (float (or (rule-probability rule) 0.0d0) 1.0d0))
+                (ess (online-em-current-ess
+                      rule stats-cpd posterior-cpd posterior-map
+                      latent-set evidence))
+                (delta (* eta ess))
+                (new-count (+ old-count delta)))
+           (when (> delta 0.0d0)
+             (online-em-log-rule-adjustment
+              event-id stats-cpd rule old-count old-prob ess delta new-count))
+           (setf (rule-count rule) new-count)))))
 (defun online-em-normalize-statistics-cpd (stats-cpd
                                            &key
                                              bn
@@ -681,7 +767,8 @@ that contradict the inserted datum is not converted into CPD support."
 
 STEP-SIZE may be a constant or a function of ITERATION (1-based)."
   ;; Don't need stats bn since sufficient statistics are computed during inference and stored as posterior-factors
-  (let* ((theta (online-em-initialize-latent-parameters
+  (let* ((event-id (incf *online-em-diagnostic-event-counter*))
+         (theta (online-em-initialize-latent-parameters
                  (copy-bn bn)
                  latent-vars
                  :epsilon latent-perturbation))
@@ -704,6 +791,22 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
         (online-em-infer theta evidence :lr lr)
       (declare (ignore ignored-singleton-factors))
       (setq posterior-factors inferred-factors)
+      (when *online-em-diagnostic-logging-p*
+        (online-em-diagnostic-log
+         "~%~%================ ONLINE EM E-STEP [EVENT ~A] ================~%"
+         event-id)
+        (online-em-diagnostic-log "latent-vars: ~S~%" latent-vars)
+        (online-em-diagnostic-log "eta: ~A  lr: ~A~%" eta lr)
+        (online-em-log-evidence evidence)
+        (online-em-log-cpd-by-var theta "STATUS" "Theta status CPD before E-step")
+        (online-em-log-cpd-by-var theta "ROAD_NEXT" "Theta road_next CPD before E-step")
+        (loop for latent-id in latent-vars
+              do
+                 (online-em-log-posterior-by-id
+                  posterior-factors latent-id
+                  (format nil "E-step posterior for ~A" latent-id)))
+        (online-em-diagnostic-log
+         "======================================================~%"))
       (when nil
 	(format t "~%E step:")
 	(loop
@@ -724,7 +827,8 @@ STEP-SIZE may be a constant or a function of ITERATION (1-based)."
                            (or update-latent-child-cpds-p
                                (rule-based-cpd-latent-p cpd)))
                   (online-em-accumulate-posterior
-                   stats-cpd posterior-cpd eta posterior-map latent-set evidence)
+                   stats-cpd posterior-cpd eta posterior-map latent-set evidence
+                   :event-id event-id)
                   (setf (aref (car theta) i)
                         (online-em-normalize-statistics-cpd
                          stats-cpd :bn stats :latent-set latent-set)))))))

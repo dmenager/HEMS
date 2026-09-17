@@ -326,7 +326,7 @@
      1000000007.0d0))
 
 (defun online-em-perturb-cpd (cpd &key
-                                    (epsilon 1.0d-3)
+                                    (epsilon 0.0d0)
                                     (preserve-zero-probabilities-p nil))
   (let ((row-sums (make-hash-table :test #'equal))
         row-key new-prob)
@@ -538,6 +538,8 @@ that contradict the inserted datum is not converted into CPD support."
                            (online-em-rule-contains-latent-na-p
                             rule stats-cpd latent-set))
                       0.0d0)
+                     ((<= numerator 0.0d0)
+                      0.0d0)
                      ((> denom 0.0d0)
                       (max min-prob (/ numerator denom)))
                      (t 0.0d0)))
@@ -598,7 +600,7 @@ that contradict the inserted datum is not converted into CPD support."
     (dolist (latent-var latent-vars latent-set)
       (setf (gethash latent-var latent-set) t))))
 
-(defun online-em-initialize-latent-cpd (cpd latent-set &key (epsilon 1.0d-3))
+(defun online-em-initialize-latent-cpd (cpd latent-set &key (epsilon 0.0d0))
   (let ((latent-identifiers (online-em-latent-identifiers cpd latent-set)))
     (cond ((or (null latent-identifiers)
                (not (or (rule-based-cpd-latent-p cpd)
@@ -639,7 +641,7 @@ that contradict the inserted datum is not converted into CPD support."
                 :zero-counts t
                 :normalize-probabilities t)))))))
 
-(defun online-em-initialize-latent-parameters (bn latent-vars &key (epsilon 1.0d-3))
+(defun online-em-initialize-latent-parameters (bn latent-vars &key (epsilon 0.0d0))
   (let ((latent-set (online-em-latent-set latent-vars)))
     (loop for i from 0 below (array-dimension (car bn) 0)
           do
@@ -655,7 +657,7 @@ that contradict the inserted datum is not converted into CPD support."
                           (step-size *online-em-default-step-size*)
                           (lr 1.0d0)
                           (equivalent-sample-size 1.0d0)
-                          (latent-perturbation 5.0d-2)
+                          (latent-perturbation 0.0d0)
                           (iteration 1)
                           (current-sample-already-counted-p nil)
                           (decay-statistics-p t)

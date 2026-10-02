@@ -218,15 +218,42 @@
 ;; bindings = variable bindings from p to q
 ;; q-first-bindings = variable bindings from q to p
 (defun new-combine-bns (ep1-bn ep2-bn ep1-count mappings unmatched bindings q-first-bindings)
-  (let (p q new-nodes latent-vars)
+  (labels ((find-cpd-index (factors dependent-id)
+             (loop
+               for i from 0 below (array-dimension factors 0)
+               when (equal dependent-id
+                           (rule-based-cpd-dependent-id (aref factors i)))
+                 do (return i)
+               finally
+                  (error "Unable to find staged CPD ~S in merged network"
+                         dependent-id))))
+  (let (p q new-nodes latent-vars latent-set staged-updates)
     (setq p (copy-factors (car ep2-bn)))
     (setq q (copy-factors (car ep1-bn)))
+    ;; Build the complete latent-variable set before processing any CPD so
+    ;; factor traversal order cannot affect which CPDs are deferred to EM.
+    (loop
+      for factor being the elements of q
+      when (rule-based-cpd-latent-p factor)
+        do
+           (pushnew (rule-based-cpd-dependent-id factor)
+                    latent-vars :test #'equal))
+    (loop
+      for factor being the elements of p
+      for incoming-id = (rule-based-cpd-dependent-id factor)
+      when (rule-based-cpd-latent-p factor)
+        do
+           (pushnew (or (gethash incoming-id bindings) incoming-id)
+                    latent-vars :test #'equal))
+    (setq latent-set (make-hash-table :test #'equal))
+    (loop for latent-var in latent-vars
+          do (setf (gethash latent-var latent-set) t))
     (when nil
       (format t "~%~%bindings:~%~S" bindings)
       (format t "~%mappings:~%~S" mappings))
     (loop
       for (p-match . q-match) being the elements of mappings
-      with node and nodes and p-cpd
+      with node and nodes and p-cpd and requires-online-em-p
       do
          (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
            (format t "~%~%p-cpd before subst:")
@@ -242,12 +269,20 @@
                (format t "~%p-match:~%~S~%p-cpd:~%~S~%q-cpd:~%~S" (aref p p-match) p-cpd (if q-match (aref q q-match)))
                ;;(break)
 	       )
-	 (multiple-value-setq (node p-cpd)
-           (factor-merge p-cpd (if q-match (aref q q-match)) bindings q-first-bindings nodes ep1-count))
-	 (when (or (rule-based-cpd-latent-p p-cpd)
-                   (rule-based-cpd-latent-p node))
+	 (multiple-value-setq (node p-cpd requires-online-em-p)
+           (factor-merge p-cpd (if q-match (aref q q-match))
+                         bindings q-first-bindings nodes ep1-count
+                         :update-statistics-p (null latent-vars)
+                         :latent-set latent-set))
+	 (when (gethash (rule-based-cpd-dependent-id node) latent-set)
            (setf (rule-based-cpd-latent-p node) t)
-	   (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
+           (setf (rule-based-cpd-latent-p p-cpd) t))
+	 (when latent-vars
+	   (push (list :dependent-id (rule-based-cpd-dependent-id node)
+		       :event-cpd p-cpd
+		       :requires-online-em-p requires-online-em-p
+		       :increment (rule-based-cpd-count p-cpd))
+		 staged-updates))
 	 (setf (aref p p-match) p-cpd)
 	 (when nil (and (equal "TIME_509" (rule-based-cpd-dependent-id (aref p p-match))))
 	   (format t "~%filtered p-match:")
@@ -258,7 +293,7 @@
             (setq new-nodes nodes))
     (loop
       for (dummy-match . unmatched-q) in unmatched
-      with dm and node
+      with dm and node and requires-online-em-p
       do
          (when nil (and print-special* (equal "SIX_483" (rule-based-cpd-dependent-id dummy-match)))
                ;;(format t "~%dummy-match:~%~S~%unmatched q:~%~S" dummy-match (aref q unmatched-q))
@@ -267,9 +302,20 @@
 	       (format t "~%unmatched q:")
 	       (print-cpd (aref q unmatched-q)))
          (setq dm (subst-cpd dummy-match (aref q unmatched-q) bindings :deep nil))
-         (setq node (factor-merge dm (aref q unmatched-q) bindings q-first-bindings new-nodes ep1-count))
-         (when (rule-based-cpd-latent-p node)
-           (pushnew (rule-based-cpd-dependent-id node) latent-vars :test #'equal))
+         (multiple-value-setq (node dm requires-online-em-p)
+           (factor-merge dm (aref q unmatched-q)
+                         bindings q-first-bindings new-nodes ep1-count
+                         :update-statistics-p (null latent-vars)
+                         :latent-set latent-set))
+	 (when (gethash (rule-based-cpd-dependent-id node) latent-set)
+	   (setf (rule-based-cpd-latent-p node) t)
+	   (setf (rule-based-cpd-latent-p dm) t))
+	 (when latent-vars
+	   (push (list :dependent-id (rule-based-cpd-dependent-id node)
+		       :event-cpd dm
+		       :requires-online-em-p requires-online-em-p
+		       :increment (rule-based-cpd-count dm))
+		 staged-updates))
          (when nil (and (equal "ROAD_DIST_1_219" (rule-based-cpd-dependent-id (aref q unmatched-q))))
                (format t "~%node:~%")
 	       (print-cpd node)
@@ -295,15 +341,39 @@
                             (setq remove (cons ident remove))))
                    (setq factor (factor-operation factor keep remove '+))
                    (vector-push-extend factor evidence-factors)))
-	  (when nil 
+	  (when nil
 	    (format t "~%~%starting em using schema:")
 	    (print-bn new-nodes)
 	    (format t "~%evidence:")
 	    (print-bn (cons evidence-factors (make-array 0))))
-          (online-em new-nodes latent-vars (cons evidence-factors (make-array 0))
-                     :current-sample-already-counted-p t
-                     :decay-statistics-p nil))
-        new-nodes)))
+          ;; EM sees the structurally aligned model with its pre-insertion
+          ;; statistics. The current observation has not been counted yet.
+          (setq new-nodes
+                (online-em new-nodes latent-vars
+                           (cons evidence-factors (make-array 0))
+                           :current-sample-already-counted-p nil
+                           :decay-statistics-p nil))
+          ;; Commit each staged observation exactly once. EM has already
+          ;; updated latent-affected CPDs; fully observed CPDs use the ordinary
+          ;; factor-merge statistic update only after the E-step is complete.
+          (let ((factors (car new-nodes)))
+            (loop
+              for staged-update in (nreverse staged-updates)
+              for dependent-id = (getf staged-update :dependent-id)
+              for cpd-index = (find-cpd-index factors dependent-id)
+              for schema-cpd = (aref factors cpd-index)
+              for event-cpd = (getf staged-update :event-cpd)
+              do
+                 (cond ((getf staged-update :requires-online-em-p)
+                        (incf (rule-based-cpd-count schema-cpd)
+                              (or (getf staged-update :increment) 0)))
+                       (t
+                        (setf (aref factors cpd-index)
+                              (factor-filter schema-cpd event-cpd '+)))))
+            (setq new-nodes
+                  (cons factors (make-graph-edges factors))))
+          new-nodes)
+        new-nodes))))
 
 #| Update distribution over states |#
 

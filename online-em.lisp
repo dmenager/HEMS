@@ -115,28 +115,16 @@
                                        &key
                                          zero-counts
                                          normalize-probabilities)
-  (let ((row-sums (make-hash-table :test #'equal))
-        (row-rules (make-hash-table :test #'equal))
-        row-key)
-    (loop for rule being the elements of (rule-based-cpd-rules cpd)
-          do
-             (when (online-em-rule-contains-latent-na-p rule cpd latent-set)
-               (setf (rule-probability rule) 0.0d0)
-               (when zero-counts
-                 (setf (rule-count rule) 0.0d0)))
-             (when normalize-probabilities
-               (setq row-key (online-em-parent-key cpd rule))
-               (incf (gethash row-key row-sums 0.0d0)
-                     (float (rule-probability rule) 1.0d0))))
-    (when normalize-probabilities
-      (loop for rule being the elements of (rule-based-cpd-rules cpd)
-            do
-               (setq row-key (online-em-parent-key cpd rule))
-               (when (> (gethash row-key row-sums) 0.0d0)
-                 (setf (rule-probability rule)
-                       (/ (rule-probability rule)
-                          (gethash row-key row-sums)))))))
-  cpd)
+  (loop for rule being the elements of (rule-based-cpd-rules cpd)
+        do
+           (when (online-em-rule-contains-latent-na-p rule cpd latent-set)
+             (setf (rule-probability rule) 0.0d0)
+             (when zero-counts
+               (setf (rule-count rule) 0.0d0))))
+  (if normalize-probabilities
+      (normalize-rule-probabilities
+       cpd (rule-based-cpd-dependent-id cpd))
+      cpd))
 
 (defun online-em-label-index (cpd ident label)
   (let* ((idx (gethash ident (rule-based-cpd-identifiers cpd)))
@@ -266,6 +254,90 @@
              :check-prob-sum nil)
             t)))))
 
+(defun online-em-copy-rule-with-values (rule ident values)
+  "Copy RULE and restrict IDENT to VALUES without changing its statistics."
+  (let ((copy (copy-cpd-rule rule :fresh-id t)))
+    (setf (gethash ident (rule-conditions copy))
+          (canonical-value-set values))
+    copy))
+
+(defun online-em-partition-rule-for-evidence (rule cpd evidence identifiers)
+  "Partition RULE only where its conditions mix observed and unobserved values.
+
+For each identifier present in the evidence, evidence-supported values become
+singleton branches. Values not supported by the evidence remain together in a
+compressed residual branch. Residual branches stop being partitioned because
+they are already incompatible with the complete evidence."
+  (cond ((null identifiers)
+         (list rule))
+        (t
+         (let* ((ident (first identifiers))
+                (rule-values (cpd-rule-value-set cpd rule ident))
+                (evidence-values
+                  (remove-duplicates
+                   (online-em-evidence-indexes cpd ident evidence)
+                   :test #'equal))
+                (compatible-values
+                  (intersection rule-values evidence-values :test #'equal))
+                (residual-values
+                  (set-difference rule-values evidence-values :test #'equal)))
+           (cond ((null compatible-values)
+                  (list rule))
+                 ((and (= (length rule-values) 1)
+                       (= (length compatible-values) 1))
+                  (online-em-partition-rule-for-evidence
+                   rule cpd evidence (rest identifiers)))
+                 (t
+                  (append
+                   (loop for value in compatible-values
+                         append
+                         (online-em-partition-rule-for-evidence
+                          (online-em-copy-rule-with-values
+                           rule ident (list value))
+                          cpd evidence (rest identifiers)))
+                   (when residual-values
+                     (list
+                      (online-em-copy-rule-with-values
+                       rule ident residual-values))))))))))
+
+(defun online-em-evidence-identifiers (cpd evidence)
+  "Return CPD identifiers explicitly represented in EVIDENCE, in CPD order."
+  (loop for ident being the hash-keys of (rule-based-cpd-identifiers cpd)
+          using (hash-value idx)
+        when (gethash ident evidence)
+          collect (cons idx ident) into indexed-identifiers
+        finally
+           (return
+             (mapcar #'cdr
+                     (sort indexed-identifiers #'< :key #'car)))))
+
+(defun online-em-partition-statistics-cpd-for-evidence (cpd evidence)
+  "Split compatible mixed rules so ESS cannot spill into unobserved values."
+  (let ((identifiers (online-em-evidence-identifiers cpd evidence))
+        (changed-p nil)
+        (partitioned-rules nil))
+    (loop for rule being the elements of (rule-based-cpd-rules cpd)
+          for pieces =
+            (if (and identifiers
+                     (online-em-rule-compatible-with-evidence-p
+                      rule cpd evidence :include-dependent-p t))
+                (online-em-partition-rule-for-evidence
+                 rule cpd evidence identifiers)
+                (list rule))
+          do
+             (when (or (> (length pieces) 1)
+                       (not (eq (first pieces) rule)))
+               (setq changed-p t))
+             (setq partitioned-rules
+                   (nconc partitioned-rules pieces)))
+    (if changed-p
+        (update-cpd-rules
+         cpd
+         (make-array (length partitioned-rules)
+                     :initial-contents partitioned-rules)
+         :check-prob-sum nil)
+        cpd)))
+
 (defun online-em-key-without-identifiers (key identifiers)
   (remove-if #'(lambda (entry)
                  (member (car entry) identifiers :test #'equal))
@@ -328,11 +400,9 @@
 (defun online-em-perturb-cpd (cpd &key
                                     (epsilon 0.0d0)
                                     (preserve-zero-probabilities-p nil))
-  (let ((row-sums (make-hash-table :test #'equal))
-        row-key new-prob)
+  (let (new-prob)
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
           do
-             (setq row-key (online-em-parent-key cpd rule))
              (setq new-prob
                    (if (and preserve-zero-probabilities-p
                             (<= (float (rule-probability rule) 1.0d0)
@@ -341,16 +411,8 @@
                        (+ (float (rule-probability rule) 1.0d0)
                           (* epsilon
                              (online-em-rule-perturbation cpd rule)))))
-             (setf (rule-probability rule) new-prob)
-             (incf (gethash row-key row-sums 0.0d0) new-prob))
-    (loop for rule being the elements of (rule-based-cpd-rules cpd)
-          do
-             (setq row-key (online-em-parent-key cpd rule))
-             (when (> (gethash row-key row-sums) 0.0d0)
-               (setf (rule-probability rule)
-                     (/ (rule-probability rule)
-                        (gethash row-key row-sums)))))
-    (update-cpd-rules cpd (rule-based-cpd-rules cpd) :check-prob-sum nil)))
+             (setf (rule-probability rule) new-prob)))
+  cpd)
 
 (defun online-em-random-weight (cpd rule)
   (+ 0.05d0
@@ -361,22 +423,13 @@
         1000000007.0d0)))
 
 (defun online-em-randomize-latent-child-cpd (cpd)
-  (let ((row-sums (make-hash-table :test #'equal))
-        row-key new-prob)
+  (let (new-prob)
     (loop for rule being the elements of (rule-based-cpd-rules cpd)
           do
-             (setq row-key (online-em-parent-key cpd rule))
              (setq new-prob (online-em-random-weight cpd rule))
-             (setf (rule-probability rule) new-prob)
-             (incf (gethash row-key row-sums 0.0d0) new-prob))
-    (loop for rule being the elements of (rule-based-cpd-rules cpd)
-          do
-             (setq row-key (online-em-parent-key cpd rule))
-             (when (> (gethash row-key row-sums) 0.0d0)
-               (setf (rule-probability rule)
-                     (/ (rule-probability rule)
-                        (gethash row-key row-sums)))))
-    (update-cpd-rules cpd (rule-based-cpd-rules cpd) :check-prob-sum nil)))
+             (setf (rule-probability rule) new-prob)))
+  (normalize-rule-probabilities
+   cpd (rule-based-cpd-dependent-id cpd)))
 
 (defun online-em-posterior-map (posterior-factors)
   "Map each full-family posterior by its dependent identifier."
@@ -469,8 +522,7 @@ that contradict the inserted datum is not converted into CPD support."
 (defun online-em-normalize-statistics-cpd (stats-cpd
                                            &key
                                              bn
-                                             latent-set
-                                             (min-prob 1.0d-12))
+                                             latent-set)
   (let ((pre-zero-row-sums (make-hash-table :test #'equal))
         (row-sums (make-hash-table :test #'equal))
         (row-rules (make-hash-table :test #'equal))
@@ -528,47 +580,8 @@ that contradict the inserted datum is not converted into CPD support."
                         (setf (rule-count rule)
                               (* seed-row-sum weight)))
                (setf (gethash row-key row-sums) seed-row-sum))))
-    (loop
-      for rule being the elements of (rule-based-cpd-rules stats-cpd)
-      for numerator = (float (or (rule-count rule) 0.0d0) 1.0d0)
-      for denom = (gethash (online-em-parent-key stats-cpd rule) row-sums)
-      do
-         (setf (rule-probability rule)
-               (cond ((and latent-set
-                           (online-em-rule-contains-latent-na-p
-                            rule stats-cpd latent-set))
-                      0.0d0)
-                     ((<= numerator 0.0d0)
-                      0.0d0)
-                     ((> denom 0.0d0)
-                      (max min-prob (/ numerator denom)))
-                     (t 0.0d0)))
-         (setf (rule-count rule) denom))
-    (loop
-      for rules being the hash-values of row-rules
-      for positive-rules = (remove-if-not
-                            #'(lambda (rule)
-                                (> (float (rule-probability rule) 1.0d0)
-                                   0.0d0))
-                            rules)
-      for probability-sum = (loop for rule in positive-rules
-                                  sum (float (rule-probability rule) 1.0d0))
-      when (> probability-sum 0.0d0)
-        do
-           (loop
-             with remaining = 1.0d0
-             for tail on positive-rules
-             for rule = (car tail)
-             do
-                (cond ((null (cdr tail))
-                       (setf (rule-probability rule) remaining))
-                      (t
-                       (setf (rule-probability rule)
-                             (/ (float (rule-probability rule) 1.0d0)
-                                probability-sum))
-                       (decf remaining (rule-probability rule))))))
-    (update-cpd-rules stats-cpd (rule-based-cpd-rules stats-cpd)
-                      :check-prob-sum nil)))
+    (normalize-rule-count-statistics
+     stats-cpd (rule-based-cpd-dependent-id stats-cpd))))
 
 (defun online-em-coerce-evidence (datum)
   "Convert DATUM into evidence expected by LOOPY-BELIEF-PROPAGATION."
@@ -717,6 +730,10 @@ path after its already-counted observation is removed."
                 (when (and latent-identifiers
                            (or update-latent-child-cpds-p
                                (rule-based-cpd-latent-p cpd)))
+                  (setq stats-cpd
+                        (online-em-partition-statistics-cpd-for-evidence
+                         stats-cpd evidence))
+                  (setf (aref (car stats) i) stats-cpd)
                   (online-em-accumulate-posterior
                    stats-cpd posterior-cpd eta latent-set evidence)
                   (setf (aref (car theta) i)

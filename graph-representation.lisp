@@ -2214,11 +2214,26 @@ non-overlapping local coverings before this function is called."
     phi))
 
 
-(defun normalize-rule-probabilities (phi new-dep-id &key (var-val-mappings (make-hash-table :test (function equal))))
+(defun normalize-rule-probabilities (phi new-dep-id
+                                     &key
+                                       (var-val-mappings
+                                         (make-hash-table :test (function equal)))
+                                       (normalization-source :probability))
   (declare (ignore var-val-mappings))
-  (labels ((add-assignment-group (groups probability dep-values)
-             (let ((vals (gethash probability groups)))
-               (setf (gethash probability groups)
+  (labels ((rule-weight (rule)
+             (let ((weight
+                     (ecase normalization-source
+                       (:probability
+                        (float (or (rule-probability rule) 0.0d0) 1.0d0))
+                       (:count
+                        (float (or (rule-count rule) 0.0d0) 1.0d0)))))
+               (when (< weight 0.0d0)
+                 (error "Cannot normalize negative ~A weight ~S in rule ~S"
+                        normalization-source weight rule))
+               weight))
+           (add-assignment-group (groups weight dep-values)
+             (let ((vals (gethash weight groups)))
+               (setf (gethash weight groups)
                      (append dep-values vals)))
              groups)
            (make-normalized-rules-for-cell (cell dep-domain parent-specs rule-caches block)
@@ -2236,7 +2251,7 @@ non-overlapping local coverings before this function is called."
                              (intersection remaining-dep-values (getf cache :dep-values))))
                       (when covered-dep-values
                         (add-assignment-group assignment-groups
-                                              (rule-probability rule)
+                                              (rule-weight rule)
                                               covered-dep-values)
                         (when (numberp (rule-count rule))
                           (setq row-counts (cons (rule-count rule) row-counts)))
@@ -2253,7 +2268,7 @@ non-overlapping local coverings before this function is called."
                                           sum (* prob (length dep-values)))
                       with parent-conditions = (cpd-parent-cell-conditions cell parent-specs)
                       with rules = nil
-                      for prob being the hash-keys of assignment-groups
+                      for weight being the hash-keys of assignment-groups
                         using (hash-value dep-values)
                       do
                          (let ((new-rule
@@ -2264,11 +2279,14 @@ non-overlapping local coverings before this function is called."
                                    (canonical-value-set dep-values)
                                    dep-domain)
                                   (if (> norm-const 0)
-                                      (/ prob norm-const)
+                                      (/ weight norm-const)
                                       0)
-                                  (if (rule-based-cpd-singleton-p phi)
-                                      nil
-                                      (or row-count 0))
+                                  (cond ((rule-based-cpd-singleton-p phi)
+                                         nil)
+                                        ((eq normalization-source :count)
+                                         norm-const)
+                                        (t
+                                         (or row-count 0)))
                                   block)))
                            (when (or (> (rule-probability new-rule) 1)
                                      (< (rule-probability new-rule) 0))
@@ -2316,6 +2334,15 @@ non-overlapping local coverings before this function is called."
                (make-array block :initial-contents (reverse new-rules)))
          (setq phi (update-cpd-rules phi (rule-based-cpd-rules phi) :check-prob-sum nil))
 	 (return phi))))
+
+(defun normalize-rule-count-statistics (phi new-dep-id)
+  "Normalize per-assignment numerator counts over disjoint CPD parent rows.
+
+RULE-COUNT is treated as a numerator sufficient statistic on input. On output,
+RULE-PROBABILITY contains the normalized conditional probability and every
+rule in an actual parent row carries that row's denominator in RULE-COUNT."
+  (normalize-rule-probabilities
+   phi new-dep-id :normalization-source :count))
 
 
 (defun normalize-rule-probabilities-old (phi new-dep-id &key (var-val-mappings (make-hash-table :test #'equal)))
@@ -7140,7 +7167,8 @@ Roughly based on (Koller and Friedman, 2009) |#
 ;; q-first-bindings = variable bindings from q to p
 ;; new-nodes = list of corespondences from p to q so far
 ;; phi2-count = schema episode count
-(defun factor-merge (phi1 phi2 bindings q-first-bindings new-nodes phi2-count)
+(defun factor-merge (phi1 phi2 bindings q-first-bindings new-nodes phi2-count
+		     &key (update-statistics-p t) latent-set)
   (labels ((refresh-cpds (ph1 ph2)
              (let (new-phi1 new-phi2)
                (setq new-phi2 (cpd-update-existing-vvms ph2 bindings new-nodes))
@@ -7218,7 +7246,9 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       (print-cpd phi1-copy)
 	       ;;(break)
 	       )
-	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count)))
+	     (factor-merge phi1 phi1-copy bindings q-first-bindings new-nodes phi2-count
+			   :update-statistics-p update-statistics-p
+			   :latent-set latent-set)))
           (t
            (when nil (and (equal "ACUITY" (rule-based-cpd-dependent-var phi2)))
              (format t "~%~%episode before update:")
@@ -7279,22 +7309,31 @@ Roughly based on (Koller and Friedman, 2009) |#
 	       :check-count-prob-agreement t
 	       :check-counts t
 	       :check-prob-sum t)
-	   (cond ((not (rule-based-cpd-latent-p phi1))
-		  (values (factor-filter phi2 phi1 '+) phi1))
-		 (t
-		  (let ((increment (rule-based-cpd-count phi1)))
-		    (setf (rule-based-cpd-count phi2)
-			  (+ (rule-based-cpd-count phi2)
-			     increment))
-		    (loop
-		      for schema-rule being the elements of (rule-based-cpd-rules phi2)
-		      for matching-event-rules = (get-compatible-rules phi1 phi2 schema-rule :find-all t)
-		      when (some #'(lambda (event-rule)
-				     (> (rule-probability event-rule) 0))
-				 matching-event-rules)
-			do
-			   (incf (rule-count schema-rule) increment)))
-		  (values phi2 phi1)))))))
+	   (let ((requires-online-em-p
+		   (and latent-set
+			(loop
+			  for ident being the hash-keys of
+			    (rule-based-cpd-identifiers phi2)
+			  thereis (gethash ident latent-set)))))
+	     (cond ((not update-statistics-p)
+		    (values phi2 phi1 requires-online-em-p))
+		   ((not (rule-based-cpd-latent-p phi1))
+		    (values (factor-filter phi2 phi1 '+) phi1
+			    requires-online-em-p))
+		   (t
+		    (let ((increment (rule-based-cpd-count phi1)))
+		      (setf (rule-based-cpd-count phi2)
+			    (+ (rule-based-cpd-count phi2)
+			       increment))
+		      (loop
+			for schema-rule being the elements of (rule-based-cpd-rules phi2)
+			for matching-event-rules = (get-compatible-rules phi1 phi2 schema-rule :find-all t)
+			when (some #'(lambda (event-rule)
+				       (> (rule-probability event-rule) 0))
+				   matching-event-rules)
+			  do
+			     (incf (rule-count schema-rule) increment)))
+		    (values phi2 phi1 requires-online-em-p))))))))
 
 #| Perform a marginalize operation over rules.
    Returns: Array of CPD rules|#

@@ -1,0 +1,771 @@
+HEMS GOLDEN SYSTEM TEST REPORT
+==============================
+
+SUMMARY
+-------
+Total checks: 147
+Passed:       144
+Failed:       3
+Overall:      FAIL
+
+Structural-zero persistence after insertion/EM is intentionally
+excluded from pass/fail criteria. Initial generator outputs, including
+zeros, are checked because they define the requested distribution.
+
+Fixture: 100 coherent seed cases over STATUS, CONTEXT, and CHOICE.
+
+FAILED CHECKS
+-------------
+[public latent insertion and retrieval] CONTEXT NIL P(DECISION)
+  expected: 0.6078431372549019d0
+  actual:   0.6116504854368932d0
+  tolerance: 1.0d-8
+
+[public latent insertion and retrieval] CONTEXT NIL P(ORDINARY)
+  expected: 0.39215686274509803d0
+  actual:   0.3883495145631068d0
+  tolerance: 1.0d-8
+
+[public latent insertion and retrieval] CONTEXT NIL row count
+  expected: 102.0d0
+  actual:   103.0d0
+  tolerance: 1.0d-8
+
+
+ALL CHECKS
+----------
+PASS | functional-node generation | STATUS NIL P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | STATUS NIL P(BENIGN)
+  expected: 0.7d0
+  actual:   0.7d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | STATUS NIL P(THREAT)
+  expected: 0.3d0
+  actual:   0.3d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | STATUS NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | STATUS NIL row count
+  expected: 100.0d0
+  actual:   100.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CONTEXT NIL P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CONTEXT NIL P(DECISION)
+  expected: 0.6d0
+  actual:   0.6d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CONTEXT NIL P(ORDINARY)
+  expected: 0.4d0
+  actual:   0.4d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CONTEXT NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CONTEXT NIL row count
+  expected: 100.0d0
+  actual:   100.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.8d0
+  actual:   0.8d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.2d0
+  actual:   0.2d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(LEFT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(RIGHT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row count
+  expected: 50.0d0
+  actual:   50.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.1d0
+  actual:   0.1d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.9d0
+  actual:   0.9d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(LEFT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(RIGHT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row count
+  expected: 10.0d0
+  actual:   10.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(CHECKPOINT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(BYPASS)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(LEFT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(RIGHT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row count
+  expected: 20.0d0
+  actual:   20.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) P(NA)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) P(CHECKPOINT)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) P(BYPASS)
+  expected: 0.0d0
+  actual:   0.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) P(LEFT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) P(RIGHT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | functional-node generation | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "ORDINARY")) row count
+  expected: 20.0d0
+  actual:   20.0d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(THREAT | CHECKPOINT, DECISION)
+  expected: 0.05084745762711865d0
+  actual:   0.05084745762711865d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(BENIGN | CHECKPOINT, DECISION)
+  expected: 0.9491525423728813d0
+  actual:   0.9491525423728814d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(THREAT | BYPASS, DECISION)
+  expected: 0.6585365853658537d0
+  actual:   0.6585365853658537d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(BENIGN | BYPASS, DECISION)
+  expected: 0.34146341463414626d0
+  actual:   0.34146341463414637d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | uninformative choice preserves threat prior
+  expected: 0.3d0
+  actual:   0.3d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(CHECKPOINT | THREAT, DECISION)
+  expected: 0.1d0
+  actual:   0.10000000000000002d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | P(BYPASS | THREAT, DECISION)
+  expected: 0.9d0
+  actual:   0.9d0
+  tolerance: 1.0d-8
+
+PASS | pre-insertion inference | soft CHOICE evidence
+  expected: 0.24324324324324323d0
+  actual:   0.24324324324324326d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | STATUS NIL P(BENIGN)
+  expected: 0.7029702970297029d0
+  actual:   0.7029702970297029d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | STATUS NIL P(THREAT)
+  expected: 0.297029702970297d0
+  actual:   0.297029702970297d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | STATUS NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | STATUS NIL row count
+  expected: 101.0d0
+  actual:   101.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CONTEXT NIL P(DECISION)
+  expected: 0.6039603960396039d0
+  actual:   0.6039603960396039d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CONTEXT NIL P(ORDINARY)
+  expected: 0.39603960396039606d0
+  actual:   0.39603960396039606d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CONTEXT NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CONTEXT NIL row count
+  expected: 101.0d0
+  actual:   101.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.803921568627451d0
+  actual:   0.803921568627451d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.19607843137254902d0
+  actual:   0.19607843137254902d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row count
+  expected: 51.0d0
+  actual:   51.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.1d0
+  actual:   0.1d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.9d0
+  actual:   0.9d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row count
+  expected: 10.0d0
+  actual:   10.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(LEFT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(RIGHT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row count
+  expected: 20.0d0
+  actual:   20.0d0
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | STATUS CPD count increments once
+  expected: 101.0d0
+  actual:   101
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CONTEXT CPD count increments once
+  expected: 101.0d0
+  actual:   101
+  tolerance: 1.0d-8
+
+PASS | non-latent public insertion | CHOICE CPD count increments once
+  expected: 101.0d0
+  actual:   101
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | E-step q(BENIGN)
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | STATUS NIL P(BENIGN)
+  expected: 0.7029702970297029d0
+  actual:   0.7029702970297029d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | STATUS NIL P(THREAT)
+  expected: 0.297029702970297d0
+  actual:   0.297029702970297d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | STATUS NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | STATUS NIL row count
+  expected: 101.0d0
+  actual:   101.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CONTEXT NIL P(DECISION)
+  expected: 0.6d0
+  actual:   0.6d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CONTEXT NIL P(ORDINARY)
+  expected: 0.4d0
+  actual:   0.4d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CONTEXT NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CONTEXT NIL row count
+  expected: 100.0d0
+  actual:   100.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.803921568627451d0
+  actual:   0.803921568627451d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.19607843137254902d0
+  actual:   0.19607843137254902d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row count
+  expected: 51.0d0
+  actual:   51.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.1d0
+  actual:   0.1d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.9d0
+  actual:   0.9d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row count
+  expected: 10.0d0
+  actual:   10.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(LEFT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) P(RIGHT)
+  expected: 0.5d0
+  actual:   0.5d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | clamped EM equivalence | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "ORDINARY")) row count
+  expected: 20.0d0
+  actual:   20.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | E-step q(BENIGN)
+  expected: 0.340201245807379d0
+  actual:   0.340201245807379d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | E-step q(THREAT)
+  expected: 0.659798754192621d0
+  actual:   0.659798754192621d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | STATUS NIL P(BENIGN)
+  expected: 0.699413737703994d0
+  actual:   0.699413737703994d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | STATUS NIL P(THREAT)
+  expected: 0.3005862622960061d0
+  actual:   0.3005862622960061d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | STATUS NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | STATUS NIL row count
+  expected: 102.0d0
+  actual:   102.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.7985944543477652d0
+  actual:   0.7985944543477652d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.20140554565223476d0
+  actual:   0.20140554565223476d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row count
+  expected: 51.34020124580738d0
+  actual:   51.34020124580738d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.09381040140243628d0
+  actual:   0.09381040140243628d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.9061895985975638d0
+  actual:   0.9061895985975638d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row count
+  expected: 10.659798754192622d0
+  actual:   10.659798754192622d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CONTEXT NIL P(DECISION)
+  expected: 0.6039603960396039d0
+  actual:   0.6039603960396039d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CONTEXT NIL P(ORDINARY)
+  expected: 0.39603960396039606d0
+  actual:   0.39603960396039606d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CONTEXT NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | CONTEXT NIL row count
+  expected: 101.0d0
+  actual:   101.0d0
+  tolerance: 1.0d-8
+
+PASS | hidden-status EM | post-EM threat inference
+  expected: 0.6591301655336065d0
+  actual:   0.6591301655336064d0
+  tolerance: 1.0d-8
+
+PASS | uninformative latent observation | E-step q(BENIGN) equals prior
+  expected: 0.699413737703994d0
+  actual:   0.6994137377039938d0
+  tolerance: 1.0d-8
+
+PASS | uninformative latent observation | E-step q(THREAT) equals prior
+  expected: 0.3005862622960061d0
+  actual:   0.30058626229600605d0
+  tolerance: 1.0d-8
+
+PASS | uninformative latent observation | BENIGN probability does not sharpen
+  expected: 0.699413737703994d0
+  actual:   0.6994137377039938d0
+  tolerance: 1.0d-8
+
+PASS | uninformative latent observation | THREAT probability does not sharpen
+  expected: 0.3005862622960061d0
+  actual:   0.3005862622960061d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | pre-EM STATUS=BENIGN NIL
+  expected: 0.7029702970297029d0
+  actual:   0.7029702970297029d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | pre-EM STATUS=THREAT NIL
+  expected: 0.297029702970297d0
+  actual:   0.297029702970297d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | pre-EM CHOICE=CHECKPOINT (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION"))
+  expected: 0.803921568627451d0
+  actual:   0.803921568627451d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | pre-EM CHOICE=BYPASS (("STATUS" . "THREAT") ("CONTEXT" . "DECISION"))
+  expected: 0.9d0
+  actual:   0.9d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM STATUS=BENIGN NIL
+  expected: 0.699413737703994d0
+  actual:   0.699413737703994d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM STATUS=THREAT NIL
+  expected: 0.3005862622960061d0
+  actual:   0.3005862622960061d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM CHOICE=CHECKPOINT (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION"))
+  expected: 0.7985944543477652d0
+  actual:   0.7985944543477652d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM CHOICE=BYPASS (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION"))
+  expected: 0.20140554565223476d0
+  actual:   0.20140554565223476d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM CHOICE=CHECKPOINT (("STATUS" . "THREAT") ("CONTEXT" . "DECISION"))
+  expected: 0.09381040140243628d0
+  actual:   0.09381040140243628d0
+  tolerance: 1.0d-8
+
+PASS | atomic/compressed equivalence | post-EM CHOICE=BYPASS (("STATUS" . "THREAT") ("CONTEXT" . "DECISION"))
+  expected: 0.9061895985975638d0
+  actual:   0.9061895985975638d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | pre-latent CONTEXT row count
+  expected: 101.0d0
+  actual:   101.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | pre-latent CONTEXT CPD count
+  expected: 101.0d0
+  actual:   101
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | incoming latent event CONTEXT row count
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | incoming latent event CONTEXT CPD count
+  expected: 1.0d0
+  actual:   1
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | STATUS NIL P(BENIGN)
+  expected: 0.699413737703994d0
+  actual:   0.699413737703994d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | STATUS NIL P(THREAT)
+  expected: 0.3005862622960061d0
+  actual:   0.3005862622960061d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | STATUS NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | STATUS NIL row count
+  expected: 102.0d0
+  actual:   102.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.7985944543477652d0
+  actual:   0.7985944543477652d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.20140554565223476d0
+  actual:   0.20140554565223476d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "BENIGN") ("CONTEXT" . "DECISION")) row count
+  expected: 51.34020124580738d0
+  actual:   51.34020124580738d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(CHECKPOINT)
+  expected: 0.09381040140243628d0
+  actual:   0.09381040140243628d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) P(BYPASS)
+  expected: 0.9061895985975638d0
+  actual:   0.9061895985975638d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE (("STATUS" . "THREAT") ("CONTEXT" . "DECISION")) row count
+  expected: 10.659798754192622d0
+  actual:   10.659798754192622d0
+  tolerance: 1.0d-8
+
+FAIL | public latent insertion and retrieval | CONTEXT NIL P(DECISION)
+  expected: 0.6078431372549019d0
+  actual:   0.6116504854368932d0
+  tolerance: 1.0d-8
+
+FAIL | public latent insertion and retrieval | CONTEXT NIL P(ORDINARY)
+  expected: 0.39215686274509803d0
+  actual:   0.3883495145631068d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CONTEXT NIL row sums to one
+  expected: 1.0d0
+  actual:   1.0d0
+  tolerance: 1.0d-8
+
+FAIL | public latent insertion and retrieval | CONTEXT NIL row count
+  expected: 102.0d0
+  actual:   103.0d0
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | STATUS CPD count increments once
+  expected: 102.0d0
+  actual:   102
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CONTEXT CPD count increments once
+  expected: 102.0d0
+  actual:   102
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | CHOICE CPD count increments once
+  expected: 102.0d0
+  actual:   102
+  tolerance: 1.0d-8
+
+PASS | public latent insertion and retrieval | REMEMBER P(THREAT | BYPASS, DECISION)
+  expected: 0.6591301655336065d0
+  actual:   0.6591301655336064d0
+  tolerance: 1.0d-8
+
